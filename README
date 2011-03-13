@@ -1,0 +1,13 @@
+XOrParser
+SkipperParser
+FalseParser (always returns FALSE; used for "disabled" skipper)
+
+Return tuple(match,length) instead of variadic FALSE/length
+-> Pass along ParserContext with the skipper in it with each doParse and parse call?
+	-> Externalize or-priority
+
+addMismatchListener	
+-> onMatch(Parser &$parser, &$in, $offset, &$length);
+-> onMismatch(Parser &$parser, &$in, $offset);
+-> onBefore(Parser &$parser, &$in, $offset);
+-> onAfter(Parser &$parser, &$in, $offset, &$length);	// length may be FALSE

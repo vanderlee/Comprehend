@@ -1,54 +1,39 @@
 <?php
 
 	/**
-	 * Parser
+	 * phpOOParser
 	 * LALR(1) grammar parser framework, ISO-8895-1 support only due to PHP limitations on native string format.
 	 * @version 0.0.1
 	 * @author Martijn W. van der Lee (martijn-at-vanderlee-dot-com)
 	 * @copyright Copyright (c) 2011, Martijn W. van der Lee
-	 * @license <R&D version; forbidden to use for any purpose>
+	 * @license http://www.opensource.org/licenses/mit-license.php
 	 */
 	 
-	/** @todo TODO
-			XOrParser
-			SkipperParser
-			FalseParser (always returns FALSE; used for "disabled" skipper)
-			
-			Return tuple(match,length) instead of variadic FALSE/length
-			-> Pass along ParserContext with the skipper in it with each doParse and parse call?
-				-> Externalize or-priority
-			
-			addMismatchListener	
-				-> onMatch(Parser &$parser, &$in, $offset, &$length);
-				-> onMismatch(Parser &$parser, &$in, $offset);
-				-> onBefore(Parser &$parser, &$in, $offset);
-				-> onAfter(Parser &$parser, &$in, $offset, &$length);	// length may be FALSE
-	 */
-	
-	// PHP Base extension
-	//TODO Only used once; refactor inside Parser class
-	if (!function_exists('array_flatten')) {
-		function array_flatten($a, $f = array()){
+	//TODO Directive leftmost/shortest/longest for OrParser.
+	//TODO Directive case-sensitive/insensitive for Char/Text/Range/Set/Preg (all terminals).
+	//TODO Pass along context with directive settings and skipper.
+	//TODO Deprecate separate longest/shortest parser alternatives for composed OrParsers in P class.
+
+	class ParserUtil {
+		private function __construct() {}	// Pure static
+		
+		private static function array_flatten($a, $f = array()){
 			if (!$a || !is_array($a)) {
 				return '';
 			}
 			foreach($a as $k => $v) {
 				if (is_array($v)) {
-					$f = array_flatten($v, $f);
+					$f = self::array_flatten($v, $f);
 				} else {
 					$f[$k] = $v;
 				}
 			}	
 			return $f;
 		}
-	}
-	
-	class ParserUtil {
-		private function __construct() {}	// Pure static
 	
 		public static function getParserArgs($args) {
 			$parsers = array();
-			foreach (array_flatten($args) as $arg) {
+			foreach (self::array_flatten($args) as $arg) {
 				if (($parser = ParserUtil::getParserArg($arg)) !== FALSE) {
 					$parsers[] = $parser;
 				}
@@ -182,6 +167,8 @@
 			$this->char = ParserUtil::getCharArg($char);
 		}
 		protected function doParse($in, $offset) {
+			if (strlen($this->char) <= 0) return FALSE;
+
 			if ($offset >= strlen($in))	return FALSE;
 		
 			if ($in[$offset] == $this->char) {
@@ -199,7 +186,9 @@
 			$this->length = strlen($text);
 		}
 		protected function doParse($in, $offset) {
-			if ($offset + strlen($text) >= strlen($in))	return FALSE;
+			if ($this->length <= 0) return FALSE;
+
+			if ($offset + $this->length > strlen($in))	return FALSE;
 			
 			if (substr($in, $offset, $this->length) == $this->text) {
 				return $this->length; 
@@ -212,14 +201,16 @@
 		private $first	= null;
 		private $last	= null;
 		public function __construct($first, $last) {
-			$this->first	= ord(ParserUtil::getCharArg($first));
-			$this->last		= ord(ParserUtil::getCharArg($last));			
+			$this->first	= empty($first)? null : ord(ParserUtil::getCharArg($first));
+			$this->last		= empty($last)? null : ord(ParserUtil::getCharArg($last));	
 		}
 		protected function doParse($in, $offset) {
+			if ($this->first === null && $this->last === null) return FALSE;
+		
 			if ($offset >= strlen($in)) return FALSE;
 			
 			$ord = ord($in[$offset]);
-			if ($this->first <= $ord && $ord <= $this->last) {
+			if ($this->first <= $ord && ($this->last === null || $ord <= $this->last)) {
 				return 1;
 			}
 			return FALSE;
@@ -400,138 +391,5 @@
 			}
 			return FALSE;
 		}	
-	}	
-	
-	class P {
-		// Directives
-		public static function lexeme(Parser $parser) 	{	return new LexemeParser($parser); }
-		
-		// Terminals
-		public static function any() 					{	return new AnyParser(); }
-		public static function char($char) 				{	return new CharParser($char); }
-		public static function text($text) 				{	return new TextParser($text); }					// token
-		public static function texts() 					{	$texts = array();								// tokens
-															foreach (array_flatten(func_get_args()) as $text) {
-																$texts[] = new TextParser($text);
-															}
-															return new OrParser($texts);
-														}
-		public static function range($first, $last) 	{	return new RangeParser($first, $last); }
-		public static function set($set) 				{	return new SetParser($set); }
-		public static function notset($set) 			{	return new ExceptParser(new AnyParser(), new SetParser($set)); }
-		public static function preg($pattern) 			{	return new PregParser($pattern); }
-		public static function whitespace() 			{	return new PregParser('~\s+~'); }
-		
-		// Multiple	
-		public static function repeat($p, $n, $m)		{	return new RepeatParser($p, $n, $m); }			// multi, multiple
-		public static function exact($p, $n) 			{	return new RepeatParser($p, $n, $n); }			// times
-		public static function kleene($p) 				{	return new RepeatParser($p, 0, null); }			// star
-		public static function plus($p) 				{	return new RepeatParser($p, 1, null); }			// many, more
-		public static function optional($p) 			{	return new RepeatParser($p, 0, 1); }			// opt, one_or_zero
-		
-		// Flow
-		public static function seq() 					{	return new SequenceParser(func_get_args()); }
-		public static function lexseq() 				{	return new LexemeParser(new SequenceParser(func_get_args())); }
-		public static function first() 					{	return new OrParser(func_get_args()); }
-		public static function longest() 				{	return new LongestParser(func_get_args()); }
-		public static function shortest() 				{	return new ShortestParser(func_get_args()); }
-		public static function all() 					{	return new AndParser(func_get_args()); }
-		public static function not() 					{	return new NotParser(func_get_args()); }
-		public static function except($p_a, $p_b) 		{	return new ExceptParser($p_a, $p_b); }
-		
-		// Predefined terminals
-		public static function bin() 					{	return new SetParser('01'); }	
-		public static function oct() 					{	return new SetParser('01234567'); }	
-		public static function dec() 					{	return new SetParser('0123456789'); }	
-		public static function hex() 					{	return new SetParser('0123456789abcdefABCDEF'); }	
-		public static function hex_upper() 				{	return new SetParser('0123456789ABCDEF'); }	
-		public static function hex_lower() 				{	return new SetParser('0123456789abcdef'); }	
-		public static function alpha()					{	return new PregParser('~[[:alpha:]]~'); }	
-		public static function alnum()					{	return new PregParser('~[[:alnum:]]~'); }	
-		public static function printable()				{	return new PregParser('~[[:print:]]~'); }	
-		
-		// reserved keyword aliasses (requires PHP 5.2.3+)
-		public static function __callStatic($method, $args) {
-			switch ($method) {
-				case 'or':		return self::first($args);
-				case 'and':		return self::all($args);
-			}
-			return FALSE;
-		}
 	}
-		
-	// Unittest framework?
-	function test(Parser $p, $text) {
-		if (($length = $p->parse($text)) === FALSE) {			
-			echo '<br/>Failure: '.$text;
-		} else {		
-			echo '<br/>Success: '.$text.': '.$length;
-		}
-	}
-
-	// http://www.w3.org/TR/css3-syntax/
-	
-	// CSS3 productions rules
-	$num		= P::first(P::lexseq(P::kleene(P::dec()), P::char('.'), $integer), P::plus(P::dec()));	// num	::=	[0-9]+ | [0-9]* '.' [0-9]+
-	$nl			= P::texts("\r \n", "\n", "\r", "\f");			// nl	::=	#xA | #xD #xA | #xD | #xC
-	$nonascii 	= P::range(0x80, 0xFF); 						// nonascii	::=	[#x80-#xD7FF#xE000-#xFFFD#x10000-#x10FFFF]	Note: PHP only supports ISO-8859-1 strings
-	$wc			= P::set("\t\n\f\r ");							// wc	::=	#x9 | #xA | #xC | #xD | #x20
-	$w			= P::kleene($wc);								// w	::=	wc*
-	$unicode 	= P::lexseq('\\', P::repeat(P::hex(), 1, 6), P::optional($wc));	// unicode	::=	'\' [0-9a-fA-F]{1,6} wc?
-	$escape		= P::first($unicode, P::lexseq('\\', P::first(P::range(0x20, 0x7E), $nonascii)));	// escape	::=	unicode | '\' [#x20-#x7E#x80-#xD7FF#xE000-#xFFFD#x10000-#x10FFFF]
-	$urlchar	= P::first($escape, P::first(0x09, 0x21, P::range(0x23, 0x26), P::range(0x28, 0x7E)), $nonascii);	// urlchar	::=	[#x9#x21#x23-#x26#x28-#x7E] | nonascii | escape
-	$nmstart	= P::first(P::alpha(), '_', $nonascii, $escape);			// nmstart	::=	[a-zA-Z] | '_' | nonascii | escape
-	$nmchar		= P::first(P::alnum(), '-', '_', $nonascii, $escape);		// nmchar	::=	[a-zA-Z0-9] | '-' | '_' | nonascii | escape
-	$name		= P::plus($nmchar);											// name	::=	nmchar+
-	$ident		= P::lexseq(P::optional('-'), $nmstart, P::kleene($nmchar));	// ident	::=	'-'? nmstart nmchar*
-	$stringchar	= P::first($urlchar, 0x20, P::lexseq('\\', $nl));				// stringchar	::=	urlchar | #x20 | '\' nl
-	$string		= P::first(	P::lexseq('"', P::kleene(P::first($stringchar, "'")), '"')
-						,	P::lexseq("'", P::kleene(P::first($stringchar, '"')), "'"));	// string	::=	'"' (stringchar | "'")* '"' | "'" (stringchar | '"')* "'"
-						
-	// CSS3 tokens
-	$IDENT			= $ident;						// IDENT	::=	ident
-	$ATKEYWORD		= P::lexseq('@', $ident);		// ATKEYWORD	::=	'@' ident
-	$STRING			= $string;						// STRING	::=	string
-	$HASH			= P::lexseq('#', $name);		// HASH	::=	'#' name
-	$NUMBER			= $num;							// NUMBER	::=	num
-	$PERCENTAGE		= P::lexseq($num, '%');			// PERCENTAGE	::=	num '%'
-	$DIMENSION		= P::lexseq($num, $ident);		// DIMENSION	::=	num ident
-	$URI			= P::lexseq('url(', $w, P::first($string, P::kleene($urlchar)), $w, ')');	// URI	::=	"url(" w (string | urlchar* ) w ")"
-	$UNICODE_RANGE	= P::lexseq('U+', P::repeat(P::hex_upper(), 1, 6), P::optional(P::seq('-', P::repeat(P::hex_upper(), 1, 6))));	// UNICODE-RANGE	::=	"U+" [0-9A-F?]{1,6} ('-' [0-9A-F]{1,6})?
-	$CDO			= P::text('<!--');				// CDO	::=	"<!--"
-	$CDC			= P::text('-->');				// CDC	::=	"-->"
-	$S				= P::plus($wc);					// S	::=	wc+
-	$COMMENT		= P::lexseq('/*', P::kleene(P::notset('*')), P::plus('*'), P::kleene(P::seq(P::notset('/'), P::kleene(P::notset('*')), P::plus('*'))), '/');	// COMMENT	::=	"/*" [^*]* '*'+ ([^/] [^*]* '*'+)* "/"
-	$FUNCTION		= P::lexseq($ident, '(');		// FUNCTION	::=	ident '('
-	$INCLUDES		= P::text('~=');				// INCLUDES	::=	"~="
-	$DASHMATCH		= P::text('|=');				// DASHMATCH	::=	"|="
-	//$PREFIXMATCH	= P::text('^=');				// PREFIXMATCH	::=	"^="
-	//$SUFFIXMATCH	= P::text('$=');				// SUFFIXMATCH	::=	"$="
-	//$SUBSTRINGMATCH	= P::text('*=');			// SUBSTRINGMATCH	::=	"*="
-	//$CHAR			= // any other character not matched by the above rules except for " or '	// CHAR	::=	any other character not matched by the above rules, except for " or '
-	//$BOM			= P::lexseq(0xFE, 0xFF);		// BOM	::=	#xFEFF
-	
-	test($COMMENT, '/* ablash/ **** /kf */');
-
-	// CSS Stylesheet grammar
-	$ruleset		= 
-	$block			= P::seq('{', P::kleene($S), P::kleene(P::first($any, $block, P::seq($ATKEYWORD, P::kleene($S)), P::seq(';', , P::kleene($S)))), '}', P::kleene($S));	// block       : '{' S* [ any | block | ATKEYWORD S* | ';' S* ]* '}' S*;
-	$at_rule		= P::seq($ATKEYWORD, P::kleene($S), P::kleene($any), P::first($block, P::seq(';', P::kleene($S))));		// at-rule     : ATKEYWORD S* any* [ block | ';' S* ];
-	$statement		= P::first($ruleset, $at_rule);						// statement   : ruleset | at-rule;
-	$stylesheet		= P::kleene(P::first($CDO, $CDC, $S $statement));	// stylesheet  : [ CDO | CDC | S | statement ]*;
-	
-	/*
-			ruleset     : selector? '{' S* declaration? [ ';' S* declaration? ]* '}' S*;
-			selector    : any+;
-			declaration : property ':' S* value;
-			property    : IDENT S*;
-			value       : [ any | block | ATKEYWORD S* ]+;
-			any         : [ IDENT | NUMBER | PERCENTAGE | DIMENSION | STRING
-						  | DELIM | URI | HASH | UNICODE-RANGE | INCLUDES
-						  | FUNCTION S* any* ')' | DASHMATCH | '(' S* any* ')'
-						  | '[' S* any* ']' ] S*;		
-		
-		
-	*/
-		
 ?>
