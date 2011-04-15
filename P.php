@@ -1,7 +1,17 @@
 <?php
 	class P {
+		// Stub
+		public static function stub()					{	return new StubParser();	}
+	
 		// Directives
-		public static function lexeme(Parser $parser) 	{	return new LexemeParser($parser); }
+		public static function context($skipper = NULL, $case_sensitive = TRUE) 	
+														{	return new ParserContext($skipper, $case_sensitive); }
+		public static function lexeme($parser) 			{	return new LexemeDirective($parser); }
+		public static function case_sensitive($parser) 	{	return new CaseDirective($parser, TRUE); }
+		public static function case_insensitive($parser){	return new CaseDirective($parser, FALSE); }
+		public static function or_mode_first($parser) 	{	return new OrDirective($parser, ContextParser::OR_FIRST); }
+		public static function or_mode_longest($parser) {	return new OrDirective($parser, ContextParser::OR_LONGEST); }
+		public static function or_mode_shortest($parser){	return new OrDirective($parser, ContextParser::OR_SHORTEST); }
 		
 		// Terminals
 		public static function any() 					{	return new AnyParser(); }
@@ -22,16 +32,18 @@
 		// Multiple	
 		public static function repeat($p, $n, $m)		{	return new RepeatParser($p, $n, $m); }			// multi, multiple
 		public static function exact($p, $n) 			{	return new RepeatParser($p, $n, $n); }			// times
-		public static function kleene($p) 				{	return new RepeatParser($p, 0, null); }			// star
-		public static function plus($p) 				{	return new RepeatParser($p, 1, null); }			// many, more
+		public static function kleene($p) 				{	return new RepeatParser($p, 0, NULL); }			// star
+		public static function plus($p) 				{	return new RepeatParser($p, 1, NULL); }			// many, more
 		public static function optional($p) 			{	return new RepeatParser($p, 0, 1); }			// opt, one_or_zero
+		public static function separated($separator, $p){	return new SequenceParser($p, new RepeatParser(new SequenceParser($separator, $p), 0, NULL)); }
 		
 		// Flow
 		public static function seq() 					{	return new SequenceParser(func_get_args()); }
-		public static function lexseq() 				{	return new LexemeParser(new SequenceParser(func_get_args())); }
-		public static function first() 					{	return new OrParser(func_get_args()); }
-		public static function longest() 				{	return new LongestParser(func_get_args()); }
-		public static function shortest() 				{	return new ShortestParser(func_get_args()); }
+		public static function lexseq() 				{	return new LexemeDirective(new SequenceParser(func_get_args())); }
+		public static function choice() 				{	return new OrParser(func_get_args()); }
+		public static function first() 					{	return new OrDirective(new OrParser(func_get_args()), ParserContext::OR_FIRST); }
+		public static function longest() 				{	return new OrDirective(new OrParser(func_get_args()), ParserContext::OR_LONGEST); }
+		public static function shortest() 				{	return new OrDirective(new OrParser(func_get_args()), ParserContext::OR_SHORTEST); }
 		public static function all() 					{	return new AndParser(func_get_args()); }
 		public static function not() 					{	return new NotParser(func_get_args()); }
 		public static function except($p_a, $p_b) 		{	return new ExceptParser($p_a, $p_b); }

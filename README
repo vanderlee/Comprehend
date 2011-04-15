@@ -1,3 +1,5 @@
+Simple PHP Object-Oriented Parser framework
+
 XOrParser
 SkipperParser
 FalseParser (always returns FALSE; used for "disabled" skipper)
