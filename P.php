@@ -9,9 +9,9 @@
 		public static function lexeme($parser) 			{	return new LexemeDirective($parser); }
 		public static function case_sensitive($parser) 	{	return new CaseDirective($parser, TRUE); }
 		public static function case_insensitive($parser){	return new CaseDirective($parser, FALSE); }
-		public static function or_mode_first($parser) 	{	return new OrDirective($parser, ContextParser::OR_FIRST); }
-		public static function or_mode_longest($parser) {	return new OrDirective($parser, ContextParser::OR_LONGEST); }
-		public static function or_mode_shortest($parser){	return new OrDirective($parser, ContextParser::OR_SHORTEST); }
+		public static function or_mode_first($parser) 	{	return new OrDirective($parser, ParserContext::OR_FIRST); }
+		public static function or_mode_longest($parser) {	return new OrDirective($parser, ParserContext::OR_LONGEST); }
+		public static function or_mode_shortest($parser){	return new OrDirective($parser, ParserContext::OR_SHORTEST); }
 		
 		// Terminals
 		public static function any() 					{	return new AnyParser(); }

@@ -3,7 +3,7 @@
 	/**
 	 * phpOOParser
 	 * LALR(1) grammar parser framework, ISO-8895-1 support only due to PHP limitations on native string format.
-	 * @version 0.0.1
+	 * @version 0.0.2
 	 * @author Martijn W. van der Lee (martijn-at-vanderlee-dot-com)
 	 * @copyright Copyright (c) 2011, Martijn W. van der Lee
 	 * @license http://www.opensource.org/licenses/mit-license.php
@@ -201,7 +201,7 @@
 			
 			// onAfter
 			foreach ((array)$this->after_listeners as $after_listener) {
-				call_user_func_array($after_listener, array(&$this, &$in, $offset, $match->length));
+				call_user_func_array($after_listener, array(&$this, &$in, $offset, $match->length, $match->match));
 			}
 			
 			return $match;			
@@ -515,7 +515,7 @@
 						}
 						$max = max($max, $match->length);
 					}
-					return new ParserMatch(FALSE, $max);
+					return new ParserMatch(FALSE, $max);				
 				break;
 				
 				case ParserContext::OR_LONGEST:

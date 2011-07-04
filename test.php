@@ -296,6 +296,35 @@
 			testParserContext(P::preg('~[A-Z]+~'), 'abc', $nc, TRUE, 3);
 			testParserContext(P::preg('~[A-Z]+~'), 'ABC', $nc, TRUE, 3);
 
+		// OrDirective
+			$c = P::choice('ab', 'a', 'abc');
+			// Default (first);
+				testParser($c, 'a', TRUE, 1);
+				testParser($c, 'ab', TRUE, 2);
+				testParser($c, 'abc', TRUE, 2);
+				testParser($c, 'zabc', FALSE, 0);			
+			// First
+				$p = P::or_mode_first($c);
+				test(get_class($p), 'OrDirective');
+				testParser($p, 'a', TRUE, 1);
+				testParser($p, 'ab', TRUE, 2);
+				testParser($p, 'abc', TRUE, 2);
+				testParser($p, 'zabc', FALSE, 0);
+			// Longest
+				$p = P::or_mode_longest($c);
+				test(get_class($p), 'OrDirective');
+				testParser($p, 'a', TRUE, 1);
+				testParser($p, 'ab', TRUE, 2);
+				testParser($p, 'abc', TRUE, 3);
+				testParser($p, 'zabc', FALSE, 0);
+			// Shortest
+				$p = P::or_mode_shortest($c);
+				test(get_class($p), 'OrDirective');
+				testParser($p, 'a', TRUE, 1);
+				testParser($p, 'ab', TRUE, 1);
+				testParser($p, 'abc', TRUE, 1);
+				testParser($p, 'zabc', FALSE, 0);
+				
 	// Tokens
 		$a = P::char('a')->token('A-TOKEN');
 		$b = P::text('b')->token('B-TOKEN');
@@ -305,8 +334,6 @@
 		test(count(P::seq($a, $b, $c)->token('BNF-TOKEN')->parse('abcC')->tokens), 1); 
 		test(count(P::choice($a, $b, $c)->parse('abc')->tokens), 1); 
 		test(count(P::choice($a, $b, $c)->parse('ddd')->tokens), 0);
-		//TODO Longest
-		//TODO Shortest
 		test(count(P::repeat($a, 1, 3)->parse('aaaa')->tokens), 3); 
 		test(count(P::repeat($a, 1, 4)->parse('aaaa')->tokens), 4); 
 		test(count(P::repeat($a, 1, 5)->parse('aaaa')->tokens), 4); 
@@ -314,16 +341,69 @@
 		//TODO Not (can only return own token, with length 0)
 		//TODO Except (return matching (first) tokenset)
 		
-		/* TODO
-		Listeners (4x)
-		
-		arr
-		
-		
-		directives
-			first/longest/shortest
-		*/
-		
+	// Listeners
+		class TestListener {
+			public $args = array();
+			public function listener() {
+				$this->args = func_get_args();
+			}
+			public function reset() {
+				$this->args = array();
+			}
+		}
+		$listener = new TestListener();
+
+		// onBefore
+			$listener->reset();
+			P::text('a')->onBefore(array($listener, 'listener'))->parse('abc');
+			test(count($listener->args), 3);
+			test($listener->args[1], 'abc');
+			test($listener->args[2], 0);
+
+		// onMatch - match
+			$listener->reset();
+			P::text('a')->onMatch(array($listener, 'listener'))->parse('abc');
+			test(count($listener->args), 4);
+			test($listener->args[1], 'abc');
+			test($listener->args[2], 0);
+			test($listener->args[3], 1);
+			
+		// onMatch - mismatch
+			$listener->reset();
+			P::text('az')->onMatch(array($listener, 'listener'))->parse('abc');
+			test(count($listener->args), 0);
+			
+		// onMismatch - match
+			$listener->reset();
+			P::text('a')->onMismatch(array($listener, 'listener'))->parse('abc');
+			test(count($listener->args), 0);
+			
+		// onMismatch - mismatch
+			$listener->reset();
+			P::text('az')->onMismatch(array($listener, 'listener'))->parse('abc');
+			test(count($listener->args), 4);
+			test($listener->args[1], 'abc');
+			test($listener->args[2], 0);
+			test($listener->args[3], 1);			
+			
+		// onAfter - match
+			$listener->reset();
+			P::text('a')->onAfter(array($listener, 'listener'))->parse('abc');
+			test(count($listener->args), 5);
+			test($listener->args[1], 'abc');
+			test($listener->args[2], 0);
+			test($listener->args[3], 1);
+			test($listener->args[4], TRUE);
+			
+		// onAfter - mismatch
+			$listener->reset();
+			P::text('az')->onAfter(array($listener, 'listener'))->parse('abc');
+			test(count($listener->args), 5);
+			test($listener->args[1], 'abc');
+			test($listener->args[2], 0);
+			test($listener->args[3], 1);
+			test($listener->args[4], FALSE);
+			
 		UnitTest::report();
 
 ?>
