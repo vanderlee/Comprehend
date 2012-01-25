@@ -1,23 +1,23 @@
 <?php
 
-	header('Content-Type: text/html; charset=utf-8'); 
+	header('Content-Type: text/html; charset=utf-8');
 
 	require_once(dirname(__FILE__).'/Parser.php');
 	require_once(dirname(__FILE__).'/P.php');
 	require_once(dirname(__FILE__).'/UnitTest.php');
-	
+
 	//---------------------------------------------------------------------------------------------
-	
-	// Core 
+
+	// Core
 		// ParserMatch
 			$success = new ParserMatch(TRUE, 123);
 			test($success->match, TRUE);
 			test($success->length, 123);
-			
+
 			$failure = new ParserMatch(FALSE, 321);
 			test($failure->match, FALSE);
 			test($failure->length, 321);
-			
+
 		// ParserUtil
 			// getCharArg
 				test(ParserUtil::getCharArg(''), FALSE);
@@ -37,7 +37,7 @@
 				test(get_class($args[0]), 'CharParser');
 				test(get_class($args[1]), 'TextParser');
 				test(get_class($args[2]), 'AnyParser');
-	
+
 		// ParserContext
 			test(get_class(P::context('_')), 'ParserContext');
 			test(P::context('_')->skip('___', 0), 1);
@@ -48,13 +48,19 @@
 			test(P::context(P::plus('_'))->skip('a_b', 2), 0);
 			test(P::context(P::plus('_'))->skip('a_b', 3), 0);
 			test(P::context(P::whitespace())->skip(" \t\n\r", 0), 4);
-	
-	// Terminals	
+
+	// Chaining
+		$p2 = P::char('a')->plus('b');
+		//$p2 = P::char('a')->plus('b')->;
+		testParser($p2, 'abb', TRUE, 3);
+
+
+	// Terminals
 		// AnyParser
 			test(get_class(P::any()), 'AnyParser');
 			testParser(P::any(), 'aa', TRUE, 1);
 			testParser(P::any(), '', FALSE, 0);
-			
+
 		// CharParser
 			test(get_class(P::char('a')), 'CharParser');
 			testParser(P::char(''), '', FALSE, Parser::INVALID_ARGUMENTS);
@@ -66,19 +72,19 @@
 			testParser(P::char('a'), 'b', FALSE, 0);
 			testParser(P::char('a'), '', FALSE, 0);
 			testParser(P::char('a'), 'aa', TRUE, 1);
-			
+
 		// TextParser
 			test(get_class(P::text('foo')), 'TextParser');
 			testParser(P::text(''), '', FALSE, Parser::INVALID_ARGUMENTS);		// invalid input!
 			testParser(P::text(''), 'foo', FALSE, Parser::INVALID_ARGUMENTS);	// invalid input!
-			testParser(P::text('foo'), 'foo', TRUE, 3);		
-			testParser(P::text('FOO'), 'foo', FALSE, 0);		
+			testParser(P::text('foo'), 'foo', TRUE, 3);
+			testParser(P::text('FOO'), 'foo', FALSE, 0);
 			testParser(P::text('foo'), 'FOO', FALSE, 0);
 			testParser(P::text('foo'), 'foobar', TRUE, 3);
 			testParser(P::text('foobar'), 'foobar', TRUE, 6);
 			testParser(P::text('foobars'), 'foobar', FALSE, 6);
 			testParser(P::text('bar'), 'foobar', FALSE, 0);
-			
+
 		// RangeParser
 			test(get_class(P::range('a', 'z')), 'RangeParser');
 			testParser(P::range('', ''), '', FALSE, Parser::INVALID_ARGUMENTS);		// invalid input!
@@ -89,7 +95,7 @@
 			testParser(P::range('a', ''), 'foo', TRUE, 1);
 			testParser(P::range('a', 'z'), 'foo', TRUE, 1);
 			testParser(P::range('A', 'Z'), 'foo', FALSE, 0);
-		
+
 		// SetParser
 			test(get_class(P::set('az')), 'SetParser');
 			testParser(P::set(''), '', FALSE, Parser::INVALID_ARGUMENTS);		// invalid input!
@@ -102,19 +108,19 @@
 			testParser(P::set('abc'), 'a', TRUE, 1);
 			testParser(P::set('abc'), 'b', TRUE, 1);
 			testParser(P::set('abc'), 'c', TRUE, 1);
-		
+
 		// PregParser
 			/**
 			 * @todo Invalid regular expressions cause warnings; unittest command to test for warnings needed
 			 * or surpress warnings and return INVALID_ARGUMENTS error?
-			 */				
+			 */
 			test(get_class(P::preg('~[a-f]~i')), 'PregParser');
 			testParser(P::preg('~[a-f]+~i'), 'abc', TRUE, 3);
 			testParser(P::preg('~[a-f]+~i'), 'abcz', TRUE, 3);
 			testParser(P::preg('~[a-f]+~i'), 'zabc', FALSE, 0);
 			testParser(P::preg('~[a-f]+~i'), 'AbC', TRUE, 3);
 				// enough preg testing, we don't need to test the actual preg, just the special processing
-		
+
 	// Multiple
 		// RepeatParser
 			test(get_class(P::repeat('a', 2, 4)), 'RepeatParser');
@@ -144,7 +150,7 @@
 			testParser(P::repeat('ab', 2, 2), 'ab', FALSE, 2);
 			testParser(P::repeat('ab', 2, 2), 'abab', TRUE, 4);
 			testParser(P::repeat('ab', 2, 2), 'ababab', TRUE, 4);
-	
+
 	// Flow
 		// SequenceParser
 			test(get_class(P::seq('a', 'b')), 'SequenceParser');
@@ -156,10 +162,10 @@
 			testParser(P::seq('a', 'b'), 'ab', TRUE, 2);
 			testParser(P::seq('a', 'b'), 'ba', FALSE, 0);
 			testParser(P::seq('a', 'b'), 'aa', FALSE, 1);
-	
+
 		// OrParser
 			test(get_class(P::choice('a', 'b')), 'OrParser');
-			
+
 		// FirstParser
 			test(get_class(P::first('a', 'b')), 'OrDirective');
 			testParser(P::first(), '', FALSE, Parser::INVALID_ARGUMENTS);
@@ -173,7 +179,7 @@
 			testParser(P::first('a', 'ab'), 'ab', TRUE, 1);
 			testParser(P::first('ab', 'a'), 'ab', TRUE, 2);
 			testParser(P::first('abc', 'aaa'), 'ab', FALSE, 2);
-			
+
 		// LongestParser
 			test(get_class(P::longest('a', 'b')), 'OrDirective');
 			testParser(P::longest(), '', FALSE, Parser::INVALID_ARGUMENTS);
@@ -182,7 +188,7 @@
 			testParser(P::longest('a', 'ab'), 'aa', TRUE, 1);
 			testParser(P::longest('a', 'ab'), 'ab', TRUE, 2);
 			testParser(P::longest('a', 'aa'), 'aa', TRUE, 2);
-			
+
 		// ShortestParser
 			test(get_class(P::shortest('a', 'b')), 'OrDirective');
 			testParser(P::shortest(), '', FALSE, Parser::INVALID_ARGUMENTS);
@@ -192,7 +198,7 @@
 			testParser(P::shortest('a', 'ab'), 'ab', TRUE, 1);
 			testParser(P::shortest('a', 'aa'), 'aa', TRUE, 1);
 			testParser(P::shortest('aa', 'a'), 'aa', TRUE, 1);
-			
+
 		// AndParser
 			test(get_class(P::all('a', 'a')), 'AndParser');
 			testParser(P::all(), '', FALSE, Parser::INVALID_ARGUMENTS);
@@ -202,41 +208,41 @@
 			testParser(P::all('a', 'b'), 'a', FALSE, 0);
 			testParser(P::all('a', 'aa'), 'aa', TRUE, 1);
 			testParser(P::all('aa', 'a'), 'aa', TRUE, 1);
-		
+
 		// NotParser
 			test(get_class(P::not('a')), 'NotParser');
 			testParser(P::not('a'), '', TRUE, 0);
 			testParser(P::not('a'), 'a', FALSE, 1);
-		
+
 		// ExceptParser
 			test(get_class(P::except('a', 'aa')), 'ExceptParser');
 			testParser(P::except('a', 'aa'), '', FALSE, 0);
 			testParser(P::except('a', 'aa'), 'a', TRUE, 1);
 			testParser(P::except('a', 'aa'), 'aa', FALSE, 1);
-			
+
 	// Directives
 		// LexemeParser
 			test(get_class(P::lexeme('a')), 'LexemeDirective');
-			
+
 		// LexemeParser - lexseq
 			test(get_class(P::lexseq('a', 'b')), 'LexemeDirective');
-			$ws = P::context(P::whitespace());		
+			$ws = P::context(P::whitespace());
 			testParserContext(P::seq('a', 'b'), 'ab', $ws, TRUE, 2);
 			testParserContext(P::seq('a', 'b'), 'a b', $ws, TRUE, 3);
 			testParserContext(P::seq('a', 'b'), ' a b ', $ws, TRUE, 4);
 			testParserContext(P::lexseq('a', 'b'), 'ab', $ws, TRUE, 2);
 			testParserContext(P::lexseq('a', 'b'), 'a b', $ws, FALSE, 1);
 			testParserContext(P::lexseq('a', 'b'), ' a b ', $ws, FALSE, 0);
-			
+
 		// LexemeParser - lexeme-repeat
-			$ws = P::context(P::whitespace());		
+			$ws = P::context(P::whitespace());
 			testParserContext(P::plus('a'), 'aa', $ws, TRUE, 2);
 			testParserContext(P::plus('a'), 'a a', $ws, TRUE, 3);
 			testParserContext(P::plus('a'), ' a a ', $ws, TRUE, 4);
 			testParserContext(P::lexeme(P::plus('a')), 'aa', $ws, TRUE, 2);
 			testParserContext(P::lexeme(P::plus('a')), 'a a', $ws, TRUE, 1);
 			testParserContext(P::lexeme(P::plus('a')), ' a a ', $ws, FALSE, 0);
-		
+
 		// CaseDirective
 			$p = P::seq('a', P::case_insensitive('b'), 'c');
 			testParser($p, 'abc', TRUE, 3);
@@ -247,7 +253,7 @@
 			testParser($p, 'AbC', FALSE, 0);
 			testParser($p, 'ABc', FALSE, 0);
 			testParser($p, 'ABC', FALSE, 0);
-			
+
 		// Case handling for all terminals
 			$c = P::context(null, TRUE);
 			$nc = P::context(null, FALSE);
@@ -259,7 +265,7 @@
 			testParserContext(P::char('a'), 'A', $nc, TRUE, 1);
 			testParserContext(P::char('A'), 'a', $nc, TRUE, 1);
 			testParserContext(P::char('A'), 'A', $nc, TRUE, 1);
-			
+
 			testParserContext(P::text('abc'), 'abc', $c, TRUE, 3);
 			testParserContext(P::text('abc'), 'ABC', $c, FALSE, 0);
 			testParserContext(P::text('ABC'), 'abc', $c, FALSE, 0);
@@ -268,7 +274,7 @@
 			testParserContext(P::text('abc'), 'ABC', $nc, TRUE, 3);
 			testParserContext(P::text('ABC'), 'abc', $nc, TRUE, 3);
 			testParserContext(P::text('ABC'), 'ABC', $nc, TRUE, 3);
-			
+
 			testParserContext(P::range('a', 'z'), 't', $c, TRUE, 1);
 			testParserContext(P::range('a', 'z'), 'T', $c, FALSE, 0);
 			testParserContext(P::range('A', 'Z'), 't', $c, FALSE, 0);
@@ -277,11 +283,11 @@
 			testParserContext(P::range('a', 'z'), 'T', $nc, TRUE, 1);
 			testParserContext(P::range('A', 'Z'), 't', $nc, TRUE, 1);
 			testParserContext(P::range('A', 'Z'), 'T', $nc, TRUE, 1);
-			
+
 			testParserContext(P::set('abc'), 'ab', $c, TRUE, 1);
 			testParserContext(P::set('abc'), 'AB', $c, FALSE, 0);
 			testParserContext(P::set('ABC'), 'ab', $c, FALSE, 0);
-			testParserContext(P::set('ABC'), 'AB', $c, TRUE, 1);			
+			testParserContext(P::set('ABC'), 'AB', $c, TRUE, 1);
 			testParserContext(P::set('abc'), 'ab', $nc, TRUE, 1);
 			testParserContext(P::set('abc'), 'AB', $nc, TRUE, 1);
 			testParserContext(P::set('ABC'), 'ab', $nc, TRUE, 1);
@@ -302,7 +308,7 @@
 				testParser($c, 'a', TRUE, 1);
 				testParser($c, 'ab', TRUE, 2);
 				testParser($c, 'abc', TRUE, 2);
-				testParser($c, 'zabc', FALSE, 0);			
+				testParser($c, 'zabc', FALSE, 0);
 			// First
 				$p = P::or_mode_first($c);
 				test(get_class($p), 'OrDirective');
@@ -324,23 +330,23 @@
 				testParser($p, 'ab', TRUE, 1);
 				testParser($p, 'abc', TRUE, 1);
 				testParser($p, 'zabc', FALSE, 0);
-				
+
 	// Tokens
 		$a = P::char('a')->token('A-TOKEN');
 		$b = P::text('b')->token('B-TOKEN');
 		$c = P::set('cC')->token('C-TOKEN');
-		
-		test(count(P::seq($a, $b, $c)->parse('abcC')->tokens), 3); 
-		test(count(P::seq($a, $b, $c)->token('BNF-TOKEN')->parse('abcC')->tokens), 1); 
-		test(count(P::choice($a, $b, $c)->parse('abc')->tokens), 1); 
+
+		test(count(P::seq($a, $b, $c)->parse('abcC')->tokens), 3);
+		test(count(P::seq($a, $b, $c)->token('BNF-TOKEN')->parse('abcC')->tokens), 1);
+		test(count(P::choice($a, $b, $c)->parse('abc')->tokens), 1);
 		test(count(P::choice($a, $b, $c)->parse('ddd')->tokens), 0);
-		test(count(P::repeat($a, 1, 3)->parse('aaaa')->tokens), 3); 
-		test(count(P::repeat($a, 1, 4)->parse('aaaa')->tokens), 4); 
-		test(count(P::repeat($a, 1, 5)->parse('aaaa')->tokens), 4); 
+		test(count(P::repeat($a, 1, 3)->parse('aaaa')->tokens), 3);
+		test(count(P::repeat($a, 1, 4)->parse('aaaa')->tokens), 4);
+		test(count(P::repeat($a, 1, 5)->parse('aaaa')->tokens), 4);
 		//TODO And (return first tokenset)
 		//TODO Not (can only return own token, with length 0)
 		//TODO Except (return matching (first) tokenset)
-		
+
 	// Listeners
 		class TestListener {
 			public $args = array();
@@ -367,25 +373,25 @@
 			test($listener->args[1], 'abc');
 			test($listener->args[2], 0);
 			test($listener->args[3], 1);
-			
+
 		// onMatch - mismatch
 			$listener->reset();
 			P::text('az')->onMatch(array($listener, 'listener'))->parse('abc');
 			test(count($listener->args), 0);
-			
+
 		// onMismatch - match
 			$listener->reset();
 			P::text('a')->onMismatch(array($listener, 'listener'))->parse('abc');
 			test(count($listener->args), 0);
-			
+
 		// onMismatch - mismatch
 			$listener->reset();
 			P::text('az')->onMismatch(array($listener, 'listener'))->parse('abc');
 			test(count($listener->args), 4);
 			test($listener->args[1], 'abc');
 			test($listener->args[2], 0);
-			test($listener->args[3], 1);			
-			
+			test($listener->args[3], 1);
+
 		// onAfter - match
 			$listener->reset();
 			P::text('a')->onAfter(array($listener, 'listener'))->parse('abc');
@@ -394,7 +400,7 @@
 			test($listener->args[2], 0);
 			test($listener->args[3], 1);
 			test($listener->args[4], TRUE);
-			
+
 		// onAfter - mismatch
 			$listener->reset();
 			P::text('az')->onAfter(array($listener, 'listener'))->parse('abc');
@@ -403,7 +409,7 @@
 			test($listener->args[2], 0);
 			test($listener->args[3], 1);
 			test($listener->args[4], FALSE);
-			
+
 		UnitTest::report();
 
 ?>
