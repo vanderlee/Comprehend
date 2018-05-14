@@ -2,37 +2,40 @@
 
 	header('Content-Type: text/html; charset=utf-8');
 
-	require_once(dirname(__FILE__).'/Parser.php');
+	require_once(dirname(__FILE__).'/src/autoloader.php');
 	require_once(dirname(__FILE__).'/P.php');
 	require_once(dirname(__FILE__).'/UnitTest.php');
+	
+	use vanderlee\comprehension\core\Match;
+	use vanderlee\comprehension\core\Util;
 
 	//---------------------------------------------------------------------------------------------
 
 	// Core
 		// ParserMatch
-			$success = new ParserMatch(TRUE, 123);
+			$success = new Match(TRUE, 123);
 			test($success->match, TRUE);
 			test($success->length, 123);
 
-			$failure = new ParserMatch(FALSE, 321);
+			$failure = new Match(FALSE, 321);
 			test($failure->match, FALSE);
 			test($failure->length, 321);
 
 		// ParserUtil
 			// getCharArg
-				test(ParserUtil::getCharArg(''), FALSE);
-				test(ParserUtil::getCharArg('a'), 'a');
-				test(ParserUtil::getCharArg(ord('a')), 'a');
+				test(Util::getCharArg(''), FALSE);
+				test(Util::getCharArg('a'), 'a');
+				test(Util::getCharArg(ord('a')), 'a');
 			// getParserArg
-				test(ParserUtil::getParserArg(''), FALSE);
-				test(get_class(ParserUtil::getParserArg('a')), 'CharParser');
-				test(get_class(ParserUtil::getParserArg('aa')), 'TextParser');
-				test(get_class(ParserUtil::getParserArg(P::any())), 'AnyParser');
+				test(Util::getArgument(''), FALSE);
+				test(get_class(Util::getArgument('a')), 'CharParser');
+				test(get_class(Util::getArgument('aa')), 'TextParser');
+				test(get_class(Util::getArgument(P::any())), 'AnyParser');
 			// getParserArgs
-				test(ParserUtil::getParserArgs(), FALSE);
-				test(ParserUtil::getParserArgs(''), FALSE);
-				test(ParserUtil::getParserArgs('a', ''), FALSE);
-				$args = ParserUtil::getParserArgs('a', 'aa', P::any());
+				test(Util::getArguments(), FALSE);
+				test(Util::getArguments(''), FALSE);
+				test(Util::getArguments('a', ''), FALSE);
+				$args = Util::getArguments('a', 'aa', P::any());
 				test(count($args), 3);
 				test(get_class($args[0]), 'CharParser');
 				test(get_class($args[1]), 'TextParser');
@@ -56,59 +59,6 @@
 
 
 	// Terminals
-		// AnyParser
-			test(get_class(P::any()), 'AnyParser');
-			testParser(P::any(), 'aa', TRUE, 1);
-			testParser(P::any(), '', FALSE, 0);
-
-		// CharParser
-			test(get_class(P::char('a')), 'CharParser');
-			testParser(P::char(''), '', FALSE, Parser::INVALID_ARGUMENTS);
-			testParser(P::char(''), 'a', FALSE, Parser::INVALID_ARGUMENTS);
-			testParser(P::char('aa'), 'a', FALSE, Parser::INVALID_ARGUMENTS);
-			testParser(P::char('a'), 'a', TRUE, 1);
-			testParser(P::char('A'), 'a', FALSE, 0);
-			testParser(P::char('a'), 'A', FALSE, 0);
-			testParser(P::char('a'), 'b', FALSE, 0);
-			testParser(P::char('a'), '', FALSE, 0);
-			testParser(P::char('a'), 'aa', TRUE, 1);
-
-		// TextParser
-			test(get_class(P::text('foo')), 'TextParser');
-			testParser(P::text(''), '', FALSE, Parser::INVALID_ARGUMENTS);		// invalid input!
-			testParser(P::text(''), 'foo', FALSE, Parser::INVALID_ARGUMENTS);	// invalid input!
-			testParser(P::text('foo'), 'foo', TRUE, 3);
-			testParser(P::text('FOO'), 'foo', FALSE, 0);
-			testParser(P::text('foo'), 'FOO', FALSE, 0);
-			testParser(P::text('foo'), 'foobar', TRUE, 3);
-			testParser(P::text('foobar'), 'foobar', TRUE, 6);
-			testParser(P::text('foobars'), 'foobar', FALSE, 6);
-			testParser(P::text('bar'), 'foobar', FALSE, 0);
-
-		// RangeParser
-			test(get_class(P::range('a', 'z')), 'RangeParser');
-			testParser(P::range('', ''), '', FALSE, Parser::INVALID_ARGUMENTS);		// invalid input!
-			testParser(P::range('', ''), 'a', FALSE, Parser::INVALID_ARGUMENTS);	// invalid input!
-			testParser(P::range(null, 'z'), 'foo', TRUE, 1);
-			testParser(P::range('a', null), 'foo', TRUE, 1);
-			testParser(P::range('', 'z'), 'foo', TRUE, 1);
-			testParser(P::range('a', ''), 'foo', TRUE, 1);
-			testParser(P::range('a', 'z'), 'foo', TRUE, 1);
-			testParser(P::range('A', 'Z'), 'foo', FALSE, 0);
-
-		// SetParser
-			test(get_class(P::set('az')), 'SetParser');
-			testParser(P::set(''), '', FALSE, Parser::INVALID_ARGUMENTS);		// invalid input!
-			testParser(P::set(''), 'abc', FALSE, Parser::INVALID_ARGUMENTS);	// invalid input!
-			testParser(P::set('a'), 'abc', TRUE, 1);
-			testParser(P::set('b'), 'abc', FALSE, 0);
-			testParser(P::set('az'), 'abc', TRUE, 1);
-			testParser(P::set('az'), 'b', FALSE, 0);
-			testParser(P::set('az'), 'z', TRUE, 1);
-			testParser(P::set('abc'), 'a', TRUE, 1);
-			testParser(P::set('abc'), 'b', TRUE, 1);
-			testParser(P::set('abc'), 'c', TRUE, 1);
-
 		// PregParser
 			/**
 			 * @todo Invalid regular expressions cause warnings; unittest command to test for warnings needed
