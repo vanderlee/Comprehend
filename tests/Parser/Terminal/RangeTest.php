@@ -3,8 +3,8 @@
 use \vanderlee\comprehension\parser\terminal\Range;
 
 /**
- * @group terminals
- * @group parsers
+ * @group terminal
+ * @group parser
  */
 class RangeTest extends PHPUnit\Framework\TestCase {
 

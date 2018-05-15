@@ -4,13 +4,16 @@ namespace vanderlee\comprehension\parser;
 
 use \vanderlee\comprehension\core\Context;
 use \vanderlee\comprehension\core\Match;
-use vanderlee\comprehension\traits\Assign;
+use \vanderlee\comprehension\traits\Assign;
+use \vanderlee\comprehension\parser\terminal\Char;
+use \vanderlee\comprehension\parser\terminal\Text;
 
 abstract class AbstractParser {
 
 	const INVALID_ARGUMENTS = PHP_INT_MIN;
 
-	protected static function parseCharacter($character) {
+	protected static function parseCharacter($character)
+	{
 		if (empty($character)) {
 			throw new \Exception('Empty argument');
 		}
@@ -20,10 +23,10 @@ abstract class AbstractParser {
 		} elseif (mb_strlen($character) > 1) {
 			throw new \Exception('Non-character argument');
 		}
-		
+
 		return $character;
 	}
-	
+
 	/**
 	 * @return \vanderlee\comprehension\core\Match;
 	 */
@@ -39,7 +42,7 @@ abstract class AbstractParser {
 		if ($offset < 0) {
 			throw new \Exception("Negative offset");
 		}
-		
+
 		$match = $this->doParse($in, $offset, new Context());
 
 		$match->resolve();
@@ -56,7 +59,7 @@ abstract class AbstractParser {
 	 * @param Match[] $child_matches
 	 * @return Match
 	 */
-	protected function createMismatch(string &$in = '', int $offset = 0, int $length = 0, &$child_matches = [])
+	protected function createMismatch(string &$in, int $offset, int $length = 0, &$child_matches = [])
 	{
 		return new Match(false, $length);
 	}
@@ -74,8 +77,8 @@ abstract class AbstractParser {
 	{
 		$callbacks = $this->callbacks;
 		$names = $this->names;
-		
-		$child_matches = is_array($child_matches) ? $child_matches : [ $child_matches ];
+
+		$child_matches = is_array($child_matches) ? $child_matches : [$child_matches];
 
 		return (new Match(true, $length, $child_matches))
 						->callback(function(&$results) use($in, $offset, $length, $callbacks, $names) {

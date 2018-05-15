@@ -6,7 +6,7 @@
  * and open the template in the editor.
  */
 
-namespace vanderlee\comprehension\parser;
+namespace vanderlee\comprehension\parser\structure;
 
 /**
  * Description of NotParser

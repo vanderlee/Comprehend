@@ -3,8 +3,8 @@
 use \vanderlee\comprehension\parser\terminal\Char;
 
 /**
- * @group terminals
- * @group parsers
+ * @group terminal
+ * @group parser
  */
 class CharTest extends PHPUnit\Framework\TestCase {
 

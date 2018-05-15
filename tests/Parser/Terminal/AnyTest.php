@@ -3,8 +3,8 @@
 use \vanderlee\comprehension\parser\terminal\Any;
 
 /**
- * @group terminals
- * @group parsers
+ * @group terminal
+ * @group parser
  */
 class AnyTest extends PHPUnit\Framework\TestCase {
 

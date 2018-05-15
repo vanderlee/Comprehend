@@ -5,8 +5,8 @@ use \vanderlee\comprehension\parser\terminal\Text;
 class TextTest extends PHPUnit\Framework\TestCase {
 
 	/**
-	 * @group terminals
-	 * @group parsers
+	 * @group terminal
+	 * @group parser
 	 * @covers Text
 	 * @dataProvider textData
 	 */

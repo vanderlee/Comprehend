@@ -52,25 +52,6 @@
 			test(P::context(P::plus('_'))->skip('a_b', 3), 0);
 			test(P::context(P::whitespace())->skip(" \t\n\r", 0), 4);
 
-	// Chaining
-		$p2 = P::char('a')->plus('b');
-		//$p2 = P::char('a')->plus('b')->;
-		testParser($p2, 'abb', TRUE, 3);
-
-
-	// Terminals
-		// PregParser
-			/**
-			 * @todo Invalid regular expressions cause warnings; unittest command to test for warnings needed
-			 * or surpress warnings and return INVALID_ARGUMENTS error?
-			 */
-			test(get_class(P::preg('~[a-f]~i')), 'PregParser');
-			testParser(P::preg('~[a-f]+~i'), 'abc', TRUE, 3);
-			testParser(P::preg('~[a-f]+~i'), 'abcz', TRUE, 3);
-			testParser(P::preg('~[a-f]+~i'), 'zabc', FALSE, 0);
-			testParser(P::preg('~[a-f]+~i'), 'AbC', TRUE, 3);
-				// enough preg testing, we don't need to test the actual preg, just the special processing
-
 	// Multiple
 		// RepeatParser
 			test(get_class(P::repeat('a', 2, 4)), 'RepeatParser');
@@ -102,16 +83,6 @@
 			testParser(P::repeat('ab', 2, 2), 'ababab', TRUE, 4);
 
 	// Flow
-		// SequenceParser
-			test(get_class(P::seq('a', 'b')), 'SequenceParser');
-			testParser(P::seq(), '', FALSE, Parser::INVALID_ARGUMENTS);
-			testParser(P::seq('a'), '', FALSE, 0);
-			testParser(P::seq('a'), 'a', TRUE, 1);
-			testParser(P::seq('a'), 'aa', TRUE, 1);
-			testParser(P::seq('a'), 'b', FALSE, 0);
-			testParser(P::seq('a', 'b'), 'ab', TRUE, 2);
-			testParser(P::seq('a', 'b'), 'ba', FALSE, 0);
-			testParser(P::seq('a', 'b'), 'aa', FALSE, 1);
 
 		// OrParser
 			test(get_class(P::choice('a', 'b')), 'OrParser');

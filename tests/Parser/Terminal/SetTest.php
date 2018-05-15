@@ -3,8 +3,8 @@
 use \vanderlee\comprehension\parser\terminal\Set;
 
 /**
- * @group terminals
- * @group parsers
+ * @group terminal
+ * @group parser
  */
 class SetTest extends PHPUnit\Framework\TestCase {
 

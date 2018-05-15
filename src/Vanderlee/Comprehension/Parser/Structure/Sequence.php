@@ -6,12 +6,11 @@
  * and open the template in the editor.
  */
 
-namespace vanderlee\comprehension\parser;
+namespace vanderlee\comprehension\parser\structure;
 
-use vanderlee\comprehension\parser\AbstractParser;
-use vanderlee\comprehension\core\Match;
-use vanderlee\comprehension\core\Context;
-use vanderlee\comprehension\core\Util;
+use \vanderlee\comprehension\parser\AbstractParser;
+use \vanderlee\comprehension\core\Context;
+use \vanderlee\comprehension\parser\terminal\Char;
 
 /**
  * Description of SequenceParser
@@ -27,12 +26,12 @@ class Sequence extends AbstractParser {
 		$this->parsers = $this->getArguments($arguments);
 	}
 
-	protected function doParse($in, $offset, Context $context)
+	protected function doParse(string &$in, int $offset, Context $context)
 	{
 		$child_matches = [];
 
 		if (!is_array($this->parsers) || count($this->parsers) < 1) {
-			return $this->createMismatch(AbstractParser::INVALID_ARGUMENTS);
+			return $this->createMismatch($in, $offset, AbstractParser::INVALID_ARGUMENTS);
 		}
 
 		$total = 0;
@@ -42,7 +41,7 @@ class Sequence extends AbstractParser {
 			$total += $match->length;
 
 			if (!$match->match) {  // must match
-				return $this->createMismatch($total);
+				return $this->createMismatch($in, $offset, $total);
 			}
 
 			$child_matches[] = $match;
@@ -53,6 +52,11 @@ class Sequence extends AbstractParser {
 		return $this->createMatch($in, $offset, $total, $child_matches);
 	}
 
+	/**
+	 * Add one or more parsers to the end of this sequence
+	 * 
+	 * @param string[]|int[]|AbstractParser[] $arguments
+	 */
 	public function add(...$arguments)
 	{
 		$this->parsers = array_merge($this->parsers, $this->getArguments($arguments));
