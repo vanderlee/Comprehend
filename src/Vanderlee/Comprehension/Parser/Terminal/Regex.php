@@ -27,7 +27,7 @@ class Regex extends AbstractParser {
 		$this->pattern = $pattern;
 	}
 
-	protected function doParse(string &$in, int $offset, Context $context)
+	protected function parse(string &$in, int $offset, Context $context)
 	{
 		$pattern = $this->pattern . ($context->isCaseSensitive() ? '' : 'i');
 

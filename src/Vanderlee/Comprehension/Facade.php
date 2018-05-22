@@ -53,13 +53,13 @@ class Facade extends AbstractParser {
 		return $this;
 	}
 	
-	protected function doParse($in, $offset, Context $context)
+	protected function parse($in, $offset, Context $context)
 	{
 		if ($this->parser === null) {
 			return $this->createMismatch(self::INVALID_ARGUMENTS);
 		}
 
-		$match = $this->parser->doParse($in, $offset, $context);
+		$match = $this->parser->parse($in, $offset, $context);
 		
 		if ($match->match) {
 			return $this->createMatch($in, $offset, $match->length, $match);

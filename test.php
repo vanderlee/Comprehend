@@ -52,73 +52,7 @@
 			test(P::context(P::plus('_'))->skip('a_b', 3), 0);
 			test(P::context(P::whitespace())->skip(" \t\n\r", 0), 4);
 
-	// Multiple
-		// RepeatParser
-			test(get_class(P::repeat('a', 2, 4)), 'RepeatParser');
-			testParser(P::repeat('a', 2, 1), '', FALSE, Parser::INVALID_ARGUMENTS);	// invalid arguments
-			testParser(P::repeat('a', 2, 4), '', FALSE, 0);
-			testParser(P::repeat('a', 2, 4), 'b', FALSE, 0);
-			testParser(P::repeat('a', 2, 4), 'a', FALSE, 1);
-			testParser(P::repeat('a', 2, 4), 'aa', TRUE, 2);
-			testParser(P::repeat('a', 2, 4), 'aaa', TRUE, 3);
-			testParser(P::repeat('a', 2, 4), 'aaaa', TRUE, 4);
-			testParser(P::repeat('a', 2, 4), 'aaaaa', TRUE, 4);
-			testParser(P::repeat('a', 0, 1), '', TRUE, 0);
-			testParser(P::repeat('a', 0, 1), 'a', TRUE, 1);
-			testParser(P::repeat('a', 0, 1), 'aa', TRUE, 1);
-			testParser(P::repeat('a', 0, 2), 'aa', TRUE, 2);
-			testParser(P::repeat('a', 0, 2), 'aaa', TRUE, 2);
-			testParser(P::repeat('a', 1, 1), 'aaa', TRUE, 1);
-			testParser(P::repeat('a', 2, 2), 'a', FALSE, 1);
-			testParser(P::repeat('a', 2, 2), 'aa', TRUE, 2);
-			testParser(P::repeat('a', 2, 2), 'aaa', TRUE, 2);
-			testParser(P::repeat('a', 0, null), '', TRUE, 0);
-			testParser(P::repeat('a', 0, null), 'a', TRUE, 1);
-			testParser(P::repeat('a', 2, null), 'a', FALSE, 1);
-			testParser(P::repeat('a', 2, null), 'aa', TRUE, 2);
-			testParser(P::repeat('a', 2, null), 'aaa', TRUE, 3);
-			testParser(P::repeat('a', 2, null), 'aaaa', TRUE, 4);
-			testParser(P::repeat('ab', 2, 2), 'ab', FALSE, 2);
-			testParser(P::repeat('ab', 2, 2), 'abab', TRUE, 4);
-			testParser(P::repeat('ab', 2, 2), 'ababab', TRUE, 4);
-
 	// Flow
-
-		// OrParser
-			test(get_class(P::choice('a', 'b')), 'OrParser');
-
-		// FirstParser
-			test(get_class(P::first('a', 'b')), 'OrDirective');
-			testParser(P::first(), '', FALSE, Parser::INVALID_ARGUMENTS);
-			testParser(P::first('a', 'b'), '', FALSE, 0);
-			testParser(P::first('a', 'b'), 'a', TRUE, 1);
-			testParser(P::first('a', 'b'), 'ab', TRUE, 1);
-			testParser(P::first('a', 'b'), 'aa', TRUE, 1);
-			testParser(P::first('a', 'b'), 'b', TRUE, 1);
-			testParser(P::first('a', 'b'), 'ba', TRUE, 1);
-			testParser(P::first('a', 'b'), 'bb', TRUE, 1);
-			testParser(P::first('a', 'ab'), 'ab', TRUE, 1);
-			testParser(P::first('ab', 'a'), 'ab', TRUE, 2);
-			testParser(P::first('abc', 'aaa'), 'ab', FALSE, 2);
-
-		// LongestParser
-			test(get_class(P::longest('a', 'b')), 'OrDirective');
-			testParser(P::longest(), '', FALSE, Parser::INVALID_ARGUMENTS);
-			testParser(P::longest('a'), 'a', TRUE, 1);
-			testParser(P::longest('a'), 'aa', TRUE, 1);
-			testParser(P::longest('a', 'ab'), 'aa', TRUE, 1);
-			testParser(P::longest('a', 'ab'), 'ab', TRUE, 2);
-			testParser(P::longest('a', 'aa'), 'aa', TRUE, 2);
-
-		// ShortestParser
-			test(get_class(P::shortest('a', 'b')), 'OrDirective');
-			testParser(P::shortest(), '', FALSE, Parser::INVALID_ARGUMENTS);
-			testParser(P::shortest('a'), 'a', TRUE, 1);
-			testParser(P::shortest('a'), 'aa', TRUE, 1);
-			testParser(P::shortest('a', 'ab'), 'aa', TRUE, 1);
-			testParser(P::shortest('a', 'ab'), 'ab', TRUE, 1);
-			testParser(P::shortest('a', 'aa'), 'aa', TRUE, 1);
-			testParser(P::shortest('aa', 'a'), 'aa', TRUE, 1);
 
 		// AndParser
 			test(get_class(P::all('a', 'a')), 'AndParser');

@@ -16,7 +16,7 @@ class SequenceTest extends PHPUnit\Framework\TestCase {
 	 */
 	public function testSequence(Sequence $parser, string $input, int $offset, bool $match, int $length)
 	{
-		$result = $parser->parse($input, $offset);
+		$result = $parser->match($input, $offset);
 
 		$this->assertSame($match, $result->match, (string) $parser);
 		$this->assertSame($length, $result->length, (string) $parser);
@@ -38,7 +38,7 @@ class SequenceTest extends PHPUnit\Framework\TestCase {
 			[new Sequence(new Char('a')), 'abc', 0, true, 1],
 			[new Sequence(new Char('a'), new Text('bc')), 'abc', 0, true, 3],
 			[new Sequence(), '', 0, false, Sequence::INVALID_ARGUMENTS],
-		];				
+		];
 	}
 
 }

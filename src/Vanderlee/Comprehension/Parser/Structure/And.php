@@ -1,43 +1,39 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace vanderlee\comprehension\parser\structure;
+
+use \vanderlee\comprehension\parser\AbstractParser;
+use \vanderlee\comprehension\core\Context;
 
 /**
  * Description of AndParser
  *
  * @author Martijn
  */
-class And extends Parser {
+class All extends AbstractParser {
 
 	private $parsers = null;
 
-	public function __construct()
+	public function __construct(...$arguments)
 	{
-		$this->parsers = ParserUtil::getParserArgs(func_get_args());
+		if (count($arguments) < 2) {
+			throw new \Exception('Less than 2 arguments provided');
+		}
+		$this->parsers = self::getArguments($arguments);
 	}
 
-	protected function doParse($in, $offset, ParserContext $context)
+	protected function parse($in, $offset, ParserContext $context)
 	{
-		// Atleast two terms
-		if (count($this->parsers) < 2)
-			return new ParserMatch(FALSE, Parser::INVALID_ARGUMENTS);
-
 		$length = PHP_INT_MAX;
 		foreach ($this->parsers as $parser) {
-			$match = $parser->doParse($in, $offset, $context);
+			$match = $parser->parse($in, $offset, $context);
 			if (!$match->match) {
-				return new ParserMatch(FALSE, 0);
+				return $this->createMismatch($in, $offset);
 			} else {
 				$length = min($length, $match->length);
 			}
 		}
-		return new ParserMatch(TRUE, $length);
+		return $this->createMatch($in, $offset, $length);
 	}
 
 }

@@ -1,18 +1,14 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace vanderlee\comprehension\directive;
+
+use \vanderlee\comprehension\parser\AbstractParser;
 
 /**
  * Description of Directive
  *
  * @author Martijn
  */
-abstract class AbstractDirective extends Parser {
+abstract class AbstractDirective extends AbstractParser {
 	
 }

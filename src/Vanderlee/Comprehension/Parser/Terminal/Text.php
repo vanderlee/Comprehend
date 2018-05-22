@@ -21,7 +21,7 @@ class Text extends AbstractParser {
 		$this->length = mb_strlen($text);
 	}
 
-	protected function doParse(string &$in, int $offset, Context $context)
+	protected function parse(string &$in, int $offset, Context $context)
 	{
 		$length = mb_strlen($this->text);
 		

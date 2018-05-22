@@ -1,12 +1,9 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace vanderlee\comprehension\directive;
+
+use \vanderlee\comprehension\directive\AbstractDirective;
+use \vanderlee\comprehension\core\Context;
 
 /**
  * Description of OrDirective
@@ -18,18 +15,36 @@ class Choice extends AbstractDirective {
 	private $parser = null;
 	private $or_mode = null;
 
-	public function __construct($parser, $or_mode)
+	/**
+	 * 
+	 * @param \vanderlee\comprehension\parser\structure\Choice $parser
+	 * @param int $or_mode
+	 */
+	public function __construct(\vanderlee\comprehension\parser\structure\Choice $parser, int $or_mode = 0)
 	{
-		$this->parser = ParserUtil::getParserArg($parser);
+		$this->parser = $parser;
 		$this->or_mode = $or_mode;
 	}
 
-	protected function doParse($in, $offset, ParserContext $context)
+	protected function parse(string &$in, int $offset, Context $context)
 	{
 		$context->pushOrMode($this->or_mode);
-		$match = $this->parser->doParse($in, $offset, $context);
+		$match = $this->parser->parse($in, $offset, $context);
 		$context->popOrMode();
 		return $match;
+	}
+	
+	public function __toString()
+	{
+		switch($this->or_mode) {
+			default:
+			case Context::OR_FIRST:
+				return 'first-of' . $this->parser;
+			case Context::OR_LONGEST:
+				return 'longest-of' . $this->parser;
+			case Context::OR_SHORTEST:
+				return 'shortest-of' . $this->parser;
+		}
 	}
 
 }

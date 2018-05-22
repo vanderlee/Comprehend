@@ -1,19 +1,16 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace vanderlee\comprehension\parser\structure;
+
+use \vanderlee\comprehension\parser\AbstractParser;
+use \vanderlee\comprehension\core\Context;
 
 /**
  * Description of RepeatParser
  *
  * @author Martijn
  */
-class Repeat extends Parser {
+class Repeat extends AbstractParser {
 
 	private $parser = null;
 	private $min = null;
@@ -21,34 +18,44 @@ class Repeat extends Parser {
 
 	public function __construct($parser, $min = 0, $max = null)
 	{
-		$this->parser = ParserUtil::getParserArg($parser);
+		$this->parser = $this->getArgument($parser);
 		$this->min = $min;
 		$this->max = $max;
+
+		if ($this->max !== null && $this->max < $this->min) {
+			throw new \Exception('Invalid repeat range specified');
+		}
 	}
 
-	protected function doParse($in, $offset, ParserContext $context)
+	protected function parse(string &$in, int $offset, Context $context)
 	{
-		if ($this->max !== null && $this->max < $this->min)
-			return new ParserMatch(FALSE, Parser::INVALID_ARGUMENTS);
+		$child_matches = [];
 
 		$total = 0;
 		$matches = 0;
 		$tokens = array();
 		do {
 			$skip = $context->skip($in, $offset + $total);
-			$match = $this->parser->doParse($in, $offset + $total + $skip, $context);
+			$match = $this->parser->parse($in, $offset + $total + $skip, $context);
 			if ($match->match) {
-				if (!$this->hasToken() && count($match->tokens)) {
-					$tokens = array_merge($tokens, $match->tokens);
-				}
 				$total += $skip + $match->length;
-				++$matches;
+				$child_matches[] = $match;
 			}
-		} while ($match->match && ($this->max == null || $matches < $this->max));
+		} while ($match->match && ($this->max == null || count($child_matches) < $this->max));
 
-		return new ParserMatch($matches >= $this->min && ($this->max == null || $matches <= $this->max)
-				, $total
-				, $this->hasToken() ? $this->makeToken($offset, $total) : $tokens);
+		$match = (count($child_matches) >= $this->min) && ($this->max == null || count($child_matches) <= $this->max);
+
+		return $match ? $this->createMatch($in, $offset, $total, $child_matches) : $this->createMismatch($in, $offset, $total);
+	}
+	
+	public function __toString()
+	{		
+		// Output ABNF formatting
+		
+		$min = $this->min > 0 ? $this->min : '';
+		$max = $this->max === null ? '' : $this->max;
+		
+		return $min . '*' . $max . $this->parser;
 	}
 
 }

@@ -65,14 +65,28 @@ class Match {
 			$child_match->processCallbacks($results);
 		});
 		
+		$this->child_matches = [];
+		
 		array_walk($this->callbacks, function($callback) use(&$results) {
 			$callback($results);
 		});
+		$this->callbacks = [];
 	}
 
+	/**
+	 * @todo protect this?
+	 */
 	public function resolve()
 	{
 		$this->processCallbacks($this->results);
+	}
+	
+	public function getResult($name, $default = null) {
+		return $this->results[$name] ?? $default;
+	}
+	
+	public function hasResult($name) {
+		return isset($this->results[$name]);
 	}
 
 }

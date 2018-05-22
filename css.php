@@ -145,5 +145,3 @@
 	function addToken($token) {
 		return create_function('', 'global $tokens; $tokens[] = $token;');
 	}
-	
-?>

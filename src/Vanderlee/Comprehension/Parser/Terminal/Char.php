@@ -19,7 +19,7 @@ class Char extends AbstractParser {
 		$this->character = self::parseCharacter($character);
 	}
 
-	protected function doParse(string &$in, int $offset, Context $context)
+	protected function parse(string &$in, int $offset, Context $context)
 	{
 		if ($offset >= mb_strlen($in)) {
 			return $this->createMismatch($in, $offset);

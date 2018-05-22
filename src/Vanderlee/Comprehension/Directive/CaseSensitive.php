@@ -24,10 +24,10 @@ class CaseSensitive extends AbstractDirective {
 		$this->case_sensitive = (bool) $case_sensitive;
 	}
 
-	protected function doParse($in, $offset, ParserContext $context)
+	protected function parse($in, $offset, ParserContext $context)
 	{
 		$context->pushCaseSensitive($this->case_sensitive);
-		$match = $this->parser->doParse($in, $offset, $context);
+		$match = $this->parser->parse($in, $offset, $context);
 		$context->popCaseSensitive();
 		return $match;
 	}

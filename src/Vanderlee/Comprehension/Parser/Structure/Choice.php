@@ -1,56 +1,55 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace vanderlee\comprehension\parser\structure;
+
+use \vanderlee\comprehension\parser\AbstractParser;
+use \vanderlee\comprehension\core\Context;
 
 /**
  * Description of OrParser
  *
  * @author Martijn
  */
-class Choice extends Parser {
+class Choice extends AbstractParser {
 
 	private $parsers = null;
 
-	public function __construct()
+	public function __construct(...$arguments)
 	{
-		$this->parsers = ParserUtil::getParserArgs(func_get_args());
+		if (empty($arguments)) {
+			throw new \Exception('No arguments');
+		}
+
+		$this->parsers = self::getArguments($arguments);
 	}
 
-	protected function doParse($in, $offset, ParserContext $context)
+	protected function parse(string &$in, int $offset, Context $context)
 	{
-		if (!is_array($this->parsers) || count($this->parsers) < 1)
-			return new ParserMatch(FALSE, Parser::INVALID_ARGUMENTS);
-
 		switch ($context->getOrMode()) {
 			default:
-			case ParserContext::OR_FIRST:
+			case Context::OR_FIRST:
 				$max = 0;
 				foreach ($this->parsers as $parser) {
-					$match = $parser->doParse($in, $offset, $context);
+					$match = $parser->parse($in, $offset, $context);
 					if ($match->match) {
-						return $match;
+						return $this->createMatch($in, $offset, $match->length, $match);
 					}
 					$max = max($max, $match->length);
 				}
-				return new ParserMatch(FALSE, $max);
+				return $this->createMismatch($in, $offset, $max);
 				break;
 
-			case ParserContext::OR_LONGEST:
-				$max_match = new ParserMatch(FALSE, 0);
+			case Context::OR_LONGEST:
+				$max_match = $this->createMismatch($in, $offset);
 				foreach ($this->parsers as $parser) {
-					$match = $parser->doParse($in, $offset, $context);
+					$match = $parser->parse($in, $offset, $context);
 					if ($match->match == $max_match->match) {
 						if ($match->length > $max_match->length) {
-							$max_match = $match;
+							$max_match = $match->match ? $this->createMatch($in, $offset, $match->length, $match) :
+									$this->createMismatch($in, $offset, $match->length);
 						}
-					} else if ($match->match) {
-						$max_match = $match;
+					} elseif ($match->match) {
+						$max_match = $this->createMatch($in, $offset, $match->length, $match);
 					}
 				}
 				return $max_match;
@@ -70,22 +69,29 @@ class Choice extends Parser {
 				  return new ParserMatch($isMatch, $length); */
 				break;
 
-			case ParserContext::OR_SHORTEST:
-				$isMatch = FALSE;
-				$length = 0;
+			case Context::OR_SHORTEST:
+				$match = null;
 				foreach ($this->parsers as $parser) {
-					$match = $parser->doParse($in, $offset, $context);
-					if ($match->match && !$isMatch) {
-						$isMatch = TRUE;
-						$length = $match->length;
-					} else if ($match->match) {
-						$length = min($length, $match->length);
+					$attempt = $parser->parse($in, $offset, $context);
+
+					switch (true) {
+						case!$match: // Keep attempt if first.
+						case $attempt->match && !$match->match: // Keep attempt if first match
+						case $attempt->match === $match->match && $attempt->length < $match->length: // Keep attempt if equally succesful but shorter
+							$match = $attempt;
 					}
 				}
 
-				return new ParserMatch($isMatch, $length);
+				// This will fail! $match is not necesarily the shortest
+				return $match->match ? $this->createMatch($in, $offset, $match->length, $match) :
+						$this->createMismatch($in, $offset, $match->length);
 				break;
 		}
+	}
+
+	public function __toString()
+	{
+		return '( ' . join(' | ', $this->parsers) . ' )';
 	}
 
 }

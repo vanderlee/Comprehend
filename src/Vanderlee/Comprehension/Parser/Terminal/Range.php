@@ -25,7 +25,7 @@ class Range extends AbstractParser {
 		$this->last = $last === null ? null : self::parseCharacter($last);
 	}
 
-	protected function doParse(string &$in, int $offset, Context $context)
+	protected function parse(string &$in, int $offset, Context $context)
 	{
 		if ($this->first === null && $this->last === null) {
 			return $this->createMismatch($in, $offset, self::INVALID_ARGUMENTS);

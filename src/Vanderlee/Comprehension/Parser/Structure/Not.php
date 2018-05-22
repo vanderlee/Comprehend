@@ -27,7 +27,7 @@ class Not extends Parser {
 		if (!$this->parser instanceof Parser)
 			return new ParserMatch(FALSE, Parser::INVALID_ARGUMENTS);
 
-		$match = $this->parser->doParse($in, $offset, $context);
+		$match = $this->parser->parse($in, $offset, $context);
 		return new ParserMatch(!$match->match, $match->length);
 	}
 

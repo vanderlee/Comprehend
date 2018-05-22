@@ -22,10 +22,10 @@ class Lexeme extends AbstractDirective {
 		$this->parser = ParserUtil::getParserArg($parser);
 	}
 
-	protected function doParse($in, $offset, ParserContext $context)
+	protected function parse($in, $offset, ParserContext $context)
 	{
 		$context->pushSkipper();
-		$match = $this->parser->doParse($in, $offset, $context);
+		$match = $this->parser->parse($in, $offset, $context);
 		$context->popSkipper();
 		return $match;
 	}

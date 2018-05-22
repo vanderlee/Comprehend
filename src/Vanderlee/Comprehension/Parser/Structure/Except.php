@@ -1,11 +1,5 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace vanderlee\comprehension\parser\structure;
 
 /**
@@ -26,8 +20,8 @@ class Except extends Parser {
 
 	protected function doParse($in, $offset, ParserContext $context)
 	{
-		$match = $this->parser_match->doParse($in, $offset, $context);
-		$not = $this->parser_not->doParse($in, $offset, $context);
+		$match = $this->parser_match->parse($in, $offset, $context);
+		$not = $this->parser_not->parse($in, $offset, $context);
 		if ($match->match && !$not->match) {
 			return $match;
 		}

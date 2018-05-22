@@ -32,7 +32,7 @@ class CharTest extends PHPUnit\Framework\TestCase {
 	 */
 	public function testChar(Char $parser, string $input, int $offset, bool $match, int $length)
 	{
-		$result = $parser->parse($input, $offset);
+		$result = $parser->match($input, $offset);
 
 		$this->assertSame($match, $result->match, (string) $parser);
 		$this->assertSame($length, $result->length, (string) $parser);

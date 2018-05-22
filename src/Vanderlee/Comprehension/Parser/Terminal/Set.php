@@ -28,7 +28,7 @@ class Set extends AbstractParser {
 		$this->set = count_chars($set, 3);
 	}
 
-	protected function doParse(string &$in, int $offset, Context $context)
+	protected function parse(string &$in, int $offset, Context $context)
 	{
 
 		if ($offset >= mb_strlen($in)) {

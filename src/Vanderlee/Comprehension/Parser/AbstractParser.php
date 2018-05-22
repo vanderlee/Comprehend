@@ -12,38 +12,36 @@ abstract class AbstractParser {
 
 	const INVALID_ARGUMENTS = PHP_INT_MIN;
 
-	protected static function parseCharacter($character)
-	{
-		if (empty($character)) {
-			throw new \Exception('Empty argument');
-		}
+	/**
+	 * List of result names to assign the matched text to.
+	 * @var string
+	 */
+	private $names = [];
 
-		if (is_int($character)) {
-			return chr($character);
-		} elseif (mb_strlen($character) > 1) {
-			throw new \Exception('Non-character argument');
-		}
-
-		return $character;
-	}
+	/**
+	 * List of callbacks to call when this parser has matched a part of the
+	 * full parse.
+	 * @var type 
+	 */
+	private $callbacks = [];
 
 	/**
 	 * @return \vanderlee\comprehension\core\Match;
 	 */
-	abstract protected function doParse(string &$in, int $offset, Context $context);
+	abstract protected function parse(string &$in, int $offset, Context $context);
 
 	/**
 	 * @param string $in
 	 * @param integer $offset
-	 * @return \vanderlee\comprehension\core\Match;
+	 * @return Match;
 	 */
-	public function parse(string $in, int $offset = 0)
+	public function match(string $in, int $offset = 0)
 	{
 		if ($offset < 0) {
 			throw new \Exception("Negative offset");
 		}
 
-		$match = $this->doParse($in, $offset, new Context());
+		$match = $this->parse($in, $offset, new Context());
 
 		$match->resolve();
 
@@ -95,12 +93,6 @@ abstract class AbstractParser {
 	}
 
 	/**
-	 * List of result names to assign the matched text to.
-	 * @var string
-	 */
-	private $names = [];
-
-	/**
 	 * After parsing, assign the matched input of this parser to the named
 	 * result. Only assign if successfully matched entire parent upto root.
 	 * 
@@ -112,13 +104,6 @@ abstract class AbstractParser {
 		$this->names[] = $key;
 		return $this;
 	}
-
-	/**
-	 * List of callbacks to call when this parser has matched a part of the
-	 * full parse.
-	 * @var type 
-	 */
-	private $callbacks = [];
 
 	public function callback(callable $callback)
 	{
@@ -141,7 +126,22 @@ abstract class AbstractParser {
 		return $this;
 	}
 
-	protected function getArgument($argument)
+	protected static function parseCharacter($character)
+	{
+		if (empty($character)) {
+			throw new \Exception('Empty argument');
+		}
+
+		if (is_int($character)) {
+			return chr($character);
+		} elseif (mb_strlen($character) > 1) {
+			throw new \Exception('Non-character argument');
+		}
+
+		return $character;
+	}	
+
+	protected static function getArgument($argument)
 	{
 		// Get very first non-array value of (recursive) array
 		while (is_array($argument)) {
@@ -163,6 +163,11 @@ abstract class AbstractParser {
 		throw new \Exception(sprintf('Invalid argument type `%1$s`.', gettype($argument)));
 	}
 
+	protected static function getArguments(...$arguments)
+	{
+		return array_map('self::getArgument', self::array_flatten($arguments));
+	}
+
 	private static function array_flatten($a, $f = [])
 	{
 		if (!$a || !is_array($a)) {
@@ -177,13 +182,6 @@ abstract class AbstractParser {
 		}
 
 		return $f;
-	}
-
-	protected function getArguments(...$arguments)
-	{
-		return array_map(function($argument) {
-			return self::getArgument($argument);
-		}, self::array_flatten($arguments));
 	}
 
 }

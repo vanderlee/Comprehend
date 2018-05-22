@@ -25,7 +25,7 @@ class Context {
 	{
 		$skipper = end($this->skipper);
 		if ($skipper instanceof \vanderlee\comprehension\parser\AbstractParser) {
-			$match = $skipper->doParse($in, $offset, new Context());
+			$match = $skipper->parse($in, $offset, new Context());
 			if ($match->match) {
 				return $match->length;
 			}
@@ -56,9 +56,9 @@ class Context {
 		return $this->isCaseSensitive() ? $text : mb_strtolower($text);
 	}
 
-	const OR_FIRST = 0x00;
-	const OR_LONGEST = 0x01;
-	const OR_SHORTEST = 0x02;
+	const OR_FIRST = 0x01;
+	const OR_LONGEST = 0x02;
+	const OR_SHORTEST = 0x03;
 
 	private $or_mode;
 

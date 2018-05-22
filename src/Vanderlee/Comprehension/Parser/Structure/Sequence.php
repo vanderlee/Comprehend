@@ -23,10 +23,10 @@ class Sequence extends AbstractParser {
 
 	public function __construct(...$arguments)
 	{
-		$this->parsers = $this->getArguments($arguments);
+		$this->parsers = self::getArguments($arguments);
 	}
 
-	protected function doParse(string &$in, int $offset, Context $context)
+	protected function parse(string &$in, int $offset, Context $context)
 	{
 		$child_matches = [];
 
@@ -37,7 +37,7 @@ class Sequence extends AbstractParser {
 		$total = 0;
 		foreach ($this->parsers as $parser) {
 			$total += $context->skip($in, $offset + $total);
-			$match = $parser->doParse($in, $offset + $total, $context);
+			$match = $parser->parse($in, $offset + $total, $context);
 			$total += $match->length;
 
 			if (!$match->match) {  // must match
@@ -59,7 +59,7 @@ class Sequence extends AbstractParser {
 	 */
 	public function add(...$arguments)
 	{
-		$this->parsers = array_merge($this->parsers, $this->getArguments($arguments));
+		$this->parsers = array_merge($this->parsers, self::getArguments($arguments));
 	}
 
 	public function __toString()
