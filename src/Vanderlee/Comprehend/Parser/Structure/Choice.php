@@ -1,16 +1,16 @@
 <?php
 
-namespace vanderlee\comprehension\parser\structure;
+namespace vanderlee\comprehend\parser\structure;
 
-use \vanderlee\comprehension\parser\AbstractParser;
-use \vanderlee\comprehension\core\Context;
+use \vanderlee\comprehend\parser\Parser;
+use \vanderlee\comprehend\core\Context;
 
 /**
  * Description of OrParser
  *
  * @author Martijn
  */
-class Choice extends AbstractParser {
+class Choice extends Parser {
 
 	private $parsers = null;
 
@@ -32,41 +32,27 @@ class Choice extends AbstractParser {
 				foreach ($this->parsers as $parser) {
 					$match = $parser->parse($in, $offset, $context);
 					if ($match->match) {
-						return $this->createMatch($in, $offset, $match->length, $match);
+						return $this->success($in, $offset, $match->length, $match);
 					}
 					$max = max($max, $match->length);
 				}
-				return $this->createMismatch($in, $offset, $max);
+				return $this->failure($in, $offset, $max);
 				break;
 
 			case Context::OR_LONGEST:
-				$max_match = $this->createMismatch($in, $offset);
+				$max_match = $this->failure($in, $offset);
 				foreach ($this->parsers as $parser) {
 					$match = $parser->parse($in, $offset, $context);
 					if ($match->match == $max_match->match) {
 						if ($match->length > $max_match->length) {
-							$max_match = $match->match ? $this->createMatch($in, $offset, $match->length, $match) :
-									$this->createMismatch($in, $offset, $match->length);
+							$max_match = $match->match ? $this->success($in, $offset, $match->length, $match) :
+									$this->failure($in, $offset, $match->length);
 						}
 					} elseif ($match->match) {
-						$max_match = $this->createMatch($in, $offset, $match->length, $match);
+						$max_match = $this->success($in, $offset, $match->length, $match);
 					}
 				}
 				return $max_match;
-
-				/*
-				  $isMatch	= FALSE;
-				  $length		= 0;
-				  foreach ($this->parsers as $parser) {
-				  $match = $parser->doParse($in, $offset, $context);
-				  if ($match->match == $isMatch) {
-				  $length		= max($length, $match->length);
-				  } else if ($match->match) {
-				  $isMatch	= TRUE;
-				  $length		= $match->length;
-				  }
-				  }
-				  return new ParserMatch($isMatch, $length); */
 				break;
 
 			case Context::OR_SHORTEST:
@@ -83,8 +69,8 @@ class Choice extends AbstractParser {
 				}
 
 				// This will fail! $match is not necesarily the shortest
-				return $match->match ? $this->createMatch($in, $offset, $match->length, $match) :
-						$this->createMismatch($in, $offset, $match->length);
+				return $match->match ? $this->success($in, $offset, $match->length, $match) :
+						$this->failure($in, $offset, $match->length);
 				break;
 		}
 	}

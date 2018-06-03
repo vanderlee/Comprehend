@@ -6,74 +6,10 @@
 	require_once(dirname(__FILE__).'/P.php');
 	require_once(dirname(__FILE__).'/UnitTest.php');
 	
-	use vanderlee\comprehension\core\Match;
-	use vanderlee\comprehension\core\Util;
+	use vanderlee\comprehend\core\Match;
+	use vanderlee\comprehend\core\Util;
 
 	//---------------------------------------------------------------------------------------------
-
-	// Core
-		// ParserMatch
-			$success = new Match(TRUE, 123);
-			test($success->match, TRUE);
-			test($success->length, 123);
-
-			$failure = new Match(FALSE, 321);
-			test($failure->match, FALSE);
-			test($failure->length, 321);
-
-		// ParserUtil
-			// getCharArg
-				test(Util::getCharArg(''), FALSE);
-				test(Util::getCharArg('a'), 'a');
-				test(Util::getCharArg(ord('a')), 'a');
-			// getParserArg
-				test(Util::getArgument(''), FALSE);
-				test(get_class(Util::getArgument('a')), 'CharParser');
-				test(get_class(Util::getArgument('aa')), 'TextParser');
-				test(get_class(Util::getArgument(P::any())), 'AnyParser');
-			// getParserArgs
-				test(Util::getArguments(), FALSE);
-				test(Util::getArguments(''), FALSE);
-				test(Util::getArguments('a', ''), FALSE);
-				$args = Util::getArguments('a', 'aa', P::any());
-				test(count($args), 3);
-				test(get_class($args[0]), 'CharParser');
-				test(get_class($args[1]), 'TextParser');
-				test(get_class($args[2]), 'AnyParser');
-
-		// ParserContext
-			test(get_class(P::context('_')), 'ParserContext');
-			test(P::context('_')->skip('___', 0), 1);
-			test(P::context(P::plus('_'))->skip('___', 0), 3);
-			test(P::context(P::plus('_'))->skip('a__', 1), 2);
-			test(P::context(P::plus('_'))->skip('a_b', 0), 0);
-			test(P::context(P::plus('_'))->skip('a_b', 1), 1);
-			test(P::context(P::plus('_'))->skip('a_b', 2), 0);
-			test(P::context(P::plus('_'))->skip('a_b', 3), 0);
-			test(P::context(P::whitespace())->skip(" \t\n\r", 0), 4);
-
-	// Flow
-
-		// AndParser
-			test(get_class(P::all('a', 'a')), 'AndParser');
-			testParser(P::all(), '', FALSE, Parser::INVALID_ARGUMENTS);
-			testParser(P::all('a'), '', FALSE, Parser::INVALID_ARGUMENTS);
-			testParser(P::all('a', 'a'), '', FALSE, 0);
-			testParser(P::all('a', 'a'), 'a', TRUE, 1);
-			testParser(P::all('a', 'b'), 'a', FALSE, 0);
-			testParser(P::all('a', 'aa'), 'aa', TRUE, 1);
-			testParser(P::all('aa', 'a'), 'aa', TRUE, 1);
-
-		// NotParser
-			test(get_class(P::not('a')), 'NotParser');
-			testParser(P::not('a'), '', TRUE, 0);
-			testParser(P::not('a'), 'a', FALSE, 1);
-
-		// ExceptParser
-			test(get_class(P::except('a', 'aa')), 'ExceptParser');
-			testParser(P::except('a', 'aa'), '', FALSE, 0);
-			testParser(P::except('a', 'aa'), 'a', TRUE, 1);
-			testParser(P::except('a', 'aa'), 'aa', FALSE, 1);
 
 	// Directives
 		// LexemeParser

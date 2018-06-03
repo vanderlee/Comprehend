@@ -1,9 +1,9 @@
 <?php
 
-namespace vanderlee\comprehension\directive;
+namespace vanderlee\comprehend\directive;
 
-use \vanderlee\comprehension\directive\AbstractDirective;
-use \vanderlee\comprehension\core\Context;
+use \vanderlee\comprehend\directive\AbstractDirective;
+use \vanderlee\comprehend\core\Context;
 
 /**
  * Description of OrDirective
@@ -17,10 +17,10 @@ class Choice extends AbstractDirective {
 
 	/**
 	 * 
-	 * @param \vanderlee\comprehension\parser\structure\Choice $parser
+	 * @param \vanderlee\comprehend\parser\structure\Choice $parser
 	 * @param int $or_mode
 	 */
-	public function __construct(\vanderlee\comprehension\parser\structure\Choice $parser, int $or_mode = 0)
+	public function __construct(\vanderlee\comprehend\parser\structure\Choice $parser, int $or_mode = 0)
 	{
 		$this->parser = $parser;
 		$this->or_mode = $or_mode;

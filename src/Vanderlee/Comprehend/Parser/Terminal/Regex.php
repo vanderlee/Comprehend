@@ -1,16 +1,16 @@
 <?php
 
-namespace vanderlee\comprehension\parser\terminal;
+namespace vanderlee\comprehend\parser\terminal;
 
-use \vanderlee\comprehension\parser\AbstractParser;
-use \vanderlee\comprehension\core\Context;
+use \vanderlee\comprehend\parser\Parser;
+use \vanderlee\comprehend\core\Context;
 
 /**
  * Matches regular expressions
  *
  * @author Martijn
  */
-class Regex extends AbstractParser {
+class Regex extends Parser {
 
 	private $pattern = null;
 
@@ -33,11 +33,11 @@ class Regex extends AbstractParser {
 
 		if (preg_match($pattern, $in, $m, 0, $offset) !== FALSE) {
 			if (count($m) > 0 && mb_strlen($m[0]) > 0 && strpos($in, $m[0], $offset) == $offset) {
-				return $this->createMatch($in, $offset, mb_strlen($m[0]));
+				return $this->success($in, $offset, mb_strlen($m[0]));
 			}
 		}
 		
-		return $this->createMismatch($in, $offset);
+		return $this->failure($in, $offset);
 	}
 	
 	public function __toString()

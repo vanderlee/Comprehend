@@ -1,8 +1,8 @@
 <?php
 
-use \vanderlee\comprehension\parser\structure\Choice;
-use \vanderlee\comprehension\parser\terminal\Text;
-use \vanderlee\comprehension\core\Context;
+use \vanderlee\comprehend\parser\structure\Choice;
+use \vanderlee\comprehend\parser\terminal\Text;
+use \vanderlee\comprehend\core\Context;
 
 /**
  * @group structure
@@ -24,7 +24,7 @@ class ChoiceTest extends PHPUnit\Framework\TestCase {
 	public function testChoice(Choice $parser, int $flag, string $input, int $offset, bool $match, int $length)
 	{
 		if ($flag) {
-			$parser = new \vanderlee\comprehension\directive\Choice($parser, $flag);
+			$parser = new \vanderlee\comprehend\directive\Choice($parser, $flag);
 		}
 
 		$result = $parser->match($input, $offset);
@@ -83,6 +83,7 @@ class ChoiceTest extends PHPUnit\Framework\TestCase {
 				))->resultAs('choice');
 
 		$match = $parser->match('a');
+		$this->assertTrue($match->match);
 		$this->assertTrue($match->hasResult('choice'));
 		$this->assertEquals('a', $match->getResult('choice'));
 		$this->assertTrue($match->hasResult('valueA'));
@@ -91,6 +92,7 @@ class ChoiceTest extends PHPUnit\Framework\TestCase {
 		$this->assertEquals(null, $match->getResult('valueB'));
 
 		$match = $parser->match('b');
+		$this->assertTrue($match->match);
 		$this->assertTrue($match->hasResult('choice'));
 		$this->assertEquals('b', $match->getResult('choice'));
 		$this->assertFalse($match->hasResult('valueA'));
@@ -99,6 +101,7 @@ class ChoiceTest extends PHPUnit\Framework\TestCase {
 		$this->assertEquals('b', $match->getResult('valueB'));
 
 		$match = $parser->match('c');
+		$this->assertFalse($match->match);
 		$this->assertFalse($match->hasResult('choice'));
 		$this->assertEquals(null, $match->getResult('choice'));
 		$this->assertFalse($match->hasResult('valueA'));

@@ -1,6 +1,6 @@
 <?php
 
-use \vanderlee\comprehension\parser\terminal\Regex;
+use \vanderlee\comprehend\parser\terminal\Regex;
 
 /**
  * @group terminal

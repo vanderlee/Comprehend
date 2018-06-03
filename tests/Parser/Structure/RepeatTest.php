@@ -1,8 +1,8 @@
 <?php
 
-use \vanderlee\comprehension\parser\structure\Repeat;
-use \vanderlee\comprehension\parser\terminal\Text;
-use \vanderlee\comprehension\parser\terminal\Char;
+use \vanderlee\comprehend\parser\structure\Repeat;
+use \vanderlee\comprehend\parser\terminal\Text;
+use \vanderlee\comprehend\parser\terminal\Char;
 
 /**
  * @group structure

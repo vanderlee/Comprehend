@@ -16,15 +16,24 @@ Phase 1
 	-	Match results as arrays (optional through name.sub or name. or name[]?)
 	-	Cast parser-tree to string
 -	Test
+	-	Directive
+	-	Core
+	-	Abstract
+	-	Scanner
 	-	resultAs
-	-	callback
 	-	assignTo
-	-	scanner
--	End/Start anchor  parsers
+	-	callback
+
+New directive/context architecture
+->nocase->
+->case->
+->lexeme->
+->scanner()->
+->choice(asdasdf, self::FIRST)
 
 Phase 2
 =======
--	Name; Comprehend/Comprehension
+-	Name; Comprehend/Comprehend
 -	Exception; ConstructionException, ParseException, CallbackException
 -	Non-greedy/greedy repeat.
 -	Anchor-optional parsing.

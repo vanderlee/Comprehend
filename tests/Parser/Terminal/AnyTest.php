@@ -1,6 +1,6 @@
 <?php
 
-use \vanderlee\comprehension\parser\terminal\Any;
+use \vanderlee\comprehend\parser\terminal\Any;
 
 /**
  * @group terminal

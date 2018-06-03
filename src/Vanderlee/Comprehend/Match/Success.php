@@ -1,48 +1,42 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-namespace vanderlee\comprehension\core;
+namespace vanderlee\comprehend\match;
 
 /**
  * Description of ParserToken
  *
  * @author Martijn
  */
-class Match {
+class Success extends Match {
 
-	private $match;
-	private $length;
 	private $results = [];
 	
-	private $child_matches = [];
+	/**
+	 *
+	 * @var Success[]
+	 */
+	private $successes = [];
 	private $callbacks = [];
 	
 	public function __get($name) {
 		switch($name) {
-			case 'match':	return $this->match;
-			case 'length':	return $this->length;
+			case 'match':	return true;
 			case 'results':	return $this->results;
 		}
 		
-		throw new \Exception("Property name `{$name}` not recognized");
+		return parent::__get($name);
 	}
 
 	/**
 	 * Create a new match
-	 * @param boolean $match
 	 * @param int $length
-	 * @param Match[]|Match $child_matches
+	 * @param Success[]|Success $successes
 	 */
-	public function __construct(bool $match, int $length, &$child_matches = [])
+	public function __construct(int $length, &$successes = [])
 	{
-		$this->match = $match;
-		$this->length = $length;
-		$this->child_matches = $child_matches;
+		parent::__construct($length);
+		
+		$this->successes = $successes;
 	}
 
 	/**
@@ -61,11 +55,11 @@ class Match {
 
 	private function processCallbacks(&$results)
 	{
-		array_walk($this->child_matches, function($child_match) use(&$results) {
+		array_walk($this->successes, function($child_match) use(&$results) {
 			$child_match->processCallbacks($results);
 		});
 		
-		$this->child_matches = [];
+		$this->successes = [];
 		
 		array_walk($this->callbacks, function($callback) use(&$results) {
 			$callback($results);
@@ -74,11 +68,13 @@ class Match {
 	}
 
 	/**
+	 * Chainable
 	 * @todo protect this?
 	 */
 	public function resolve()
 	{
 		$this->processCallbacks($this->results);
+		return $this;
 	}
 	
 	public function getResult($name, $default = null) {

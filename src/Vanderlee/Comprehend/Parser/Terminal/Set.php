@@ -1,16 +1,16 @@
 <?php
 
-namespace vanderlee\comprehension\parser\terminal;
+namespace vanderlee\comprehend\parser\terminal;
 
-use \vanderlee\comprehension\parser\AbstractParser;
-use \vanderlee\comprehension\core\Context;
+use \vanderlee\comprehend\parser\Parser;
+use \vanderlee\comprehend\core\Context;
 
 /**
  * Description of SetParser
  *
  * @author Martijn
  */
-class Set extends AbstractParser {
+class Set extends Parser {
 
 	private $set = null;
 
@@ -32,14 +32,14 @@ class Set extends AbstractParser {
 	{
 
 		if ($offset >= mb_strlen($in)) {
-			return $this->createMismatch($in, $offset);
+			return $this->failure($in, $offset);
 		}
 
 		if (strchr($context->handleCase($this->set), $context->handleCase($in[$offset])) !== FALSE) {
-			return $this->createMatch($in, $offset, 1);
+			return $this->success($in, $offset, 1);
 		}
 
-		return $this->createMismatch($in, $offset);
+		return $this->failure($in, $offset);
 	}
 
 	public function __toString()

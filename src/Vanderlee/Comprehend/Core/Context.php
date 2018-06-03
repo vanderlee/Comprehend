@@ -1,6 +1,6 @@
 <?php
 
-namespace vanderlee\comprehension\core;
+namespace vanderlee\comprehend\core;
 
 /**
  * Maintains the current context of the parser chain
@@ -24,7 +24,7 @@ class Context {
 	public function skip($in, $offset)
 	{
 		$skipper = end($this->skipper);
-		if ($skipper instanceof \vanderlee\comprehension\parser\AbstractParser) {
+		if ($skipper instanceof \vanderlee\comprehend\parser\Parser) {
 			$match = $skipper->parse($in, $offset, new Context());
 			if ($match->match) {
 				return $match->length;

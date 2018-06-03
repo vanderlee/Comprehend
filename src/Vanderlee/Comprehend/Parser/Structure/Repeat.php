@@ -1,16 +1,16 @@
 <?php
 
-namespace vanderlee\comprehension\parser\structure;
+namespace vanderlee\comprehend\parser\structure;
 
-use \vanderlee\comprehension\parser\AbstractParser;
-use \vanderlee\comprehension\core\Context;
+use \vanderlee\comprehend\parser\Parser;
+use \vanderlee\comprehend\core\Context;
 
 /**
  * Description of RepeatParser
  *
  * @author Martijn
  */
-class Repeat extends AbstractParser {
+class Repeat extends Parser {
 
 	private $parser = null;
 	private $min = null;
@@ -45,7 +45,7 @@ class Repeat extends AbstractParser {
 
 		$match = (count($child_matches) >= $this->min) && ($this->max == null || count($child_matches) <= $this->max);
 
-		return $match ? $this->createMatch($in, $offset, $total, $child_matches) : $this->createMismatch($in, $offset, $total);
+		return $match ? $this->success($in, $offset, $total, $child_matches) : $this->failure($in, $offset, $total);
 	}
 	
 	public function __toString()

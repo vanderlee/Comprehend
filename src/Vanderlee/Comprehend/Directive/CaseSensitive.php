@@ -6,7 +6,7 @@
  * and open the template in the editor.
  */
 
-namespace vanderlee\comprehension\directive;
+namespace vanderlee\comprehend\directive;
 
 /**
  * Description of CaseDirective

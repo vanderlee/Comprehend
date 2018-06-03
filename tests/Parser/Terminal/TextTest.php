@@ -1,6 +1,6 @@
 <?php
 
-use \vanderlee\comprehension\parser\terminal\Text;
+use \vanderlee\comprehend\parser\terminal\Text;
 
 class TextTest extends PHPUnit\Framework\TestCase {
 

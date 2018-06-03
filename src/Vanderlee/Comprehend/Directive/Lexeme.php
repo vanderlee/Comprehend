@@ -6,7 +6,9 @@
  * and open the template in the editor.
  */
 
-namespace vanderlee\comprehension\directive;
+namespace vanderlee\comprehend\directive;
+
+use \vanderlee\comprehend\core\Context;
 
 /**
  * Description of LexemeDirective
@@ -22,7 +24,7 @@ class Lexeme extends AbstractDirective {
 		$this->parser = ParserUtil::getParserArg($parser);
 	}
 
-	protected function parse($in, $offset, ParserContext $context)
+	protected function parse(string &$in, int $offset, Context $context)
 	{
 		$context->pushSkipper();
 		$match = $this->parser->parse($in, $offset, $context);

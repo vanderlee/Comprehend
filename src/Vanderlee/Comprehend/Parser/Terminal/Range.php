@@ -1,16 +1,16 @@
 <?php
 
-namespace vanderlee\comprehension\parser\terminal;
+namespace vanderlee\comprehend\parser\terminal;
 
-use \vanderlee\comprehension\parser\AbstractParser;
-use \vanderlee\comprehension\core\Context;
+use \vanderlee\comprehend\parser\Parser;
+use \vanderlee\comprehend\core\Context;
 
 /**
  * Description of RangeParser
  *
  * @author Martijn
  */
-class Range extends AbstractParser {
+class Range extends Parser {
 
 	private $first = null;
 	private $last = null;
@@ -28,21 +28,21 @@ class Range extends AbstractParser {
 	protected function parse(string &$in, int $offset, Context $context)
 	{
 		if ($this->first === null && $this->last === null) {
-			return $this->createMismatch($in, $offset, self::INVALID_ARGUMENTS);
+			return $this->failure($in, $offset, self::INVALID_ARGUMENTS);
 		}
 
 		if ($offset >= mb_strlen($in)) {
-			return $this->createMismatch($in, $offset, 0);			
+			return $this->failure($in, $offset, 0);			
 		}
 
 		$first = ord($context->handleCase($this->first));
 		$last = ord($context->handleCase($this->last));
 		$ord = ord($context->handleCase($in[$offset]));
 		if ($first <= $ord && ($this->last === null || $ord <= $last)) {
-			return $this->createMatch($in, $offset, 1);			
+			return $this->success($in, $offset, 1);			
 		}
 		
-		return $this->createMismatch($in, $offset, 0);			
+		return $this->failure($in, $offset, 0);			
 	}
 	
 	public function __toString()

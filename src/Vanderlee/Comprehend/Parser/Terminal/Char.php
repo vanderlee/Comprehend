@@ -1,16 +1,16 @@
 <?php
 
-namespace vanderlee\comprehension\parser\terminal;
+namespace vanderlee\comprehend\parser\terminal;
 
-use \vanderlee\comprehension\parser\AbstractParser;
-use \vanderlee\comprehension\core\Context;
+use \vanderlee\comprehend\parser\Parser;
+use \vanderlee\comprehend\core\Context;
 
 /**
  * Description of CharParser
  *
  * @author Martijn
  */
-class Char extends AbstractParser {
+class Char extends Parser {
 
 	private $character = null;
 
@@ -22,14 +22,14 @@ class Char extends AbstractParser {
 	protected function parse(string &$in, int $offset, Context $context)
 	{
 		if ($offset >= mb_strlen($in)) {
-			return $this->createMismatch($in, $offset);
+			return $this->failure($in, $offset);
 		}
 
 		if ($context->handleCase($in[$offset]) == $context->handleCase($this->character)) {
-			return $this->createMatch($in, $offset, 1);
+			return $this->success($in, $offset, 1);
 		}
 
-		return $this->createMismatch($in, $offset);
+		return $this->failure($in, $offset);
 	}
 
 	public function __toString()

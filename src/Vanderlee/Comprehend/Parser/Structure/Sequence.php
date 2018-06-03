@@ -6,18 +6,18 @@
  * and open the template in the editor.
  */
 
-namespace vanderlee\comprehension\parser\structure;
+namespace vanderlee\comprehend\parser\structure;
 
-use \vanderlee\comprehension\parser\AbstractParser;
-use \vanderlee\comprehension\core\Context;
-use \vanderlee\comprehension\parser\terminal\Char;
+use \vanderlee\comprehend\parser\Parser;
+use \vanderlee\comprehend\core\Context;
+use \vanderlee\comprehend\parser\terminal\Char;
 
 /**
  * Description of SequenceParser
  *
  * @author Martijn
  */
-class Sequence extends AbstractParser {
+class Sequence extends Parser {
 
 	private $parsers = null;
 
@@ -31,7 +31,7 @@ class Sequence extends AbstractParser {
 		$child_matches = [];
 
 		if (!is_array($this->parsers) || count($this->parsers) < 1) {
-			return $this->createMismatch($in, $offset, AbstractParser::INVALID_ARGUMENTS);
+			return $this->failure($in, $offset, Parser::INVALID_ARGUMENTS);
 		}
 
 		$total = 0;
@@ -41,7 +41,7 @@ class Sequence extends AbstractParser {
 			$total += $match->length;
 
 			if (!$match->match) {  // must match
-				return $this->createMismatch($in, $offset, $total);
+				return $this->failure($in, $offset, $total);
 			}
 
 			$child_matches[] = $match;
@@ -49,13 +49,13 @@ class Sequence extends AbstractParser {
 
 		//@todo add own callback?
 
-		return $this->createMatch($in, $offset, $total, $child_matches);
+		return $this->success($in, $offset, $total, $child_matches);
 	}
 
 	/**
 	 * Add one or more parsers to the end of this sequence
 	 * 
-	 * @param string[]|int[]|AbstractParser[] $arguments
+	 * @param string[]|int[]|Parser[] $arguments
 	 */
 	public function add(...$arguments)
 	{
@@ -64,7 +64,7 @@ class Sequence extends AbstractParser {
 
 	public function __toString()
 	{
-		return join(' ', $this->parsers);
+		return '( ' . join(' ', $this->parsers) . ' )';
 	}
 
 }

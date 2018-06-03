@@ -1,6 +1,6 @@
 <?php
 
-use \vanderlee\comprehension\parser\terminal\Range;
+use \vanderlee\comprehend\parser\terminal\Range;
 
 /**
  * @group terminal
