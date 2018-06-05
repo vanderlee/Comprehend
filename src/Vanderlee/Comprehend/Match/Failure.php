@@ -24,4 +24,9 @@ class Failure extends Match {
 		$this->length = $length;
 	}
 
+	public function __toString()
+	{
+		return 'Failed match at ' . $this->length . ' characters.';
+	}
+
 }

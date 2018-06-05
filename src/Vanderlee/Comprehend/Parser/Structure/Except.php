@@ -4,6 +4,7 @@ namespace vanderlee\comprehend\parser\structure;
 
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
+use \vanderlee\comprehend\ArgumentsTrait;
 
 /**
  * Match the first parser but not the second.
@@ -12,6 +13,8 @@ use \vanderlee\comprehend\core\Context;
  * @author Martijn
  */
 class Except extends Parser {
+	
+	use ArgumentsTrait;
 
 	private $parser_match = null;
 	private $parser_not = null;

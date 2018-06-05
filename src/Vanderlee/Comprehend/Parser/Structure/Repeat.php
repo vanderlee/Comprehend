@@ -4,6 +4,7 @@ namespace vanderlee\comprehend\parser\structure;
 
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
+use \vanderlee\comprehend\ArgumentsTrait;
 
 /**
  * Description of RepeatParser
@@ -12,6 +13,9 @@ use \vanderlee\comprehend\core\Context;
  */
 class Repeat extends Parser {
 
+	use ScanningTrait;	
+	use ArgumentsTrait;
+	
 	private $parser = null;
 	private $min = null;
 	private $max = null;
@@ -29,8 +33,10 @@ class Repeat extends Parser {
 
 	protected function parse(string &$in, int $offset, Context $context)
 	{
-		$child_matches = [];
+		$this->pushScannerToContext($context);
 
+		$child_matches = [];
+		
 		$total = 0;
 		$matches = 0;
 		$tokens = array();
@@ -45,6 +51,8 @@ class Repeat extends Parser {
 
 		$match = (count($child_matches) >= $this->min) && ($this->max == null || count($child_matches) <= $this->max);
 
+		$this->popScannerFromContext($context);
+		
 		return $match ? $this->success($in, $offset, $total, $child_matches) : $this->failure($in, $offset, $total);
 	}
 	

@@ -1,5 +1,6 @@
 Phase 1
 =======
+-	Ungreedy
 -	Refactor
 	-	Rename stuff like 'Match' to Result
 	-	Make separate match/mismatch (implementing match interface or abstract)

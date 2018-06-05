@@ -9,11 +9,13 @@ namespace vanderlee\comprehend\core;
  */
 class Context {
 
-	private $skipper;
+	use \vanderlee\comprehend\ArgumentsTrait;
+
+	private $skipper = [];
 
 	public function pushSkipper($skipper = null)
 	{
-		array_push($this->skipper, $skipper === null ? null : ParserUtil::getParserArg($skipper));
+		array_push($this->skipper, $skipper === null ? null : $this->getArgument($skipper));
 	}
 
 	public function popSkipper()
@@ -25,7 +27,7 @@ class Context {
 	{
 		$skipper = end($this->skipper);
 		if ($skipper instanceof \vanderlee\comprehend\parser\Parser) {
-			$match = $skipper->parse($in, $offset, new Context());
+			$match = $skipper->match($in, $offset);
 			if ($match->match) {
 				return $match->length;
 			}
@@ -33,7 +35,7 @@ class Context {
 		return 0;
 	}
 
-	private $case_sensitive;
+	private $case_sensitive = [];
 
 	public function pushCaseSensitive($case_sensitive = TRUE)
 	{
@@ -60,7 +62,7 @@ class Context {
 	const OR_LONGEST = 0x02;
 	const OR_SHORTEST = 0x03;
 
-	private $or_mode;
+	private $or_mode = [];
 
 	public function pushOrMode($or_mode)
 	{
@@ -79,10 +81,6 @@ class Context {
 
 	public function __construct($skipper = null, $case_sensitive = TRUE, $or_mode = self::OR_FIRST)
 	{
-		$this->skipper = array();
-		$this->case_sensitive = array();
-		$this->or_mode = array();
-
 		$this->pushSkipper($skipper);
 		$this->pushCaseSensitive($case_sensitive);
 		$this->pushOrMode($or_mode);

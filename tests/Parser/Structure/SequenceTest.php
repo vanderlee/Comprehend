@@ -40,7 +40,7 @@ class SequenceTest extends PHPUnit\Framework\TestCase {
 			[new Sequence(), '', 0, false, Sequence::INVALID_ARGUMENTS],
 		];
 	}
-	
+
 	public function testResultAs()
 	{
 		$parser = (new Sequence(
@@ -87,6 +87,6 @@ class SequenceTest extends PHPUnit\Framework\TestCase {
 		$this->assertEquals('ab', $sequence);
 		$this->assertEquals('a', $a);
 		$this->assertEquals('b', $b);
-	}	
+	}
 
 }

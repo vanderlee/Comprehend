@@ -84,5 +84,10 @@ class Success extends Match {
 	public function hasResult($name) {
 		return isset($this->results[$name]);
 	}
+	
+	public function __toString()
+	{
+		return 'Successfully matched ' . $this->length . ' characters.';
+	}
 
 }

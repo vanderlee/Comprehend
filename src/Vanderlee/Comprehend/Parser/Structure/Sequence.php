@@ -11,6 +11,7 @@ namespace vanderlee\comprehend\parser\structure;
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\parser\terminal\Char;
+use \vanderlee\comprehend\ArgumentsTrait;
 
 /**
  * Description of SequenceParser
@@ -19,6 +20,9 @@ use \vanderlee\comprehend\parser\terminal\Char;
  */
 class Sequence extends Parser {
 
+	use ScanningTrait;
+	use ArgumentsTrait;
+	
 	private $parsers = null;
 
 	public function __construct(...$arguments)
@@ -33,6 +37,8 @@ class Sequence extends Parser {
 		if (!is_array($this->parsers) || count($this->parsers) < 1) {
 			return $this->failure($in, $offset, Parser::INVALID_ARGUMENTS);
 		}
+		
+		$this->pushScannerToContext($context);
 
 		$total = 0;
 		foreach ($this->parsers as $parser) {
@@ -41,13 +47,15 @@ class Sequence extends Parser {
 			$total += $match->length;
 
 			if (!$match->match) {  // must match
+				$this->popScannerFromContext($context);
+				
 				return $this->failure($in, $offset, $total);
 			}
 
 			$child_matches[] = $match;
 		}
 
-		//@todo add own callback?
+		$this->popScannerFromContext($context);
 
 		return $this->success($in, $offset, $total, $child_matches);
 	}

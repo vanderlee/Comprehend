@@ -4,6 +4,7 @@ namespace vanderlee\comprehend\parser\structure;
 
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
+use \vanderlee\comprehend\ArgumentsTrait;
 
 /**
  * Description of OrParser
@@ -11,6 +12,8 @@ use \vanderlee\comprehend\core\Context;
  * @author Martijn
  */
 class Choice extends Parser {
+	
+	use ArgumentsTrait;
 
 	private $parsers = null;
 
