@@ -42,6 +42,14 @@ class SetTest extends PHPUnit\Framework\TestCase {
 			[new Set('abc'), 'c', 0, true, 1],
 			[new Set('abc'), 'za', 0, false, 0],
 			[new Set('abc'), 'za', 1, true, 1],
+			[(new Set('a'))->caseInsensitive(), 'abc', 0, true, 1],
+			[(new Set('a'))->caseInsensitive(), 'ABC', 0, true, 1],
+			[(new Set('A'))->caseInsensitive(), 'abc', 0, true, 1],
+			[(new Set('A'))->caseInsensitive(), 'ABC', 0, true, 1],
+			[new Set('a', false), 'a', 0, false, 0],
+			[new Set('a', false), 'b', 0, true, 1],
+			[new Set('a', false), 'A', 0, true, 1],
+			[(new Set('a', false))->caseInsensitive(), 'A', 0, false, 0],
 		];
 	}
 

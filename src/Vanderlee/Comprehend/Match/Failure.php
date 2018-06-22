@@ -8,7 +8,7 @@ namespace vanderlee\comprehend\match;
  * @author Martijn
  */
 class Failure extends Match {
-
+	
 	public function __get($name)
 	{
 		return $name === 'match' ? false : parent::__get($name);

@@ -42,7 +42,7 @@ abstract class Parser {
 	}
 
 	/**
-	 * @return \vanderlee\comprehend\core\Match;
+	 * @return \vanderlee\comprehend\match\Match;
 	 */
 	abstract protected function parse(string &$in, int $offset, Context $context);
 
@@ -60,6 +60,11 @@ abstract class Parser {
 		$match = $this->parse($in, $offset, new Context());
 		$match->resolve();
 		return $match;
+	}
+	
+	public function __invoke(string $in, int $offset = 0)
+	{
+		return $this->match($in, $offset);
 	}
 
 	/**

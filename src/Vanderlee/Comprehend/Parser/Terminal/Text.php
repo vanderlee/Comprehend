@@ -12,6 +12,8 @@ use \vanderlee\comprehend\core\Context;
  */
 class Text extends Parser {
 	
+	use CaseSensitiveTrait;
+	
 	private $text = null;
 	private $length = null;
 
@@ -28,13 +30,19 @@ class Text extends Parser {
 		if ($length <= 0) {
 			return $this->failure($in, $offset, self::INVALID_ARGUMENTS);
 		}
-
+		
+		$this->pushCaseSensitivityToContext($context);
+		
 		$text = $context->handleCase($this->text);
 		for ($c = 0; $c < $length; $c++) {
 			if ($offset + $c >= mb_strlen($in) || $text[$c] != $context->handleCase($in[$offset + $c])) {
+				$this->popCaseSensitivityFromContext($context);
+				
 				return $this->failure($in, $offset, $c);
 			}
 		}
+		
+		$this->popCaseSensitivityFromContext($context);
 		
 		return $this->success($in, $offset, $length);
 	}

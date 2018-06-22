@@ -9,27 +9,34 @@
 namespace vanderlee\comprehend\directive;
 
 use \vanderlee\comprehend\core\Context;
+use \vanderlee\comprehend\parser\Parser;
 
 /**
  * Description of LexemeDirective
  *
  * @author Martijn
  */
-class Lexeme extends AbstractDirective {
+class Space extends Parser {
+	
+	// where's the spacer?
 
+	/**
+	 * @var \vanderlee\comprehend\parser\Parser;
+	 */
 	private $parser = null;
 
 	public function __construct($parser)
 	{
 		$this->parser = ParserUtil::getParserArg($parser);
 	}
-
+	
 	protected function parse(string &$in, int $offset, Context $context)
 	{
-		$context->pushSkipper();
+		$context->pushSpacer();
 		$match = $this->parser->parse($in, $offset, $context);
-		$context->popSkipper();
-		return $match;
+		$context->popSpacer();
+		
+		return $this->success($in, $offset, $match->match ? $match->length : 0);
 	}
 
 }

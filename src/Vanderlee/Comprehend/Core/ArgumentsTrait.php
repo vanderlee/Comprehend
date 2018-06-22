@@ -1,6 +1,6 @@
 <?php
 
-namespace vanderlee\comprehend;
+namespace vanderlee\comprehend\core;
 
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\parser\terminal\Char;

@@ -78,6 +78,15 @@ class RangeTest extends PHPUnit\Framework\TestCase {
 			[new Range('a', 'z'), '', 0, false, 0],
 			[new Range('a', 'z'), 'foo', 1, true, 1],
 			[new Range('a', 'z'), 'foo', 3, false, 0],
+			[(new Range('a', 'z'))->caseInsensitive(), 'foo', 0, true, 1],
+			[(new Range('a', 'z'))->caseInsensitive(), 'FOO', 0, true, 1],
+			[(new Range('A', 'Z'))->caseInsensitive(), 'foo', 0, true, 1],
+			[(new Range('A', 'Z'))->caseInsensitive(), 'FOO', 0, true, 1],
+			[new Range('a', 'm', false), 'foo', 0, false, 0],
+			[new Range('a', 'm', false), 'FOO', 0, true, 1],
+			[new Range('a', 'm', false), 'zoo', 0, true, 1],
+			'[a-m]/i > FOO' => [(new Range('a', 'm', false))->caseInsensitive(), 'FOO', 0, false, 0],
+			'[a-m]/i > ZOO' => [(new Range('a', 'm', false))->caseInsensitive(), 'ZOO', 0, true, 1],
 		];
 	}
 

@@ -1,14 +1,25 @@
-Phase 1
-=======
--	Ungreedy
--	Refactor
-	-	Rename stuff like 'Match' to Result
-	-	Make separate match/mismatch (implementing match interface or abstract)
-	-	isTerminal (inherit)
-	-	isTerminalSequence (sequence/repeat of only isTerminal()s
-	-	Exceptions
-	-	Group sequence/repeat (scannables)
--	How to provide scanner to parser without a Context?
+Milestone 1
+===========
+-	Enumeration support
+-	Test directives
+-	self::INVALID_ARGUMENTS failure Match inherit
+-	Output/result redesign
+-	Builder: inherit, results, validate, etc...
+-	Special parsers (CSV, Quoted, etc.)
+-	Simple parser demo
+-	Examples
+-	README
+
+
+Milestone 2
+===========
+-	Facade syntax
+-	ABNF parser
+-	Choice: shortest/longest by sorting? (stable sort!)
+-	Ungreedy repeater
+	-	Parent responsible for ungreedy backtracking?
+-	Own Exception class
+-	Traits for stuff
 -	Match; handle child_matches differently? Fluent (not in constructor)
 -	Callbacks
 	-	Match; error/warnings/etc (flexible decorators w/ callbacks)

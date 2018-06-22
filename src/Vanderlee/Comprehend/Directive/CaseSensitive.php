@@ -1,24 +1,32 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace vanderlee\comprehend\directive;
+
+use \vanderlee\comprehend\parser\Parser;
 
 /**
  * Description of CaseDirective
  *
  * @author Martijn
  */
-class CaseSensitive extends AbstractDirective {
+class CaseSensitive extends Parser {
 
+	/**
+	 * @var Parser
+	 */
 	private $parser = null;
+	
+	/**
+	 * @var bool
+	 */
 	private $case_sensitive = null;
 
-	public function __construct($parser, $case_sensitive)
+	/**
+	 * 
+	 * @param Parser|string|integer $parser
+	 * @param bool $case_sensitive
+	 */
+	public function __construct($parser, bool $case_sensitive = true)
 	{
 		$this->parser = ParserUtil::getParserArg($parser);
 		$this->case_sensitive = (bool) $case_sensitive;
@@ -26,9 +34,10 @@ class CaseSensitive extends AbstractDirective {
 
 	protected function parse($in, $offset, ParserContext $context)
 	{
-		$context->pushCaseSensitive($this->case_sensitive);
+		$context->pushCaseSensitivity($this->case_sensitive);
 		$match = $this->parser->parse($in, $offset, $context);
-		$context->popCaseSensitive();
+		$context->popCaseSensitivity();
+		
 		return $match;
 	}
 

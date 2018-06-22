@@ -4,7 +4,7 @@ namespace vanderlee\comprehend\parser\structure;
 
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
-use \vanderlee\comprehend\ArgumentsTrait;
+use \vanderlee\comprehend\core\ArgumentsTrait;
 
 /**
  * Description of OrParser
@@ -28,9 +28,9 @@ class Choice extends Parser {
 
 	protected function parse(string &$in, int $offset, Context $context)
 	{
-		switch ($context->getOrMode()) {
+		switch ($context->getPreference()) {
 			default:
-			case Context::OR_FIRST:
+			case Context::PREFER_FIRST:
 				$max = 0;
 				foreach ($this->parsers as $parser) {
 					$match = $parser->parse($in, $offset, $context);
@@ -42,7 +42,7 @@ class Choice extends Parser {
 				return $this->failure($in, $offset, $max);
 				break;
 
-			case Context::OR_LONGEST:
+			case Context::PREFER_LONGEST:
 				$max_match = $this->failure($in, $offset);
 				foreach ($this->parsers as $parser) {
 					$match = $parser->parse($in, $offset, $context);
@@ -58,7 +58,7 @@ class Choice extends Parser {
 				return $max_match;
 				break;
 
-			case Context::OR_SHORTEST:
+			case Context::PREFER_SHORTEST:
 				$match = null;
 				foreach ($this->parsers as $parser) {
 					$attempt = $parser->parse($in, $offset, $context);
@@ -77,7 +77,19 @@ class Choice extends Parser {
 				break;
 		}
 	}
-
+	
+	/**
+	 * Add one or more parsers as choices
+	 * 
+	 * @param string[]|int[]|Parser[] $arguments
+	 */
+	public function add(...$arguments)
+	{
+		$this->parsers = array_merge($this->parsers, self::getArguments($arguments));
+		
+		return $this;
+	}
+	
 	public function __toString()
 	{
 		return '( ' . join(' | ', $this->parsers) . ' )';

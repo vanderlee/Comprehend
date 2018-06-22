@@ -4,7 +4,7 @@ namespace vanderlee\comprehend\parser\structure;
 
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
-use \vanderlee\comprehend\ArgumentsTrait;
+use \vanderlee\comprehend\core\ArgumentsTrait;
 
 /**
  * Description of RepeatParser
@@ -13,18 +13,24 @@ use \vanderlee\comprehend\ArgumentsTrait;
  */
 class Repeat extends Parser {
 
-	use ScanningTrait;	
-	use ArgumentsTrait;
+	const GREEDY = 0;
+	const UNGREEDY = 1;
+
+	use SpacingTrait;
 	
+	//use GreedyTrait;
+
 	private $parser = null;
 	private $min = null;
 	private $max = null;
+	private $flags = 0;
 
-	public function __construct($parser, $min = 0, $max = null)
+	public function __construct($parser, $min = 0, $max = null, $flags = self::GREEDY)
 	{
 		$this->parser = $this->getArgument($parser);
 		$this->min = $min;
 		$this->max = $max;
+		$this->flags = $flags;
 
 		if ($this->max !== null && $this->max < $this->min) {
 			throw new \Exception('Invalid repeat range specified');
@@ -33,36 +39,35 @@ class Repeat extends Parser {
 
 	protected function parse(string &$in, int $offset, Context $context)
 	{
-		$this->pushScannerToContext($context);
+		$this->pushSpacer($context);
 
 		$child_matches = [];
 		
-		$total = 0;
-		$matches = 0;
+		$length = 0;
 		$tokens = array();
 		do {
-			$skip = $context->skip($in, $offset + $total);
-			$match = $this->parser->parse($in, $offset + $total + $skip, $context);
+			$skip = $context->skipSpacing($in, $offset + $length);
+			$match = $this->parser->parse($in, $offset + $length + $skip, $context);
 			if ($match->match) {
-				$total += $skip + $match->length;
+				$length += $skip + $match->length;
 				$child_matches[] = $match;
 			}
 		} while ($match->match && ($this->max == null || count($child_matches) < $this->max));
 
 		$match = (count($child_matches) >= $this->min) && ($this->max == null || count($child_matches) <= $this->max);
 
-		$this->popScannerFromContext($context);
-		
-		return $match ? $this->success($in, $offset, $total, $child_matches) : $this->failure($in, $offset, $total);
+		$this->popSpacer($context);
+
+		return $match ? $this->success($in, $offset, $length, $child_matches) : $this->failure($in, $offset, $length);
 	}
-	
+
 	public function __toString()
-	{		
+	{
 		// Output ABNF formatting
-		
+
 		$min = $this->min > 0 ? $this->min : '';
 		$max = $this->max === null ? '' : $this->max;
-		
+
 		return $min . '*' . $max . $this->parser;
 	}
 

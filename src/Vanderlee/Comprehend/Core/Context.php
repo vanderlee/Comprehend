@@ -2,6 +2,8 @@
 
 namespace vanderlee\comprehend\core;
 
+use \vanderlee\comprehend\core\ArgumentsTrait;
+
 /**
  * Maintains the current context of the parser chain
  *
@@ -9,21 +11,21 @@ namespace vanderlee\comprehend\core;
  */
 class Context {
 
-	use \vanderlee\comprehend\ArgumentsTrait;
+	use ArgumentsTrait;
 
 	private $skipper = [];
 
-	public function pushSkipper($skipper = null)
+	public function pushSpacer($skipper = null)
 	{
 		array_push($this->skipper, $skipper === null ? null : $this->getArgument($skipper));
 	}
 
-	public function popSkipper()
+	public function popSpacer()
 	{
 		array_pop($this->skipper);
 	}
 
-	public function skip($in, $offset)
+	public function skipSpacing($in, $offset)
 	{
 		$skipper = end($this->skipper);
 		if ($skipper instanceof \vanderlee\comprehend\parser\Parser) {
@@ -37,14 +39,14 @@ class Context {
 
 	private $case_sensitive = [];
 
-	public function pushCaseSensitive($case_sensitive = TRUE)
+	public function pushCaseSensitivity($case_sensitive = TRUE)
 	{
 		array_push($this->case_sensitive, (bool) $case_sensitive);
 	}
 
-	public function popCaseSensitive()
+	public function popCaseSensitivity()
 	{
-		array_pop($this->case_sensitive);
+		return array_pop($this->case_sensitive);
 	}
 
 	public function isCaseSensitive()
@@ -58,32 +60,32 @@ class Context {
 		return $this->isCaseSensitive() ? $text : mb_strtolower($text);
 	}
 
-	const OR_FIRST = 0x01;
-	const OR_LONGEST = 0x02;
-	const OR_SHORTEST = 0x03;
+	const PREFER_FIRST = 'first';
+	const PREFER_LONGEST = 'longest';
+	const PREFER_SHORTEST = 'shortest';
 
-	private $or_mode = [];
+	private $preference = [];
 
-	public function pushOrMode($or_mode)
+	public function pushPreference($preference)
 	{
-		array_push($this->or_mode, $or_mode);
+		array_push($this->preference, $preference);
 	}
 
-	public function popOrMode()
+	public function popPreference()
 	{
-		array_pop($this->or_mode);
+		array_pop($this->preference);
 	}
 
-	public function getOrMode()
+	public function getPreference()
 	{
-		return end($this->or_mode);
+		return end($this->preference);
 	}
 
-	public function __construct($skipper = null, $case_sensitive = TRUE, $or_mode = self::OR_FIRST)
+	public function __construct($skipper = null, $case_sensitive = TRUE, $or_mode = self::PREFER_FIRST)
 	{
-		$this->pushSkipper($skipper);
-		$this->pushCaseSensitive($case_sensitive);
-		$this->pushOrMode($or_mode);
+		$this->pushSpacer($skipper);
+		$this->pushCaseSensitivity($case_sensitive);
+		$this->pushPreference($or_mode);
 	}
 
 }

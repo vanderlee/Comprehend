@@ -1,8 +1,8 @@
-Simple PHP Object-Oriented Parser framework
-============================================
-v0.1
+Comprehend - a PHP *BNF parser framework
+========================================
+v0.2
 
-Copyright &copy; 2011-2013 Martijn W. van der Lee (http://martijn.vanderlee.com)
+Copyright &copy; 2011-2018 Martijn W. van der Lee (http://toyls.com)
 MIT (http://www.opensource.org/licenses/mit-license.php)
 
 Make full LALR(1) lexers/tokenizers/parsers with ease.
@@ -19,8 +19,8 @@ Example
 ### BNF
 -	word	:= [A-Za-z]+
 -	list	:= (word {',' word}*)?
-### PHPOOParser code (using P helper class):
--	$word	= P::plus(P::alpha());
+### Comprehend code (using Facade helper class):
+-	$word	= Facade::plus(Facade::alpha);
 -	$list	= P::optional(P::seq($word, P::kleene(P::seq(',', $word))));
 
 Files

@@ -56,6 +56,9 @@ class RegexTest extends PHPUnit\Framework\TestCase {
 			[new Regex('~[a-f]*~i'), 'zabc', 0, false, 0],
 			[new Regex('~[a-f]+~i'), 'AbC', 0, true, 3],
 			[new Regex('~[a-f]+~i'), 'zabc', 1, true, 3],
+			[new Regex('~[a-f]+~'), 'abc', 0, true, 3],
+			[new Regex('~[a-f]+~'), 'ABC', 0, false, 0],
+			[(new Regex('~[a-f]+~'))->caseInsensitive(), 'ABC', 0, true, 3],
 		];
 	}
 

@@ -11,7 +11,9 @@ use \vanderlee\comprehend\core\Context;
  * @author Martijn
  */
 class Char extends Parser {
-
+	
+	use CaseSensitiveTrait;
+	
 	private $character = null;
 
 	public function __construct($character)
@@ -25,9 +27,15 @@ class Char extends Parser {
 			return $this->failure($in, $offset);
 		}
 
+		$this->pushCaseSensitivityToContext($context);
+		
 		if ($context->handleCase($in[$offset]) == $context->handleCase($this->character)) {
+			$this->popCaseSensitivityFromContext($context);
+			
 			return $this->success($in, $offset, 1);
-		}
+		}		
+		
+		$this->popCaseSensitivityFromContext($context);
 
 		return $this->failure($in, $offset);
 	}

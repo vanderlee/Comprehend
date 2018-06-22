@@ -50,6 +50,14 @@ class CharTest extends PHPUnit\Framework\TestCase {
 			[new Char('a'), 'ba', 0, false, 0],
 			[new Char('a'), 'ba', 1, true, 1],
 			[new Char(ord('a')), 'a', 0, true, 1],
+			[(new Char('a'))->caseInsensitive(), 'a', 0, true, 1],
+			[(new Char('A'))->caseInsensitive(), 'A', 0, true, 1],
+			[(new Char('a'))->caseInsensitive(), 'A', 0, true, 1],
+			[(new Char('A'))->caseInsensitive(), 'a', 0, true, 1],
+			[(new Char('a'))->setCaseSensitivity(false), 'a', 0, true, 1],
+			[(new Char('A'))->setCaseSensitivity(false), 'A', 0, true, 1],
+			[(new Char('a'))->setCaseSensitivity(false), 'A', 0, true, 1],
+			[(new Char('A'))->setCaseSensitivity(false), 'a', 0, true, 1],
 		];
 	}
 

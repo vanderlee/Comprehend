@@ -31,6 +31,10 @@ class TextTest extends PHPUnit\Framework\TestCase {
 			[new Text('bar'), 'foobaz', 3, false, 2],
 			[new Text(''), '', 0, false, Text::INVALID_ARGUMENTS],
 			[new Text(''), 'foo', 0, false, Text::INVALID_ARGUMENTS],
+			[(new Text('foo'))->caseInsensitive(), 'foo', 0, true, 3],
+			[(new Text('foo'))->caseInsensitive(), 'FOO', 0, true, 3],
+			[(new Text('FOO'))->caseInsensitive(), 'foo', 0, true, 3],
+			[(new Text('FOO'))->caseInsensitive(), 'FOO', 0, true, 3],
 		];
 	}
 

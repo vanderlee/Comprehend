@@ -11,6 +11,8 @@ use \vanderlee\comprehend\core\Context;
  * @author Martijn
  */
 class Regex extends Parser {
+	
+	use CaseSensitiveTrait;
 
 	private $pattern = null;
 
@@ -28,8 +30,10 @@ class Regex extends Parser {
 	}
 
 	protected function parse(string &$in, int $offset, Context $context)
-	{
+	{		
+		$this->pushCaseSensitivityToContext($context);
 		$pattern = $this->pattern . ($context->isCaseSensitive() ? '' : 'i');
+		$this->popCaseSensitivityFromContext($context);
 
 		if (preg_match($pattern, $in, $m, 0, $offset) !== FALSE) {
 			if (count($m) > 0 && mb_strlen($m[0]) > 0 && strpos($in, $m[0], $offset) == $offset) {

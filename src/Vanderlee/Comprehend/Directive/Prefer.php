@@ -2,7 +2,7 @@
 
 namespace vanderlee\comprehend\directive;
 
-use \vanderlee\comprehend\directive\AbstractDirective;
+use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
 
 /**
@@ -10,39 +10,39 @@ use \vanderlee\comprehend\core\Context;
  *
  * @author Martijn
  */
-class Choice extends AbstractDirective {
+class Prefer extends Parser {
 
 	private $parser = null;
-	private $or_mode = null;
+	private $preference = null;
 
 	/**
 	 * 
 	 * @param \vanderlee\comprehend\parser\structure\Choice $parser
-	 * @param int $or_mode
+	 * @param mixed $preference
 	 */
-	public function __construct(\vanderlee\comprehend\parser\structure\Choice $parser, int $or_mode = 0)
+	public function __construct(\vanderlee\comprehend\parser\structure\Choice $parser, $preference = Context::PREFER_FIRST)
 	{
 		$this->parser = $parser;
-		$this->or_mode = $or_mode;
+		$this->preference = $preference;
 	}
 
 	protected function parse(string &$in, int $offset, Context $context)
 	{
-		$context->pushOrMode($this->or_mode);
+		$context->pushPreference($this->preference);
 		$match = $this->parser->parse($in, $offset, $context);
-		$context->popOrMode();
+		$context->popPreference();
 		return $match;
 	}
 	
 	public function __toString()
 	{
-		switch($this->or_mode) {
+		switch($this->preference) {
 			default:
-			case Context::OR_FIRST:
+			case Context::PREFER_FIRST:
 				return 'first-of' . $this->parser;
-			case Context::OR_LONGEST:
+			case Context::PREFER_LONGEST:
 				return 'longest-of' . $this->parser;
-			case Context::OR_SHORTEST:
+			case Context::PREFER_SHORTEST:
 				return 'shortest-of' . $this->parser;
 		}
 	}

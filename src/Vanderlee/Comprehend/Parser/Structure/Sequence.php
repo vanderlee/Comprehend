@@ -11,7 +11,7 @@ namespace vanderlee\comprehend\parser\structure;
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\parser\terminal\Char;
-use \vanderlee\comprehend\ArgumentsTrait;
+use \vanderlee\comprehend\core\ArgumentsTrait;
 
 /**
  * Description of SequenceParser
@@ -20,8 +20,7 @@ use \vanderlee\comprehend\ArgumentsTrait;
  */
 class Sequence extends Parser {
 
-	use ScanningTrait;
-	use ArgumentsTrait;
+	use SpacingTrait;
 	
 	private $parsers = null;
 
@@ -38,16 +37,18 @@ class Sequence extends Parser {
 			return $this->failure($in, $offset, Parser::INVALID_ARGUMENTS);
 		}
 		
-		$this->pushScannerToContext($context);
+		$this->pushSpacer($context);
 
 		$total = 0;
 		foreach ($this->parsers as $parser) {
-			$total += $context->skip($in, $offset + $total);
+			if ($total > 0) {
+				$total += $context->skipSpacing($in, $offset + $total);
+			}
 			$match = $parser->parse($in, $offset + $total, $context);
 			$total += $match->length;
 
 			if (!$match->match) {  // must match
-				$this->popScannerFromContext($context);
+				$this->popSpacer($context);
 				
 				return $this->failure($in, $offset, $total);
 			}
@@ -55,7 +56,7 @@ class Sequence extends Parser {
 			$child_matches[] = $match;
 		}
 
-		$this->popScannerFromContext($context);
+		$this->popSpacer($context);
 
 		return $this->success($in, $offset, $total, $child_matches);
 	}
@@ -68,6 +69,8 @@ class Sequence extends Parser {
 	public function add(...$arguments)
 	{
 		$this->parsers = array_merge($this->parsers, self::getArguments($arguments));
+		
+		return $this;		
 	}
 
 	public function __toString()

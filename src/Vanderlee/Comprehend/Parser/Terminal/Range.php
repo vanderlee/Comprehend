@@ -11,11 +11,14 @@ use \vanderlee\comprehend\core\Context;
  * @author Martijn
  */
 class Range extends Parser {
+	
+	use CaseSensitiveTrait;
 
 	private $first = null;
 	private $last = null;
+	private $in = true;
 
-	public function __construct($first, $last)
+	public function __construct($first, $last, $in = true)
 	{
 		if ( $first === null && $last === null ) {
 			throw new \Exception('Empty arguments');
@@ -23,6 +26,7 @@ class Range extends Parser {
 		
 		$this->first = $first === null ? null : self::parseCharacter($first);
 		$this->last = $last === null ? null : self::parseCharacter($last);
+		$this->in = (bool) $in;
 	}
 
 	protected function parse(string &$in, int $offset, Context $context)
@@ -32,17 +36,23 @@ class Range extends Parser {
 		}
 
 		if ($offset >= mb_strlen($in)) {
-			return $this->failure($in, $offset, 0);			
+			return $this->failure($in, $offset);			
 		}
-
+		
+		$this->pushCaseSensitivityToContext($context);
+		
 		$first = ord($context->handleCase($this->first));
 		$last = ord($context->handleCase($this->last));
 		$ord = ord($context->handleCase($in[$offset]));
 		if ($first <= $ord && ($this->last === null || $ord <= $last)) {
-			return $this->success($in, $offset, 1);			
+			$this->popCaseSensitivityFromContext($context);
+			
+			return $this->in ? $this->success($in, $offset, 1) : $this->failure($in, $offset);
 		}
 		
-		return $this->failure($in, $offset, 0);			
+		$this->popCaseSensitivityFromContext($context);
+		
+		return $this->in ? $this->failure($in, $offset) : $this->success($in, $offset, 1);
 	}
 	
 	public function __toString()

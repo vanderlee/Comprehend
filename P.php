@@ -31,17 +31,17 @@ class P {
 
 	public static function or_mode_first($parser)
 	{
-		return new \vanderlee\comprehend\directive\Choice($parser, \vanderlee\comprehend\core\Context::OR_FIRST);
+		return new \vanderlee\comprehend\directive\Prefer($parser, \vanderlee\comprehend\core\Context::PREFER_FIRST);
 	}
 
 	public static function or_mode_longest($parser)
 	{
-		return new \vanderlee\comprehend\directive\Choice($parser, \vanderlee\comprehend\core\Context::OR_LONGEST);
+		return new \vanderlee\comprehend\directive\Prefer($parser, \vanderlee\comprehend\core\Context::PREFER_LONGEST);
 	}
 
 	public static function or_mode_shortest($parser)
 	{
-		return new \vanderlee\comprehend\directive\Choice($parser, \vanderlee\comprehend\core\Context::OR_SHORTEST);
+		return new \vanderlee\comprehend\directive\Prefer($parser, \vanderlee\comprehend\core\Context::PREFER_SHORTEST);
 	}
 
 	// Terminals
@@ -155,17 +155,17 @@ class P {
 
 	public static function first()
 	{
-		return new \vanderlee\comprehend\directive\Choice(new \vanderlee\comprehend\parser\Choice(func_get_args()), \vanderlee\comprehend\core\Context::OR_FIRST);
+		return new \vanderlee\comprehend\directive\Prefer(new \vanderlee\comprehend\parser\Choice(func_get_args()), \vanderlee\comprehend\core\Context::PREFER_FIRST);
 	}
 
 	public static function longest()
 	{
-		return new \vanderlee\comprehend\directive\Choice(new \vanderlee\comprehend\parser\Choice(func_get_args()), \vanderlee\comprehend\core\Context::OR_LONGEST);
+		return new \vanderlee\comprehend\directive\Prefer(new \vanderlee\comprehend\parser\Choice(func_get_args()), \vanderlee\comprehend\core\Context::PREFER_LONGEST);
 	}
 
 	public static function shortest()
 	{
-		return new \vanderlee\comprehend\directive\Choice(new \vanderlee\comprehend\parser\Choice(func_get_args()), \vanderlee\comprehend\core\Context::OR_SHORTEST);
+		return new \vanderlee\comprehend\directive\Prefer(new \vanderlee\comprehend\parser\Choice(func_get_args()), \vanderlee\comprehend\core\Context::PREFER_SHORTEST);
 	}
 
 	public static function all()
