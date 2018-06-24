@@ -12,28 +12,32 @@ use \vanderlee\comprehend\builder\Factory;
 class Definition {
 
 	public $parser = null;
-	public $validate = null;
-	public $inherit = null;
-	public $output = null;
+	public $validator = null;
+//	public $inherit = null;
+//	public $output = null;
 
 	/**
 	 * 
 	 * @param Parser|callable $parser Either a parser or a function returning a parser ('generator')
-	 * @param type $validate
-	 * @param type $inherit
-	 * @param type $output
+	 * @param callable  $validator 
 	 */
-	public function __construct($parser = null, $validate = null, $inherit = null, $output = null)
+	
+	public function __construct($parser = null, callable $validator = null)
 	{
 		$this->parser = $parser;
-		$this->validate = $validate;
-		$this->inherit = $inherit;
-		$this->output = $output;
+		$this->validator = $validator;
 	}
 
 	public function parser($parser = null)
 	{
 		$this->parser = $parser;
+
+		return $this;
+	}
+
+	public function validator($validator = null)
+	{
+		$this->validator = $validator;
 
 		return $this;
 	}

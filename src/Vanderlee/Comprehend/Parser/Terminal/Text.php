@@ -11,42 +11,40 @@ use \vanderlee\comprehend\core\Context;
  * @author Martijn
  */
 class Text extends Parser {
-	
+
 	use CaseSensitiveTrait;
-	
+
 	private $text = null;
 	private $length = null;
 
 	public function __construct($text)
 	{
 		$this->text = $text;
+
 		$this->length = mb_strlen($text);
+		if ($this->length <= 0) {
+			throw new \Exception('Empty argument');
+		}
 	}
 
 	protected function parse(string &$in, int $offset, Context $context)
 	{
-		$length = mb_strlen($this->text);
-		
-		if ($length <= 0) {
-			return $this->failure($in, $offset, self::INVALID_ARGUMENTS);
-		}
-		
 		$this->pushCaseSensitivityToContext($context);
-		
+
 		$text = $context->handleCase($this->text);
-		for ($c = 0; $c < $length; $c++) {
+		for ($c = 0; $c < $this->length; $c++) {
 			if ($offset + $c >= mb_strlen($in) || $text[$c] != $context->handleCase($in[$offset + $c])) {
 				$this->popCaseSensitivityFromContext($context);
-				
+
 				return $this->failure($in, $offset, $c);
 			}
 		}
-		
+
 		$this->popCaseSensitivityFromContext($context);
-		
-		return $this->success($in, $offset, $length);
+
+		return $this->success($in, $offset, $this->length);
 	}
-	
+
 	public function __toString()
 	{
 		return '"' . $this->text . '"';

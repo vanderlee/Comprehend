@@ -14,24 +14,32 @@ class Factory extends Parser {
 
 	/** @var Parser */
 	public $parser = null;
+	
+	public $validator = null;
 
 	public function __construct(Definition $definition, $arguments)
 	{
-		$parser = $definition->parser;
-		if (!$parser instanceof Parser) {
-			if (is_callable($parser)) {
-				$parser = $parser(...$arguments);
+		$this->parser = $definition->parser;
+		if (!$this->parser instanceof Parser) {
+			if (is_callable($this->parser)) {
+				$this->parser = ($this->parser)(...$arguments);
 			} else {
 				throw new \Exception('Parser not defined');
 			}
 		}
-
-		$this->parser = $parser;
+		
+		$this->validator = $definition->validator;
 	}
 
 	protected function parse(string &$in, int $offset, Context $context)
 	{
-		return $this->parser->parse($in, $offset, $context);
+		$match = $this->parser->parse($in, $offset, $context);
+		
+		if ($match->match && $this->validator && !($this->validator)(substr($in, $offset, $match->length))) {	
+			$match = $this->failure($in, $offset, $match->length);
+		}
+		
+		return $match;
 	}
 
 	public function __toString()

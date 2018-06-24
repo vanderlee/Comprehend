@@ -10,14 +10,9 @@ use \vanderlee\comprehend\parser\terminal\Char;
 use \vanderlee\comprehend\parser\terminal\Text;
 
 abstract class Parser {
-	
-	const INVALID_ARGUMENTS = PHP_INT_MIN;
 
-	/**
-	 * List of result names to assign the matched text to.
-	 * @var string
-	 */
-	private $names = [];
+	use ResultTrait;
+	use AssignTrait;
 
 	/**
 	 * List of callbacks to call when this parser has matched a part of the
@@ -28,7 +23,7 @@ abstract class Parser {
 
 	protected static function parseCharacter($character)
 	{
-		if (empty($character)) {
+		if ($character === '' || $character === null) {
 			throw new \Exception('Empty argument');
 		}
 
@@ -57,11 +52,9 @@ abstract class Parser {
 			throw new \Exception("Negative offset");
 		}
 
-		$match = $this->parse($in, $offset, new Context());
-		$match->resolve();
-		return $match;
+		return $this->parse($in, $offset, new Context())->resolve();
 	}
-	
+
 	public function __invoke(string $in, int $offset = 0)
 	{
 		return $this->match($in, $offset);
@@ -79,20 +72,19 @@ abstract class Parser {
 	protected function success(string &$in, int $offset, int $length = 0, &$successes = [])
 	{
 		$callbacks = $this->callbacks;
-		$names = $this->names;
 
 		$successes = is_array($successes) ? $successes : [$successes];
 
 		return (new Success($length, $successes))
-						->callback(function(&$results) use($in, $offset, $length, $callbacks, $names) {
-							$matchedText = substr($in, $offset, $length);
+						->callback(function(&$results) use($in, $offset, $length, $callbacks) {
+							$text = substr($in, $offset, $length);
 
-							foreach ($names as $name) {
-								$results[$name] = $matchedText;
-							}
+							$this->resolveResultCallbacks($results, $text);
+
+							$this->resolveAssignCallbacks($text);
 
 							foreach ($callbacks as $callback) {
-								$callback($matchedText, $in, $offset, $length);
+								$callback($text, $in, $offset, $length);
 							}
 						});
 	}
@@ -110,37 +102,9 @@ abstract class Parser {
 		return new Failure($length);
 	}
 
-	/**
-	 * After parsing, assign the matched input of this parser to the named
-	 * result. Only assign if successfully matched entire parent upto root.
-	 * 
-	 * @param string|integer $key
-	 * @return $this
-	 */
-	public function resultAs($key)
-	{
-		$this->names[] = $key;
-		return $this;
-	}
-
 	public function callback(callable $callback)
 	{
 		$this->callbacks[] = $callback;
-		return $this;
-	}
-
-	/**
-	 * After parsing, assign the matched input to the specified local variable.
-	 * Only assign if successfully matched entire parent upto root.
-	 *  
-	 * @param type $variable
-	 * @return $this
-	 */
-	public function assignTo(&$variable)
-	{
-		$this->callbacks[] = function($matchedText) use (&$variable) {
-			$variable = $matchedText;
-		};
 		return $this;
 	}
 

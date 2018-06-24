@@ -7,6 +7,7 @@ use \vanderlee\comprehend\parser\terminal\Set;
 use \vanderlee\comprehend\parser\structure\Choice;
 use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\match\Match;
+use \vanderlee\comprehend\parser\terminal\Range;
 
 use \vanderlee\comprehend\builder\Definition;
 use \vanderlee\comprehend\builder\Ruleset;
@@ -76,5 +77,20 @@ class BuilderTest extends TestCase {
 		$this->assertResult(false, 5, $qs('/foo"'));
 		$this->assertResult(true, 6, $qs('/foo"/'));
 	}
+	
+	public function testOddNumbers()
+	{
+		$d = new Definition(new Repeat(new Range('0', '9'), 1));
+		$number = $d();		
+		$this->assertResult(true, 2, $number('11'));
+		$this->assertResult(true, 2, $number('12'));
+		
+		$d->validator(function($text) {
+			return intval($text) % 2 === 1;
+		});
+		$number = $d();		
+		$this->assertResult(true, 2, $number('11'));
+		$this->assertResult(false,  2, $number('12'));
+	}	
 
 }

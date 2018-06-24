@@ -8,18 +8,24 @@ use \vanderlee\comprehend\parser\terminal\Char;
  * @group structure
  * @group parser
  */
-class SequenceTest extends PHPUnit\Framework\TestCase {
+class SequenceTest extends TestCase {
 
+	/**
+	 * @covers Char
+	 */
+	public function testEmpty()
+	{
+		$this->expectExceptionMessage("No arguments");
+		new Sequence();
+	}
+	
 	/**
 	 * @covers Sequence
 	 * @dataProvider sequenceData
 	 */
 	public function testSequence(Sequence $parser, string $input, int $offset, bool $match, int $length)
 	{
-		$result = $parser->match($input, $offset);
-
-		$this->assertSame($match, $result->match, (string) $parser);
-		$this->assertSame($length, $result->length, (string) $parser);
+		$this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
 	}
 
 	public function sequenceData()
@@ -37,7 +43,6 @@ class SequenceTest extends PHPUnit\Framework\TestCase {
 			[new Sequence(new Text('abc')), 'abc', 0, true, 3],
 			[new Sequence(new Char('a')), 'abc', 0, true, 1],
 			[new Sequence(new Char('a'), new Text('bc')), 'abc', 0, true, 3],
-			[new Sequence(), '', 0, false, Sequence::INVALID_ARGUMENTS],
 		];
 	}
 

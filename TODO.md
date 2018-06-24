@@ -2,14 +2,13 @@ Milestone 1
 ===========
 -	Enumeration support
 -	Test directives
--	self::INVALID_ARGUMENTS failure Match inherit
 -	Output/result redesign
--	Builder: inherit, results, validate, etc...
--	Special parsers (CSV, Quoted, etc.)
+	-	validate: partial resolve (results only)
+		-	separate callbacks resolution from result resolution
+-	Builder: inherit, results, etc...
 -	Simple parser demo
 -	Examples
 -	README
-
 
 Milestone 2
 ===========

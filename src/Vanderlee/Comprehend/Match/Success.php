@@ -10,20 +10,22 @@ namespace vanderlee\comprehend\match;
 class Success extends Match {
 
 	private $results = [];
-	
+
 	/**
-	 *
 	 * @var Success[]
 	 */
 	private $successes = [];
-	private $callbacks = [];
 	
-	public function __get($name) {
-		switch($name) {
-			case 'match':	return true;
-			case 'results':	return $this->results;
+	private $callbacks = [];
+
+	public function __get($name)
+	{
+		switch ($name) {
+			case 'match': return true;
+			case 'results': return $this->results;
+			case 'result': return $this->results[null] ?: null;
 		}
-		
+
 		return parent::__get($name);
 	}
 
@@ -35,7 +37,7 @@ class Success extends Match {
 	public function __construct(int $length, &$successes = [])
 	{
 		parent::__construct($length);
-		
+
 		$this->successes = $successes;
 	}
 
@@ -55,12 +57,11 @@ class Success extends Match {
 
 	private function processCallbacks(&$results)
 	{
-		array_walk($this->successes, function($child_match) use(&$results) {
-			$child_match->processCallbacks($results);
+		array_walk($this->successes, function($success) use(&$results) {
+			$success->processCallbacks($results);
 		});
-		
 		$this->successes = [];
-		
+
 		array_walk($this->callbacks, function($callback) use(&$results) {
 			$callback($results);
 		});
@@ -76,15 +77,17 @@ class Success extends Match {
 		$this->processCallbacks($this->results);
 		return $this;
 	}
-	
-	public function getResult($name, $default = null) {
+
+	public function getResult($name, $default = null)
+	{
 		return $this->results[$name] ?? $default;
 	}
-	
-	public function hasResult($name) {
+
+	public function hasResult($name)
+	{
 		return isset($this->results[$name]);
 	}
-	
+
 	public function __toString()
 	{
 		return 'Successfully matched ' . $this->length . ' characters.';

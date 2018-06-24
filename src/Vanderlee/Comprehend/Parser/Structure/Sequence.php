@@ -26,6 +26,10 @@ class Sequence extends Parser {
 
 	public function __construct(...$arguments)
 	{
+		if (empty($arguments)) {
+			throw new \Exception('No arguments');
+		}
+		
 		$this->parsers = self::getArguments($arguments);
 	}
 
@@ -33,10 +37,6 @@ class Sequence extends Parser {
 	{
 		$child_matches = [];
 
-		if (!is_array($this->parsers) || count($this->parsers) < 1) {
-			return $this->failure($in, $offset, Parser::INVALID_ARGUMENTS);
-		}
-		
 		$this->pushSpacer($context);
 
 		$total = 0;

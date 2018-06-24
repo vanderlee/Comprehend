@@ -40,7 +40,7 @@ class Facade extends Parser {
 		$this->parser = reset($this->stack);
 		
 		if ($this->parser === null) {
-			return $this->failure(self::INVALID_ARGUMENTS);
+			return new \Exception('Too few parsers on stack');
 		}
 
 		$match = $this->parser->parse($in, $offset, $context);
