@@ -11,7 +11,7 @@ use \vanderlee\comprehend\parser\terminal\Char;
 class RepeatTest extends PHPUnit\Framework\TestCase {
 
 	/**
-	 * @covers Repeat::_construct
+	 * @covers Repeat::__construct
 	 */
 	public function testEmpty()
 	{

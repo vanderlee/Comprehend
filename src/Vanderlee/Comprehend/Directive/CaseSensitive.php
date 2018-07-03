@@ -3,6 +3,8 @@
 namespace vanderlee\comprehend\directive;
 
 use \vanderlee\comprehend\parser\Parser;
+use \vanderlee\comprehend\core\Context;
+use \vanderlee\comprehend\core\ArgumentsTrait;
 
 /**
  * Description of CaseDirective
@@ -11,34 +13,41 @@ use \vanderlee\comprehend\parser\Parser;
  */
 class CaseSensitive extends Parser {
 
+	use ArgumentsTrait;
+
 	/**
 	 * @var Parser
 	 */
 	private $parser = null;
-	
+
 	/**
 	 * @var bool
 	 */
-	private $case_sensitive = null;
+	private $sensitivity = null;
 
 	/**
 	 * 
 	 * @param Parser|string|integer $parser
-	 * @param bool $case_sensitive
+	 * @param bool $sensitivity
 	 */
-	public function __construct($parser, bool $case_sensitive = true)
+	public function __construct(bool $sensitivity, $parser)
 	{
-		$this->parser = ParserUtil::getParserArg($parser);
-		$this->case_sensitive = (bool) $case_sensitive;
+		$this->parser = self::getArgument($parser);
+		$this->sensitivity = (bool) $sensitivity;
 	}
 
-	protected function parse($in, $offset, ParserContext $context)
+	protected function parse(string &$in, int $offset, Context $context)
 	{
-		$context->pushCaseSensitivity($this->case_sensitive);
+		$context->pushCaseSensitivity($this->sensitivity);
 		$match = $this->parser->parse($in, $offset, $context);
 		$context->popCaseSensitivity();
-		
+
 		return $match;
+	}
+
+	public function __toString()
+	{
+		return ($this->sensitivity ? 'case' : 'no-case') . '( ' . $this->parser . ' )';
 	}
 
 }

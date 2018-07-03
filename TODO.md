@@ -1,14 +1,15 @@
 Milestone 1
 ===========
--	Enumeration support
--	Test directives
 -	Output/result redesign
 	-	validate: partial resolve (results only)
 		-	separate callbacks resolution from result resolution
 -	Builder: inherit, results, etc...
--	Simple parser demo
 -	Examples
--	README
+-	MD's
+-	Move PREFER const's to Prefer directive???
+	-	Enumeration support for prefer
+-	Test directive stacking
+-	Space() directive; false/true support
 
 Milestone 2
 ===========

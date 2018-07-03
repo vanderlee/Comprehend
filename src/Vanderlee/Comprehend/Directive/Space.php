@@ -1,15 +1,10 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace vanderlee\comprehend\directive;
 
 use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\parser\Parser;
+use \vanderlee\comprehend\core\ArgumentsTrait;
 
 /**
  * Description of LexemeDirective
@@ -17,26 +12,43 @@ use \vanderlee\comprehend\parser\Parser;
  * @author Martijn
  */
 class Space extends Parser {
-	
-	// where's the spacer?
+
+	use ArgumentsTrait;
 
 	/**
-	 * @var \vanderlee\comprehend\parser\Parser;
+	 * @var \vanderlee\comprehend\parser\Parser
+	 */
+	private $spacer = null;
+
+	/**
+	 * @var \vanderlee\comprehend\parser\Parser
 	 */
 	private $parser = null;
 
-	public function __construct($parser)
+	/**
+	 * Set (or disable) a spacer for the parser
+	 * 
+	 * @param Parser|string|int|null $spacer
+	 * @param Parser|string|int $parser
+	 */
+	public function __construct($spacer = null, $parser)
 	{
-		$this->parser = ParserUtil::getParserArg($parser);
+		$this->spacer = $spacer === null ? null : self::getArgument($spacer);
+		$this->parser = self::getArgument($parser);
 	}
-	
+
 	protected function parse(string &$in, int $offset, Context $context)
 	{
-		$context->pushSpacer();
+		$context->pushSpacer($this->spacer);
 		$match = $this->parser->parse($in, $offset, $context);
 		$context->popSpacer();
-		
-		return $this->success($in, $offset, $match->match ? $match->length : 0);
+
+		return $match;
+	}
+	
+	public function __toString()
+	{
+		return (string) $this->parser;
 	}
 
 }

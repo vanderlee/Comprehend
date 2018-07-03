@@ -107,5 +107,7 @@ abstract class Parser {
 		$this->callbacks[] = $callback;
 		return $this;
 	}
+	
+	abstract public function __toString();
 
 }

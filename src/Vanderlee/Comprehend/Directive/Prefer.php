@@ -4,6 +4,7 @@ namespace vanderlee\comprehend\directive;
 
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
+use \vanderlee\comprehend\core\ArgumentsTrait;
 
 /**
  * Description of OrDirective
@@ -12,7 +13,17 @@ use \vanderlee\comprehend\core\Context;
  */
 class Prefer extends Parser {
 
+	use ArgumentsTrait;
+
+	/**
+	 * @var \vanderlee\comprehend\parser\Parser;
+	 */
 	private $parser = null;
+
+	/**
+	 * One of Context::PREFER_*
+	 * @var integer
+	 */
 	private $preference = null;
 
 	/**
@@ -20,10 +31,17 @@ class Prefer extends Parser {
 	 * @param \vanderlee\comprehend\parser\structure\Choice $parser
 	 * @param mixed $preference
 	 */
-	public function __construct(\vanderlee\comprehend\parser\structure\Choice $parser, $preference = Context::PREFER_FIRST)
+	public function __construct($preference, $parser)
 	{
-		$this->parser = $parser;
+		if (!in_array($preference, [
+					Context::PREFER_FIRST,
+					Context::PREFER_LONGEST,
+					Context::PREFER_SHORTEST])) {
+			throw new \Exception('Invalid preference');
+		}
 		$this->preference = $preference;
+
+		$this->parser = self::getArgument($parser);
 	}
 
 	protected function parse(string &$in, int $offset, Context $context)
@@ -33,10 +51,10 @@ class Prefer extends Parser {
 		$context->popPreference();
 		return $match;
 	}
-	
+
 	public function __toString()
 	{
-		switch($this->preference) {
+		switch ($this->preference) {
 			default:
 			case Context::PREFER_FIRST:
 				return 'first-of' . $this->parser;

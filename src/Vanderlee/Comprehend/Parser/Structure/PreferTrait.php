@@ -35,18 +35,29 @@ trait PreferTrait {
 	public function setPreference(string $preference)
 	{
 		$this->preference = $preference;
+
+		return $this;
 	}
-	
-	public function preferShortest() {
+
+	public function preferShortest()
+	{
 		$this->preference = Context::PREFER_SHORTEST;
+
+		return $this;
 	}
-	
-	public function preferLongest() {
+
+	public function preferLongest()
+	{
 		$this->preference = Context::PREFER_LONGEST;
+
+		return $this;
 	}
-	
-	public function preferFirst() {
+
+	public function preferFirst()
+	{
 		$this->preference = Context::PREFER_FIRST;
+
+		return $this;
 	}
 
 }

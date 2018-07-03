@@ -5,6 +5,7 @@ namespace vanderlee\comprehend\parser\structure;
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\core\ArgumentsTrait;
+use \vanderlee\comprehend\parser\structure\PreferTrait;
 
 /**
  * Description of OrParser
@@ -12,8 +13,9 @@ use \vanderlee\comprehend\core\ArgumentsTrait;
  * @author Martijn
  */
 class Choice extends Parser {
-	
+
 	use ArgumentsTrait;
+	use PreferTrait;
 
 	private $parsers = null;
 
@@ -28,6 +30,8 @@ class Choice extends Parser {
 
 	protected function parse(string &$in, int $offset, Context $context)
 	{
+		$this->pushPrefererenceToContext($context);
+		
 		switch ($context->getPreference()) {
 			default:
 			case Context::PREFER_FIRST:
@@ -35,11 +39,12 @@ class Choice extends Parser {
 				foreach ($this->parsers as $parser) {
 					$match = $parser->parse($in, $offset, $context);
 					if ($match->match) {
-						return $this->success($in, $offset, $match->length, $match);
+						$preferred_match = $this->success($in, $offset, $match->length, $match);
+						break 2;
 					}
 					$max = max($max, $match->length);
 				}
-				return $this->failure($in, $offset, $max);
+				$preferred_match = $this->failure($in, $offset, $max);
 				break;
 
 			case Context::PREFER_LONGEST:
@@ -55,7 +60,7 @@ class Choice extends Parser {
 						$max_match = $this->success($in, $offset, $match->length, $match);
 					}
 				}
-				return $max_match;
+				$preferred_match = $max_match;
 				break;
 
 			case Context::PREFER_SHORTEST:
@@ -72,12 +77,16 @@ class Choice extends Parser {
 				}
 
 				// This will fail! $match is not necesarily the shortest
-				return $match->match ? $this->success($in, $offset, $match->length, $match) :
+				$preferred_match =$match->match ? $this->success($in, $offset, $match->length, $match) :
 						$this->failure($in, $offset, $match->length);
 				break;
 		}
+		
+		$this->popPreferenceFromContext($context);
+		
+		return $preferred_match;
 	}
-	
+
 	/**
 	 * Add one or more parsers as choices
 	 * 
@@ -86,13 +95,17 @@ class Choice extends Parser {
 	public function add(...$arguments)
 	{
 		$this->parsers = array_merge($this->parsers, self::getArguments($arguments));
-		
+
 		return $this;
 	}
-	
+
 	public function __toString()
 	{
-		return '( ' . join(' | ', $this->parsers) . ' )';
+		$prefix = $this->preference === Context::PREFER_LONGEST ? 'longest-of' :
+				($this->preference === Context::PREFER_SHORTEST ? 'shortest-of' :
+				'first-of');
+
+		return $prefix . '( ' . join(' | ', $this->parsers) . ' )';
 	}
 
 }
