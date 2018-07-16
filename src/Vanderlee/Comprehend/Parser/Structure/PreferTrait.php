@@ -4,6 +4,7 @@ namespace vanderlee\comprehend\parser\structure;
 
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
+use \vanderlee\comprehend\directive\Prefer;
 
 /**
  * Classes implementing this can scan
@@ -41,21 +42,21 @@ trait PreferTrait {
 
 	public function preferShortest()
 	{
-		$this->preference = Context::PREFER_SHORTEST;
+		$this->preference = Prefer::SHORTEST;
 
 		return $this;
 	}
 
 	public function preferLongest()
 	{
-		$this->preference = Context::PREFER_LONGEST;
+		$this->preference = Prefer::LONGEST;
 
 		return $this;
 	}
 
 	public function preferFirst()
 	{
-		$this->preference = Context::PREFER_FIRST;
+		$this->preference = Prefer::FIRST;
 
 		return $this;
 	}

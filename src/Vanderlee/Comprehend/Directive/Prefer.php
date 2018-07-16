@@ -13,6 +13,10 @@ use \vanderlee\comprehend\core\ArgumentsTrait;
  */
 class Prefer extends Parser {
 
+	const FIRST = 'first';
+	const LONGEST = 'longest';
+	const SHORTEST = 'shortest';
+
 	use ArgumentsTrait;
 
 	/**
@@ -21,7 +25,7 @@ class Prefer extends Parser {
 	private $parser = null;
 
 	/**
-	 * One of Context::PREFER_*
+	 * One of self::*
 	 * @var integer
 	 */
 	private $preference = null;
@@ -34,9 +38,9 @@ class Prefer extends Parser {
 	public function __construct($preference, $parser)
 	{
 		if (!in_array($preference, [
-					Context::PREFER_FIRST,
-					Context::PREFER_LONGEST,
-					Context::PREFER_SHORTEST])) {
+					self::FIRST,
+					self::LONGEST,
+					self::SHORTEST])) {
 			throw new \Exception('Invalid preference');
 		}
 		$this->preference = $preference;
@@ -56,11 +60,11 @@ class Prefer extends Parser {
 	{
 		switch ($this->preference) {
 			default:
-			case Context::PREFER_FIRST:
+			case self::FIRST:
 				return 'first-of' . $this->parser;
-			case Context::PREFER_LONGEST:
+			case self::LONGEST:
 				return 'longest-of' . $this->parser;
-			case Context::PREFER_SHORTEST:
+			case self::SHORTEST:
 				return 'shortest-of' . $this->parser;
 		}
 	}

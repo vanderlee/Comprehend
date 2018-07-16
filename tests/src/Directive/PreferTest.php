@@ -31,12 +31,12 @@ class PreferTest extends TestCase {
 	public function preferData()
 	{
 		return [
-			[new Prefer(Context::PREFER_FIRST, new Choice('a', 'aa')), 'aa', 0, true, 1],
-			[new Prefer(Context::PREFER_FIRST, new Choice('aa', 'a')), 'aa', 0, true, 2],
-			[new Prefer(Context::PREFER_LONGEST, new Choice('a', 'aa')), 'aa', 0, true, 2],
-			[new Prefer(Context::PREFER_LONGEST, new Choice('aa', 'a')), 'aa', 0, true, 2],
-			[new Prefer(Context::PREFER_SHORTEST, new Choice('a', 'aa')), 'aa', 0, true, 1],
-			[new Prefer(Context::PREFER_SHORTEST, new Choice('aa', 'a')), 'aa', 0, true, 1],
+			[new Prefer(Prefer::FIRST, new Choice('a', 'aa')), 'aa', 0, true, 1],
+			[new Prefer(Prefer::FIRST, new Choice('aa', 'a')), 'aa', 0, true, 2],
+			[new Prefer(Prefer::LONGEST, new Choice('a', 'aa')), 'aa', 0, true, 2],
+			[new Prefer(Prefer::LONGEST, new Choice('aa', 'a')), 'aa', 0, true, 2],
+			[new Prefer(Prefer::SHORTEST, new Choice('a', 'aa')), 'aa', 0, true, 1],
+			[new Prefer(Prefer::SHORTEST, new Choice('aa', 'a')), 'aa', 0, true, 1],
 		];
 	}
 

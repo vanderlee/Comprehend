@@ -4,6 +4,7 @@ namespace vanderlee\comprehend\builder;
 
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
+use \vanderlee\comprehend\match\Success;
 
 /**
  * Description of Factory
@@ -35,8 +36,13 @@ class Factory extends Parser {
 	{
 		$match = $this->parser->parse($in, $offset, $context);
 		
-		if ($match->match && $this->validator && !($this->validator)(substr($in, $offset, $match->length))) {	
-			$match = $this->failure($in, $offset, $match->length);
+		if ($match instanceof Success && $this->validator) {
+			$results = $match->getResults();
+			$text = substr($in, $offset, $match->length);
+			
+			if (!($this->validator)($text, $results)) {	
+				$match = $this->failure($in, $offset, $match->length);
+			}
 		}
 		
 		return $match;

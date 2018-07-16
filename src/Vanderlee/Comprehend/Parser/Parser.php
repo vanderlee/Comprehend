@@ -76,17 +76,19 @@ abstract class Parser {
 		$successes = is_array($successes) ? $successes : [$successes];
 
 		return (new Success($length, $successes))
-						->callback(function(&$results) use($in, $offset, $length, $callbacks) {
+						->addResultCallback(function(&$results) use($in, $offset, $length, $callbacks) {
 							$text = substr($in, $offset, $length);
 
 							$this->resolveResultCallbacks($results, $text);
+						})->addCustomCallback(function() use($in, $offset, $length, $callbacks) {
+					$text = substr($in, $offset, $length);
 
-							$this->resolveAssignCallbacks($text);
+					$this->resolveAssignCallbacks($text);
 
-							foreach ($callbacks as $callback) {
-								$callback($text, $in, $offset, $length);
-							}
-						});
+					foreach ($callbacks as $callback) {
+						$callback($text, $in, $offset, $length);
+					}
+				});
 	}
 
 	/**
@@ -107,7 +109,6 @@ abstract class Parser {
 		$this->callbacks[] = $callback;
 		return $this;
 	}
-	
-	abstract public function __toString();
 
+	abstract public function __toString();
 }

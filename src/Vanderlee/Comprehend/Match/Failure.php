@@ -19,14 +19,14 @@ class Failure extends Match {
 	 * @param int $length
 	 * @param Match[]|Match $child_matches
 	 */
-	public function __construct(int $length)
+	public function __construct(int $length = 0)
 	{
 		$this->length = $length;
 	}
 
 	public function __toString()
 	{
-		return 'Failed match at ' . $this->length . ' characters.';
+		return 'Failed match at ' . $this->length . ' characters';
 	}
 
 }

@@ -3,6 +3,7 @@
 namespace vanderlee\comprehend\core;
 
 use \vanderlee\comprehend\core\ArgumentsTrait;
+use \vanderlee\comprehend\directive\Prefer;
 
 /**
  * Maintains the current context of the parser chain
@@ -37,21 +38,21 @@ class Context {
 		return 0;
 	}
 
-	private $case_sensitive = [];
+	private $case_sensitivity = [];
 
 	public function pushCaseSensitivity($case_sensitive = TRUE)
 	{
-		array_push($this->case_sensitive, (bool) $case_sensitive);
+		array_push($this->case_sensitivity, (bool) $case_sensitive);
 	}
 
 	public function popCaseSensitivity()
 	{
-		return array_pop($this->case_sensitive);
+		return array_pop($this->case_sensitivity);
 	}
 
 	public function isCaseSensitive()
 	{
-		return end($this->case_sensitive);
+		return end($this->case_sensitivity);
 	}
 
 	// Helper
@@ -60,14 +61,23 @@ class Context {
 		return $this->isCaseSensitive() ? $text : mb_strtolower($text);
 	}
 
-	const PREFER_FIRST = 'first';
-	const PREFER_LONGEST = 'longest';
-	const PREFER_SHORTEST = 'shortest';
-
 	private $preference = [];
+
+	private static function assertPreference($preference)
+	{
+		if (!in_array($preference, [
+					Prefer::FIRST,
+					Prefer::LONGEST,
+					Prefer::SHORTEST,
+				])) {
+			throw new \Exception("Preference `{$preference}` not supported");
+		}
+	}
 
 	public function pushPreference($preference)
 	{
+		self::assertPreference($preference);
+
 		array_push($this->preference, $preference);
 	}
 
@@ -81,11 +91,13 @@ class Context {
 		return end($this->preference);
 	}
 
-	public function __construct($skipper = null, $case_sensitive = TRUE, $or_mode = self::PREFER_FIRST)
+	public function __construct($skipper = null, $case_sensitive = TRUE, $preference = Prefer::FIRST)
 	{
+		self::assertPreference($preference);
+
 		$this->pushSpacer($skipper);
 		$this->pushCaseSensitivity($case_sensitive);
-		$this->pushPreference($or_mode);
+		$this->pushPreference($preference);
 	}
 
 }

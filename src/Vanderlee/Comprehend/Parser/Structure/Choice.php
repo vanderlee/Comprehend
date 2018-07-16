@@ -6,6 +6,7 @@ use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\core\ArgumentsTrait;
 use \vanderlee\comprehend\parser\structure\PreferTrait;
+use \vanderlee\comprehend\directive\Prefer;
 
 /**
  * Description of OrParser
@@ -34,7 +35,7 @@ class Choice extends Parser {
 		
 		switch ($context->getPreference()) {
 			default:
-			case Context::PREFER_FIRST:
+			case Prefer::FIRST:
 				$max = 0;
 				foreach ($this->parsers as $parser) {
 					$match = $parser->parse($in, $offset, $context);
@@ -47,7 +48,7 @@ class Choice extends Parser {
 				$preferred_match = $this->failure($in, $offset, $max);
 				break;
 
-			case Context::PREFER_LONGEST:
+			case Prefer::LONGEST:
 				$max_match = $this->failure($in, $offset);
 				foreach ($this->parsers as $parser) {
 					$match = $parser->parse($in, $offset, $context);
@@ -63,7 +64,7 @@ class Choice extends Parser {
 				$preferred_match = $max_match;
 				break;
 
-			case Context::PREFER_SHORTEST:
+			case Prefer::SHORTEST:
 				$match = null;
 				foreach ($this->parsers as $parser) {
 					$attempt = $parser->parse($in, $offset, $context);
@@ -101,8 +102,8 @@ class Choice extends Parser {
 
 	public function __toString()
 	{
-		$prefix = $this->preference === Context::PREFER_LONGEST ? 'longest-of' :
-				($this->preference === Context::PREFER_SHORTEST ? 'shortest-of' :
+		$prefix = $this->preference === Prefer::LONGEST ? 'longest-of' :
+				($this->preference === Prefer::SHORTEST ? 'shortest-of' :
 				'first-of');
 
 		return $prefix . '( ' . join(' | ', $this->parsers) . ' )';
