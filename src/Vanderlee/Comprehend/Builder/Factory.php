@@ -13,9 +13,14 @@ use \vanderlee\comprehend\match\Success;
  */
 class Factory extends Parser {
 
-	/** @var Parser */
+	/**
+	 * @var Parser
+	 */
 	public $parser = null;
-	
+
+	/**
+	 * @var callable
+	 */
 	public $validator = null;
 
 	public function __construct(Definition $definition, $arguments)
@@ -28,23 +33,23 @@ class Factory extends Parser {
 				throw new \Exception('Parser not defined');
 			}
 		}
-		
+
 		$this->validator = $definition->validator;
 	}
 
 	protected function parse(string &$in, int $offset, Context $context)
 	{
 		$match = $this->parser->parse($in, $offset, $context);
-		
+
 		if ($match instanceof Success && $this->validator) {
 			$results = $match->getResults();
 			$text = substr($in, $offset, $match->length);
-			
-			if (!($this->validator)($text, $results)) {	
+
+			if (!($this->validator)($text, $results)) {
 				$match = $this->failure($in, $offset, $match->length);
 			}
 		}
-		
+
 		return $match;
 	}
 

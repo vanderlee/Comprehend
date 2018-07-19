@@ -1,11 +1,13 @@
 Milestone 1
 ===========
--	Builder: inherit, results, etc...
+-	Builder: results, etc...
 -	Examples
 -	Readme's
 -	Test directive stacking
 -	Space() directive; false/true support
 -	Pure Match classes tests
+-	Rename: Factory. DefinedParser?
+-	Ruleset global/static definitions
 
 Milestone 2
 ===========

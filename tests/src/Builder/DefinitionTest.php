@@ -102,7 +102,7 @@ class DefinitionTest extends TestCase {
 		$this->assertResult(false, 2, $number('21'));
 	}
 
-	public function testInherit()
+	public function testWrap()
 	{
 		// Must be odd
 		$original = (new Definition(new Repeat(new Range('0', '9'), 1)))

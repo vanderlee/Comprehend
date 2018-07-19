@@ -13,14 +13,11 @@ class Definition {
 
 	public $parser = null;
 	public $validator = null;
-//	public $output = null;
 
 	/**
-	 * 
 	 * @param Parser|callable $parser Either a parser or a function returning a parser ('generator')
 	 * @param callable $validator 
-	 */
-	
+	 */	
 	public function __construct($parser = null, callable $validator = null)
 	{
 		//@todo validate parser and validator
