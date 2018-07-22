@@ -27,26 +27,26 @@ class RulesetTest extends TestCase {
 	public function testRuleset()
 	{
 		$r = new Ruleset();
-		$r->define('List', new Definition(self::CSV_RECORD));
+		$r->define('Csv', new Definition(self::CSV_RECORD));
 
-		$List = $r->List('x');
-		$this->assertResult(true, 5, $List('x,x,x'));
+		$Csv = $r->Csv('x');
+		$this->assertResult(true, 5, $Csv('x,x,x'));
 		
-		$r->undefine('List');
+		$r->undefine('Csv');
 		$this->expectExceptionMessage('No parser named `List` is defined');
-		$List = $r->List('x');
+		$Csv = $r->Csv('x');
 	}
 
 	public function testStaticRuleset()
 	{
-		Ruleset::define('List', new Definition(self::CSV_RECORD));
+		Ruleset::define('Csv', new Definition(self::CSV_RECORD));
 
-		$List = Ruleset::List('x');
-		$this->assertResult(true, 5, $List('x,x,x'));
+		$Csv = Ruleset::Csv('x');
+		$this->assertResult(true, 5, $Csv('x,x,x'));
 		
-		Ruleset::undefine('List');
+		Ruleset::undefine('Csv');
 		$this->expectExceptionMessage('No parser named `List` is defined');
-		$List = Ruleset::List('x');
+		$Csv = Ruleset::Csv('x');
 	}
 
 }
