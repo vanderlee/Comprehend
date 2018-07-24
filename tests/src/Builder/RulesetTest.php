@@ -33,7 +33,7 @@ class RulesetTest extends TestCase {
 		$this->assertResult(true, 5, $Csv('x,x,x'));
 		
 		$r->undefine('Csv');
-		$this->expectExceptionMessage('No parser named `List` is defined');
+		$this->expectExceptionMessage('No parser named `Csv` is defined');
 		$Csv = $r->Csv('x');
 	}
 
@@ -45,7 +45,7 @@ class RulesetTest extends TestCase {
 		$this->assertResult(true, 5, $Csv('x,x,x'));
 		
 		Ruleset::undefine('Csv');
-		$this->expectExceptionMessage('No parser named `List` is defined');
+		$this->expectExceptionMessage('No parser named `Csv` is defined');
 		$Csv = Ruleset::Csv('x');
 	}
 

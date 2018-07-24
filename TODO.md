@@ -1,17 +1,23 @@
 Milestone 1
 ===========
+-	Recursion definition order test w/ ruleset
+	-	Implement definition on parse
+	-	Stub parser?
 -	Builder: results, etc...
+	-	If set, dump any "deeper" results and only use them for your own good.
 -	Examples
 -	Readme's
 -	Test directive stacking
 -	Space() directive; false/true support
 -	Pure Match classes tests
 -	Rename: Factory. DefinedParser?
--	Ruleset global/static definitions
 
 Milestone 2
 ===========
 -	Facade
+	$C = new Comprehend;
+	$C->barbaz = $C->text('baz')->or->text('bar');
+	$C->fooba = $C->text('foo')->barbaz;
 -	ABNF parser
 -	Own Exception class
 -	Traits for stuff
