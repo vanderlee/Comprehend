@@ -1,5 +1,10 @@
 Milestone 1
 ===========
+-	Rename: Factory; DefinedParser, GeneratedParser.
+-	Debug logging mode
+-	Array argument; choice or sequence?
+	-	Or different per caller?
+	-	Resolve definition/factory as late as possible
 -	Recursion definition order test w/ ruleset
 	-	Implement definition on parse
 	-	Stub parser?
@@ -10,7 +15,6 @@ Milestone 1
 -	Test directive stacking
 -	Space() directive; false/true support
 -	Pure Match classes tests
--	Rename: Factory. DefinedParser?
 
 Milestone 2
 ===========

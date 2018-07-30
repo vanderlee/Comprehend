@@ -65,7 +65,7 @@ class Success extends Match {
 				unset($results[null]);
 				return $results;
 			case 'result':
-				return $this->getResults()[null] ?: null;
+				return $this->getResults()[null] ?? null;
 		}
 
 		return parent::__get($name);
@@ -113,7 +113,7 @@ class Success extends Match {
 
 		array_walk($this->resultCallbacks, function($callback) use(&$results) {
 			$callback($results);
-		});
+		});		
 	}
 
 	/**
@@ -158,7 +158,7 @@ class Success extends Match {
 			$this->results = [];
 			$this->processResultCallbacks($this->results);
 		}
-
+		
 		return $this->results;
 	}
 

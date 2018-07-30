@@ -28,10 +28,10 @@ trait ResultTrait {
 	 * @param string|integer $key
 	 * @return $this
 	 */
-	public function resultAs($key = null)
+	public function setResult($key = null, $value = null)
 	{
-		$this->resultCallbacks[] = function(&$results, $text) use ($key) {
-			$results[$key] = $text;
+		$this->resultCallbacks[] = function(&$results, $text) use (&$key, &$value) {
+			$results[$key] = $value ?: $text;
 		};
 
 		return $this;
@@ -43,11 +43,13 @@ trait ResultTrait {
 	 * 
 	 * @param type $key
 	 */
-	public function concatResult($key = null)
+	public function concatResult($key = null, $value = null)
 	{
-		$this->resultCallbacks[] = function(&$results, $text) use ($key) {
+		$this->resultCallbacks[] = function(&$results, $text) use (&$key, &$value) {
+			$text = $value ?: $text;
+			
 			if (!isset($results[$key])) {
-				$results[$key] = $text;
+				$results[$key] = (string) $text;
 			} elseif (is_array($results[$key])) {
 				$results[$key][] = array_pop($results[$key]) . $text;
 			} else {
@@ -63,9 +65,11 @@ trait ResultTrait {
 	 * 
 	 * @param type $key
 	 */
-	public function addResult($key = null)
+	public function pushResult($key = null, $value = null)
 	{
-		$this->resultCallbacks[] = function(&$results, $text) use ($key) {
+		$this->resultCallbacks[] = function(&$results, $text) use (&$key, &$value) {
+			$text = $value ?: $text;
+			
 			if (!isset($results[$key])) {
 				$results[$key] = [$text];
 			} elseif (is_array($results[$key])) {

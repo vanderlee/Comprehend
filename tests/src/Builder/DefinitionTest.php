@@ -48,7 +48,7 @@ class DefinitionTest extends TestCase {
 
 	public function testDefinitionSetParser()
 	{
-		$definition = (new Definition)->parser(self::CSV_RECORD);
+		$definition = (new Definition)->generator(self::CSV_RECORD);
 
 		$List = $definition->build('x');
 		$this->assertResult(true, 5, $List('x,x,x'));

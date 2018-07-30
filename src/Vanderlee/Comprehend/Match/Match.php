@@ -6,14 +6,28 @@ namespace vanderlee\comprehend\match;
  * Description of ParserToken
  *
  * @author Martijn
+ * 
+ * @property-read int $length Length of the match
+ * @property-read array $results List of output results
+ * @property-read string|null $result Default output result
  */
 abstract class Match {
 
 	private $length;
 	
+	/**
+	 * @param string $name
+	 * @return mixed
+	 * @throws \Exception
+	 */
 	public function __get($name) {
 		switch($name) {
-			case 'length':	return $this->length;
+			case 'length':
+				return $this->length;
+			case 'results':
+				return [];
+			case 'result':
+				return  null;
 		}
 		
 		throw new \Exception("Property name `{$name}` not recognized");

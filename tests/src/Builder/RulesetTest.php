@@ -17,36 +17,119 @@ use \vanderlee\comprehend\builder\Ruleset;
  */
 class RulesetTest extends TestCase {
 
-	const CSV_RECORD = [__CLASS__, 'makeCsvRecordParser'];
-
-	public static function makeCsvRecordParser($item, $delimiter = ',')
+	public function testSetFunction()
 	{
-		return new Sequence($item, new Repeat(new Sequence($delimiter, $item)));
+		$r = new Ruleset;
+
+		$r->line = function($char) {
+			return new Repeat($char);
+		};
+		$line = $r->line('x');
+		$this->assertResult(true, 5, $line('xxxxx'));
 	}
 
-	public function testRuleset()
+	public function testSetDefinition()
 	{
-		$r = new Ruleset();
-		$r->define('Csv', new Definition(self::CSV_RECORD));
+		$r = new Ruleset;
 
-		$Csv = $r->Csv('x');
-		$this->assertResult(true, 5, $Csv('x,x,x'));
+		$r->line = new Definition(function($char) {
+			return new Repeat($char);
+		});
 		
-		$r->undefine('Csv');
-		$this->expectExceptionMessage('No parser named `Csv` is defined');
-		$Csv = $r->Csv('x');
+		$line = $r->line('x');
+		$this->assertResult(true, 5, $line('xxxxx'));
 	}
 
-	public function testStaticRuleset()
+	public function testSetParser()
 	{
-		Ruleset::define('Csv', new Definition(self::CSV_RECORD));
+		$r = new Ruleset;
 
-		$Csv = Ruleset::Csv('x');
-		$this->assertResult(true, 5, $Csv('x,x,x'));
+		$r->line = new Repeat('x');
 		
-		Ruleset::undefine('Csv');
-		$this->expectExceptionMessage('No parser named `Csv` is defined');
-		$Csv = Ruleset::Csv('x');
+		$line = $r->line();
+		$this->assertResult(true, 5, $line('xxxxx'));
 	}
 
+	public function testSetForwardFunction()
+	{
+		$r = new Ruleset;
+		
+		$line = $r->line('x');
+		
+		$r->line = function($char) {
+			return new Repeat($char);
+		};
+
+		$this->assertResult(true, 5, $line('xxxxx'));
+	}
+
+	public function testSetForwardDefinition()
+	{
+		$r = new Ruleset;
+		
+		$line = $r->line('x');
+		
+		$r->line = new Definition(function($char) {
+			return new Repeat($char);
+		});
+
+		$this->assertResult(true, 5, $line('xxxxx'));
+	}
+
+	public function testSetForwardParser()
+	{
+		$r = new Ruleset;
+		
+		$line = $r->line();
+		
+		$r->line = new Repeat('x');
+
+		$this->assertResult(true, 5, $line('xxxxx'));
+	}
+
+	public function testSetAndGetFunction()
+	{
+		$r = new Ruleset;
+
+		$r->line = function($char = 'x') {
+			return new Repeat($char);
+		};
+		
+		$line = $r->line;
+		$this->assertResult(true, 5, $line('xxxxx'));
+	}
+	
+	public function testSetAndGetParser()
+	{
+		$r = new Ruleset;
+
+		$r->line = new Repeat('x');
+		
+		$line = $r->line;
+		$this->assertResult(true, 5, $line('xxxxx'));
+	}	
+
+	public function testSetAndGetForwardFunction()
+	{
+		$r = new Ruleset;
+		
+		$line = $r->line;
+		
+		$r->line = function($char = 'x') {
+			return new Repeat($char);
+		};
+
+		$this->assertResult(true, 5, $line('xxxxx'));
+	}
+	
+	public function testSetAndGetForwardParser()
+	{
+		$r = new Ruleset;
+		
+		$line = $r->line;
+		
+		$r->line = new Repeat('x');
+
+		$this->assertResult(true, 5, $line('xxxxx'));
+	}	
 }

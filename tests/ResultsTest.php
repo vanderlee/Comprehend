@@ -38,7 +38,7 @@ class ResultsTest extends TestCase {
 	public function testConcatArray()
 	{
 		$parser = new Sequence(
-				(new Text('foo'))->addResult('word'), (new Text('bar')), (new Text('baz'))->concatResult('word')
+				(new Text('foo'))->pushResult('word'), (new Text('bar')), (new Text('baz'))->concatResult('word')
 		);
 
 		$match = $parser->match('foobarbaz');
@@ -56,7 +56,7 @@ class ResultsTest extends TestCase {
 	public function testFlatToArray()
 	{
 		$parser = new Sequence(
-				(new Text('foo'))->resultAs('word'), (new Text('bar')), (new Text('baz'))->addResult('word')
+				(new Text('foo'))->resultAs('word'), (new Text('bar')), (new Text('baz'))->pushResult('word')
 		);
 
 		$match = $parser->match('foobarbaz');

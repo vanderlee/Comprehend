@@ -23,10 +23,19 @@ class Stub extends Parser {
 	public function __set($name, $parser)
 	{
 		if ($name == 'parser') {
-			$this->parser = self::getArgument($parser);
-		} else {
-			throw new \Exception("Property `{$name}` does not exist");
+			return $this->parser = self::getArgument($parser);
 		}
+		
+		throw new \Exception("Property `{$name}` does not exist");
+	}
+
+	public function __get($name)
+	{
+		if ($name == 'parser') {
+			return $this->parser;
+		}
+		
+		throw new \Exception("Property `{$name}` does not exist");
 	}
 
 	protected function parse(string &$in, int $offset, Context $context)
@@ -35,7 +44,12 @@ class Stub extends Parser {
 			throw new \Exception('Missing parser');
 		}
 
-		return $this->parser->parse($in, $offset, $context);
+		$match = $this->parser->parse($in, $offset, $context);
+		if ($match->match) {
+			return $this->success($in, $offset, $match->length, [ $match ]);
+		} else {
+			return $this->failure($in, $offset, $match->length);
+		}
 	}
 
 	public function __toString()

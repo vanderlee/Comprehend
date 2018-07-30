@@ -29,10 +29,25 @@ class Choice extends Parser {
 		$this->parsers = self::getArguments($arguments);
 	}
 
+	public static function first(...$arguments)
+	{
+		return (new self(...$arguments))->preferFirst();
+	}
+
+	public static function shortest(...$arguments)
+	{
+		return (new self(...$arguments))->preferShortest();
+	}
+
+	public static function longest(...$arguments)
+	{
+		return (new self(...$arguments))->preferLongest();
+	}
+
 	protected function parse(string &$in, int $offset, Context $context)
 	{
 		$this->pushPrefererenceToContext($context);
-		
+
 		switch ($context->getPreference()) {
 			default:
 			case Prefer::FIRST:
@@ -78,13 +93,13 @@ class Choice extends Parser {
 				}
 
 				// This will fail! $match is not necesarily the shortest
-				$preferred_match =$match->match ? $this->success($in, $offset, $match->length, $match) :
+				$preferred_match = $match->match ? $this->success($in, $offset, $match->length, $match) :
 						$this->failure($in, $offset, $match->length);
 				break;
 		}
-		
+
 		$this->popPreferenceFromContext($context);
-		
+
 		return $preferred_match;
 	}
 

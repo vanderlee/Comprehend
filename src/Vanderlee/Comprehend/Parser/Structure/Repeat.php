@@ -36,6 +36,18 @@ class Repeat extends Parser {
 			throw new \Exception('Invalid repeat range specified');
 		}
 	}
+	
+	public static function oneOrMore($parser) {
+		return new self($parser, 1);
+	}
+	
+	public static function zeroOrMore($parser) {
+		return new self($parser);
+	}
+	
+	public static function zeroOrOne($parser) {
+		return new self($parser, 0, 1);
+	}
 
 	protected function parse(string &$in, int $offset, Context $context)
 	{

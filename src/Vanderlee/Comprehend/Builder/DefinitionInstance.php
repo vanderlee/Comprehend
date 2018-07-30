@@ -11,7 +11,7 @@ use \vanderlee\comprehend\match\Success;
  *
  * @author Martijn
  */
-class Factory extends Parser {
+class DefinitionInstance extends Parser {
 
 	/**
 	 * @var Parser
@@ -22,23 +22,38 @@ class Factory extends Parser {
 	 * @var callable
 	 */
 	public $validator = null;
+	
+	/**
+	 * @var Definition
+	 */
+	private $definition = null;
+	private $arguments = null;
 
-	public function __construct(Definition $definition, $arguments)
+	public function __construct(Definition &$definition, array $arguments = [])
 	{
-		$this->parser = $definition->parser;
-		if (!$this->parser instanceof Parser) {
-			if (is_callable($this->parser)) {
-				$this->parser = ($this->parser)(...$arguments);
-			} else {
-				throw new \Exception('Parser not defined');
+		$this->definition = $definition;
+		$this->arguments = $arguments;				
+	}
+	
+	private function build() {
+		if ($this->parser === null) {		
+			$this->parser = $this->definition->generator;
+			if (!$this->parser instanceof Parser) {
+				if (is_callable($this->parser)) {
+					$this->parser = ($this->parser)(...$this->arguments);
+				} else {
+					throw new \Exception('Parser not defined');
+				}
 			}
-		}
 
-		$this->validator = $definition->validator;
+			$this->validator = $this->definition->validator;
+		}
 	}
 
 	protected function parse(string &$in, int $offset, Context $context)
-	{
+	{	
+		$this->build();
+		
 		$match = $this->parser->parse($in, $offset, $context);
 
 		if ($match instanceof Success && $this->validator) {

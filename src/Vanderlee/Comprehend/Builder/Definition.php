@@ -2,7 +2,7 @@
 
 namespace vanderlee\comprehend\builder;
 
-use \vanderlee\comprehend\builder\Factory;
+use \vanderlee\comprehend\builder\DefinitionInstance;
 
 /**
  * Shorthand for parser definitions
@@ -11,24 +11,24 @@ use \vanderlee\comprehend\builder\Factory;
  */
 class Definition {
 
-	public $parser = null;
+	public $generator = null;
 	public $validator = null;
 
 	/**
-	 * @param Parser|callable $parser Either a parser or a function returning a parser ('generator')
+	 * @param Parser|callable $generator Either a parser or a function returning a parser ('generator')
 	 * @param callable $validator 
 	 */	
-	public function __construct($parser = null, callable $validator = null)
+	public function __construct($generator = null, callable $validator = null)
 	{
 		//@todo validate parser and validator
 		
-		$this->parser = $parser;
+		$this->generator = $generator;
 		$this->validator = $validator;
 	}
 
-	public function parser($parser = null)
+	public function generator($parser = null)
 	{
-		$this->parser = $parser;
+		$this->generator = $parser;
 
 		return $this;
 	}
@@ -44,11 +44,11 @@ class Definition {
 	 * Build an instance of this parser definition.
 	 * 
 	 * @param Mixed[] $arguments
-	 * @return Factory
+	 * @return DefinitionInstance
 	 */
 	public function build(...$arguments)
 	{
-		return new Factory($this, $arguments);
+		return new DefinitionInstance($this, $arguments);
 	}
 
 	/**
@@ -56,7 +56,7 @@ class Definition {
 	 * Alias of `build()` method.
 	 * 
 	 * @param Mixed[] $arguments
-	 * @return Factory
+	 * @return DefinitionInstance
 	 */
 	public function __invoke(...$arguments)
 	{
