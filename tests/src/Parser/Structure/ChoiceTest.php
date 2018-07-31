@@ -69,11 +69,11 @@ class ChoiceTest extends TestCase {
 		];
 	}
 
-	public function testResultAs()
+	public function testset()
 	{
 		$parser = (new Choice(
-				(new Text('a'))->resultAs('valueA'), (new Text('b'))->resultAs('valueB')
-				))->resultAs('choice');
+				(new Text('a'))->setResult('valueA'), (new Text('b'))->setResult('valueB')
+				))->setResult('choice');
 
 		$match = $parser->match('a');
 		$this->assertTrue($match->match);

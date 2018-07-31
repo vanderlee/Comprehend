@@ -14,13 +14,13 @@ class ResultsTest extends TestCase {
 
 	/**
 	 * @covers Match::getResult
-	 * @covers Parser::resultAs
-	 * @covers Parser::concatResult
+	 * @covers Parser::set
+	 * @covers Parser::concat
 	 */
 	public function testConcatFlat()
 	{
 		$parser = new Sequence(
-				(new Text('foo'))->resultAs('word'), (new Text('bar')), (new Text('baz'))->concatResult('word')
+				(new Text('foo'))->setResult('word'), (new Text('bar')), (new Text('baz'))->concatResult('word')
 		);
 
 		$match = $parser->match('foobarbaz');
@@ -33,7 +33,7 @@ class ResultsTest extends TestCase {
 	/**
 	 * @covers Match::getResult
 	 * @covers Parser::addResult
-	 * @covers Parser::concatResult
+	 * @covers Parser::concat
 	 */
 	public function testConcatArray()
 	{
@@ -50,13 +50,13 @@ class ResultsTest extends TestCase {
 
 	/**
 	 * @covers Match::getResult
-	 * @covers Parser::resultAs
+	 * @covers Parser::set
 	 * @covers Parser::addResult
 	 */
 	public function testFlatToArray()
 	{
 		$parser = new Sequence(
-				(new Text('foo'))->resultAs('word'), (new Text('bar')), (new Text('baz'))->pushResult('word')
+				(new Text('foo'))->setResult('word'), (new Text('bar')), (new Text('baz'))->pushResult('word')
 		);
 
 		$match = $parser->match('foobarbaz');
@@ -68,13 +68,13 @@ class ResultsTest extends TestCase {
 
 	/**
 	 * @covers Match::getResult
-	 * @covers Parser::resultAs
-	 * @covers Parser::concatResult
+	 * @covers Parser::set
+	 * @covers Parser::concat
 	 */
 	public function testDefaultResult()
 	{
 		$parser = new Sequence(
-				(new Text('foo'))->resultAs(), (new Text('bar')), (new Text('baz'))->concatResult()
+				(new Text('foo'))->setResult(), (new Text('bar')), (new Text('baz'))->concatResult()
 		);
 
 		$match = $parser->match('foobarbaz');

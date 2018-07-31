@@ -11,14 +11,27 @@ use \vanderlee\comprehend\builder\Definition;
  * Description of Ruleset
  * 
  * @todo Constructor with mass definition
- * @todo Mass-definition using "define"?
- *		Do old call/callstatic
  *
+ * @method void define(array|string $name, Definition|Parser|callable $definition = [])
+ * @method bool defined(string[]|string $name)
+ * @method void undefine(string[]|string $name)
+ * 
  * @author Martijn
  */
 class Ruleset {
 
 	use ArgumentsTrait;
+
+	/**
+	 * List of reserved parser names. These are used as methods instead.
+	 * 
+	 * @var type 
+	 */
+	private static $reserved = [
+		'define',
+		'defined',
+		'undefine'
+	];
 
 	/**
 	 * @var Definition[]|Parser[]|callable[]
@@ -62,17 +75,70 @@ class Ruleset {
 		$rules[$name] = $definition;
 	}
 
-	/**
-	 * @param type $name
-	 * @param type $definition
-	 */
-	public function __set($name, $definition)
+	private static function defineRule(&$rules, $names, $definition = null)
 	{
-		self::set($this->instanceRules, $name, $definition);
+		if (is_array($names)) {
+			foreach ($names as $key => $value) {
+				self::defineRule($rules, $key, $value);
+			}
+			return;
+		}
+
+		if (in_array($names, self::$reserved)) {
+			throw new \Exception("Cannot define reserved name `{$names}`");
+		}
+
+		self::set($rules, $names, $definition);
+	}
+
+	private static function isRuleDefined(&$rules, $names): bool
+	{
+		foreach ((array) $names as $key) {
+			if (!isset($rules[$key])) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private static function undefineRule(&$rules, $names)
+	{
+		foreach ((array) $names as $key) {
+			unset($rules[$key]);
+		}
+	}
+
+	private static function call(&$rules, $name, $arguments = [])
+	{
+		switch ($name) {
+			case 'define':
+				return self::defineRule($rules, $arguments[0], $arguments[1]);
+
+			case 'defined':
+				return self::isRuleDefined($rules, $arguments[0]);
+
+			case 'undefine':
+				return self::undefineRule($rules, $arguments[0]);
+
+			default:
+				if (!isset($rules[$name])) {
+					$rules[$name] = new Definition();
+				}
+
+				switch (true) {
+					case $rules[$name] instanceof Definition:
+						return new DefinitionInstance($rules[$name], $arguments);
+					case $rules[$name] instanceof Parser:
+						return clone $rules[$name];
+					case is_callable($rules[$name]):
+						return $rules[$name](...$arguments);
+				}
+		}
 	}
 
 	/**
-	 * Handle object definitions
+	 * Handle instance/object definitions
 	 * 
 	 * @param string $name
 	 * @param array $arguments
@@ -81,18 +147,29 @@ class Ruleset {
 	 */
 	public function __call($name, $arguments = [])
 	{
-		if (!isset($this->instanceRules[$name])) {
-			$this->instanceRules[$name] = new Definition();
-		}
+		return self::call($this->instanceRules, $name, $arguments);
+	}
 
-		switch (true) {
-			case $this->instanceRules[$name] instanceof Definition:
-				return new DefinitionInstance($this->instanceRules[$name], $arguments);
-			case $this->instanceRules[$name] instanceof Parser:
-				return clone $this->instanceRules[$name];
-			case is_callable($this->instanceRules[$name]):
-				return $this->instanceRules[$name](...$arguments);
-		}
+	/**
+	 * Handle static/class definitions
+	 * 
+	 * @param string $name
+	 * @param array $arguments
+	 * @return Parser
+	 * @throws Exception
+	 */
+	public static function __callStatic($name, $arguments = [])
+	{
+		return self::call(self::$staticRules, $name, $arguments);
+	}
+
+	/**
+	 * @param type $name
+	 * @param type $definition
+	 */
+	public function __set($name, $definition)
+	{
+		self::set($this->instanceRules, $name, $definition);
 	}
 
 	public function __get($name)
@@ -110,6 +187,8 @@ class Ruleset {
 		unset($this->instanceRules[$name]);
 	}
 
+	//@todo tools
+
 	/**
 	 * @TODO rename to something more logical, or move out entirely?
 	 * Convert arguments such as strings and character codes to parsers.
@@ -121,52 +200,6 @@ class Ruleset {
 	{
 		$parsers = self::getArguments($arguments);
 		return count($parsers) === 1 ? reset($parsers) : $parsers;
-	}
-
-	/**
-	 * Define one or more static rules
-	 * 
-	 * @param string|array $name
-	 * @param Definition|Parser|callable $definition
-	 */
-	public static function define($name, $definition = null)
-	{
-		if (is_array($name)) {
-			foreach ($name as $key => $value) {
-				$this->define($key, $value);
-			}
-			return;
-		}
-
-		self::set(self::$staticRules, $name, $definition);
-	}
-
-	/**
-	 * Remove definitions of static rules
-	 * 
-	 * @param string[] $names
-	 */
-	public static function undefine(...$names)
-	{
-		foreach ($name as $key => $value) {
-			unset(self::$staticRules[$name]);
-		}
-	}
-	
-	/**
-	 * Are the names defined as static rules?
-	 * 
-	 * @param string[] $names
-	 * @return boolean
-	 */
-	public static function defined(...$names) {
-		foreach ($name as $key => $value) {
-			if (!isset(self::$staticRules[$name])) {
-				return false;
-			}
-		}
-		
-		return true;
 	}
 
 }

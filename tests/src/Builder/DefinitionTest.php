@@ -4,6 +4,7 @@ use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\parser\structure\Sequence;
 use \vanderlee\comprehend\parser\structure\Repeat;
 use \vanderlee\comprehend\parser\terminal\Set;
+use \vanderlee\comprehend\parser\terminal\Char;
 use \vanderlee\comprehend\parser\structure\Choice;
 use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\match\Match;
@@ -29,7 +30,7 @@ class DefinitionTest extends TestCase {
 		if (mb_strlen($enclosures) === 1) {
 			return new Sequence(new Set($enclosures), new Repeat(new Set($enclosures, false)), new Set($enclosures));
 		} else {
-			return new Choice(array_map(function($enclosure) {
+			return new Choice(...array_map(function($enclosure) {
 						return new Sequence(new Set($enclosure), new Repeat(new Set($enclosure, false)), new Set($enclosure));
 					}, str_split($enclosures)));
 		}
@@ -89,7 +90,7 @@ class DefinitionTest extends TestCase {
 
 	public function testFirstDigitOdd()
 	{
-		$d = new Definition(new Sequence((new Range('1', '9'))->resultAs('first'), new Repeat(new Range('0', '9'))));
+		$d = new Definition(new Sequence((new Range('1', '9'))->setResult('first'), new Repeat(new Range('0', '9'))));
 		$number = $d();
 		$this->assertResult(true, 2, $number('11'));
 		$this->assertResult(true, 2, $number('21'));

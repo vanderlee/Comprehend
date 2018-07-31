@@ -1,6 +1,6 @@
 Milestone 1
 ===========
--	Rename: Factory; DefinedParser, GeneratedParser.
+-	not-Char parser
 -	Debug logging mode
 -	Array argument; choice or sequence?
 	-	Or different per caller?
@@ -15,6 +15,7 @@ Milestone 1
 -	Test directive stacking
 -	Space() directive; false/true support
 -	Pure Match classes tests
+-	Exceptions: runtime, designtime; inventorize!
 
 Milestone 2
 ===========

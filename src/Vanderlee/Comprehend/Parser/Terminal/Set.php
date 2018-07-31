@@ -55,8 +55,8 @@ class Set extends Parser {
 	}
 
 	public function __toString()
-	{
-		return '( \'' . join('\' | \'', str_split($this->set)) . '\' )';
+	{			
+		return ($this->in ? '' : chr(0xAC)) . '( \'' . join('\' | \'', str_split($this->set)) . '\' )';
 	}
 
 }

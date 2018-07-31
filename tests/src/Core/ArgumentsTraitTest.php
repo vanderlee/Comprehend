@@ -5,19 +5,20 @@ use \vanderlee\comprehend\parser\terminal\Char;
 use \vanderlee\comprehend\parser\terminal\Text;
 use \vanderlee\comprehend\parser\terminal\Any;
 use \vanderlee\comprehend\parser\structure\Choice;
+use \vanderlee\comprehend\parser\structure\Sequence;
 
 class ArgumentsTraitStub {
 	use ArgumentsTrait {
-		ArgumentsTrait::getArgument as traitGetArgument;
-		ArgumentsTrait::getArguments as traitGetArguments;
+		ArgumentsTrait::getArgument as traitgetArgument;
+		ArgumentsTrait::getArguments as traitgetArguments;
 	}
 	
 	public static function getArgument($argument) {
-		return self::traitGetArgument($argument);
+		return self::traitgetArgument($argument);
 	}
 	
 	public static function getArguments($arguments) {
-		return self::traitGetArguments($arguments);
+		return self::traitgetArguments($arguments);
 	}
 }
 
@@ -31,7 +32,7 @@ class ArgumentsTraitTest extends TestCase {
 	/**
 	 * @covers ArgumentsTrait::getArgument
 	 */
-	public function testGetArgumentInvalidType()
+	public function testgetArgumentInvalidType()
 	{
 		$this->expectExceptionMessage('Invalid argument type `boolean`');
 		ArgumentsTraitStub::getArgument(true);
@@ -40,7 +41,7 @@ class ArgumentsTraitTest extends TestCase {
 	/**
 	 * @covers ArgumentsTrait::getArgument
 	 */
-	public function testGetArgumentEmpty()
+	public function testgetArgumentEmpty()
 	{
 		$this->expectExceptionMessage('Empty argument');
 		ArgumentsTraitStub::getArgument('');
@@ -49,19 +50,19 @@ class ArgumentsTraitTest extends TestCase {
 	/**
 	 * @covers ArgumentsTrait::getArgument
 	 */
-	public function testGetArgumentType()
+	public function testgetArgumentType()
 	{
 		$this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArgument('x'));
 		$this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArgument(0x50));
 		$this->assertInstanceOf(Text::class, ArgumentsTraitStub::getArgument('ab'));
 		$this->assertInstanceOf(Any::class, ArgumentsTraitStub::getArgument(new Any));
-		$this->assertInstanceOf(Choice::class, ArgumentsTraitStub::getArgument(['a', 'b']));
+		$this->assertInstanceOf(Sequence::class, ArgumentsTraitStub::getArgument(['a', 'b']));
 	}
 
 	/**
 	 * @covers ArgumentsTrait::getArguments
 	 */
-	public function testGetArgumentsInvalidType()
+	public function testgetArgumentsInvalidType()
 	{
 		$this->expectExceptionMessage('Invalid argument type `boolean`');
 		ArgumentsTraitStub::getArguments(['a', true]);
@@ -70,7 +71,7 @@ class ArgumentsTraitTest extends TestCase {
 	/**
 	 * @covers ArgumentsTrait::getArguments
 	 */
-	public function testGetArgumentsEmpty()
+	public function testgetArgumentsEmpty()
 	{
 		$this->expectExceptionMessage('Empty argument');
 		ArgumentsTraitStub::getArguments(['a', '']);
@@ -79,7 +80,7 @@ class ArgumentsTraitTest extends TestCase {
 	/**
 	 * @covers ArgumentsTrait::getArguments
 	 */
-	public function testGetArgumentsEmptyArray()
+	public function testgetArgumentsEmptyArray()
 	{
 		$this->expectExceptionMessage('Empty array argument');
 		ArgumentsTraitStub::getArguments([[]]);
@@ -88,13 +89,13 @@ class ArgumentsTraitTest extends TestCase {
 	/**
 	 * @covers ArgumentsTrait::getArguments
 	 */
-	public function testGetArgumentsType()
+	public function testgetArgumentsType()
 	{
 		$this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArguments(['x', 'y'])[0]);
 		$this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArguments([0x50, 0x51])[0]);
 		$this->assertInstanceOf(Text::class, ArgumentsTraitStub::getArguments(['ab', 'cd'])[0]);
 		$this->assertInstanceOf(Any::class, ArgumentsTraitStub::getArguments([new Any, 'a'])[0]);
-		$this->assertInstanceOf(Choice::class, ArgumentsTraitStub::getArguments([['a', 'b'], 'c'])[0]);
+		$this->assertInstanceOf(Sequence::class, ArgumentsTraitStub::getArguments([['a', 'b'], 'c'])[0]);
 		$this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArguments([['a'], 'bc'])[0]);
 		$this->assertInstanceOf(Text::class, ArgumentsTraitStub::getArguments([['ab'], 'c'])[0]);
 	}

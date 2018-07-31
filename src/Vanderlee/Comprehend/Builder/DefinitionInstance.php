@@ -70,6 +70,8 @@ class DefinitionInstance extends Parser {
 
 	public function __toString()
 	{
+		$this->build();
+		
 		return (string) $this->parser;
 	}
 

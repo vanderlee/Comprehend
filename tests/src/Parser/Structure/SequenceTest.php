@@ -46,11 +46,11 @@ class SequenceTest extends TestCase {
 		];
 	}
 
-	public function testResultAs()
+	public function testset()
 	{
 		$parser = (new Sequence(
-				(new Text('a'))->resultAs('valueA'), (new Text('b'))->resultAs('valueB')
-				))->resultAs('word');
+				(new Text('a'))->setResult('valueA'), (new Text('b'))->setResult('valueB')
+				))->setResult('word');
 
 		$match = $parser->match('a');
 		$this->assertFalse($match->match);
