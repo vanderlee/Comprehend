@@ -23,7 +23,7 @@ class PreferTest extends TestCase {
 	 * @covers ::match
 	 * @dataProvider preferData
 	 */
-	public function testPrefer(Prefer $parser, string $input, int $offset, bool $match, int $length)
+	public function testPrefer(Prefer $parser, $input, $offset, $match, $length)
 	{
 		$this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
 	}

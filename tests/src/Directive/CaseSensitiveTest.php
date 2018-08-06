@@ -1,7 +1,6 @@
 <?php
 
 use \vanderlee\comprehend\directive\CaseSensitive;
-use \vanderlee\comprehend\parser\terminal\Text;
 
 /**
  * @group directive
@@ -12,7 +11,7 @@ class CaseSensitiveTest extends TestCase {
 	 * @covers CaseSensitive
 	 * @dataProvider caseSensitiveData
 	 */
-	public function testCaseSensitive(CaseSensitive $parser, string $input, int $offset, bool $match, int $length)
+	public function testCaseSensitive(CaseSensitive $parser, $input, $offset, $match, $length)
 	{
 		$this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
 	}

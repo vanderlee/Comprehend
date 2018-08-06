@@ -22,10 +22,10 @@ class Not extends Parser {
 		$this->parser = self::getArgument($parser);
 	}
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
-		$match = $this->parser->parse($in, $offset, $context);
-		return $match->match ? $this->failure($in, $offset, $match->length) : $this->success($in, $offset, 0);
+		$match = $this->parser->parse($input, $offset, $context);
+		return $match->match ? $this->failure($input, $offset, $match->length) : $this->success($input, $offset, 0);
 	}
 
 	public function __toString()

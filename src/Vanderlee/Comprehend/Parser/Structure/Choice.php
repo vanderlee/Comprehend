@@ -5,25 +5,22 @@ namespace vanderlee\comprehend\parser\structure;
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\core\ArgumentsTrait;
-use \vanderlee\comprehend\parser\structure\PreferTrait;
 use \vanderlee\comprehend\directive\Prefer;
 
 /**
- * Description of OrParser
+ * Match one of the provided parsers.
  *
  * @author Martijn
  */
-class Choice extends Parser {
+class Choice extends IterableParser {
 
 	use ArgumentsTrait;
 	use PreferTrait;
 
-	private $parsers = null;
-
 	public function __construct(...$arguments)
 	{
 		if (empty($arguments)) {
-			throw new \Exception('No arguments');
+			throw new \InvalidArgumentException('No arguments');
 		}
 
 		$this->parsers = self::getArguments($arguments);
@@ -44,7 +41,7 @@ class Choice extends Parser {
 		return (new self(...$arguments))->preferLongest();
 	}
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
 		$this->pushPrefererenceToContext($context);
 
@@ -53,27 +50,27 @@ class Choice extends Parser {
 			case Prefer::FIRST:
 				$max = 0;
 				foreach ($this->parsers as $parser) {
-					$match = $parser->parse($in, $offset, $context);
+					$match = $parser->parse($input, $offset, $context);
 					if ($match->match) {
-						$preferred_match = $this->success($in, $offset, $match->length, $match);
+						$preferred_match = $this->success($input, $offset, $match->length, $match);
 						break 2;
 					}
 					$max = max($max, $match->length);
 				}
-				$preferred_match = $this->failure($in, $offset, $max);
+				$preferred_match = $this->failure($input, $offset, $max);
 				break;
 
 			case Prefer::LONGEST:
-				$max_match = $this->failure($in, $offset);
+				$max_match = $this->failure($input, $offset);
 				foreach ($this->parsers as $parser) {
-					$match = $parser->parse($in, $offset, $context);
+					$match = $parser->parse($input, $offset, $context);
 					if ($match->match == $max_match->match) {
 						if ($match->length > $max_match->length) {
-							$max_match = $match->match ? $this->success($in, $offset, $match->length, $match) :
-									$this->failure($in, $offset, $match->length);
+							$max_match = $match->match ? $this->success($input, $offset, $match->length, $match) :
+									$this->failure($input, $offset, $match->length);
 						}
 					} elseif ($match->match) {
-						$max_match = $this->success($in, $offset, $match->length, $match);
+						$max_match = $this->success($input, $offset, $match->length, $match);
 					}
 				}
 				$preferred_match = $max_match;
@@ -82,7 +79,7 @@ class Choice extends Parser {
 			case Prefer::SHORTEST:
 				$match = null;
 				foreach ($this->parsers as $parser) {
-					$attempt = $parser->parse($in, $offset, $context);
+					$attempt = $parser->parse($input, $offset, $context);
 
 					switch (true) {
 						case!$match: // Keep attempt if first.
@@ -93,8 +90,8 @@ class Choice extends Parser {
 				}
 
 				// This will fail! $match is not necesarily the shortest
-				$preferred_match = $match->match ? $this->success($in, $offset, $match->length, $match) :
-						$this->failure($in, $offset, $match->length);
+				$preferred_match = $match->match ? $this->success($input, $offset, $match->length, $match) :
+						$this->failure($input, $offset, $match->length);
 				break;
 		}
 

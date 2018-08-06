@@ -12,7 +12,7 @@ class ExceptTest extends PHPUnit\Framework\TestCase {
 	 * @covers Except->parse
 	 * @dataProvider exceptData
 	 */
-	public function testExcept(Except $parser, string $input, int $offset, bool $match, int $length)
+	public function testExcept(Except $parser, $input, $offset, $match, $length)
 	{
 		$result = $parser->match($input, $offset);
 

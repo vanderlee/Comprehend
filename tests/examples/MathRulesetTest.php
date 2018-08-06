@@ -43,9 +43,14 @@ class MathRulesetTest extends TestCase {
 			'kleene' => Repeat::class,
 			'choice' => Choice::class,
 		]);
-			
+
 		$math->define([
-			'integer' => $math->s($math->opt('-'), $math->plus($math->r('0', '9')))->pushResult(),
+			'integer' => $math->s(
+			    $math->opt('-'),
+                $math->plus(
+                    $math->r('0', '9')
+                )
+            )->pushResult(),
 			'factor' => $math->choice($math->s('(', $math->expression, ')'), $math->integer),
 			'term' => $math->choice(
 				$math->s($math->factor, '*', $math->term)->pushResult(null, 'multiply'),

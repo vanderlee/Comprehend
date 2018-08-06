@@ -21,7 +21,7 @@ class ChoiceTest extends TestCase {
 	 * @covers Choice
 	 * @dataProvider choiceData
 	 */
-	public function testChoice(Choice $parser, string $input, int $offset, bool $match, int $length)
+	public function testChoice(Choice $parser, $input, $offset, $match, $length)
 	{
 		$this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
 	}

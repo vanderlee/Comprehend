@@ -37,10 +37,10 @@ class Space extends Parser {
 		$this->parser = self::getArgument($parser);
 	}
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
 		$context->pushSpacer($this->spacer);
-		$match = $this->parser->parse($in, $offset, $context);
+		$match = $this->parser->parse($input, $offset, $context);
 		$context->popSpacer();
 
 		return $match;

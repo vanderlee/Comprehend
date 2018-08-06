@@ -2,6 +2,7 @@
 
 namespace vanderlee\comprehend;
 
+use vanderlee\comprehend\core\ParseException;
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\parser\structure\Sequence;
@@ -35,20 +36,20 @@ class Facade extends Parser {
 	 */
 	private $stack = [];
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
 		$this->parser = reset($this->stack);
 		
 		if ($this->parser === null) {
-			return new \Exception('Too few parsers on stack');
+			throw new ParseException('Too few parsers on stack');
 		}
 
-		$match = $this->parser->parse($in, $offset, $context);
+		$match = $this->parser->parse($input, $offset, $context);
 
 		if ($match->match) {
-			return $this->success($in, $offset, $match->length, $match);
+			return $this->success($input, $offset, $match->length, $match);
 		} else {
-			return $this->failure($in, $offset, $match->length, $match);
+			return $this->failure($input, $offset, $match->length, $match);
 		}
 	}
 
@@ -57,7 +58,7 @@ class Facade extends Parser {
 		$method = "composite_$name";
 
 		if (!method_exists(Facade::class, $method)) {
-			throw new \Exception("Composite method for `{$name}` operation not available");
+			throw new ParseException("Composite method for `{$name}` operation not available");
 		}
 
 		$facade = new Facade();
@@ -72,7 +73,7 @@ class Facade extends Parser {
 		$method = "composite_$name";
 
 		if (!method_exists($this, $method)) {
-			throw new \Exception("Composite method for `{$name}` operation not available");
+			throw new ParseException("Composite method for `{$name}` operation not available");
 		}
 
 		call_user_func_array([$this, $method], $arguments);

@@ -15,6 +15,9 @@ use \vanderlee\comprehend\builder\Definition;
  * @method void define(array|string $name, Definition|Parser|callable $definition = [])
  * @method bool defined(string[]|string $name)
  * @method void undefine(string[]|string $name)
+ * //method static void define(array|string $name, Definition|Parser|callable $definition = [])
+ * //method static bool defined(string[]|string $name)
+ * //method static void undefine(string[]|string $name)
  * 
  * @author Martijn
  */
@@ -51,7 +54,7 @@ class Ruleset {
 	 * @param Definition|Parser|callable $definition
 	 * @throws \Exception
 	 */
-	private static function set(&$rules, $name, $definition)
+	private static function setRule(&$rules, $name, $definition)
 	{
 		if (isset($rules[$name])) {
 			if ($rules[$name] instanceof Definition) {
@@ -69,7 +72,7 @@ class Ruleset {
 				}
 			}
 
-			throw new \Exception("Cannot redefine `{$name}`");
+			throw new \RuntimeException("Cannot redefine `{$name}`");
 		}
 
 		$rules[$name] = $definition;
@@ -85,13 +88,20 @@ class Ruleset {
 		}
 
 		if (in_array($names, self::$reserved)) {
-			throw new \Exception("Cannot define reserved name `{$names}`");
+			throw new \RuntimeException("Cannot define reserved name `{$names}`");
 		}
 
-		self::set($rules, $names, $definition);
+		self::setRule($rules, $names, $definition);
 	}
 
-	private static function isRuleDefined(&$rules, $names): bool
+    /**
+     * Check if a specified name is defined in the rules map provided
+     *
+     * @param $rules
+     * @param $names
+     * @return bool
+     */
+    private static function isRuleDefined(&$rules, $names)
 	{
 		foreach ((array) $names as $key) {
 			if (!isset($rules[$key])) {
@@ -112,29 +122,37 @@ class Ruleset {
 	private static function call(&$rules, $name, $arguments = [])
 	{
 		switch ($name) {
-			case 'define':
-				return self::defineRule($rules, $arguments[0], $arguments[1]);
+            case 'define':
+                return self::defineRule($rules, ...$arguments);
 
-			case 'defined':
-				return self::isRuleDefined($rules, $arguments[0]);
+            case 'defined':
+                return self::isRuleDefined($rules, ...$arguments);
 
-			case 'undefine':
-				return self::undefineRule($rules, $arguments[0]);
+            case 'undefine':
+                return self::undefineRule($rules, ...$arguments);
+        }
 
-			default:
-				if (!isset($rules[$name])) {
-					$rules[$name] = new Definition();
-				}
+        if (!isset($rules[$name])) {
+            $rules[$name] = new Definition();
+        }
 
-				switch (true) {
-					case $rules[$name] instanceof Definition:
-						return new DefinitionInstance($rules[$name], $arguments);
-					case $rules[$name] instanceof Parser:
-						return clone $rules[$name];
-					case is_callable($rules[$name]):
-						return $rules[$name](...$arguments);
-				}
-		}
+        $rule = $rules[$name];
+
+        switch (true) {
+            case $rule instanceof Definition:
+                return new DefinitionInstance($rule, $arguments);
+
+            case $rule instanceof Parser:
+                return clone $rule;
+
+            case is_callable($rule):
+                return $rule(...$arguments);
+
+            case is_string($rule) && class_exists($rule):
+                return new $rule(...$arguments);
+        }
+
+        throw new \InvalidArgumentException(sprintf('Invalid definition type `%1$s`', is_object($rule) ? get_class($rule) : gettype($rule)));
 	}
 
 	/**
@@ -169,7 +187,7 @@ class Ruleset {
 	 */
 	public function __set($name, $definition)
 	{
-		self::set($this->instanceRules, $name, $definition);
+		self::setRule($this->instanceRules, $name, $definition);
 	}
 
 	public function __get($name)

@@ -4,7 +4,6 @@ use \vanderlee\comprehend\core\ArgumentsTrait;
 use \vanderlee\comprehend\parser\terminal\Char;
 use \vanderlee\comprehend\parser\terminal\Text;
 use \vanderlee\comprehend\parser\terminal\Any;
-use \vanderlee\comprehend\parser\structure\Choice;
 use \vanderlee\comprehend\parser\structure\Sequence;
 
 class ArgumentsTraitStub {

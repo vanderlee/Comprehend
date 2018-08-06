@@ -21,7 +21,7 @@ class SetTest extends PHPUnit\Framework\TestCase {
 	 * @covers Set
 	 * @dataProvider setData
 	 */
-	public function testSet(Set $parser, string $input, int $offset, bool $match, int $length)
+	public function testSet(Set $parser, $input, $offset, $match, $length)
 	{
 		$result = $parser->match($input, $offset);
 

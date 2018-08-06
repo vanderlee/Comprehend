@@ -57,7 +57,7 @@ class RangeTest extends PHPUnit\Framework\TestCase {
 	 * @covers Range
 	 * @dataProvider rangeData
 	 */
-	public function testRange(Range $parser, string $input, int $offset, bool $match, int $length)
+	public function testRange(Range $parser, $input, $offset, $match, $length)
 	{
 		$result = $parser->match($input, $offset);
 

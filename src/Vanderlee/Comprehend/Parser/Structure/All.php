@@ -7,7 +7,7 @@ use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\core\ArgumentsTrait;
 
 /**
- * Description of AndParser
+ * Matches if and only if all parsers individually match. Returned length is the shortest length of all matches
  *
  * @author Martijn
  */
@@ -20,22 +20,22 @@ class All extends Parser {
 	public function __construct(...$arguments)
 	{
 		if (count($arguments) < 2) {
-			throw new \Exception('Less than 2 arguments provided');
+			throw new \InvalidArgumentException('Less than 2 arguments provided');
 		}
 		$this->parsers = self::getArguments($arguments);
 	}
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
 		$length = PHP_INT_MAX;
 		foreach ($this->parsers as $parser) {
-			$match = $parser->parse($in, $offset, $context);
+			$match = $parser->parse($input, $offset, $context);
 			$length = min($length, $match->length);
 			if (!$match->match) {
-				return $this->failure($in, $offset, $length);
+				return $this->failure($input, $offset, $length);
 			}
 		}
-		return $this->success($in, $offset, $length);
+		return $this->success($input, $offset, $length);
 	}
 
 	public function __toString()

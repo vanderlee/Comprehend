@@ -12,9 +12,9 @@ use \vanderlee\comprehend\core\Context;
  */
 class End extends Parser {
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
-		return $offset == mb_strlen($in) ? $this->success($in, $offset) : $this->failure($in, $offset);
+		return $offset == mb_strlen($input) ? $this->success($input, $offset) : $this->failure($input, $offset);
 	}
 
 	public function __toString()

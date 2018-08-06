@@ -10,53 +10,60 @@ use \vanderlee\comprehend\core\Context;
  *
  * @author Martijn
  */
-class Set extends Parser {
+class Set extends Parser
+{
 
-	use CaseSensitiveTrait;
+    use CaseSensitiveTrait;
 
-	private $set = null;
-	private $in = true;
+    private $set = null;
 
-	/**
-	 * Match any single character in the set or not in the set.
-	 * 
-	 * @param string $set
-	 * @param bool $in Set to false to match only characters NOT in the set
-	 * @throws \Exception
-	 */
-	public function __construct(string $set, $in = true)
-	{
-		if (mb_strlen($set) <= 0) {
-			throw new \Exception('Empty set');
-		}
+    /**
+     * Match only characters inside the set (`true`) or outside (`false`).
+     *
+     * @var bool
+     */
+    private $include = true;
 
-		$this->set = count_chars($set, 3);
-		$this->in = (bool) $in;
-	}
+    /**
+     * Match any single character in the set or not in the set.
+     *
+     * @param string $set
+     * @param bool $include Set to false to match only characters NOT in the set
+     * @throws \Exception
+     */
+    public function __construct(string $set, $include = true)
+    {
+        if (mb_strlen($set) <= 0) {
+            throw new \InvalidArgumentException('Empty set');
+        }
 
-	protected function parse(string &$in, int $offset, Context $context)
-	{
+        $this->set = count_chars($set, 3);
+        $this->include = (bool)$include;
+    }
 
-		if ($offset >= mb_strlen($in)) {
-			return $this->failure($in, $offset);
-		}
+    protected function parse(&$input, $offset, Context $context)
+    {
 
-		$this->pushCaseSensitivityToContext($context);
+        if ($offset >= mb_strlen($input)) {
+            return $this->failure($input, $offset);
+        }
 
-		if (strchr($context->handleCase($this->set), $context->handleCase($in[$offset])) !== FALSE) {
-			$this->popCaseSensitivityFromContext($context);
+        $this->pushCaseSensitivityToContext($context);
 
-			return $this->in ? $this->success($in, $offset, 1) : $this->failure($in, $offset);
-		}
+        if (strchr($context->handleCase($this->set), $context->handleCase($input[$offset])) !== FALSE) {
+            $this->popCaseSensitivityFromContext($context);
 
-		$this->popCaseSensitivityFromContext($context);
+            return $this->makeMatch($this->include, $input, $offset, 1);
+        }
 
-		return $this->in ? $this->failure($in, $offset) : $this->success($in, $offset, 1);
-	}
+        $this->popCaseSensitivityFromContext($context);
 
-	public function __toString()
-	{			
-		return ($this->in ? '' : chr(0xAC)) . '( \'' . join('\' | \'', str_split($this->set)) . '\' )';
-	}
+        return $this->makeMatch(!$this->include, $input, $offset, 1);
+    }
+
+    public function __toString()
+    {
+        return ($this->include ? '' : chr(0xAC)) . '( \'' . join('\' | \'', str_split($this->set)) . '\' )';
+    }
 
 }

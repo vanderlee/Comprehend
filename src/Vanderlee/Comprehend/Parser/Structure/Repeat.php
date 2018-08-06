@@ -33,7 +33,7 @@ class Repeat extends Parser {
 		$this->flags = $flags;
 
 		if ($this->max !== null && $this->max < $this->min) {
-			throw new \Exception('Invalid repeat range specified');
+			throw new \InvalidArgumentException('Invalid repeat range specified');
 		}
 	}
 	
@@ -49,7 +49,7 @@ class Repeat extends Parser {
 		return new self($parser, 0, 1);
 	}
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
 		$this->pushSpacer($context);
 
@@ -58,8 +58,8 @@ class Repeat extends Parser {
 		$length = 0;
 		$tokens = array();
 		do {
-			$skip = $context->skipSpacing($in, $offset + $length);
-			$match = $this->parser->parse($in, $offset + $length + $skip, $context);
+			$skip = $context->skipSpacing($input, $offset + $length);
+			$match = $this->parser->parse($input, $offset + $length + $skip, $context);
 			if ($match->match) {
 				$length += $skip + $match->length;
 				$child_matches[] = $match;
@@ -70,7 +70,7 @@ class Repeat extends Parser {
 
 		$this->popSpacer($context);
 
-		return $match ? $this->success($in, $offset, $length, $child_matches) : $this->failure($in, $offset, $length);
+		return $match ? $this->success($input, $offset, $length, $child_matches) : $this->failure($input, $offset, $length);
 	}
 
 	public function __toString()

@@ -30,16 +30,16 @@ class Except extends Parser {
 		$this->parser_not = self::getArgument($not);
 	}
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
-		$match = $this->parser_match->parse($in, $offset, $context);
-		$not = $this->parser_not->parse($in, $offset, $context);
+		$match = $this->parser_match->parse($input, $offset, $context);
+		$not = $this->parser_not->parse($input, $offset, $context);
 
 		if ($match->match && !$not->match) {
-			return $this->success($in, $offset, $match->length, $match);
+			return $this->success($input, $offset, $match->length, $match);
 		}
 
-		return $this->failure($in, $offset, min($match->length, $not->length));
+		return $this->failure($input, $offset, min($match->length, $not->length));
 	}
 
 	public function __toString()

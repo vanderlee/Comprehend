@@ -30,7 +30,7 @@ class CharTest extends PHPUnit\Framework\TestCase {
 	 * @covers Char
 	 * @dataProvider charData
 	 */
-	public function testChar(Char $parser, string $input, int $offset, bool $match, int $length)
+	public function testChar(Char $parser, $input, $offset, $match, $length)
 	{
 		$result = $parser->match($input, $offset);
 
@@ -58,6 +58,11 @@ class CharTest extends PHPUnit\Framework\TestCase {
 			[(new Char('A'))->setCaseSensitivity(false), 'A', 0, true, 1],
 			[(new Char('a'))->setCaseSensitivity(false), 'A', 0, true, 1],
 			[(new Char('A'))->setCaseSensitivity(false), 'a', 0, true, 1],
+            [new Char('a', false), 'a', 0, false, 0],
+            [new Char('a', false), 'A', 0, true, 1],
+            [new Char('a', false), 'b', 0, true, 1],
+            [(new Char('a', false))->caseInsensitive(), 'A', 0, false, 0],
+            [(new Char('a', false))->caseInsensitive(), 'b', 0, true, 1],
 		];
 	}
 

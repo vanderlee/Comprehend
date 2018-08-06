@@ -1,45 +1,51 @@
-Milestone 1
-===========
--	not-Char parser
--	Debug logging mode
--	Array argument; choice or sequence?
-	-	Or different per caller?
-	-	Resolve definition/factory as late as possible
--	Recursion definition order test w/ ruleset
-	-	Implement definition on parse
-	-	Stub parser?
--	Builder: results, etc...
-	-	If set, dump any "deeper" results and only use them for your own good.
--	Examples
--	Readme's
--	Test directive stacking
--	Space() directive; false/true support
--	Pure Match classes tests
--	Exceptions: runtime, designtime; inventorize!
+#Todo
+##Milestone 1 
+ -  Extract Parser::parseCharacter
+ -  Tests
+     -  prefer context
+     -  case sensitive context
+     -  match classes
+ -  Spacer: Required w/ optionality optional	        
+ -  Builder: results, etc...
+	 -	If set, dump any "deeper" results and only use them for your own good.
+ -	Examples
+     - Practical example
+ -	Readme's
+ -  Ruleset constructor with array of defines
+ -  Extra "type" terminal parsers
+     -  digit, alpha, hex, integer, float, etc...
 
-Milestone 2
-===========
+##Milestone 2
+-	Debug logging mode
+-   Callback for result value; late processing
+-   AST generation
+     -  `->tree($token, $value = null)`
+     -  Allow callback for value
+-   Tokenizer
+     -  `->token($token)`
 -	Facade
-	$C = new Comprehend;
-	$C->barbaz = $C->text('baz')->or->text('bar');
-	$C->fooba = $C->text('foo')->barbaz;
+     -  $C = new Comprehend;
+	 -  $C->barbaz = $C->text('baz')->or->text('bar');
+	 -  $C->fooba = $C->text('foo')->barbaz;	
+	 -  Special version of ruleset?
 -	ABNF parser
--	Own Exception class
--	Traits for stuff
 -	Match; handle child_matches differently? Fluent (not in constructor)
 -	Callbacks
-	-	Match; error/warnings/etc (flexible decorators w/ callbacks)
-		-	Define decorators at runtime
-		-	Also impacts Match properties and methods
-	-	Match results as arrays (optional through name.sub or name. or name[]?)
-	-	Cast parser-tree to string
+	 -	Match; error/warnings/etc (flexible decorators w/ callbacks)
+		 -	Define decorators at runtime
+		 -	Also impacts Match properties and methods
+	 -	Match results as arrays (optional through name.sub or name. or name[]?)
+	 -	Cast parser-tree to string
 
 Phase 2
 =======
--	Exception; ConstructionException, ParseException, CallbackException
+-   Stream parsing
+     -  Low memory profile
+     -  Sourcing from stream (rewind, position-cache, buffer-cache)
+     -  `->stream(callable $callback, $token = null)`    
 -	Non-greedy/greedy repeat.
 -	Ungreedy repeater
-	-	Parent responsible for ungreedy backtracking?
+	 -	Parent responsible for ungreedy backtracking?
 -	Anchor-optional parsing.
 -	Predefineds (global)
 -	Add token-handling.

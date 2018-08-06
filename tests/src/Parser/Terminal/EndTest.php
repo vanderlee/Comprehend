@@ -12,7 +12,7 @@ class EndTest extends PHPUnit\Framework\TestCase {
 	 * @covers End->parse
 	 * @dataProvider endData
 	 */
-	public function testEnd(End $parser, string $input, int $offset, bool $match, int $length)
+	public function testEnd(End $parser, $input, $offset, $match, $length)
 	{
 		$result = $parser->match($input, $offset);
 

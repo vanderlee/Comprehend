@@ -10,39 +10,48 @@ use \vanderlee\comprehend\core\Context;
  *
  * @author Martijn
  */
-class Char extends Parser {
-	
-	use CaseSensitiveTrait;
-	
-	private $character = null;
+class Char extends Parser
+{
 
-	public function __construct($character)
-	{
-		$this->character = self::parseCharacter($character);
-	}
+    use CaseSensitiveTrait;
 
-	protected function parse(string &$in, int $offset, Context $context)
-	{
-		if ($offset >= mb_strlen($in)) {
-			return $this->failure($in, $offset);
-		}
+    private $character = null;
 
-		$this->pushCaseSensitivityToContext($context);
-		
-		if ($context->handleCase($in[$offset]) == $context->handleCase($this->character)) {
-			$this->popCaseSensitivityFromContext($context);
-			
-			return $this->success($in, $offset, 1);
-		}		
-		
-		$this->popCaseSensitivityFromContext($context);
+    /**
+     * Match the specified character (`true`) or everything else (`false`).
+     *
+     * @var bool
+     */
+    private $include = true;
 
-		return $this->failure($in, $offset);
-	}
+    public function __construct($character, $include = true)
+    {
+        $this->character = self::parseCharacter($character);
+        $this->include = $include;
+    }
 
-	public function __toString()
-	{
-		return '\'' . $this->character . '\'';
-	}
+    protected function parse(&$input, $offset, Context $context)
+    {
+        if ($offset >= mb_strlen($input)) {
+            return $this->failure($input, $offset);
+        }
+
+        $this->pushCaseSensitivityToContext($context);
+
+        if ($context->handleCase($input[$offset]) == $context->handleCase($this->character)) {
+            $this->popCaseSensitivityFromContext($context);
+
+            return $this->makeMatch($this->include, $input, $offset, 1);
+        }
+
+        $this->popCaseSensitivityFromContext($context);
+
+        return $this->makeMatch(!$this->include, $input, $offset, 1);
+    }
+
+    public function __toString()
+    {
+        return '\'' . $this->character . '\'';
+    }
 
 }

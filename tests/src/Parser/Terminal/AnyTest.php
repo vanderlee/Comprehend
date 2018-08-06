@@ -12,7 +12,7 @@ class AnyTest extends PHPUnit\Framework\TestCase {
 	 * @covers Any
 	 * @dataProvider anyData
 	 */
-	public function testAny(Any $parser, string $input, int $offset, bool $match, int $length)
+	public function testAny(Any $parser, $input, $offset, $match, $length)
 	{
 		$result = $parser->match($input, $offset);
 

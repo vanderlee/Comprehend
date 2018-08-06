@@ -39,7 +39,7 @@ class RegexTest extends PHPUnit\Framework\TestCase {
 	 * @covers Regex
 	 * @dataProvider regexData
 	 */
-	public function testRegex(Regex $parser, string $input, int $offset, bool $match, int $length)
+	public function testRegex(Regex $parser, $input, $offset, $match, $length)
 	{
 		$result = $parser->match($input, $offset);
 

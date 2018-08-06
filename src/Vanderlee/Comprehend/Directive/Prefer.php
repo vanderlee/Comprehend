@@ -34,6 +34,7 @@ class Prefer extends Parser {
 	 * 
 	 * @param \vanderlee\comprehend\parser\structure\Choice $parser
 	 * @param mixed $preference
+     * @throws \DomainException
 	 */
 	public function __construct($preference, $parser)
 	{
@@ -41,17 +42,17 @@ class Prefer extends Parser {
 					self::FIRST,
 					self::LONGEST,
 					self::SHORTEST])) {
-			throw new \Exception('Invalid preference');
+            throw new \DomainException("Invalid preference `{$preference}` ");
 		}
 		$this->preference = $preference;
 
 		$this->parser = self::getArgument($parser);
 	}
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
 		$context->pushPreference($this->preference);
-		$match = $this->parser->parse($in, $offset, $context);
+		$match = $this->parser->parse($input, $offset, $context);
 		$context->popPreference();
 		return $match;
 	}

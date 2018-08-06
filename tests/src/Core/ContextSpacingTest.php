@@ -21,8 +21,7 @@ class ContextSpacingTest extends TestCase {
 		$parser->spacing($scanner);
 		
 		$result = $parser->match('foo-bar');
-		$this->assertTrue($result->match, (string) $parser);
-		$this->assertSame(7, $result->length, (string) $parser);
+		$this->assertResult(true, 7, $result);
 	}
 
 	/**

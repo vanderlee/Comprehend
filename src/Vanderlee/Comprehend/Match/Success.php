@@ -2,8 +2,6 @@
 
 namespace vanderlee\comprehend\match;
 
-use \vanderlee\comprehend\core\ParserException;
-
 /**
  * Description of ParserToken
  *
@@ -48,7 +46,7 @@ class Success extends Match {
 	 * @param int $length
 	 * @param Success[]|Success $successes
 	 */
-	public function __construct(int $length = 0, &$successes = [])
+	public function __construct($length = 0, &$successes = [])
 	{
 		parent::__construct($length);
 
@@ -123,7 +121,7 @@ class Success extends Match {
 	private function processCustomCallbacks()
 	{
 		if ($this->resolved) {
-			throw new ParserException('Match already resolved');
+			throw new \ErrorException('Match already resolved');
 		}
 		$this->resolved = true;
 		

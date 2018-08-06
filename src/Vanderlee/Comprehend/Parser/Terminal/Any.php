@@ -12,13 +12,13 @@ use \vanderlee\comprehend\core\Context;
  */
 class Any extends Parser {
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
-		if ($offset < mb_strlen($in)) {
-			return $this->success($in, $offset, 1);
+		if ($offset < mb_strlen($input)) {
+			return $this->success($input, $offset, 1);
 		}
 
-		return $this->failure($in, $offset);
+		return $this->failure($input, $offset);
 	}
 
 	public function __toString()

@@ -3,112 +3,126 @@
 namespace vanderlee\comprehend\parser;
 
 use \vanderlee\comprehend\core\Context;
+use \vanderlee\comprehend\match\Match;
 use \vanderlee\comprehend\match\Success;
 use \vanderlee\comprehend\match\Failure;
-use \vanderlee\comprehend\traits\Assign;
-use \vanderlee\comprehend\parser\terminal\Char;
-use \vanderlee\comprehend\parser\terminal\Text;
 
-abstract class Parser {
+abstract class Parser
+{
 
-	use ResultTrait;
-	use AssignTrait;
+    use ResultTrait;
+    use AssignTrait;
 
-	/**
-	 * List of callbacks to call when this parser has matched a part of the
-	 * full parse.
-	 * @var type 
-	 */
-	private $callbacks = [];
+    /**
+     * List of callbacks to call when this parser has matched a part of the
+     * full parse.
+     * @var type
+     */
+    private $callbacks = [];
 
-	protected static function parseCharacter($character)
-	{
-		if ($character === '' || $character === null) {
-			throw new \Exception('Empty argument');
-		}
+    protected static function parseCharacter($character)
+    {
+        if ($character === '' || $character === null) {
+            throw new \InvalidArgumentException('Empty argument');
+        }
 
-		if (is_int($character)) {
-			return chr($character);
-		} elseif (mb_strlen($character) > 1) {
-			throw new \Exception('Non-character argument');
-		}
+        if (is_int($character)) {
+            return chr($character);
+        } elseif (mb_strlen($character) > 1) {
+            throw new \InvalidArgumentException('Non-character argument');
+        }
 
-		return $character;
-	}
+        return $character;
+    }
 
-	/**
-	 * @return \vanderlee\comprehend\match\Match;
-	 */
-	abstract protected function parse(string &$in, int $offset, Context $context);
+    /**
+     * @return \vanderlee\comprehend\match\Match;
+     */
+    abstract protected function parse(&$input, $offset, Context $context);
 
-	/**
-	 * @param string $in
-	 * @param integer $offset
-	 * @return Match;
-	 */
-	public function match(string $in, int $offset = 0)
-	{
-		if ($offset < 0) {
-			throw new \Exception("Negative offset");
-		}
+    /**
+     * @param string $input
+     * @param integer $offset
+     * @return Match;
+     */
+    public function match($input, $offset = 0)
+    {
+        if ($offset < 0) {
+            throw new \InvalidArgumentException("Negative offset");
+        }
 
-		return $this->parse($in, $offset, new Context())->resolve();
-	}
+        return $this->parse($input, $offset, new Context())->resolve();
+    }
 
-	public function __invoke(string $in, int $offset = 0)
-	{
-		return $this->match($in, $offset);
-	}
+    public function __invoke($input, $offset = 0)
+    {
+        return $this->match($input, $offset);
+    }
 
-	/**
-	 * Create a succesful match
-	 * 
-	 * @param string $in
-	 * @param int $offset
-	 * @param int $length
-	 * @param Success[]|Success $successes
-	 * @return Success
-	 */
-	protected function success(string &$in, int $offset, int $length = 0, &$successes = [])
-	{
-		$callbacks = $this->callbacks;
+    /**
+     * Create a succesful match
+     *
+     * @param bool $success
+     * @param string $input
+     * @param int $offset
+     * @param int $length
+     * @param Success[]|Success $successes
+     * @return Success
+     */
+    protected function makeMatch($success, &$input, $offset, $length = 0, &$successes = [])
+    {
+        return $success ? $this->success($input, $offset, 1) : $this->failure($input, $offset);
+    }
 
-		$successes = is_array($successes) ? $successes : [$successes];
+    /**
+     * Create a succesful match
+     *
+     * @param string $input
+     * @param int $offset
+     * @param int $length
+     * @param Success[]|Success $successes
+     * @return Success
+     */
+    protected function success(&$input, $offset, $length = 0, &$successes = [])
+    {
+        $callbacks = $this->callbacks;
 
-		return (new Success($length, $successes))
-						->addResultCallback(function(&$results) use($in, $offset, $length, $callbacks) {
-							$text = substr($in, $offset, $length);
+        $successes = is_array($successes) ? $successes : [$successes];
 
-							$this->resolveResultCallbacks($results, $text);
-						})->addCustomCallback(function() use($in, $offset, $length, $callbacks) {
-					$text = substr($in, $offset, $length);
+        return (new Success($length, $successes))
+            ->addResultCallback(function (&$results) use ($input, $offset, $length, $callbacks) {
+                $text = substr($input, $offset, $length);
 
-					$this->resolveAssignCallbacks($text);
+                $this->resolveResultCallbacks($results, $text);
+            })->addCustomCallback(function () use ($input, $offset, $length, $callbacks) {
+                $text = substr($input, $offset, $length);
 
-					foreach ($callbacks as $callback) {
-						$callback($text, $in, $offset, $length);
-					}
-				});
-	}
+                $this->resolveAssignCallbacks($text);
 
-	/**
-	 * Create a failed match
-	 * 
-	 * @param string $in
-	 * @param int $offset
-	 * @param int $length
-	 * @return Failure
-	 */
-	protected function failure(string &$in, int $offset, int $length = 0)
-	{
-		return new Failure($length);
-	}
+                foreach ($callbacks as $callback) {
+                    $callback($text, $input, $offset, $length);
+                }
+            });
+    }
 
-	public function callback(callable $callback)
-	{
-		$this->callbacks[] = $callback;
-		return $this;
-	}
+    /**
+     * Create a failed match
+     *
+     * @param string $input
+     * @param int $offset
+     * @param int $length
+     * @return Failure
+     */
+    protected function failure(&$input, $offset, $length = 0)
+    {
+        return new Failure($length);
+    }
 
-	abstract public function __toString();
+    public function callback(callable $callback)
+    {
+        $this->callbacks[] = $callback;
+        return $this;
+    }
+
+    abstract public function __toString();
 }

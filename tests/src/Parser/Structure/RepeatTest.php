@@ -23,7 +23,7 @@ class RepeatTest extends PHPUnit\Framework\TestCase {
 	 * @covers Repeat->doParse
 	 * @dataProvider repeatData
 	 */
-	public function testRepeat(Repeat $parser, string $input, int $offset, bool $match, int $length)
+	public function testRepeat(Repeat $parser, $input, $offset, $match, $length)
 	{
 		$result = $parser->match($input, $offset);
 

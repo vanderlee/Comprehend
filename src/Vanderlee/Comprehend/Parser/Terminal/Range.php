@@ -21,7 +21,7 @@ class Range extends Parser {
 	public function __construct($first, $last, $in = true)
 	{
 		if ($first === null && $last === null) {
-			throw new \Exception('Empty arguments');
+			throw new \InvalidArgumentException('Empty arguments');
 		}
 
 		$this->first = $first === null ? null : self::parseCharacter($first);
@@ -29,26 +29,26 @@ class Range extends Parser {
 		$this->in = (bool) $in;
 	}
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
-		if ($offset >= mb_strlen($in)) {
-			return $this->failure($in, $offset);
+		if ($offset >= mb_strlen($input)) {
+			return $this->failure($input, $offset);
 		}
 
 		$this->pushCaseSensitivityToContext($context);
 
 		$first = ord($context->handleCase($this->first));
 		$last = ord($context->handleCase($this->last));
-		$ord = ord($context->handleCase($in[$offset]));
+		$ord = ord($context->handleCase($input[$offset]));
 		if ($first <= $ord && ($this->last === null || $ord <= $last)) {
 			$this->popCaseSensitivityFromContext($context);
 
-			return $this->in ? $this->success($in, $offset, 1) : $this->failure($in, $offset);
+			return $this->in ? $this->success($input, $offset, 1) : $this->failure($input, $offset);
 		}
 
 		$this->popCaseSensitivityFromContext($context);
 
-		return $this->in ? $this->failure($in, $offset) : $this->success($in, $offset, 1);
+		return $this->in ? $this->failure($input, $offset) : $this->success($input, $offset, 1);
 	}
 
 	public function __toString()

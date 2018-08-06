@@ -30,7 +30,7 @@ abstract class Match {
 				return  null;
 		}
 		
-		throw new \Exception("Property name `{$name}` not recognized");
+		throw new \InvalidArgumentException("Property name `{$name}` not recognized");
 	}
 
 	/**

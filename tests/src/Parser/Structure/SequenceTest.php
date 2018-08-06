@@ -23,7 +23,7 @@ class SequenceTest extends TestCase {
 	 * @covers Sequence
 	 * @dataProvider sequenceData
 	 */
-	public function testSequence(Sequence $parser, string $input, int $offset, bool $match, int $length)
+	public function testSequence(Sequence $parser, $input, $offset, $match, $length)
 	{
 		$this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
 	}
@@ -93,5 +93,23 @@ class SequenceTest extends TestCase {
 		$this->assertEquals('a', $a);
 		$this->assertEquals('b', $b);
 	}
+
+	public function testArrayAccess()
+	{
+	    $seq = new Sequence('a', 'b');
+
+	    $this->assertResult(true, 2, $seq->match('ab'));
+	    $this->assertResult(true, 2, $seq->match('abc'));
+
+	    $seq[] = 'c';
+
+        $this->assertResult(false, 2, $seq->match('ab'));
+        $this->assertResult(true, 3, $seq->match('abc'));
+
+        unset($seq[0]);
+
+        $this->assertResult(false, 0, $seq->match('abc'));
+        $this->assertResult(true, 2, $seq->match('bc'));
+    }
 
 }

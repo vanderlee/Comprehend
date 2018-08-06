@@ -23,26 +23,26 @@ class Text extends Parser {
 
 		$this->length = mb_strlen($text);
 		if ($this->length <= 0) {
-			throw new \Exception('Empty argument');
+			throw new \InvalidArgumentException('Empty argument');
 		}
 	}
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
 		$this->pushCaseSensitivityToContext($context);
 
 		$text = $context->handleCase($this->text);
 		for ($c = 0; $c < $this->length; $c++) {
-			if ($offset + $c >= mb_strlen($in) || $text[$c] != $context->handleCase($in[$offset + $c])) {
+			if ($offset + $c >= mb_strlen($input) || $text[$c] != $context->handleCase($input[$offset + $c])) {
 				$this->popCaseSensitivityFromContext($context);
 
-				return $this->failure($in, $offset, $c);
+				return $this->failure($input, $offset, $c);
 			}
 		}
 
 		$this->popCaseSensitivityFromContext($context);
 
-		return $this->success($in, $offset, $this->length);
+		return $this->success($input, $offset, $this->length);
 	}
 
 	public function __toString()

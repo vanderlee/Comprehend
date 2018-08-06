@@ -8,42 +8,51 @@ use \vanderlee\comprehend\core\ArgumentsTrait;
 
 /**
  * Classes implementing this can scan
- * 
+ *
  * @author Martijn
  */
-trait SpacingTrait {
+trait SpacingTrait
+{
 
-	use ArgumentsTrait;
-	
-	/**
-	 * Parser used for scanning the text
-	 * @var Parser 
-	 */
-	private $spacer = false;
+    use ArgumentsTrait;
 
-	private function pushSpacer(Context $context)
-	{
-		if ($this->spacer !== false) {
-			$context->pushSpacer($this->spacer);
-		}
-	}
+    /**
+     * Parser used for scanning the text
+     * @var Parser
+     */
+    private $spacer = false;
 
-	private function popSpacer(Context $context)
-	{
-		if ($this->spacer !== false) {
-			$context->popSpacer();
-		}
-	}
+    private function pushSpacer(Context $context)
+    {
+        if ($this->spacer !== false) {
+            $context->pushSpacer($this->spacer);
+        }
+    }
 
-	/**
-	 * Set a spacing parser for this parser or disable or enable (if a previous
-	 * spacing parser is enabled) spacing parsing.
-	 * 
-	 * @param Parser|bool $spacer
-	 */
-	public function spacing($spacer = true)
-	{
-		$this->spacer = $spacer === false ? null : ($spacer === true ? false : self::getArgument($spacer));
-	}
+    private function popSpacer(Context $context)
+    {
+        if ($this->spacer !== false) {
+            $context->popSpacer();
+        }
+    }
+
+    /**
+     * Set a spacing parser for this parser or disable or enable (if a previous
+     * spacing parser is enabled) spacing parsing.
+     *
+     * @param Parser|bool|null $spacer
+     */
+    public function spacing($spacer = true)
+    {
+        if ($spacer === true) {
+            $this->spacer = true;
+        } elseif ($spacer === null || $spacer === false ) {
+            $this->spacer = null;
+        } else {
+            $this->spacer = self::getArgument($spacer);
+        }
+
+        return $this;
+    }
 
 }

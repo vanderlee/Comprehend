@@ -9,6 +9,8 @@ use \vanderlee\comprehend\core\ArgumentsTrait;
 /**
  * Description of StubParser
  *
+ * @property Parser|null $parser
+ *
  * @author Martijn
  */
 class Stub extends Parser {
@@ -26,7 +28,7 @@ class Stub extends Parser {
 			return $this->parser = self::getArgument($parser);
 		}
 		
-		throw new \Exception("Property `{$name}` does not exist");
+		throw new \InvalidArgumentException("Property `{$name}` does not exist");
 	}
 
 	public function __get($name)
@@ -35,13 +37,13 @@ class Stub extends Parser {
 			return $this->parser;
 		}
 		
-		throw new \Exception("Property `{$name}` does not exist");
+		throw new \InvalidArgumentException("Property `{$name}` does not exist");
 	}
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$in, $offset, Context $context)
 	{
 		if ($this->parser === null) {
-			throw new \Exception('Missing parser');
+			throw new \UnexpectedValueException('Missing parser');
 		}
 
 		$match = $this->parser->parse($in, $offset, $context);

@@ -2,7 +2,6 @@
 
 namespace vanderlee\comprehend\parser\terminal;
 
-use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
 
 /**

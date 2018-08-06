@@ -1,7 +1,7 @@
 <?php
 
 	/**
-	 * phpOOParser
+	 * Comprehend
 	 * LALR(1) grammar parser framework, ISO-8895-1 support only due to PHP limitations on native string format.
 	 * @version 0.0.2
 	 * @author Martijn W. van der Lee (martijn-at-vanderlee-dot-com)

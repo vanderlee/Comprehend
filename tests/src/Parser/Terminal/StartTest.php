@@ -12,7 +12,7 @@ class StartTest extends PHPUnit\Framework\TestCase {
 	 * @covers Start->parse
 	 * @dataProvider startData
 	 */
-	public function testStart(Start $parser, string $input, int $offset, bool $match, int $length)
+	public function testStart(Start $parser, $input, $offset, $match, $length)
 	{
 		$result = $parser->match($input, $offset);
 

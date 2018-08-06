@@ -12,7 +12,7 @@ class NotTest extends PHPUnit\Framework\TestCase {
 	 * @covers Not->parse
 	 * @dataProvider notData
 	 */
-	public function testNot(Not $parser, string $input, int $offset, bool $match, int $length)
+	public function testNot(Not $parser, $input, $offset, $match, $length)
 	{
 		$result = $parser->match($input, $offset);
 

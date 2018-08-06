@@ -23,7 +23,7 @@ class AllTest extends PHPUnit\Framework\TestCase {
 	 * @covers All->parse
 	 * @dataProvider allData
 	 */
-	public function testAll(All $parser, string $input, int $offset, bool $match, int $length)
+	public function testAll(All $parser, $input, $offset, $match, $length)
 	{
 		$result = $parser->match($input, $offset);
 

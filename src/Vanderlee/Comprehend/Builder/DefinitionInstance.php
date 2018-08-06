@@ -50,18 +50,18 @@ class DefinitionInstance extends Parser {
 		}
 	}
 
-	protected function parse(string &$in, int $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{	
 		$this->build();
 		
-		$match = $this->parser->parse($in, $offset, $context);
+		$match = $this->parser->parse($input, $offset, $context);
 
 		if ($match instanceof Success && $this->validator) {
 			$results = $match->getResults();
-			$text = substr($in, $offset, $match->length);
+			$text = substr($input, $offset, $match->length);
 
 			if (!($this->validator)($text, $results)) {
-				$match = $this->failure($in, $offset, $match->length);
+				$match = $this->failure($input, $offset, $match->length);
 			}
 		}
 
