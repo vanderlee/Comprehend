@@ -163,4 +163,11 @@ class DefinitionTest extends TestCase {
 		$this->assertResult(true, 2, $number('15')); // multiple of 3
 	}
 
+    public function testDefinitionSetResults()
+    {
+        $definition = (new Definition)->generator(self::CSV_RECORD);
+
+        $List = $definition->build('x');
+        $this->assertResult(true, 5, $List('x,x,x'));
+    }
 }

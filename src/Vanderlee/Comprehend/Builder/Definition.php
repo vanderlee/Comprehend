@@ -13,6 +13,7 @@ class Definition {
 
 	public $generator = null;
 	public $validator = null;
+	public $results = null;
 
 	/**
 	 * @param Parser|callable $generator Either a parser or a function returning a parser ('generator')
@@ -33,12 +34,19 @@ class Definition {
 		return $this;
 	}
 
-	public function validator($validator = null)
-	{
-		$this->validator = $validator;
+    public function validator($validator = null)
+    {
+        $this->validator = $validator;
 
-		return $this;
-	}
+        return $this;
+    }
+
+    public function results($results = null)
+    {
+        $this->results = $results;
+
+        return $this;
+    }
 
 	/**
 	 * Build an instance of this parser definition.

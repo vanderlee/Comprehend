@@ -40,22 +40,25 @@ class Stub extends Parser {
 		throw new \InvalidArgumentException("Property `{$name}` does not exist");
 	}
 
-	protected function parse(&$in, $offset, Context $context)
+	protected function parse(&$input, $offset, Context $context)
 	{
 		if ($this->parser === null) {
 			throw new \UnexpectedValueException('Missing parser');
 		}
 
-		$match = $this->parser->parse($in, $offset, $context);
+		$match = $this->parser->parse($input, $offset, $context);
 		if ($match->match) {
-			return $this->success($in, $offset, $match->length, $match);
-		} else {
-			return $this->failure($in, $offset, $match->length);
+			return $this->success($input, $offset, $match->length, $match);
 		}
+		return $this->failure($input, $offset, $match->length);
 	}
 
 	public function __toString()
 	{
+        if ($this->parser === null) {
+            throw new \UnexpectedValueException('Missing parser');
+        }
+
 		return (string) $this->parser;
 	}
 

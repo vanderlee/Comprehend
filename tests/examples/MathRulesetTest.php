@@ -8,8 +8,6 @@ use \vanderlee\comprehend\parser\structure\Sequence;
 use \vanderlee\comprehend\parser\structure\Choice;
 use \vanderlee\comprehend\parser\terminal\Range;
 use \vanderlee\comprehend\parser\structure\Repeat;
-use \vanderlee\comprehend\parser\Stub;
-use \vanderlee\comprehend\parser\terminal\Char;
 
 /**
  * Example of a simple maths parser, constructed using basic objects
@@ -33,9 +31,7 @@ class MathRulesetTest extends TestCase {
 
 	public static function setUpBeforeClass()
 	{
-		$math = new Ruleset;		
-		
-		$math->define([
+		self::$math = new Ruleset([
 			's'	=> Sequence::class,
 			'r'	=> Range::class,
 			'opt' => function($parser) { return new Repeat($parser, 0, 1); },
@@ -44,27 +40,27 @@ class MathRulesetTest extends TestCase {
 			'choice' => Choice::class,
 		]);
 
-		$math->define([
-			'integer' => $math->s(
-			    $math->opt('-'),
-                $math->plus(
-                    $math->r('0', '9')
+        self::$math->define([
+			'integer' => self::$math->s(
+                self::$math->opt('-'),
+                self::$math->plus(
+                    self::$math->r('0', '9')
                 )
             )->pushResult(),
-			'factor' => $math->choice($math->s('(', $math->expression, ')'), $math->integer),
-			'term' => $math->choice(
-				$math->s($math->factor, '*', $math->term)->pushResult(null, 'multiply'),
-				$math->s($math->factor, '/', $math->term)->pushResult(null, 'divide'),
-				$math->factor
+			'factor' => self::$math->choice(self::$math->s('(', self::$math->expression, ')'), self::$math->integer),
+			'term' => self::$math->choice(
+				self::$math->s(self::$math->factor, '*', self::$math->term)->pushResult(null, 'multiply'),
+				self::$math->s(self::$math->factor, '/', self::$math->term)->pushResult(null, 'divide'),
+				self::$math->factor
 			),
-			'expression' => $math->choice(
-				$math->s($math->term, '+', $math->expression)->pushResult(null, 'add'),
-				$math->s($math->term, '-', $math->expression)->pushResult(null, 'subtract'),
-				$math->term
+			'expression' => self::$math->choice(
+				self::$math->s(self::$math->term, '+', self::$math->expression)->pushResult(null, 'add'),
+				self::$math->s(self::$math->term, '-', self::$math->expression)->pushResult(null, 'subtract'),
+				self::$math->term
 			),
 		]);
-		
-		self::$math = $math->expression();
+
+		self::$math->define(Ruleset::DEFAULT, 'expression');
 	}
 
 	/**

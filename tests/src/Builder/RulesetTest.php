@@ -4,6 +4,7 @@ use \vanderlee\comprehend\parser\structure\Sequence;
 use \vanderlee\comprehend\parser\structure\Repeat;
 use \vanderlee\comprehend\builder\Definition;
 use \vanderlee\comprehend\builder\Ruleset;
+use \vanderlee\comprehend\parser\terminal\Text;
 
 /**
  * @group structure

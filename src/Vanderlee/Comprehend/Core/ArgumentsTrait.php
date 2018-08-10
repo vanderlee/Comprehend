@@ -3,9 +3,10 @@
 namespace vanderlee\comprehend\core;
 
 use \vanderlee\comprehend\parser\Parser;
+use \vanderlee\comprehend\parser\structure\Choice;
+use \vanderlee\comprehend\parser\structure\Sequence;
 use \vanderlee\comprehend\parser\terminal\Char;
 use \vanderlee\comprehend\parser\terminal\Text;
-use \vanderlee\comprehend\parser\structure\Sequence;
 
 /**
  * Process arguments
@@ -31,7 +32,7 @@ trait ArgumentsTrait
                 return self::getArgument(reset($argument));
             }
 
-            return $arrayToSequence ? new Sequence(...$argument) : new Choice(...$arrayToSequence);
+            return $arrayToSequence ? new Sequence(...$argument) : new Choice(...$argument);
         } elseif (is_string($argument)) {
             switch (strlen($argument)) {
                 case 0:

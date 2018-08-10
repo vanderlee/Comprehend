@@ -1,6 +1,12 @@
 #Todo
-##Milestone 1 
- -  Extract Parser::parseCharacter
+##Milestone 1
+ -  RFC
+     -  Implement
+     -  Test
+         -  What kind of coverage? All rules? Start rules
+ -  Ruleset; on define, add a token/result rule.
+ -  Library: configurable path?
+ -  Optimize s-c-s arrays; pull-up sequence/choice of one
  -  Tests
      -  prefer context
      -  case sensitive context
@@ -11,9 +17,9 @@
  -	Examples
      - Practical example
  -	Readme's
- -  Ruleset constructor with array of defines
- -  Extra "type" terminal parsers
+ -  Extra "type" terminal parsers (don't cost anything to include and not use)
      -  digit, alpha, hex, integer, float, etc...
+ -  Match() must match entire length? Boolean option!
 
 ##Milestone 2
 -	Debug logging mode
@@ -29,13 +35,15 @@
 	 -  $C->fooba = $C->text('foo')->barbaz;	
 	 -  Special version of ruleset?
 -	ABNF parser
--	Match; handle child_matches differently? Fluent (not in constructor)
+     -  To PHP code (design-time)
+     -  To parser (run-time)
 -	Callbacks
 	 -	Match; error/warnings/etc (flexible decorators w/ callbacks)
 		 -	Define decorators at runtime
 		 -	Also impacts Match properties and methods
 	 -	Match results as arrays (optional through name.sub or name. or name[]?)
-	 -	Cast parser-tree to string
+ -  Ruleset
+     -  Multiple levels in config (dot-path?), i.e. rfc1234.ws
 
 Phase 2
 =======
