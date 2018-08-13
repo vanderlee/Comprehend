@@ -4,6 +4,7 @@ use \vanderlee\comprehend\core\ArgumentsTrait;
 use \vanderlee\comprehend\parser\terminal\Char;
 use \vanderlee\comprehend\parser\terminal\Text;
 use \vanderlee\comprehend\parser\terminal\Any;
+use \vanderlee\comprehend\parser\structure\Choice;
 use \vanderlee\comprehend\parser\structure\Sequence;
 
 class ArgumentsTraitStub {
@@ -12,12 +13,12 @@ class ArgumentsTraitStub {
 		ArgumentsTrait::getArguments as traitgetArguments;
 	}
 	
-	public static function getArgument($argument) {
-		return self::traitgetArgument($argument);
+	public static function getArgument($argument, $arrayToSequence = true) {
+		return self::traitgetArgument($argument, $arrayToSequence);
 	}
 	
-	public static function getArguments($arguments) {
-		return self::traitgetArguments($arguments);
+	public static function getArguments($arguments, $arrayToSequence = true) {
+		return self::traitgetArguments($arguments, $arrayToSequence);
 	}
 }
 
@@ -88,15 +89,38 @@ class ArgumentsTraitTest extends TestCase {
 	/**
 	 * @covers ArgumentsTrait::getArguments
 	 */
-	public function testgetArgumentsType()
+	public function testGetArgumentsType()
 	{
 		$this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArguments(['x', 'y'])[0]);
 		$this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArguments([0x50, 0x51])[0]);
 		$this->assertInstanceOf(Text::class, ArgumentsTraitStub::getArguments(['ab', 'cd'])[0]);
 		$this->assertInstanceOf(Any::class, ArgumentsTraitStub::getArguments([new Any, 'a'])[0]);
 		$this->assertInstanceOf(Sequence::class, ArgumentsTraitStub::getArguments([['a', 'b'], 'c'])[0]);
+		$this->assertInstanceOf(Choice::class, ArgumentsTraitStub::getArguments([['a', 'b'], 'c'], false)[0]);
 		$this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArguments([['a'], 'bc'])[0]);
 		$this->assertInstanceOf(Text::class, ArgumentsTraitStub::getArguments([['ab'], 'c'])[0]);
+	}
+
+	/**
+	 * @covers ArgumentsTrait::getArguments
+	 */
+	public function testGetArgumentOptimizeArrays()
+	{
+	    // Non-optimizable cases
+	    $this->assertEquals("( 'a' 'b' )", (string) ArgumentsTraitStub::getArguments([['a', 'b']])[0]);
+	    $this->assertEquals("( 'a' | 'b' )", (string) ArgumentsTraitStub::getArguments([['a', 'b']], false)[0]);
+	    $this->assertEquals("( 'a' ( 'b' | 'c' ) )", (string) ArgumentsTraitStub::getArguments([['a', ['b', 'c']]])[0]);
+	    $this->assertEquals("( 'a' | ( 'b' 'c' ) )", (string) ArgumentsTraitStub::getArguments([['a', ['b', 'c']]], false)[0]);
+
+	    // Optimizable cases
+        $this->assertEquals("'a'", (string) ArgumentsTraitStub::getArguments([['a']])[0]);
+        $this->assertEquals("'a'", (string) ArgumentsTraitStub::getArguments([['a']], false)[0]);
+        $this->assertEquals("( 'a' 'b' )", (string) ArgumentsTraitStub::getArguments([['a', ['b']]])[0]);
+        $this->assertEquals("( 'a' | 'b' )", (string) ArgumentsTraitStub::getArguments([['a', ['b']]], false)[0]);
+
+        // Multi-layer optimizable cases
+        $this->assertEquals("'a'", (string) ArgumentsTraitStub::getArguments([[['a']]])[0]);
+        $this->assertEquals("'a'", (string) ArgumentsTraitStub::getArguments([[['a']]], false)[0]);
 	}
 
 }

@@ -31,20 +31,18 @@ trait SpacingContextTrait
 
     public function skipSpacing($in, $offset)
     {
-        $skipper = end($this->spacers);
+        $spacer = end($this->spacers);
 
         // If `true`; use top-most Parser instance in stack.
-        if ($skipper === true) {
+        if ($spacer === true) {
             do {
-                $skipper = prev($this->spacers);
-            } while ($skipper !== false && !($skipper instanceof Parser));
+                $spacer = prev($this->spacers);
+            } while ($spacer !== false && !($spacer instanceof Parser));
         }
 
-        if ($skipper instanceof Parser) {
-            $match = $skipper->match($in, $offset);
-            if ($match->match) {
-                return $match->length;
-            }
+        if ($spacer instanceof Parser) {
+            $match = $spacer->match($in, $offset);
+            return $match->match ? $match->length : false;
         }
 
         return 0;

@@ -10,7 +10,7 @@ trait ResultTrait {
 
 	/**
 	 * List of result names to assign the matched text to.
-	 * @var string
+	 * @var callable[]
 	 */
 	private $resultCallbacks = [];
 
@@ -26,12 +26,19 @@ trait ResultTrait {
 	 * result. Only assign if successfully matched entire parent upto root.
 	 * 
 	 * @param string|integer $key
+     * @param null|callable|string $value
 	 * @return $this
 	 */
 	public function setResult($key = null, $value = null)
 	{
 		$this->resultCallbacks[] = function(&$results, $text) use (&$key, &$value) {
-			$results[$key] = $value ?: $text;
+            if (is_callable($value)) {
+                $text = $value($text);
+            } elseif ($value !== null) {
+                $text = $value;
+            }
+
+	        $results[$key] = $text;
 		};
 
 		return $this;
@@ -41,13 +48,19 @@ trait ResultTrait {
 	 * If result exists, concatenate the matched text as a string, otherwise
 	 * create it. If result is an array, concat to the last entry.
 	 * 
-	 * @param type $key
+	 * @param null|string $key
+     * @param null|callable|string $value
+     * @return $this
 	 */
 	public function concatResult($key = null, $value = null)
 	{
 		$this->resultCallbacks[] = function(&$results, $text) use (&$key, &$value) {
-			$text = $value ?: $text;
-			
+            if (is_callable($value)) {
+                $text = $value($text);
+            } elseif ($value !== null) {
+                $text = $value;
+            }
+
 			if (!isset($results[$key])) {
 				$results[$key] = (string) $text;
 			} elseif (is_array($results[$key])) {
@@ -62,13 +75,19 @@ trait ResultTrait {
 
 	/**
 	 * Turn the result into an array and start a new entry.
-	 * 
-	 * @param type $key
+	 *
+     * @param null|string $key
+     * @param null|callable|string $value
+     * @return $this
 	 */
 	public function pushResult($key = null, $value = null)
 	{
 		$this->resultCallbacks[] = function(&$results, $text) use (&$key, &$value) {
-			$text = $value ?: $text;
+            if (is_callable($value)) {
+                $text = $value($text);
+            } elseif ($value !== null) {
+                $text = $value;
+            }
 			
 			if (!isset($results[$key])) {
 				$results[$key] = [$text];

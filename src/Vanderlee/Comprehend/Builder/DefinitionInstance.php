@@ -11,68 +11,93 @@ use \vanderlee\comprehend\match\Success;
  *
  * @author Martijn
  */
-class DefinitionInstance extends Parser {
+class DefinitionInstance extends Parser
+{
 
-	/**
-	 * @var Parser
-	 */
-	public $parser = null;
+    /**
+     * @var Parser
+     */
+    public $parser = null;
 
-	/**
-	 * @var callable
-	 */
-	public $validator = null;
-	
-	/**
-	 * @var Definition
-	 */
-	private $definition = null;
-	private $arguments = null;
+    /**
+     * @var callable
+     */
+    public $validator = null;
 
-	public function __construct(Definition &$definition, array $arguments = [])
-	{
-		$this->definition = $definition;
-		$this->arguments = $arguments;				
-	}
-	
-	private function build() {
-		if ($this->parser === null) {		
-			$this->parser = $this->definition->generator;
-			if (!$this->parser instanceof Parser) {
-				if (is_callable($this->parser)) {
-					$this->parser = ($this->parser)(...$this->arguments);
-				} else {
-					throw new \Exception('Parser not defined');
-				}
-			}
+    /**
+     * @var callable
+     */
+    public $processor    = null;
+    public $processorKey = null;
 
-			$this->validator = $this->definition->validator;
-		}
-	}
+    /**
+     * @var Definition
+     */
+    private $definition = null;
+    private $arguments  = null;
 
-	protected function parse(&$input, $offset, Context $context)
-	{	
-		$this->build();
-		
-		$match = $this->parser->parse($input, $offset, $context);
+    public function __construct(Definition &$definition, array $arguments = [])
+    {
+        $this->definition = $definition;
+        $this->arguments  = $arguments;
+    }
 
-		if ($match instanceof Success && $this->validator) {
-			$results = $match->getResults();
-			$text = substr($input, $offset, $match->length);
+    private function build()
+    {
+        if ($this->parser === null) {
+            $this->parser = $this->definition->generator;
+            if (!$this->parser instanceof Parser) {
+                if (is_callable($this->parser)) {
+                    $this->parser = ($this->parser)(...$this->arguments);
+                } else {
+                    throw new \Exception('Parser not defined');
+                }
+            }
+        }
+    }
 
-			if (!($this->validator)($text, $results)) {
-				$match = $this->failure($input, $offset, $match->length);
-			}
-		}
+    protected function parse(&$input, $offset, Context $context)
+    {
+        $this->build();
 
-		return $match;
-	}
+        $match = $this->parser->parse($input, $offset, $context);
 
-	public function __toString()
-	{
-		$this->build();
-		
-		return (string) $this->parser;
-	}
+        if ($match instanceof Success) {
+            $localResults = $match->getResults();
+
+            if (!empty($this->definition->validators)) {
+                $text = substr($input, $offset, $match->length);
+
+                foreach ($this->definition->validators as $validator) {
+                    if (!($validator)($text, $localResults)) {
+                        return $this->failure($input, $offset, $match->length);
+                    }
+                }
+            }
+        }
+
+        // Copy match into new match, only pass original callbacks if processor not set
+        $successes = empty($this->definition->processors) ? $match : [];
+        $match = $match->match
+            ? $this->success($input, $offset, $match->length, $successes)
+            : $this->failure($input, $offset, $match->length);
+
+        if ($match instanceof Success && !empty($this->definition->processors)) {
+            foreach ($this->definition->processors as $key => $processor) {
+                $match->addResultCallback(function (&$results) use ($key, $processor, $localResults) {
+                    $results[$key] = $processor($localResults, $results);
+                });
+            }
+        }
+
+        return $match;
+    }
+
+    public function __toString()
+    {
+        $this->build();
+
+        return (string)$this->parser;
+    }
 
 }

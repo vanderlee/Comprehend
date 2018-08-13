@@ -2,7 +2,7 @@
 
 namespace vanderlee\comprehend\builder;
 
-use \vanderlee\comprehend\builder\DefinitionInstance;
+use \vanderlee\comprehend\parser\Parser;
 
 /**
  * Shorthand for parser definitions
@@ -11,39 +11,46 @@ use \vanderlee\comprehend\builder\DefinitionInstance;
  */
 class Definition {
 
-	public $generator = null;
-	public $validator = null;
-	public $results = null;
+	public $generator  = null;
+	public $validators = [];
+	public $processors = [];
 
 	/**
 	 * @param Parser|callable $generator Either a parser or a function returning a parser ('generator')
-	 * @param callable $validator 
+	 * @param callable[] $validator
 	 */	
-	public function __construct($generator = null, callable $validator = null)
+	public function __construct($generator = null, $validator = null)
 	{
 		//@todo validate parser and validator
 		
-		$this->generator = $generator;
-		$this->validator = $validator;
+		$this->generator  = $generator;
+		if (is_callable($validator)) {
+            $this->validators[] = $validator;
+        }
 	}
 
-	public function generator($parser = null)
+	public function setGenerator($parser)
 	{
 		$this->generator = $parser;
 
 		return $this;
 	}
 
-    public function validator($validator = null)
+	public function clearValidators() {
+	    $this->validators = [];
+
+	    return $this;
+    }
+    public function addValidator($validator)
     {
-        $this->validator = $validator;
+        $this->validators[] = $validator;
 
         return $this;
     }
 
-    public function results($results = null)
+    public function addProcessor($key, $processor)
     {
-        $this->results = $results;
+        $this->processors[$key] = $processor;
 
         return $this;
     }

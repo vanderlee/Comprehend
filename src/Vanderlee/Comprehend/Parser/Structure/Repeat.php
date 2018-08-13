@@ -18,14 +18,14 @@ class Repeat extends Parser
     //use GreedyTrait;
 
     private $parser = null;
-    private $min = null;
-    private $max = null;
+    private $min    = null;
+    private $max    = null;
 
     public function __construct($parser, $min = 0, $max = null)
     {
         $this->parser = $this->getArgument($parser);
-        $this->min = $min;
-        $this->max = $max;
+        $this->min    = $min;
+        $this->max    = $max;
 
         if ($this->max !== null && $this->max < $this->min) {
             throw new \InvalidArgumentException('Invalid repeat range specified');
@@ -60,13 +60,16 @@ class Repeat extends Parser
 
         $length = 0;
         do {
-            $skip = $context->skipSpacing($input, $offset + $length);
-            $match = $this->parser->parse($input, $offset + $length + $skip, $context);
-            if ($match->match) {
-                $length += $skip + $match->length;
-                $child_matches[] = $match;
+            // No skipping at very start
+            $skip = $length > 0 ? $context->skipSpacing($input, $offset + $length) : 0;
+            if ($skip !== false) {
+                $match = $this->parser->parse($input, $offset + $length + $skip, $context);
+                if ($match->match) {
+                    $length          += $skip + $match->length;
+                    $child_matches[] = $match;
+                }
             }
-        } while ($match->match && ($this->max == null || count($child_matches) < $this->max));
+        } while ($skip !== false && $match->match && ($this->max == null || count($child_matches) < $this->max));
 
         $match = (count($child_matches) >= $this->min) && ($this->max == null || count($child_matches) <= $this->max);
 

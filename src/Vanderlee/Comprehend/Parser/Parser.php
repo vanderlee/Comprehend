@@ -60,18 +60,35 @@ abstract class Parser
     }
 
     /**
-     * Create a succesful match
+     * Create a match
      *
      * @param bool $success
      * @param string $input
      * @param int $offset
      * @param int $length
      * @param Success[]|Success $successes
-     * @return Success
+     * @return Match
      */
     protected function makeMatch($success, &$input, $offset, $length = 0, &$successes = [])
     {
-        return $success ? $this->success($input, $offset, 1) : $this->failure($input, $offset);
+        return $success
+            ? $this->success($input, $offset, $length, $successes)
+            : $this->failure($input, $offset);
+    }
+
+    /**
+     * Create a new match as a copy from the specified match
+     *
+     * @param Match $match
+     * @param string $input
+     * @param int $offset
+     * @return Match
+     */
+    protected function copyMatch(Match $match, &$input, $offset)
+    {
+        return $match->match
+            ? $this->success($input, $offset, $match->length, $match)
+            : $this->failure($input, $offset, $match->length);
     }
 
     /**
