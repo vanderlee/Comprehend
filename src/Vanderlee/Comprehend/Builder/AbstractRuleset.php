@@ -242,7 +242,7 @@ abstract class AbstractRuleset extends Parser
         }
 
         $match = $this->parser->parse($input, $offset, $context);
-        if ($match instanceof Success) {
+        if ($match->match) {
             return $this->success($input, $offset, $match->length, $match);
         }
         return $this->failure($input, $offset, $match->length);

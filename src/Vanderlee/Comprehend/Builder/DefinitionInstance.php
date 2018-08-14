@@ -63,7 +63,7 @@ class DefinitionInstance extends Parser
         $match = $this->parser->parse($input, $offset, $context);
 
         $localResults = []; // this is redundant, but suppresses PHP scanner warnings
-        if ($match instanceof Success) {
+        if ($match->match) {
             $localResults = $match->getResults();
 
             if (!empty($this->definition->validators)) {
@@ -83,7 +83,7 @@ class DefinitionInstance extends Parser
             ? $this->success($input, $offset, $match->length, $successes)
             : $this->failure($input, $offset, $match->length);
 
-        if ($match instanceof Success && !empty($this->definition->processors)) {
+        if ($match->match && !empty($this->definition->processors)) {
             foreach ($this->definition->processors as $key => $processor) {
                 $match->addResultCallback(function (&$results) use ($key, $processor, $localResults) {
                     $results[$key] = $processor($localResults, $results);
