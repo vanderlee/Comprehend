@@ -58,6 +58,7 @@ class Repeat extends Parser
 
         $child_matches = [];
 
+        $match = null;
         $length = 0;
         do {
             // No skipping at very start

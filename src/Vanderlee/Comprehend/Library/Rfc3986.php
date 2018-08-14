@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpUndefinedFieldInspection */
 
 /**
  * RFC 3986 - Uniform Resource Identifier (URI): Generic Syntax
@@ -22,6 +23,7 @@ require_once 'functions.php';
  *
  * @property-read Parser IPv6address
  * @property-read Parser IPv4address
+ * @property-read Parser sub_delims
  *
  * @package vanderlee\comprehend\library
  */
@@ -96,12 +98,12 @@ class Rfc3986 extends AbstractRuleset
                 [repeat(6, 6, [$this->h16, ':']), $this->ls32],
                 ['::', repeat(5, 5, [$this->h16, ':']), $this->ls32],
                 [opt($this->h16), '::', repeat(4, 4, [$this->h16, ':']), $this->ls32],
-                [opt(repeat(0, 1, [$this->h16, ':',]), $this->h16), '::', repeat(3, 3, [$this->h16, ':']), $this->ls32],
-                [opt(repeat(0, 2, [$this->h16, ':',]), $this->h16), '::', repeat(2, 2, [$this->h16, ':']), $this->ls32],
-                [opt(repeat(0, 3, [$this->h16, ':',]), $this->h16), '::', $this->h16, ':', $this->ls32],
-                [opt(repeat(0, 4, [$this->h16, ':',]), $this->h16), '::', $this->ls32],
-                [opt(repeat(0, 5, [$this->h16, ':',]), $this->h16), '::', $this->h16],
-                [opt(repeat(0, 6, [$this->h16, ':',]), $this->h16), '::']
+                [opt([repeat(0, 1, [$this->h16, ':',]), $this->h16]), '::', repeat(3, 3, [$this->h16, ':']), $this->ls32],
+                [opt([repeat(0, 2, [$this->h16, ':',]), $this->h16]), '::', repeat(2, 2, [$this->h16, ':']), $this->ls32],
+                [opt([repeat(0, 3, [$this->h16, ':',]), $this->h16]), '::', $this->h16, ':', $this->ls32],
+                [opt([repeat(0, 4, [$this->h16, ':',]), $this->h16]), '::', $this->ls32],
+                [opt([repeat(0, 5, [$this->h16, ':',]), $this->h16]), '::', $this->h16],
+                [opt([repeat(0, 6, [$this->h16, ':',]), $this->h16]), '::']
             ),
             'dec_octet'     => c(
                 ['25', range('0', '5')], // 250-255

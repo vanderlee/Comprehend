@@ -15,7 +15,10 @@ class All extends Parser {
 
 	use ArgumentsTrait;
 
-	private $parsers = null;
+    /**
+     * @var Parser[]
+     */
+	private $parsers = [];
 
 	public function __construct(...$arguments)
 	{

@@ -22,8 +22,8 @@ trait ResultTrait {
 	}
 
 	/**
-	 * After parsing, assign the matched input of this parser to the named
-	 * result. Only assign if successfully matched entire parent upto root.
+	 * After parsing, assign the matched input of this parser to the named result.
+     * Only assign if successfully matched entire parent up to root.
 	 * 
 	 * @param string|integer $key
      * @param null|callable|string $value

@@ -2,7 +2,6 @@
 
 namespace vanderlee\comprehend\parser;
 
-use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\core\ArgumentsTrait;
 

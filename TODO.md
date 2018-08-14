@@ -1,20 +1,26 @@
 #Todo
 ##Milestone 1
- -  RFC
-     -  Implement
-     -  Test
-         -  What kind of coverage? All rules? Start rules
+ -  Match() must match entire length? Boolean option!
+ -	Readme's
+     -  Core readme: introduction to the framework and link-out to docs
+     -  Concepts document
+     -  Tutorial document
+     -  BNF-to-object example
+     -  Object reference
  -  Tests
      -  prefer context
      -  case sensitive context
      -  match classes
  -	Examples
      - Practical example
- -	Readme's
  -  Extra "type" terminal parsers (don't cost anything to include and not use)
      -  digit, alpha, hex, integer, float, etc...
- -  Match() must match entire length? Boolean option!
  -  Library: configurable path of config file?
+ -  RFC
+     -  Implement
+     -  Test
+         -  What kind of coverage? All rules? Start rules
+ -  Remove Facade for milestone 2
 
 ##Milestone 2
  -  Failure; line/position finder

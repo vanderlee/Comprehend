@@ -41,6 +41,7 @@ trait SpacingTrait
      * spacing parser is enabled) spacing parsing.
      *
      * @param Parser|bool|null $spacer
+     * @return $this
      */
     public function spacing($spacer = true)
     {

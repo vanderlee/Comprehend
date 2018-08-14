@@ -15,23 +15,23 @@ class Space extends Parser {
 
 	use ArgumentsTrait;
 
-	/**
-	 * @var \vanderlee\comprehend\parser\Parser
-	 */
+    /**
+     * @var null|Parser
+     */
 	private $spacer = null;
 
 	/**
-	 * @var \vanderlee\comprehend\parser\Parser
+	 * @var null|Parser
 	 */
 	private $parser = null;
 
 	/**
 	 * Set (or disable) a spacer for the parser
 	 * 
-	 * @param Parser|string|int|null $spacer
+	 * @param Parser|string|int|bool|null $spacer
 	 * @param Parser|string|int $parser
 	 */
-	public function __construct($spacer = null, $parser)
+	public function __construct($spacer, $parser)
 	{
 		$this->spacer = $spacer === null ? null : self::getArgument($spacer);
 		$this->parser = self::getArgument($parser);

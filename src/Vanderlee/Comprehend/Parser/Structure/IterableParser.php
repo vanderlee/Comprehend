@@ -17,7 +17,7 @@ abstract class IterableParser extends Parser implements \IteratorAggregate, \Arr
     /**
      * @var Parser[] $parsers
      */
-    protected $parsers = null;
+    protected $parsers = [];
 
     // implements IteratorAggregate
 

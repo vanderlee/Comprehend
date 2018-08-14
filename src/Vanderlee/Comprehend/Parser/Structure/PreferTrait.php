@@ -19,7 +19,7 @@ trait PreferTrait {
 	 */
 	private $preference = null;
 
-	private function pushPrefererenceToContext(Context $context)
+	private function pushPreferenceToContext(Context $context)
 	{
 		if ($this->preference) {
 			$context->pushPreference($this->preference);

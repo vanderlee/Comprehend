@@ -1,7 +1,9 @@
 <?php
 
 spl_autoload_register(function ($class) {
-	if (!class_exists($class) && is_file(__DIR__ . '/' . $class . '.php')) {
-		require __DIR__ . '/' . $class . '.php';
+    $file = __DIR__ . DIRECTORY_SEPARATOR . $class . '.php';
+	if (!class_exists($class) && is_file($file)) {
+        /** @noinspection PhpIncludeInspection */
+        require_once $file;
 	}
 });

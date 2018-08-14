@@ -62,6 +62,7 @@ class DefinitionInstance extends Parser
 
         $match = $this->parser->parse($input, $offset, $context);
 
+        $localResults = []; // this is redundant, but suppresses PHP scanner warnings
         if ($match instanceof Success) {
             $localResults = $match->getResults();
 

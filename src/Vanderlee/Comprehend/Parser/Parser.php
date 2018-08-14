@@ -14,9 +14,9 @@ abstract class Parser
     use AssignTrait;
 
     /**
-     * List of callbacks to call when this parser has matched a part of the
-     * full parse.
-     * @var type
+     * List of callbacks to call when this parser has matched a part of the full parse.
+     *
+     * @var callable[]
      */
     private $callbacks = [];
 
@@ -36,7 +36,12 @@ abstract class Parser
     }
 
     /**
-     * @return \vanderlee\comprehend\match\Match;
+     * Match the input with this parser, starting from the offset position.
+     *
+     * @param $input
+     * @param $offset
+     * @param Context $context
+     * @return \vanderlee\comprehend\match\Match
      */
     abstract protected function parse(&$input, $offset, Context $context);
 
@@ -92,7 +97,7 @@ abstract class Parser
     }
 
     /**
-     * Create a succesful match
+     * Create a successful match
      *
      * @param string $input
      * @param int $offset
@@ -135,9 +140,16 @@ abstract class Parser
         return new Failure($length);
     }
 
+    /**
+     * Assign a function to be called if (and only if) this parser matched successfully as part of the whole syntax.
+     *
+     * @param callable $callback
+     * @return $this
+     */
     public function callback(callable $callback)
     {
         $this->callbacks[] = $callback;
+
         return $this;
     }
 

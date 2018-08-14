@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedFieldInspection */
 
 /**
  * RFC 7405 - Case-Sensitive String Support in ABNF
@@ -13,6 +13,12 @@ namespace vanderlee\comprehend\library;
 
 require_once 'functions.php';
 
+use \vanderlee\comprehend\parser\Parser;
+
+/**
+ * @property-read Parser DQUOTE
+ * @property-read Parser case_sensitive_string
+ */
 class Rfc7405 extends Rfc2234
 {
     public function __construct($overwrites = [])

@@ -2,9 +2,10 @@
 
 namespace vanderlee\comprehend\builder;
 
-use \vanderlee\comprehend\core\Context;
-use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\ArgumentsTrait;
+use \vanderlee\comprehend\core\Context;
+use \vanderlee\comprehend\match\Success;
+use \vanderlee\comprehend\parser\Parser;
 
 /**
  * Description of abstract Ruleset
@@ -30,7 +31,7 @@ abstract class AbstractRuleset extends Parser
     /**
      * List of reserved parser names. These are used as methods instead.
      *
-     * @var type
+     * @var string[]
      */
     private static $reserved = [
         'define',
@@ -168,7 +169,7 @@ abstract class AbstractRuleset extends Parser
                 return $parser;
 
             case is_string($rule) && class_exists($rule) && is_subclass_of($rule, Parser::class):
-                // Classname of a Parser class
+                // Class name of a Parser class
                 return new $rule(...$arguments);
 
             case is_string($rule) && isset($rules[$rule]):
@@ -189,7 +190,7 @@ abstract class AbstractRuleset extends Parser
      * @param string $name
      * @param array $arguments
      * @return Parser
-     * @throws Exception
+     * @throws \Exception
      */
     public function __call($name, $arguments = [])
     {
@@ -202,7 +203,7 @@ abstract class AbstractRuleset extends Parser
      * @param string $name
      * @param array $arguments
      * @return Parser
-     * @throws Exception
+     * @throws \Exception
      */
     public static function __callStatic($name, $arguments = [])
     {
@@ -221,7 +222,7 @@ abstract class AbstractRuleset extends Parser
 
     // Default parser
 
-    private function initDefaulParser()
+    private function initDefaultParser()
     {
         if ($this->parser === null) {
             if (!isset($this->instanceRules[self::DEFAULT])) {
@@ -232,19 +233,16 @@ abstract class AbstractRuleset extends Parser
         }
     }
 
-    /**
-     * @return \vanderlee\comprehend\match\Match;
-     */
     protected function parse(&$input, $offset, Context $context)
     {
-        $this->initDefaulParser();
+        $this->initDefaultParser();
 
         if ($this->parser === null) {
             throw new \UnexpectedValueException('Missing parser');
         }
 
         $match = $this->parser->parse($input, $offset, $context);
-        if ($match->match) {
+        if ($match instanceof Success) {
             return $this->success($input, $offset, $match->length, $match);
         }
         return $this->failure($input, $offset, $match->length);
@@ -252,7 +250,7 @@ abstract class AbstractRuleset extends Parser
 
     public function __toString()
     {
-        $this->initDefaulParser();
+        $this->initDefaultParser();
 
         if ($this->parser === null) {
             throw new \UnexpectedValueException('Missing parser');

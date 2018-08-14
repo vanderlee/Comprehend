@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedFieldInspection */
 
 /**
  * RFC 2234 - Augmented BNF for Syntax Specifications: ABNF
@@ -22,6 +22,7 @@ require_once 'functions.php';
  * @property-read Parser ALPHA Alphabetic characters (upper- and lowercase)
  * @property-read Parser DIGIT Decimal character
  * @property-read Parser HEXDIG Hexadecimal character
+ * @property-read Parser BIT
  *
  * @package vanderlee\comprehend\library
  */

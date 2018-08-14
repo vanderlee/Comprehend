@@ -7,6 +7,7 @@ namespace vanderlee\comprehend\match;
  *
  * @author Martijn
  * 
+ * @property-read bool $match Success or failure?
  * @property-read int $length Length of the match
  * @property-read array $results List of output results
  * @property-read string|null $result Default output result
@@ -35,9 +36,10 @@ abstract class Match {
 
 	/**
 	 * Create a new match
+     *
 	 * @param int $length
 	 */
-	public function __construct(int $length)
+	public function __construct(int $length = 0)
 	{
 		$this->length = $length;
 	}
@@ -46,15 +48,13 @@ abstract class Match {
 	 * Resolve any match stuff (should only ever be called from AbstractParser!
 	 * Not for human consumption
 	 * 
-	 * Chainable
-	 * 
 	 * @return $this
 	 */
 	public function resolve() {
 		return $this;
 	}
-		
-	/**
+
+    /**
 	 * Return the result for the name specified or the default value if not set.
 	 * 
 	 * @param string $name

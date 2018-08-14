@@ -2,6 +2,7 @@
 
 namespace vanderlee\comprehend\parser\structure;
 
+use vanderlee\comprehend\match\Match;
 use \vanderlee\comprehend\parser\Parser;
 use \vanderlee\comprehend\core\Context;
 use \vanderlee\comprehend\core\ArgumentsTrait;
@@ -44,7 +45,7 @@ class Choice extends IterableParser
 
     protected function parse(&$input, $offset, Context $context)
     {
-        $this->pushPrefererenceToContext($context);
+        $this->pushPreferenceToContext($context);
 
         switch ($context->getPreference()) {
             default:
@@ -80,6 +81,7 @@ class Choice extends IterableParser
                 break;
 
             case Prefer::SHORTEST:
+                /** @var Match $match */
                 $match = null;
                 foreach ($this->parsers as $parser) {
                     $attempt = $parser->parse($input, $offset, $context);
@@ -87,12 +89,12 @@ class Choice extends IterableParser
                     switch (true) {
                         case!$match: // Keep attempt if first.
                         case $attempt->match && !$match->match: // Keep attempt if first match
-                        case $attempt->match === $match->match && $attempt->length < $match->length: // Keep attempt if equally succesful but shorter
+                        case $attempt->match === $match->match && $attempt->length < $match->length: // Keep attempt if equally successful but shorter
                             $match = $attempt;
                     }
                 }
 
-                // This will fail! $match is not necesarily the shortest
+                // This will fail! $match is not necessarily the shortest
                 $preferred_match = $match->match
                     ? $this->success($input, $offset, $match->length, $match)
                     :
@@ -109,6 +111,7 @@ class Choice extends IterableParser
      * Add one or more parsers as choices
      *
      * @param string[]|int[]|Parser[] $arguments
+     * @return $this
      */
     public function add(...$arguments)
     {

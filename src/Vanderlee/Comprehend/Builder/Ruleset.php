@@ -38,6 +38,7 @@ class Ruleset extends AbstractRuleset
      * Define an instance rule
      * @param string $name
      * @param Mixed $definition
+     * @throws \Exception
      */
     public function __set($name, $definition)
     {
