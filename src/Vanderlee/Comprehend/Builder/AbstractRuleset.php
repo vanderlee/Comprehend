@@ -22,6 +22,13 @@ abstract class AbstractRuleset extends Parser
     const DEFAULT = null;
 
     /**
+     * Name of this ruleset. Intended for use with the standard library rulesets
+     *
+     * @var string
+     */
+    protected static $name = null;
+
+    /**
      * Parser to use as the default parser used when calling this Ruleset as a Parser.
      *
      * @var null|Parser
@@ -52,28 +59,31 @@ abstract class AbstractRuleset extends Parser
     /**
      * Ruleset constructor, defining initial instance rules.
      *
-     * @param string|array $name
-     * @param null|string $definition
+     * @param string|array $key Either a key of an initial rule to define or a [ key : definition ] array
+     * @param null|string $definition Definition of the initial rule or `null` if `$key` is an array
+     * @param null|string $name optional identifier for this ruleset
      */
-    public function __construct($name = null, $definition = null)
+    public function __construct($key = null, $definition = null, $name = null)
     {
-        if ($name !== null) {
-            self::defineRule($this->instanceRules, $name, $definition);
+        if ($key !== null) {
+            self::defineRule($this->instanceRules, $key, $definition);
         }
+
+        self::$name = $name;
     }
 
     /**
      * Set a definition
      *
      * @param Definition[]|Parser[]|callable[] $rules
-     * @param string $name
+     * @param string $key
      * @param Definition|Parser|callable $definition
      * @throws \Exception
      */
-    protected static function setRule(&$rules, $name, $definition)
+    protected static function setRule(&$rules, $key, $definition)
     {
-        if (isset($rules[$name])) {
-            $rule = &$rules[$name];
+        if (isset($rules[$key])) {
+            $rule = &$rules[$key];
             if ($rule instanceof Definition) {
                 switch (true) {
                     case $definition instanceof Definition:
@@ -96,10 +106,10 @@ abstract class AbstractRuleset extends Parser
                 }
             }
 
-            throw new \RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`', is_object($definition) ? get_class($definition) : gettype($definition), $name));
+            throw new \RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`', is_object($definition) ? get_class($definition) : gettype($definition), $key));
         }
 
-        $rules[$name] = $definition;
+        $rules[$key] = $definition;
     }
 
     protected static function defineRule(&$rules, $names, $definition = null)
@@ -143,45 +153,63 @@ abstract class AbstractRuleset extends Parser
         }
     }
 
-    protected static function call(&$rules, $name, $arguments = [])
+    /**
+     * Create a new instance of a definition
+     *
+     * @param $rules
+     * @param $key
+     * @param array $arguments
+     * @return DefinitionInstance|Parser
+     */
+    protected static function call(&$rules, $key, $arguments = [])
     {
-        if (!isset($rules[$name])) {
-            $rules[$name] = new Definition();
+        if (!isset($rules[$key])) {
+            $rules[$key] = new Definition();
         }
 
-        $rule = $rules[$name];
+        $rule = $rules[$key];
 
         switch (true) {
             case $rule instanceof Definition:
                 // Parser Definition
-                return new DefinitionInstance($rule, $arguments);
+                $instance = new DefinitionInstance($rule, $arguments);
+                break;
 
             case $rule instanceof Parser:
                 // Parser
-                return clone $rule;
+                $instance = clone $rule;
+                break;
 
             case is_callable($rule):
                 // Generator function (should return Parser)
-                $parser = $rule(...$arguments);
-                if (!$parser instanceof Parser) {
-                    throw new \InvalidArgumentException("Generator function for rule {$name} does not return Parser");
+                $instance = $rule(...$arguments);
+                if (!$instance instanceof Parser) {
+                    throw new \InvalidArgumentException("Generator function for rule {$key} does not return Parser");
                 }
-                return $parser;
+                break;
 
             case is_string($rule) && class_exists($rule) && is_subclass_of($rule, Parser::class):
                 // Class name of a Parser class
-                return new $rule(...$arguments);
+                $instance = new $rule(...$arguments);
+                break;
 
             case is_string($rule) && isset($rules[$rule]):
                 // Self-referential call
-                return static::call($rules, $rule, $arguments);
+                $instance = static::call($rules, $rule, $arguments);
+                break;
 
             case is_array($rule):
                 // S-C-S Array syntax
-                return self::getArgument($rule);
+                $instance = self::getArgument($rule);
+                break;
+
+            default:
+                throw new \InvalidArgumentException(sprintf('Invalid definition type `%1$s`', is_object($rule) ? get_class($rule) : gettype($rule)));
         }
 
-        throw new \InvalidArgumentException(sprintf('Invalid definition type `%1$s`', is_object($rule) ? get_class($rule) : gettype($rule)));
+        $instance->token($key, static::$name);
+
+        return $instance;
     }
 
     /**

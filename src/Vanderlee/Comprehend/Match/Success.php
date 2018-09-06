@@ -43,6 +43,12 @@ class Success extends Match
     private $customCallbacks = [];
 
     /**
+     * List of callbacks to process for tokens
+     * @var callable
+     */
+    private $tokenCallback = null;
+
+    /**
      * Create a new match
      * @param int $length
      * @param Success[]|Success $successes
@@ -65,6 +71,8 @@ class Success extends Match
                 return $results;
             case 'result':
                 return $this->getResults()[null] ?? null;
+            case 'token':
+                return $this->getToken();
         }
 
         return parent::__get($name);
@@ -99,6 +107,20 @@ class Success extends Match
     }
 
     /**
+     * Add a callback to this match, to be called after parsing is finished and
+     * only if this match was part of the matched rules.
+     *
+     * @param callable $callback
+     * @return $this
+     */
+    public function setTokenCallback(callable $callback)
+    {
+        $this->tokenCallback = $callback;
+
+        return $this;
+    }
+
+    /**
      * Handle all registered result callbacks for this match and any matches
      * at deeper levels of this match.
      *
@@ -115,6 +137,18 @@ class Success extends Match
         }
     }
 
+    /**
+     * @todo
+     */
+    private function processTokenCallback()
+    {
+        $children = [];
+        foreach ($this->successes as $success) {
+            $children[] = $success->processTokenCallback();
+        }
+
+        return ($this->tokenCallback)($children);
+    }
     /**
      * Handle all registered custom callbacks for this match and any matches
      * at deeper levels of this match.
@@ -160,6 +194,16 @@ class Success extends Match
         }
 
         return $this->results;
+    }
+
+    /**
+     * Pre-calculate results
+     *
+     * @return array
+     */
+    public function getToken()
+    {
+        return $this->processTokenCallback();
     }
 
     public function getResult($name = null, $default = null)

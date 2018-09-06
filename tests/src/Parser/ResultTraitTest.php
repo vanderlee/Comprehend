@@ -10,7 +10,7 @@ use \vanderlee\comprehend\parser\Parser;
  *
  * @author Martijn
  */
-class ResultsTest extends TestCase {
+class ResultTraitTest extends TestCase {
 
 	/**
 	 * @covers Match::getResult

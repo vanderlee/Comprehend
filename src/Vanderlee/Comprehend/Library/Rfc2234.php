@@ -11,7 +11,7 @@
 
 namespace vanderlee\comprehend\library;
 
-use \vanderlee\comprehend\builder\AbstractRuleset;
+use vanderlee\comprehend\builder\AbstractRuleset;
 use \vanderlee\comprehend\parser\Parser;
 
 require_once 'functions.php';
@@ -28,6 +28,8 @@ require_once 'functions.php';
  */
 class Rfc2234 extends AbstractRuleset
 {
+    protected static $name = 'Rfc2234';
+
     public function __construct($overwrites = [])
     {
         /*

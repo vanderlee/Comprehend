@@ -18,9 +18,9 @@ use \vanderlee\comprehend\parser\Parser;
  */
 class Ruleset extends AbstractRuleset
 {
-    protected static function call(&$rules, $name, $arguments = [])
+    protected static function call(&$rules, $key, $arguments = [])
     {
-        switch ($name) {
+        switch ($key) {
             case 'define':
                 return self::defineRule($rules, ...$arguments);
 
@@ -31,7 +31,7 @@ class Ruleset extends AbstractRuleset
                 return self::undefineRule($rules, ...$arguments);
         }
 
-        return parent::call($rules, $name, $arguments);
+        return parent::call($rules, $key, $arguments);
     }
 
     /**

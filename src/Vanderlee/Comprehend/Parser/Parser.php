@@ -3,6 +3,7 @@
 namespace vanderlee\comprehend\parser;
 
 use \vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\core\Token;
 use \vanderlee\comprehend\match\Match;
 use \vanderlee\comprehend\match\Success;
 use \vanderlee\comprehend\match\Failure;
@@ -12,6 +13,7 @@ abstract class Parser
 
     use ResultTrait;
     use AssignTrait;
+    use TokenTrait;
 
     /**
      * List of callbacks to call when this parser has matched a part of the full parse.
@@ -82,21 +84,6 @@ abstract class Parser
     }
 
     /**
-     * Create a new match as a copy from the specified match
-     *
-     * @param Match $match
-     * @param string $input
-     * @param int $offset
-     * @return Match
-     */
-    protected function copyMatch(Match $match, &$input, $offset)
-    {
-        return $match->match
-            ? $this->success($input, $offset, $match->length, $match)
-            : $this->failure($input, $offset, $match->length);
-    }
-
-    /**
      * Create a successful match
      *
      * @param string $input
@@ -107,24 +94,36 @@ abstract class Parser
      */
     protected function success(&$input, $offset, $length = 0, &$successes = [])
     {
-        $callbacks = $this->callbacks;
 
         $successes = is_array($successes) ? $successes : [$successes];
 
-        return (new Success($length, $successes))
-            ->addResultCallback(function (&$results) use ($input, $offset, $length, $callbacks) {
-                $text = substr($input, $offset, $length);
+        $success = new Success($length, $successes);
 
-                $this->resolveResultCallbacks($results, $text);
-            })->addCustomCallback(function () use ($input, $offset, $length, $callbacks) {
-                $text = substr($input, $offset, $length);
+        // ResultTrait
+        $success->addResultCallback(function (&$results) use ($input, $offset, $length) {
+            $text = substr($input, $offset, $length);
 
-                $this->resolveAssignCallbacks($text);
+            $this->resolveResultCallbacks($results, $text);
+        });
 
-                foreach ($callbacks as $callback) {
-                    $callback($text, $input, $offset, $length);
-                }
-            });
+        // AssignTrait
+        $callbacks = $this->callbacks;
+        $success->addCustomCallback(function () use ($input, $offset, $length, $callbacks) {
+            $text = substr($input, $offset, $length);
+
+            $this->resolveAssignCallbacks($text);
+
+            foreach ($callbacks as $callback) {
+                $callback($text, $input, $offset, $length);
+            }
+        });
+
+        // TokenTrait
+        $success->setTokenCallback(function (&$children) use ($input, $offset, $length) {
+            return $this->resolveToken($input, $offset, $length, $children, get_class($this));
+        });
+
+        return $success;
     }
 
     /**

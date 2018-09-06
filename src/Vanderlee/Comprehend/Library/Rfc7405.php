@@ -21,6 +21,8 @@ use \vanderlee\comprehend\parser\Parser;
  */
 class Rfc7405 extends Rfc2234
 {
+    protected static $name = 'Rfc7405';
+
     public function __construct($overwrites = [])
     {
         $rules = [

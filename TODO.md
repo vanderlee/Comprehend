@@ -1,12 +1,15 @@
-#Todo
-##Milestone 1
- -  Match() must match entire length? Boolean option!
+# Todo
+## Milestone 1
+ -  Match() must match entire length?
+     -   Boolean option!
+ -  Actual use-case
+ -  Packagist JSON
  -	Readme's
-     -  Core readme: introduction to the framework and link-out to docs
-     -  Concepts document
-     -  Tutorial document
-     -  BNF-to-object example
-     -  Object reference
+      -  Core readme: introduction to the framework and link-out to docs
+      -  Concepts document
+      -  Tutorial document
+      -  BNF-to-object example
+      -  Object reference
  -  Tests
      -  prefer context
      -  case sensitive context
@@ -14,15 +17,15 @@
  -	Examples
      - Practical example
  -  Extra "type" terminal parsers (don't cost anything to include and not use)
-     -  digit, alpha, hex, integer, float, etc...
+     -  digit, alpha, hex, integer, float (IEEE-standard?), etc...
  -  Library: configurable path of config file?
  -  RFC
-     -  Implement
-     -  Test
-         -  What kind of coverage? All rules? Start rules
- -  Remove Facade for milestone 2
+     -  Implement MORE!
+     -  Auto-terminate 
+ -  Restructure traits to eliminate over-inter-dependance
+ -  Token class factory?
 
-##Milestone 2
+## Milestone 2
  -  Failure; line/position finder
  -  Ruleset; on define, add a token/result rule.
  -	Debug logging mode
@@ -48,8 +51,7 @@
  -  Ruleset
      -  Multiple levels in config (dot-path?), i.e. rfc1234.ws
 
-Phase 2
-=======
+# Phase 2
  -  Stream parsing
      -  Low memory profile
      -  Sourcing from stream (rewind, position-cache, buffer-cache)
