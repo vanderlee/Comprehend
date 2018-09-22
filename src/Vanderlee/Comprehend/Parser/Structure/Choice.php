@@ -132,5 +132,4 @@ class Choice extends IterableParser
 
         return $prefix . '( ' . join(' | ', $this->parsers) . ' )';
     }
-
 }

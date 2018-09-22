@@ -43,7 +43,6 @@ class Set extends Parser
 
     protected function parse(&$input, $offset, Context $context)
     {
-
         if ($offset >= mb_strlen($input)) {
             return $this->failure($input, $offset);
         }

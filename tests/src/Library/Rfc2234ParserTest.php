@@ -1,14 +1,16 @@
 <?php
 
-use \vanderlee\comprehend\library\Rfc2234;
-use \vanderlee\comprehend\library\Library;
-use \vanderlee\comprehend\parser\Parser;
+namespace tests\src\library;
+
+use tests\ParserTestCase;
+use vanderlee\comprehend\library\Library;
+use vanderlee\comprehend\parser\Parser;
 
 /**
- * @group directive
- * @coversDefaultClass Rfc2234
+ * @group library
+ * @group rfc
  */
-class Rfc2234Test extends TestCase
+class Rfc2234ParserTest extends ParserTestCase
 {
 
     /**

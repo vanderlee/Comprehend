@@ -159,7 +159,7 @@ abstract class AbstractRuleset extends Parser
      * @param $rules
      * @param $key
      * @param array $arguments
-     * @return DefinitionInstance|Parser
+     * @return Implementation|Parser
      */
     protected static function call(&$rules, $key, $arguments = [])
     {
@@ -172,7 +172,7 @@ abstract class AbstractRuleset extends Parser
         switch (true) {
             case $rule instanceof Definition:
                 // Parser Definition
-                $instance = new DefinitionInstance($rule, $arguments);
+                $instance = new Implementation($rule, $arguments);
                 break;
 
             case $rule instanceof Parser:

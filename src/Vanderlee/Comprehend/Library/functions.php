@@ -13,12 +13,12 @@ use vanderlee\comprehend\parser\terminal\Text;
 
 function plus($parser)
 {
-    return Repeat::oneOrMore($parser);
+    return Repeat::plus($parser);
 }
 
 function star($parser)
 {
-    return Repeat::zeroOrMore($parser);
+    return Repeat::kleene($parser);
 }
 
 function opt($parser)

@@ -1,17 +1,18 @@
 <?php
 
-use \vanderlee\comprehend\directive\Space;
-use \vanderlee\comprehend\parser\structure\Repeat;
-use \vanderlee\comprehend\parser\structure\Sequence;
+namespace tests\src\directive;
+
+use tests\ParserTestCase;
+use vanderlee\comprehend\directive\Space;
+use vanderlee\comprehend\parser\structure\Repeat;
+use vanderlee\comprehend\parser\structure\Sequence;
 
 /**
  * @group directive
- * @coversDefaultClass Space
  */
-class SpaceTest extends TestCase
+class SpaceParserTest extends ParserTestCase
 {
     /**
-     * @covers ::match
      * @dataProvider spaceData
      */
     public function testSpace(Space $parser, $input, $offset, $match, $length)

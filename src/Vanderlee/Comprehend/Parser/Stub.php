@@ -49,6 +49,7 @@ class Stub extends Parser {
 		if ($match->match) {
 			return $this->success($input, $offset, $match->length, $match);
 		}
+
 		return $this->failure($input, $offset, $match->length);
 	}
 

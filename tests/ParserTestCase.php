@@ -1,5 +1,7 @@
 <?php
 
+namespace tests;
+
 use \vanderlee\comprehend\match\Match;
 
 /**
@@ -7,7 +9,7 @@ use \vanderlee\comprehend\match\Match;
  *
  * @author Martijn
  */
-class TestCase extends PHPUnit\Framework\TestCase {
+class ParserTestCase extends \PHPUnit\Framework\TestCase {
 	
 	/**
 	 * @param bool $match

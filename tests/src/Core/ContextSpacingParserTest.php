@@ -1,18 +1,18 @@
 <?php
 
-use \vanderlee\comprehend\parser\terminal\Char;
-use \vanderlee\comprehend\parser\structure\Sequence;
-use \vanderlee\comprehend\parser\structure\Repeat;
+namespace tests\src\core;
+
+use tests\ParserTestCase;
+use vanderlee\comprehend\parser\structure\Repeat;
+use vanderlee\comprehend\parser\structure\Sequence;
+use vanderlee\comprehend\parser\terminal\Char;
 
 /**
  * @group directive
  */
-class ContextSpacingTest extends TestCase
+class ContextSpacingParserTest extends ParserTestCase
 {
 
-    /**
-     * @covers Context::skipSpacing
-     */
     public function testSequenceLexeme()
     {
         $spacer = new Repeat('-', 0);
@@ -24,9 +24,6 @@ class ContextSpacingTest extends TestCase
         $this->assertResult(true, 8, $parser->match('foo--bar'));
     }
 
-    /**
-     * @covers Context::skipSpacing
-     */
     public function testSequenceLexemeRequired()
     {
         $spacer = new Repeat('-', 1);
@@ -38,9 +35,6 @@ class ContextSpacingTest extends TestCase
         $this->assertResult(true, 8, $parser->match('foo--bar'));
     }
 
-    /**
-     * @covers Context::skipSpacing
-     */
     public function testRepeatLexeme()
     {
         $spacer = new Repeat('-', 0);
@@ -52,9 +46,6 @@ class ContextSpacingTest extends TestCase
         $this->assertResult(true, 9, $parser->match('foofoofoo'));
     }
 
-    /**
-     * @covers Context::skipSpacing
-     */
     public function testRepeatLexemeRequired()
     {
         $spacer = new Repeat('-', 1);
@@ -66,9 +57,6 @@ class ContextSpacingTest extends TestCase
         $this->assertResult(true, 3, $parser->match('foofoofoo'));
     }
 
-    /**
-     * @covers Context::skipSpacing
-     */
     public function testOutsideSpacing()
     {
         $spacer = new Char(' ');
@@ -80,9 +68,6 @@ class ContextSpacingTest extends TestCase
         $this->assertResult(true, 7, $parser->match('foo bar '));
     }
 
-    /**
-     * @covers Context::skipSpacing
-     */
     public function testStackSpacing()
     {
         $spacer = new Repeat('-', 0, 1);

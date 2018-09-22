@@ -1,14 +1,17 @@
 <?php
 
-use \vanderlee\comprehend\library\Rfc3986;
-use \vanderlee\comprehend\library\Library;
-use \vanderlee\comprehend\parser\Parser;
+namespace tests\src\library;
+
+use tests\ParserTestCase;
+use vanderlee\comprehend\library\Library;
+use vanderlee\comprehend\library\Rfc3986;
+use vanderlee\comprehend\parser\Parser;
 
 /**
- * @group directive
- * @coversDefaultClass Rfc3986
+ * @group library
+ * @group rfc
  */
-class Rfc3986Test extends TestCase
+class Rfc3986ParserTest extends ParserTestCase
 {
 
     /**
@@ -35,7 +38,7 @@ class Rfc3986Test extends TestCase
             [$uri->IPv4address, '256.2.3.4', false, 2],
             [$uri->IPv4address, '1.2.3.255', true, 9],
             [$uri->IPv4address, '1.2.3.256', true, 8],
-//            [$uri->IPv4address, '11.2.3.4', true, 7],
+            //            [$uri->IPv4address, '11.2.3.4', true, 7],
         ];
     }
 

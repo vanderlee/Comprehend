@@ -1,3 +1,5 @@
 /nbproject/
 /.debug/
 /.idea/
+/vendor/
+/composer.lock

@@ -59,11 +59,11 @@ class Definition {
 	 * Build an instance of this parser definition.
 	 * 
 	 * @param Mixed[] $arguments
-	 * @return DefinitionInstance
+	 * @return Implementation
 	 */
 	public function build(...$arguments)
 	{
-		return new DefinitionInstance($this, $arguments);
+		return new Implementation($this, $arguments);
 	}
 
 	/**
@@ -71,7 +71,7 @@ class Definition {
 	 * Alias of `build()` method.
 	 * 
 	 * @param Mixed[] $arguments
-	 * @return DefinitionInstance
+	 * @return Implementation
 	 */
 	public function __invoke(...$arguments)
 	{

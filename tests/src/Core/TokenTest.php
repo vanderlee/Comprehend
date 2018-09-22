@@ -1,24 +1,24 @@
 <?php
 
-use \vanderlee\comprehend\core\Token;
-use \vanderlee\comprehend\library\Library;
-use \vanderlee\comprehend\parser\structure\Choice;
-use \vanderlee\comprehend\parser\structure\Repeat;
-use \vanderlee\comprehend\parser\structure\Sequence;
-use \vanderlee\comprehend\parser\terminal\Set;
-use \vanderlee\comprehend\parser\terminal\Text;
+namespace tests\src\core;
+
+use tests\ParserTestCase;
+use vanderlee\comprehend\core\Token;
+use vanderlee\comprehend\library\Library;
+use vanderlee\comprehend\parser\structure\Choice;
+use vanderlee\comprehend\parser\structure\Repeat;
+use vanderlee\comprehend\parser\structure\Sequence;
+use vanderlee\comprehend\parser\terminal\Set;
+use vanderlee\comprehend\parser\terminal\Text;
 
 /**
  * Node tests
  *
  * @author Martijn
  */
-class TempTest extends TestCase
+class TokenTest extends ParserTestCase
 {
 
-    /**
-     * @covers \vanderlee\comprehend\core\Token
-     */
     public function testTokens()
     {
         $foo    = (new Text('foo'))->token('FooToken');
@@ -58,9 +58,6 @@ class TempTest extends TestCase
         ], $match->token->toArray());
     }
 
-    /**
-     * @covers \vanderlee\comprehend\core\Token
-     */
     public function testTokenIsTerminal()
     {
         $foo = (new Sequence('f', 'o', 'o'))->token('FooToken', null, true);
@@ -92,9 +89,6 @@ class TempTest extends TestCase
         return [$signature => $children];
     }
 
-    /**
-     * @covers \vanderlee\comprehend\core\Token
-     */
     public function testRfcGroup()
     {
         $scheme     = Library::uri()->scheme;

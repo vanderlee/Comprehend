@@ -1,56 +1,61 @@
 <?php
 
-use \vanderlee\comprehend\parser\terminal\Set;
+namespace tests\src\parser\terminal;
+
+use tests\ParserTestCase;
+use vanderlee\comprehend\parser\terminal\Set;
 
 /**
  * @group terminal
  * @group parser
  */
-class SetTest extends PHPUnit\Framework\TestCase {
+class SetTest extends ParserTestCase
+{
+    public function testConstruction()
+    {
+        $this->assertInstanceOf(Set::class, new Set('abc'));
+    }
 
-	/**
-	 * @covers Set
-	 */
-	public function testEmpty()
-	{
-		$this->expectExceptionMessage('Empty set');
-		new Set('');
-	}
+    public function testEmpty()
+    {
+        $this->expectExceptionMessage('Empty set');
+        new Set('');
+    }
 
-	/**
-	 * @covers Set
-	 * @dataProvider setData
-	 */
-	public function testSet(Set $parser, $input, $offset, $match, $length)
-	{
-		$result = $parser->match($input, $offset);
+    /**
+     * @dataProvider setData
+     */
+    public function testSet(Set $parser, $input, $offset, $match, $length)
+    {
+        $result = $parser->match($input, $offset);
 
-		$this->assertSame($match, $result->match, (string) $parser);
-		$this->assertSame($length, $result->length, (string) $parser);
-	}
+        $this->assertSame($match, $result->match, (string)$parser);
+        $this->assertSame($length, $result->length, (string)$parser);
+    }
 
-	public function setData()
-	{
-		return [
-			[new Set('a'), 'abc', 0, true, 1],
-			[new Set('b'), 'abc', 0, false, 0],
-			[new Set('az'), 'abc', 0, true, 1],
-			[new Set('az'), 'b', 0, false, 0],
-			[new Set('az'), 'z', 0, true, 1],
-			[new Set('abc'), 'a', 0, true, 1],
-			[new Set('abc'), 'b', 0, true, 1],
-			[new Set('abc'), 'c', 0, true, 1],
-			[new Set('abc'), 'za', 0, false, 0],
-			[new Set('abc'), 'za', 1, true, 1],
-			[(new Set('a'))->caseInsensitive(), 'abc', 0, true, 1],
-			[(new Set('a'))->caseInsensitive(), 'ABC', 0, true, 1],
-			[(new Set('A'))->caseInsensitive(), 'abc', 0, true, 1],
-			[(new Set('A'))->caseInsensitive(), 'ABC', 0, true, 1],
-			[new Set('a', false), 'a', 0, false, 0],
-			[new Set('a', false), 'b', 0, true, 1],
-			[new Set('a', false), 'A', 0, true, 1],
-			[(new Set('a', false))->caseInsensitive(), 'A', 0, false, 0],
-		];
-	}
+    public function setData()
+    {
+        return [
+            [new Set('a'), 'abc', 0, true, 1],
+            [new Set('a'), 'abc', 999, false, 0],
+            [new Set('b'), 'abc', 0, false, 0],
+            [new Set('az'), 'abc', 0, true, 1],
+            [new Set('az'), 'b', 0, false, 0],
+            [new Set('az'), 'z', 0, true, 1],
+            [new Set('abc'), 'a', 0, true, 1],
+            [new Set('abc'), 'b', 0, true, 1],
+            [new Set('abc'), 'c', 0, true, 1],
+            [new Set('abc'), 'za', 0, false, 0],
+            [new Set('abc'), 'za', 1, true, 1],
+            [(new Set('a'))->caseInsensitive(), 'abc', 0, true, 1],
+            [(new Set('a'))->caseInsensitive(), 'ABC', 0, true, 1],
+            [(new Set('A'))->caseInsensitive(), 'abc', 0, true, 1],
+            [(new Set('A'))->caseInsensitive(), 'ABC', 0, true, 1],
+            [new Set('a', false), 'a', 0, false, 0],
+            [new Set('a', false), 'b', 0, true, 1],
+            [new Set('a', false), 'A', 0, true, 1],
+            [(new Set('a', false))->caseInsensitive(), 'A', 0, false, 0],
+        ];
+    }
 
 }

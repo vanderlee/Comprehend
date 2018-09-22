@@ -11,7 +11,7 @@ use \vanderlee\comprehend\match\Success;
  *
  * @author Martijn
  */
-class DefinitionInstance extends Parser
+class Implementation extends Parser
 {
 
     /**

@@ -32,24 +32,19 @@ class Repeat extends Parser
         }
     }
 
-    public static function oneOrMore($parser)
+    public static function plus($parser)
     {
-        return new self($parser, 1);
+        return new self($parser, 1, null);
     }
 
-    public static function zeroOrMore($parser)
+    public static function kleene($parser)
     {
-        return new self($parser);
-    }
-
-    public static function zeroOrOne($parser)
-    {
-        return new self($parser, 0, 1);
+        return new self($parser, 0, null);
     }
 
     public static function optional($parser)
     {
-        return self::zeroOrOne($parser);
+        return new self($parser, 0, 1);
     }
 
     protected function parse(&$input, $offset, Context $context)

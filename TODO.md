@@ -1,5 +1,7 @@
 # Todo
 ## Milestone 1
+ -  PHP 5.x as target
+ -  Backwards RPN evaluator
  -  Match() must match entire length?
      -   Boolean option!
  -  Actual use-case
