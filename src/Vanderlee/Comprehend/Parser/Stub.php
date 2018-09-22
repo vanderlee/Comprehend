@@ -55,11 +55,7 @@ class Stub extends Parser {
 
 	public function __toString()
 	{
-        if ($this->parser === null) {
-            throw new \UnexpectedValueException('Missing parser');
-        }
-
-		return (string) $this->parser;
+		return $this->parser ? (string) $this->parser : '<undefined>';
 	}
 
 }

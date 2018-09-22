@@ -4,6 +4,7 @@ namespace tests\src\parser;
 
 use tests\ParserTestCase;
 use vanderlee\comprehend\parser\Stub;
+use vanderlee\comprehend\parser\terminal\Text;
 
 /**
  * @group structure
@@ -26,11 +27,32 @@ class StubParserTest extends ParserTestCase
         $this->assertResult(true, 3, $parser->match('foo'));
     }
 
-    public function testSetOther()
+    public function testSetParserFailure()
     {
-        $parser = new Stub;
-        $this->expectExceptionMessage('Property `foo` does not exist');
-        $parser->foo = 'foo';
+        $parser         = new Stub;
+        $parser->parser = 'foo';
+        $this->assertResult(false, 0, $parser->match('bar'));
+    }
+
+    public function testSetMissingProperty()
+    {
+        $stub = new Stub();
+        $this->expectExceptionMessage("Property `i_do_not_exist` does not exist");
+        $stub->i_do_not_exist = 'foo';
+    }
+
+    public function testGetParser()
+    {
+        $parser         = new Stub;
+        $parser->parser = 'foo';
+        $this->assertInstanceOf(Text::class, $parser->parser);
+    }
+
+    public function testGetMissingProperty()
+    {
+        $stub = new Stub();
+        $this->expectExceptionMessage("Property `i_do_not_exist` does not exist");
+        $whatever = $stub->i_do_not_exist;
     }
 
     public function testToString()
@@ -38,6 +60,12 @@ class StubParserTest extends ParserTestCase
         $parser         = new Stub;
         $parser->parser = 'foo';
         $this->assertEquals('"foo"', (string)$parser);
+    }
+
+    public function testToStringMissingParser()
+    {
+        $parser = new Stub;
+        $this->assertEquals('<undefined>', (string)$parser);
     }
 
 }
