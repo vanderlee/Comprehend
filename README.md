@@ -26,7 +26,7 @@ Example
 ### Comprehend, using objects:
     $word	= new Repeat(new Regex('/[a-z][A-Z]/'), 1);
     $list	= new Sequence($word, new Repeat(new Sequence(',', $word)));
-### Comprehend, using helper functions:
+### Comprehend, using library functions:
     $word	= plus(regex('/[a-z][A-Z]/'));
     $list	= s($word, star([',', $word]));
 ### Comprehend, using Ruleset constructor
@@ -34,8 +34,3 @@ Example
         'word'           => plus(regex('/[a-z][A-Z]/')), 
         Ruleset::DEFAULT => s($word, star([',', $word])),
     ]);
-### Comprehend, using ABNF parser
-    $list = new ABNF('
-        word	= [A-Za-z]+
-        list	= word {',' word}*    
-    ')->list;
