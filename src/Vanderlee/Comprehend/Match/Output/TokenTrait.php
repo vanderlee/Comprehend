@@ -1,6 +1,6 @@
 <?php
 
-namespace vanderlee\comprehend\match\processor;
+namespace vanderlee\comprehend\match\Output;
 
 use vanderlee\comprehend\core\Token;
 
@@ -37,7 +37,11 @@ trait TokenTrait
             $children[] = $success->processTokenCallback();
         }
 
-        return ($this->tokenCallback)($children);
+        if ($this->tokenCallback) {
+            return ($this->tokenCallback)($children);
+        }
+
+        return null;
     }
 
     /**

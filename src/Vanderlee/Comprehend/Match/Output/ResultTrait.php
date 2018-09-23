@@ -1,6 +1,6 @@
 <?php
 
-namespace vanderlee\comprehend\match\processor;
+namespace vanderlee\comprehend\match\Output;
 
 trait ResultTrait
 {
@@ -10,7 +10,7 @@ trait ResultTrait
      *
      * @var array|null
      */
-    private $results = null;
+    private $resultCache = null;
 
     /**
      * List of partial-resolvable result callbacks
@@ -55,12 +55,12 @@ trait ResultTrait
      */
     public function getResults()
     {
-        if ($this->results === null) {
-            $this->results = [];
-            $this->processResultCallbacks($this->results);
+        if ($this->resultCache === null) {
+            $this->resultCache = [];
+            $this->processResultCallbacks($this->resultCache);
         }
 
-        return $this->results;
+        return $this->resultCache;
     }
 
     //@todo deprecate? Saves no time and is part of collection

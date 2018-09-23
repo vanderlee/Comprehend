@@ -1,6 +1,6 @@
 <?php
 
-namespace vanderlee\comprehend\match\processor;
+namespace vanderlee\comprehend\match\Output;
 
 trait CallbackTrait
 {

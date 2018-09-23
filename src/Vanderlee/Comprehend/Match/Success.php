@@ -2,9 +2,9 @@
 
 namespace vanderlee\comprehend\match;
 
-use vanderlee\comprehend\match\processor\CallbackTrait;
-use vanderlee\comprehend\match\processor\ResultTrait;
-use vanderlee\comprehend\match\processor\TokenTrait;
+use vanderlee\comprehend\match\Output\CallbackTrait;
+use vanderlee\comprehend\match\Output\ResultTrait;
+use vanderlee\comprehend\match\Output\TokenTrait;
 
 /**
  * Successful match of a parser
