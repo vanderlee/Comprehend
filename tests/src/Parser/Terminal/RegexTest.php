@@ -32,7 +32,7 @@ class RegexTest extends ParserTestCase
     public function testInvalidNoEndingDelimiter()
     {
         $this->expectExceptionMessage('Invalid pattern');
-        $s = new Regex('/');
+        new Regex('/');
     }
 
     /**

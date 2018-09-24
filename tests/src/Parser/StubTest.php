@@ -52,7 +52,7 @@ class StubTest extends ParserTestCase
     {
         $stub = new Stub();
         $this->expectExceptionMessage("Property `i_do_not_exist` does not exist");
-        $whatever = $stub->i_do_not_exist;
+        echo $stub->i_do_not_exist;
     }
 
     public function testToString()

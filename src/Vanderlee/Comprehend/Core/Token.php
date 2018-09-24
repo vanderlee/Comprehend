@@ -28,8 +28,6 @@ class Token implements \JsonSerializable
 
     public function __construct($group, $name, &$input, $offset, $length, &$children = [], $class = null)
     {
-        $text = substr($input, $offset, $length);
-
         $this->group    = $group;
         $this->name     = $name;
         $this->input    = $input;
