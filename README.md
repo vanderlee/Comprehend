@@ -2,11 +2,11 @@ Comprehend - a PHP *BNF parser framework
 ========================================
 v0.3
 
-Copyright &copy; 2011-2018 Martijn W. van der Lee (http://toyls.com)
+Copyright &copy; 2011-2018 Martijn W. van der Lee [Toyls.com](https://toyls.com)
 
-MIT licensed (http://www.opensource.org/licenses/mit-license.php)
+[MIT licensed](http://www.opensource.org/licenses/mit-license.php)
 
-Create parsers in PHP with ease
+Build [LR(1)](https://en.wikipedia.org/wiki/Canonical_LR_parser) parsers in PHP with ease.
 
 Features
 --------
@@ -26,6 +26,9 @@ Example
 ### Comprehend, using objects:
     $word	= new Repeat(new Regex('/[a-z][A-Z]/'), 1);
     $list	= new Sequence($word, new Repeat(new Sequence(',', $word)));
+### Comprehend, using objects and array notation:
+    $word	= new Repeat(new Regex('/[a-z][A-Z]/'), 1);
+    $list	= new Sequence($word, new Repeat([',', $word]));
 ### Comprehend, using library functions:
     $word	= plus(regex('/[a-z][A-Z]/'));
     $list	= s($word, star([',', $word]));

@@ -4,7 +4,7 @@ namespace tests\src\parser\terminal;
 
 use \vanderlee\comprehend\parser\terminal\Text;
 
-class TextParserTest extends \tests\ParserTestCase
+class TextTest extends \tests\ParserTestCase
 {
 
     public function testConstruction()

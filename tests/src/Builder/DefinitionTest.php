@@ -14,7 +14,7 @@ use vanderlee\comprehend\parser\terminal\Set;
  * @group structure
  * @group parser
  */
-class DefinitionParserTest extends ParserTestCase
+class DefinitionTest extends ParserTestCase
 {
 
     const CSV_RECORD    = [__CLASS__, 'makeCsvRecordParser'];
@@ -55,6 +55,18 @@ class DefinitionParserTest extends ParserTestCase
         $this->assertResult(true, 5, $List('x,x,x'));
     }
 
+
+    public function testValidatorInConstructor()
+    {
+        $d = new Definition(new Repeat(new Range('0', '9'), 1), function ($text) {
+            return intval($text) % 2 === 1;
+        });
+
+        $number = $d();
+        $this->assertResult(true, 2, $number('11'));
+        $this->assertResult(false, 2, $number('12'));
+    }
+
     public function testQuotedList()
     {
         $qs = (new Definition(self::QUOTED_STRING))();
@@ -71,21 +83,6 @@ class DefinitionParserTest extends ParserTestCase
         $this->assertResult(false, 5, $qs('"foo/'));
         $this->assertResult(false, 5, $qs('/foo"'));
         $this->assertResult(true, 6, $qs('/foo"/'));
-    }
-
-    public function testOddNumbers()
-    {
-        $d      = new Definition(new Repeat(new Range('0', '9'), 1));
-        $number = $d();
-        $this->assertResult(true, 2, $number('11'));
-        $this->assertResult(true, 2, $number('12'));
-
-        $d->addValidator(function ($text) {
-            return intval($text) % 2 === 1;
-        });
-        $number = $d();
-        $this->assertResult(true, 2, $number('11'));
-        $this->assertResult(false, 2, $number('12'));
     }
 
     public function testFirstDigitOdd()

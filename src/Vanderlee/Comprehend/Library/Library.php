@@ -4,51 +4,66 @@ namespace vanderlee\comprehend\library;
 
 class Library
 {
-    private static $map = null;
-
-    private static $instance = null;
+    /**
+     * @var Library
+     */
+    private static $instances = [];
 
     /**
-     * @var array
+     * Map of [ symbolic name => class name ]
+     * @var string[]
      */
-    private static $classes = [];
+    private $map = null;
+
+    /**
+     * Map of [ class name => class instance ]
+     * @var string[]
+     */
+    private $classes = [];
+
+    private function __construct($map)
+    {
+        $this->map = $map;
+    }
 
     /**
      * @param $name
      * @return array
      * @throws \Exception
      */
-    private static function getClass($name)
+    private function getClass($name)
     {
-        if (self::$map === null) {
-            self::$map = require_once realpath(__DIR__ . '/../../../../env/library.php');
-        }
-
-        if (!isset(self::$map[$name])) {
+        if (!isset($this->map[$name])) {
             throw new \Exception("No ruleset available for `{$name}`");
         }
 
-        $class = self::$map[$name];
+        $class = $this->map[$name];
 
-        if (!isset(self::$classes[$class])) {
-            self::$classes[$class] = new $class;
+        if (!class_exists($class)) {
+            throw new \Exception("Ruleset `{$class}` not found");
         }
 
-        return self::$classes[$class];
+        if (!isset($this->classes[$class])) {
+            $this->classes[$class] = new $class;
+        }
+
+        return $this->classes[$class];
     }
 
-    public static function getInstance()
+    public static function getInstance($configFile = null)
     {
-        if (self::$instance === null) {
-            self::$instance = new self;
+        $configFile = $configFile ?: realpath(__DIR__ . '/../../../../env/library.php');
+
+        if (!isset(self::$instances[$configFile])) {
+            self::$instances[$configFile] = new Library(require $configFile);
         }
 
-        return self::$instance;
+        return self::$instances[$configFile];
     }
 
     public function __get($name)
     {
-        return self::getClass($name);
+        return $this->getClass($name);
     }
 
     public static function __callStatic($name, $arguments)

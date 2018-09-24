@@ -8,9 +8,9 @@ use vanderlee\comprehend\parser\structure\Sequence;
 use vanderlee\comprehend\parser\terminal\Char;
 
 /**
- * @group directive
+ * @group core
  */
-class ContextSpacingParserTest extends ParserTestCase
+class SpacingContextTraitTest extends ParserTestCase
 {
 
     public function testSequenceLexeme()

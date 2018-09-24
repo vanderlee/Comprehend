@@ -42,20 +42,29 @@ class Implementation extends Parser
         $this->arguments  = $arguments;
     }
 
+    /**
+     * @throws \Exception
+     */
     private function build()
     {
         if ($this->parser === null) {
             $this->parser = $this->definition->generator;
             if (!$this->parser instanceof Parser) {
-                if (is_callable($this->parser)) {
-                    $this->parser = ($this->parser)(...$this->arguments);
-                } else {
+                if (!is_callable($this->parser)) {
                     throw new \Exception('Parser not defined');
                 }
+                $this->parser = ($this->parser)(...$this->arguments);
             }
         }
     }
 
+    /**
+     * @param string $input
+     * @param int $offset
+     * @param Context $context
+     * @return \vanderlee\comprehend\match\Failure|\vanderlee\comprehend\match\Match|Success
+     * @throws \Exception
+     */
     protected function parse(&$input, $offset, Context $context)
     {
         $this->build();
@@ -64,7 +73,7 @@ class Implementation extends Parser
 
         $localResults = []; // this is redundant, but suppresses PHP scanner warnings
         if ($match->match) {
-            $localResults = $match->getResults();
+            $localResults = $match->results;
 
             if (!empty($this->definition->validators)) {
                 $text = substr($input, $offset, $match->length);
@@ -79,7 +88,7 @@ class Implementation extends Parser
 
         // Copy match into new match, only pass original callbacks if processor not set
         $successes = empty($this->definition->processors) ? $match : [];
-        $match = $match->match
+        $match     = $match->match
             ? $this->success($input, $offset, $match->length, $successes)
             : $this->failure($input, $offset, $match->length);
 
@@ -94,9 +103,14 @@ class Implementation extends Parser
         return $match;
     }
 
+
     public function __toString()
     {
-        $this->build();
+        try {
+            $this->build();
+        } catch (\Exception $e) {
+            // ignore
+        }
 
         return (string)$this->parser;
     }

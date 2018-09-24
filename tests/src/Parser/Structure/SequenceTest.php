@@ -11,7 +11,7 @@ use vanderlee\comprehend\parser\terminal\Text;
  * @group structure
  * @group parser
  */
-class SequenceParserTest extends ParserTestCase
+class SequenceTest extends ParserTestCase
 {
 
     public function testEmpty()

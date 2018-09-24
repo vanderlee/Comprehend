@@ -10,8 +10,13 @@ use vanderlee\comprehend\parser\structure\Sequence;
 /**
  * @group directive
  */
-class SpaceParserTest extends ParserTestCase
+class SpaceTest extends ParserTestCase
 {
+    public function testConstructor()
+    {
+        $this->assertInstanceOf(Space::class, new Space(' ', 'x'));
+    }
+
     /**
      * @dataProvider spaceData
      */

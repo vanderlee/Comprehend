@@ -1,10 +1,11 @@
 # Todo
 ## Milestone 1
+ -  Library
+    -   Follow SPF chain 
  -  PHP 5.x as target
  -  Backwards RPN evaluator
  -  Match() must match entire length?
      -   Boolean option!
- -  Actual use-case
  -  Packagist JSON
  -	Readme's
       -  Core readme: introduction to the framework and link-out to docs
@@ -23,11 +24,11 @@
  -  Library: configurable path of config file?
  -  RFC
      -  Implement MORE!
-     -  Auto-terminate 
- -  Restructure traits to eliminate over-inter-dependance
- -  Token class factory?
-
+        -   D.-backbone parts
+ -  Restructure traits to reduce dependance
+ 
 ## Milestone 2
+ -  Alternative $input; stream(seekable),generator
  -  Failure; line/position finder
  -  Ruleset; on define, add a token/result rule.
  -	Debug logging mode

@@ -38,9 +38,9 @@ class Regex extends Parser {
 		$pattern = $this->pattern . ($context->isCaseSensitive() ? '' : 'i');
 		$this->popCaseSensitivityFromContext($context);
 
-		if (preg_match($pattern, $input, $m, 0, $offset) !== FALSE) {
-			if (count($m) > 0 && mb_strlen($m[0]) > 0 && strpos($input, $m[0], $offset) == $offset) {
-				return $this->success($input, $offset, mb_strlen($m[0]));
+		if (preg_match($pattern, $input, $match, 0, $offset) !== FALSE) {
+			if (count($match) > 0 && mb_strlen($match[0]) > 0 && strpos($input, $match[0], $offset) == $offset) {
+				return $this->success($input, $offset, mb_strlen($match[0]));
 			}
 		}
 		

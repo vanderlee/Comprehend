@@ -2,6 +2,7 @@
 
 namespace tests\src\parser\structure;
 
+use PHPUnit\Runner\Exception;
 use tests\ParserTestCase;
 use vanderlee\comprehend\parser\structure\Not;
 
@@ -11,6 +12,14 @@ use vanderlee\comprehend\parser\structure\Not;
  */
 class NotTest extends ParserTestCase
 {
+    public function testConstructor() {
+        $this->assertInstanceOf(Not::class, new Not('a'));
+    }
+
+    public function testEmpty() {
+        $this->expectException(\ArgumentCountError::class);
+        new Not();
+    }
 
     /**
      * @dataProvider notData

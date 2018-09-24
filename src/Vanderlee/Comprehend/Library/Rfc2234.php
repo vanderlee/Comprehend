@@ -3,16 +3,16 @@
 /**
  * RFC 2234 - Augmented BNF for Syntax Specifications: ABNF
  *
- * Updated by RFC 4234
+ * Obsoleted by RFC 4234
  *
  * @see https://tools.ietf.org/html/rfc2234
- * @package vanderlee\comprehend\rulesets
+ * @package vanderlee\comprehend\library
  */
 
 namespace vanderlee\comprehend\library;
 
 use vanderlee\comprehend\builder\AbstractRuleset;
-use \vanderlee\comprehend\parser\Parser;
+use vanderlee\comprehend\parser\Parser;
 
 require_once 'functions.php';
 
@@ -22,7 +22,8 @@ require_once 'functions.php';
  * @property-read Parser ALPHA Alphabetic characters (upper- and lowercase)
  * @property-read Parser DIGIT Decimal character
  * @property-read Parser HEXDIG Hexadecimal character
- * @property-read Parser BIT
+ * @property-read Parser BIT Binary digit
+ * @property-read Parser SB Whitespace
  *
  * @package vanderlee\comprehend\library
  */

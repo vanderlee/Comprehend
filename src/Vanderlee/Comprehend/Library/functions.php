@@ -41,11 +41,6 @@ function c(...$choices)
     return new Choice(...$choices);
 }
 
-function longest(...$choices)
-{
-    return Choice::longest(...$choices);
-}
-
 function range($from, $to)
 {
     return new Range($from, $to);

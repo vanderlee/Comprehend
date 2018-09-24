@@ -59,10 +59,10 @@ class Token implements \JsonSerializable
         $signature = ($this->group ? $this->group . '::' : '')
             . ($this->name ?? $this->class);
 
-        $output = str_repeat('  ', $depth) . "{$signature} (`{$this->text}`)" . PHP_EOL;
+        $output = str_repeat('  ', $depth) . "{$signature} (`{$this->text}`)";
 
         foreach ($this->children as $child) {
-            $output .= $child->toString($depth + 1);
+            $output .= PHP_EOL . $child->toString($depth + 1);
         }
 
         return $output;
@@ -93,11 +93,13 @@ class Token implements \JsonSerializable
      */
     private function createXmlNode(\DOMDocument $document)
     {
-        $name  = $this->name ?? preg_replace('/[^-_a-zA-Z0-9]/', '_', $this->class);
+        $name  = $this->name ?? $this->class;
+        $name = preg_replace('/[^-_a-zA-Z0-9]/', '_', $name);
+        $group = preg_replace('/[^-_a-zA-Z0-9]/', '_', $this->group);
         $value = $this->children ? null : $this->text;
 
         if ($this->group !== null) {
-            $element = $document->createElementNS($this->group, $this->group . ':' . $name, $value);
+            $element = $document->createElementNS($this->group, $group . ':' . $name, $value);
         } else {
             $element = $document->createElement($name, $value);
         }
@@ -115,7 +117,7 @@ class Token implements \JsonSerializable
      */
     public function jsonSerialize()
     {
-        return $this->jsonSerialize();
+        return $this->toArray();
     }
 
     /**

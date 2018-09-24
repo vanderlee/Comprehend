@@ -2,18 +2,17 @@
 
 namespace vanderlee\comprehend\parser;
 
-use \vanderlee\comprehend\core\Context;
-use vanderlee\comprehend\core\Token;
-use \vanderlee\comprehend\match\Match;
-use \vanderlee\comprehend\match\Success;
-use \vanderlee\comprehend\match\Failure;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\match\Failure;
+use vanderlee\comprehend\match\Match;
+use vanderlee\comprehend\match\Success;
+use vanderlee\comprehend\parser\Output\AssignTrait;
+use vanderlee\comprehend\parser\Output\ResultTrait;
+use vanderlee\comprehend\parser\Output\TokenTrait;
 
 abstract class Parser
 {
-
-    use ResultTrait;
-    use AssignTrait;
-    use TokenTrait;
+    use ResultTrait, TokenTrait, AssignTrait;
 
     /**
      * List of callbacks to call when this parser has matched a part of the full parse.
@@ -94,7 +93,6 @@ abstract class Parser
      */
     protected function success(&$input, $offset, $length = 0, &$successes = [])
     {
-
         $successes = is_array($successes) ? $successes : [$successes];
 
         $success = new Success($length, $successes);

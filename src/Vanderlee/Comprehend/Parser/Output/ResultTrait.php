@@ -1,6 +1,6 @@
 <?php
 
-namespace vanderlee\comprehend\parser;
+namespace vanderlee\comprehend\parser\Output;
 
 /**
  *

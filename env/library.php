@@ -12,4 +12,10 @@ return [
     'rfc3986' => \vanderlee\comprehend\library\Rfc3986::class,    // Updates 1738, Obsoletes 2732, 2396, 1808
     //'rfc6874' => Rfc3986::class,    // Updates 3986
     //'rfc7320' => Rfc3986::class,    // Updates 3986
+    // IPv6
+    'ipv6'    => \vanderlee\comprehend\library\Rfc3513::class,
+    'rfc3513' => \vanderlee\comprehend\library\Rfc3513::class,
+    // SPF
+    'spf'     => \vanderlee\comprehend\library\Rfc4408::class,
+    'rfc4408' => \vanderlee\comprehend\library\Rfc4408::class,
 ];

@@ -57,21 +57,4 @@ trait ArgumentsTrait
             return self::getArgument($argument, $arrayToSequence);
         }, $arguments);
     }
-
-    private static function array_flatten($a, $f = [])
-    {
-        if (!$a || !is_array($a)) {
-            return [];
-        }
-        foreach ($a as $k => $v) {
-            if (is_array($v)) {
-                $f = self::array_flatten($v, $f);
-            } else {
-                $f[$k] = $v;
-            }
-        }
-
-        return $f;
-    }
-
 }

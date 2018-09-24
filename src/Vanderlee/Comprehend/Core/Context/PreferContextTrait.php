@@ -19,7 +19,7 @@ trait PreferContextTrait
             Prefer::LONGEST,
             Prefer::SHORTEST,
         ])) {
-            throw new \DomainException("Invalid preference `{$preference}` ");
+            throw new \DomainException("Invalid preference `{$preference}`");
         }
     }
 

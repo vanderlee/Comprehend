@@ -8,8 +8,12 @@ use vanderlee\comprehend\directive\CaseSensitive;
 /**
  * @group directive
  */
-class CaseSensitiveParserTest extends ParserTestCase
+class CaseSensitiveTest extends ParserTestCase
 {
+    public function testConstructor()
+    {
+        $this->assertInstanceOf(CaseSensitive::class, new CaseSensitive(true, 'a'));
+    }
 
     /**
      * @dataProvider caseSensitiveData

@@ -6,14 +6,14 @@
  * Updated by RFC 7405
  *
  * @see https://tools.ietf.org/html/rfc7405
- * @package vanderlee\comprehend\rulesets
+ * @package vanderlee\comprehend\library
  */
 
 namespace vanderlee\comprehend\library;
 
 require_once 'functions.php';
 
-use \vanderlee\comprehend\parser\Parser;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * @property-read Parser DQUOTE

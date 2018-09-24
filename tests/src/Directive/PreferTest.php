@@ -9,8 +9,12 @@ use vanderlee\comprehend\parser\structure\Choice;
 /**
  * @group directive
  */
-class PreferParserTest extends ParserTestCase
+class PreferTest extends ParserTestCase
 {
+    public function testConstructor()
+    {
+        $this->assertInstanceOf(Prefer::class, new Prefer(Prefer::FIRST, 'a'));
+    }
 
     public function testEmpty()
     {

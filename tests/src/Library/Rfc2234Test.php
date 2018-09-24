@@ -3,14 +3,14 @@
 namespace tests\src\library;
 
 use tests\ParserTestCase;
-use vanderlee\comprehend\library\Library;
+use vanderlee\comprehend\library\Rfc2234;
 use vanderlee\comprehend\parser\Parser;
 
 /**
  * @group library
  * @group rfc
  */
-class Rfc2234ParserTest extends ParserTestCase
+class Rfc2234Test extends ParserTestCase
 {
 
     /**
@@ -23,7 +23,7 @@ class Rfc2234ParserTest extends ParserTestCase
 
     public function rulesData()
     {
-        $abnf = Library::rfc2234();
+        $abnf = new Rfc2234();
 
         return [
             // Core rules

@@ -22,7 +22,7 @@ use vanderlee\comprehend\parser\terminal\Range;
  *
  * @author Martijn
  */
-class MathRulesetParserTest extends ParserTestCase
+class MathRulesetTest extends ParserTestCase
 {
 
     use ReversePolishNotationTrait;

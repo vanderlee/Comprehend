@@ -7,14 +7,14 @@
  * Updated by RFC 3986
  *
  * @see https://tools.ietf.org/html/rfc3986
- * @package vanderlee\comprehend\rulesets
+ * @package vanderlee\comprehend\library
  */
 
 namespace vanderlee\comprehend\library;
 
 use vanderlee\comprehend\builder\AbstractRuleset;
-use \vanderlee\comprehend\parser\Parser;
-use \vanderlee\comprehend\parser\terminal\Nothing;
+use vanderlee\comprehend\parser\Parser;
+use vanderlee\comprehend\parser\terminal\Nothing;
 
 require_once 'functions.php';
 

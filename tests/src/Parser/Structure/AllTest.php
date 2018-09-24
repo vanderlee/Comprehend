@@ -13,6 +13,9 @@ use vanderlee\comprehend\parser\structure\Sequence;
  */
 class AllTest extends ParserTestCase
 {
+    public function testConstructor() {
+        $this->assertInstanceOf(All::class, new All('a', 'aa'));
+    }
 
     public function testLessThanTwoArguments()
     {

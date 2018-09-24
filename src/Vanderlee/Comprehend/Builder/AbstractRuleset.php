@@ -19,7 +19,7 @@ abstract class AbstractRuleset extends Parser
     /**
      * Constant to specify default parser for this ruleset, which is called when Ruleset is used as a Parser.
      */
-    const DEFAULT = null;
+    const DEFAULT = 'DEFAULT';
 
     /**
      * Name of this ruleset. Intended for use with the standard library rulesets
@@ -99,7 +99,7 @@ abstract class AbstractRuleset extends Parser
                         $rule->generator = $definition;
                         return;
 
-                    case is_array($definition):
+                    case is_array($definition) || is_string($definition) || is_int($definition):
                         // S-C-S Array syntax
                         $rule->generator = self::getArgument($definition);
                         return;
@@ -198,13 +198,13 @@ abstract class AbstractRuleset extends Parser
                 $instance = static::call($rules, $rule, $arguments);
                 break;
 
-            case is_array($rule):
+            case is_array($rule) || is_string($rule) || is_int($rule):
                 // S-C-S Array syntax
                 $instance = self::getArgument($rule);
                 break;
 
             default:
-                throw new \InvalidArgumentException(sprintf('Invalid definition type `%1$s`', is_object($rule) ? get_class($rule) : gettype($rule)));
+                throw new \RuntimeException(sprintf('Cannot define `%2$s` using definition type `%1$s`', is_object($rule) ? get_class($rule) : gettype($rule), $key));
         }
 
         $instance->token($key, static::$name);
@@ -265,10 +265,6 @@ abstract class AbstractRuleset extends Parser
     {
         $this->initDefaultParser();
 
-        if ($this->parser === null) {
-            throw new \UnexpectedValueException('Missing parser');
-        }
-
         $match = $this->parser->parse($input, $offset, $context);
         if ($match->match) {
             return $this->success($input, $offset, $match->length, $match);
@@ -278,10 +274,10 @@ abstract class AbstractRuleset extends Parser
 
     public function __toString()
     {
-        $this->initDefaultParser();
-
-        if ($this->parser === null) {
-            throw new \UnexpectedValueException('Missing parser');
+        try {
+            $this->initDefaultParser();
+        } catch (\Exception $e) {
+            // ignore
         }
 
         return (string)$this->parser;

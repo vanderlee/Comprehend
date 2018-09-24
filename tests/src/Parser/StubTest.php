@@ -10,7 +10,7 @@ use vanderlee\comprehend\parser\terminal\Text;
  * @group structure
  * @group parser
  */
-class StubParserTest extends ParserTestCase
+class StubTest extends ParserTestCase
 {
 
     public function testConstruct()

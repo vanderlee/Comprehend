@@ -3,7 +3,6 @@
 namespace tests\src\library;
 
 use tests\ParserTestCase;
-use vanderlee\comprehend\library\Library;
 use vanderlee\comprehend\library\Rfc3986;
 use vanderlee\comprehend\parser\Parser;
 
@@ -11,7 +10,7 @@ use vanderlee\comprehend\parser\Parser;
  * @group library
  * @group rfc
  */
-class Rfc3986ParserTest extends ParserTestCase
+class Rfc3986Test extends ParserTestCase
 {
 
     /**
@@ -25,7 +24,7 @@ class Rfc3986ParserTest extends ParserTestCase
     public function rulesData()
     {
         /** @var Rfc3986 $uri */
-        $uri = Library::rfc3986();
+        $uri = new Rfc3986();
 
         return [
             [$uri->dec_octet, '0', true, 1],

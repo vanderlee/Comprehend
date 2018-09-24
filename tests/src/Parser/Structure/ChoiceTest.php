@@ -3,6 +3,7 @@
 namespace tests\src\parser\structure;
 
 use tests\ParserTestCase;
+use vanderlee\comprehend\directive\Prefer;
 use vanderlee\comprehend\parser\structure\Choice;
 use vanderlee\comprehend\parser\terminal\Text;
 
@@ -10,7 +11,7 @@ use vanderlee\comprehend\parser\terminal\Text;
  * @group structure
  * @group parser
  */
-class ChoiceParserTest extends ParserTestCase
+class ChoiceTest extends ParserTestCase
 {
     public function testEmpty()
     {
@@ -72,6 +73,9 @@ class ChoiceParserTest extends ParserTestCase
             [(new Choice('ab', 'a'))->preferShortest(), 'ab', 0, true, 1],
             [(new Choice('abc', 'aaa'))->preferShortest(), 'ab', 0, false, 1],
             [(new Choice('aaa', 'abc'))->preferShortest(), 'ab', 0, false, 1],
+            [(new Choice('ab', 'a', 'abc'))->setPreference(Prefer::FIRST), 'abc', 0, true, 2],
+            [(new Choice('ab', 'a', 'abc'))->setPreference(Prefer::SHORTEST), 'abc', 0, true, 1],
+            [(new Choice('ab', 'a', 'abc'))->setPreference(Prefer::LONGEST), 'abc', 0, true, 3],
         ];
     }
 
@@ -148,6 +152,18 @@ class ChoiceParserTest extends ParserTestCase
         $this->assertResult(true, 3, $c->match('aaa'));
 
         $c = Choice::shortest('aa', 'a', 'aaa');
+        $this->assertResult(true, 1, $c->match('aaa'));
+    }
+
+    public function testSetPreference()
+    {
+        $c = (new Choice('aa', 'a', 'aaa'))->setPreference(Prefer::FIRST);
+        $this->assertResult(true, 2, $c->match('aaa'));
+
+        $c = (new Choice('aa', 'a', 'aaa'))->setPreference(Prefer::LONGEST);
+        $this->assertResult(true, 3, $c->match('aaa'));
+
+        $c = (new Choice('aa', 'a', 'aaa'))->setPreference(Prefer::SHORTEST);
         $this->assertResult(true, 1, $c->match('aaa'));
     }
 

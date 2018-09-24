@@ -9,7 +9,7 @@ use vanderlee\comprehend\parser\terminal\Regex;
  * @group terminal
  * @group parser
  */
-class RegexParserTest extends ParserTestCase
+class RegexTest extends ParserTestCase
 {
 
     public function testConstruction()

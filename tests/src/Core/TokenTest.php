@@ -76,19 +76,6 @@ class TokenTest extends ParserTestCase
         ], $match->token->toArray());
     }
 
-    protected function extractTokenSignatures(Token $token)
-    {
-        $signature = ($token->group ? $token->group . '::' : '')
-            . ($token->name ?? $token->class);
-
-        $children = [];
-        foreach ($token->children as $child) {
-            $children += $this->extractTokenSignatures($child);
-        }
-
-        return [$signature => $children];
-    }
-
     public function testRfcGroup()
     {
         $scheme     = Library::uri()->scheme;
@@ -119,5 +106,69 @@ class TokenTest extends ParserTestCase
                 Text::class       => [],
             ],
         ], $signatures);
+    }
+
+    public function testUndefinedProperty()
+    {
+        $foo   = (new Text('foo'))->token('Word');
+        $match = $foo->match('foo');
+        $this->assertResult(true, 3, $match);
+        $this->expectExceptionMessage("Undefined property `i_do_not_exist`");
+        $match->token->i_do_not_exist;
+    }
+
+    public function testToString()
+    {
+        $foo = (new Sequence('f', (new Text('oo'))->token('Ooh!')))->token('Word');
+
+        $match = $foo->match('foo');
+        $this->assertResult(true, 3, $match);
+
+        $this->assertEquals('Word (`foo`)' . PHP_EOL
+            . '  vanderlee\comprehend\parser\terminal\Char (`f`)' . PHP_EOL
+            . '  Ooh! (`oo`)', (string)$match->token);
+    }
+
+    public function testJsonEncode()
+    {
+        $foo = (new Sequence('f', (new Text('oo'))->token('Ooh!')))->token('Word');
+
+        $match = $foo->match('foo');
+        $this->assertResult(true, 3, $match);
+
+        $this->assertEquals('{"group":null,"name":"Word","text":"foo","offset":0,"length":3'
+            . ',"class":"vanderlee\\\\comprehend\\\\parser\\\\structure\\\\Sequence","children":['
+            . '{"group":null,"name":null,"text":"f","offset":0,"length":1'
+            . ',"class":"vanderlee\\\\comprehend\\\\parser\\\\terminal\\\\Char","children":[]},'
+            . '{"group":null,"name":"Ooh!","text":"oo","offset":1,"length":2'
+            . ',"class":"vanderlee\\\\comprehend\\\\parser\\\\terminal\\\\Text","children":[]}'
+            . ']}', json_encode($match->token));
+    }
+
+    public function testToXml()
+    {
+        $foo = (new Sequence('f', (new Text('oo'))->token('Ooh!', "Snap")))->token('Word');
+
+        $match = $foo->match('foo');
+        $this->assertResult(true, 3, $match);
+
+        $this->assertEquals('<?xml version="1.0"?>' . "\n"
+            . '<Word xmlns:Snap="Snap">'
+            . '<vanderlee_comprehend_parser_terminal_Char>f</vanderlee_comprehend_parser_terminal_Char>'
+            . '<Snap:Ooh_ xmlns:Snap="Snap">oo</Snap:Ooh_>'
+            . '</Word>' . "\n", $match->token->toXml()->saveXML());
+    }
+
+    protected function extractTokenSignatures(Token $token)
+    {
+        $signature = ($token->group ? $token->group . '::' : '')
+            . ($token->name ?? $token->class);
+
+        $children = [];
+        foreach ($token->children as $child) {
+            $children += $this->extractTokenSignatures($child);
+        }
+
+        return [$signature => $children];
     }
 }
