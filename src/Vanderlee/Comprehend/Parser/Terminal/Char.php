@@ -2,8 +2,8 @@
 
 namespace vanderlee\comprehend\parser\terminal;
 
-use \vanderlee\comprehend\parser\Parser;
-use \vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Description of CharParser
@@ -27,7 +27,7 @@ class Char extends Parser
     public function __construct($character, $include = true)
     {
         $this->character = self::parseCharacter($character);
-        $this->include = $include;
+        $this->include   = $include;
     }
 
     protected function parse(&$input, $offset, Context $context)

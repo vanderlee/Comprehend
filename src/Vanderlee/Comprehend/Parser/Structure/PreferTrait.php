@@ -2,63 +2,64 @@
 
 namespace vanderlee\comprehend\parser\structure;
 
-use \vanderlee\comprehend\parser\Parser;
-use \vanderlee\comprehend\core\Context;
-use \vanderlee\comprehend\directive\Prefer;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\directive\Prefer;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Classes implementing this can scan
- * 
+ *
  * @author Martijn
  */
-trait PreferTrait {
+trait PreferTrait
+{
 
-	/**
-	 * Parser used for scanning the text
-	 * @var Parser 
-	 */
-	private $preference = null;
+    /**
+     * Parser used for scanning the text
+     * @var Parser
+     */
+    private $preference = null;
 
-	private function pushPreferenceToContext(Context $context)
-	{
-		if ($this->preference) {
-			$context->pushPreference($this->preference);
-		}
-	}
+    private function pushPreferenceToContext(Context $context)
+    {
+        if ($this->preference) {
+            $context->pushPreference($this->preference);
+        }
+    }
 
-	private function popPreferenceFromContext(Context $context)
-	{
-		if ($this->preference) {
-			$context->popPreference();
-		}
-	}
+    private function popPreferenceFromContext(Context $context)
+    {
+        if ($this->preference) {
+            $context->popPreference();
+        }
+    }
 
-	public function setPreference(string $preference)
-	{
-		$this->preference = $preference;
+    public function setPreference(string $preference)
+    {
+        $this->preference = $preference;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	public function preferShortest()
-	{
-		$this->preference = Prefer::SHORTEST;
+    public function preferShortest()
+    {
+        $this->preference = Prefer::SHORTEST;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	public function preferLongest()
-	{
-		$this->preference = Prefer::LONGEST;
+    public function preferLongest()
+    {
+        $this->preference = Prefer::LONGEST;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	public function preferFirst()
-	{
-		$this->preference = Prefer::FIRST;
+    public function preferFirst()
+    {
+        $this->preference = Prefer::FIRST;
 
-		return $this;
-	}
+        return $this;
+    }
 
 }

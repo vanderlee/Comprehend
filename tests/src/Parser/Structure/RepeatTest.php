@@ -40,6 +40,7 @@ class RepeatTest extends ParserTestCase
         $this->assertResult(true, 1, $c->match('aa'));
 
     }
+
     /**
      * @dataProvider repeatData
      */

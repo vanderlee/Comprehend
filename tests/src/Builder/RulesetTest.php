@@ -1,10 +1,14 @@
-<?php
+<?php /** @noinspection PhpDynamicAsStaticMethodCallInspection */
+/** @noinspection PhpUndefinedMethodInspection */
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 namespace tests\src\builder;
 
 use tests\ParserTestCase;
 use vanderlee\comprehend\builder\Definition;
 use vanderlee\comprehend\builder\Ruleset;
+use vanderlee\comprehend\parser\Parser;
 use vanderlee\comprehend\parser\structure\Repeat;
 use vanderlee\comprehend\parser\structure\Sequence;
 use vanderlee\comprehend\parser\terminal\Text;
@@ -34,7 +38,7 @@ class RulesetTest extends ParserTestCase
 
     public function testConstructorMultiple()
     {
-        $r    = new Ruleset(['Foo' => 'foo', 'Bar' => 'bar']);
+        $r = new Ruleset(['Foo' => 'foo', 'Bar' => 'bar']);
         $this->assertResult(true, 3, $r->Foo()('foo'));
         $this->assertResult(true, 3, $r->Bar()('bar'));
     }
@@ -195,8 +199,8 @@ class RulesetTest extends ParserTestCase
 
     public function testSetAndGetForwardBad()
     {
-        $r       = new Ruleset;
-        $line    = $r->line;
+        $r    = new Ruleset;
+        $this->assertInstanceOf(Parser::class, $r->line);
         $this->expectExceptionMessage("Cannot redefine `line` using definition type `NULL`");
         $r->line = null;
     }
@@ -305,6 +309,8 @@ class RulesetTest extends ParserTestCase
         // call
         Ruleset::define('call', new Repeat('x'));
         $this->assertTrue(Ruleset::defined('call'));
+        /** @noinspection Annotator */
+        /** @noinspection PhpParamsInspection */
         $line = Ruleset::call();
         $this->assertResult(true, 5, $line('xxxxx'));
     }

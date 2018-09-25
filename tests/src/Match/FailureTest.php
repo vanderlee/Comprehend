@@ -35,6 +35,7 @@ class FailureTest extends ParserTestCase
         $this->assertEquals('Failed match at 3 characters', (string)$failure);
 
         $this->expectExceptionMessage("Property name `i_do_not_exist` not recognized");
+        /** @noinspection PhpUndefinedFieldInspection */
         $failure->i_do_not_exist;
     }
 

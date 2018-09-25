@@ -2,8 +2,8 @@
 
 namespace vanderlee\comprehend\parser\structure;
 
-use \vanderlee\comprehend\parser\Parser;
-use \vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Description of RepeatParser
@@ -53,7 +53,7 @@ class Repeat extends Parser
 
         $child_matches = [];
 
-        $match = null;
+        $match  = null;
         $length = 0;
         do {
             // No skipping at very start
@@ -71,7 +71,8 @@ class Repeat extends Parser
 
         $this->popSpacer($context);
 
-        return $match ? $this->success($input, $offset, $length, $child_matches) : $this->failure($input, $offset, $length);
+        return $match ? $this->success($input, $offset, $length, $child_matches)
+            : $this->failure($input, $offset, $length);
     }
 
     public function __toString()

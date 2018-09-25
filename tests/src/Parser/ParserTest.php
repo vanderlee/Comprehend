@@ -33,7 +33,7 @@ class ParserTest extends ParserTestCase
         $out = '';
 
         $parser = new Char('a');
-        $parser->callback(function($text) use (&$out) {
+        $parser->callback(function ($text) use (&$out) {
             $out = $text;
         });
         $parser->setResult('foo');

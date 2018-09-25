@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedFieldInspection */
 
 namespace tests\src\library;
 

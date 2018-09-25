@@ -2,11 +2,11 @@
 
 namespace vanderlee\comprehend\parser\structure;
 
+use vanderlee\comprehend\core\ArgumentsTrait;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\directive\Prefer;
 use vanderlee\comprehend\match\Match;
-use \vanderlee\comprehend\parser\Parser;
-use \vanderlee\comprehend\core\Context;
-use \vanderlee\comprehend\core\ArgumentsTrait;
-use \vanderlee\comprehend\directive\Prefer;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Match one of the provided parsers.

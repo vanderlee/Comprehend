@@ -2,8 +2,8 @@
 
 namespace vanderlee\comprehend\parser\terminal;
 
-use \vanderlee\comprehend\parser\Parser;
-use \vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Matches always, with length zero.
@@ -12,16 +12,17 @@ use \vanderlee\comprehend\core\Context;
  *
  * @author Martijn
  */
-class Nothing extends Parser {
+class Nothing extends Parser
+{
 
-	protected function parse(&$input, $offset, Context $context)
-	{
-		return $this->makeMatch($offset <= mb_strlen($input), $input, 0);
-	}
+    protected function parse(&$input, $offset, Context $context)
+    {
+        return $this->makeMatch($offset <= mb_strlen($input), $input, 0);
+    }
 
-	public function __toString()
-	{
-		return '0.';
-	}
+    public function __toString()
+    {
+        return '0.';
+    }
 
 }

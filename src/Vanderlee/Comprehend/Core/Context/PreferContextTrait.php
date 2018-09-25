@@ -2,7 +2,7 @@
 
 namespace vanderlee\comprehend\core\context;
 
-use \vanderlee\comprehend\directive\Prefer;
+use vanderlee\comprehend\directive\Prefer;
 
 trait PreferContextTrait
 {

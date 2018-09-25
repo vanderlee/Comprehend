@@ -3,8 +3,6 @@
 namespace tests\src\parser\structure;
 
 use tests\ParserTestCase;
-use vanderlee\comprehend\parser\structure\All;
-use vanderlee\comprehend\parser\structure\Repeat;
 use vanderlee\comprehend\parser\structure\Sequence;
 use vanderlee\comprehend\parser\terminal\Char;
 
@@ -14,7 +12,8 @@ use vanderlee\comprehend\parser\terminal\Char;
  */
 class IterableTest extends ParserTestCase
 {
-    public function testIteratorAggregate() {
+    public function testIteratorAggregate()
+    {
         $seq = new Sequence('a', 'b', 'c');
 
         $this->assertCount(3, $seq);
@@ -23,7 +22,8 @@ class IterableTest extends ParserTestCase
         }
     }
 
-    public function testArrayAccess() {
+    public function testArrayAccess()
+    {
         $seq = new Sequence('a', 'b', 'c');
 
         $this->assertEquals("'b'", $seq[1]);

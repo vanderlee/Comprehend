@@ -87,7 +87,8 @@ class DefinitionTest extends ParserTestCase
 
     public function testFirstDigitOdd()
     {
-        $d      = new Definition(new Sequence((new Range('1', '9'))->setResult('first'), new Repeat(new Range('0', '9'))));
+        $d      = new Definition(new Sequence((new Range('1', '9'))->setResult('first'),
+            new Repeat(new Range('0', '9'))));
         $number = $d();
         $this->assertResult(true, 2, $number('11'));
         $this->assertResult(true, 2, $number('21'));
@@ -162,8 +163,9 @@ class DefinitionTest extends ParserTestCase
 
     public function testProcessor()
     {
-        $definition = new Definition(new Sequence((new Range('1', '9'))->setResult('first'), new Repeat(new Range('0', '9'))));
-        $definition->addProcessor('foo', function ($value, &$results) {
+        $definition = new Definition(new Sequence((new Range('1', '9'))->setResult('first'),
+            new Repeat(new Range('0', '9'))));
+        $definition->addProcessor('foo', function ($value) {
             return intval($value) * 3;
         });
 

@@ -30,6 +30,7 @@ trait CallbackTrait
      */
     private function processCustomCallbacks()
     {
+        /** @var self $success */
         foreach ($this->successes as $success) {
             $success->processCustomCallbacks();
         }
@@ -39,7 +40,8 @@ trait CallbackTrait
         }
     }
 
-    public function getCallback() {
+    public function getCallback()
+    {
         $this->processCustomCallbacks();
     }
 }

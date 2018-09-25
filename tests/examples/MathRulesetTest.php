@@ -1,4 +1,6 @@
-<?php
+<?php /** @noinspection PhpUndefinedMethodInspection */
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 namespace tests\example;
 
@@ -55,7 +57,8 @@ class MathRulesetTest extends ParserTestCase
                     self::$math->r('0', '9')
                 )
             )->pushResult(),
-            'factor'     => self::$math->choice(self::$math->s('(', self::$math->expression, ')'), self::$math->integer),
+            'factor'     => self::$math->choice(self::$math->s('(', self::$math->expression, ')'),
+                self::$math->integer),
             'term'       => self::$math->choice(
                 self::$math->s(self::$math->factor, '*', self::$math->term)->pushResult(null, 'multiply'),
                 self::$math->s(self::$math->factor, '/', self::$math->term)->pushResult(null, 'divide'),

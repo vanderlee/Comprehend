@@ -5,7 +5,7 @@ namespace vanderlee\comprehend\core;
 use vanderlee\comprehend\core\context\CaseSensitiveContextTrait;
 use vanderlee\comprehend\core\context\PreferContextTrait;
 use vanderlee\comprehend\core\context\SpacingContextTrait;
-use \vanderlee\comprehend\directive\Prefer;
+use vanderlee\comprehend\directive\Prefer;
 
 /**
  * Maintains the current context of the parser chain
@@ -18,7 +18,7 @@ class Context
     use PreferContextTrait;
     use SpacingContextTrait;
 
-    public function __construct($skipper = null, $case_sensitive = TRUE, $preference = Prefer::FIRST)
+    public function __construct($skipper = null, $case_sensitive = true, $preference = Prefer::FIRST)
     {
         self::assertPreference($preference);
 

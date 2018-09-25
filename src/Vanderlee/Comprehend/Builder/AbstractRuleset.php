@@ -2,10 +2,10 @@
 
 namespace vanderlee\comprehend\builder;
 
-use \vanderlee\comprehend\core\ArgumentsTrait;
-use \vanderlee\comprehend\core\Context;
-use \vanderlee\comprehend\match\Success;
-use \vanderlee\comprehend\parser\Parser;
+use vanderlee\comprehend\core\ArgumentsTrait;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\match\Success;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Description of abstract Ruleset
@@ -106,7 +106,8 @@ abstract class AbstractRuleset extends Parser
                 }
             }
 
-            throw new \RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`', is_object($definition) ? get_class($definition) : gettype($definition), $key));
+            throw new \RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`',
+                is_object($definition) ? get_class($definition) : gettype($definition), $key));
         }
 
         $rules[$key] = $definition;
@@ -204,7 +205,8 @@ abstract class AbstractRuleset extends Parser
                 break;
 
             default:
-                throw new \RuntimeException(sprintf('Cannot define `%2$s` using definition type `%1$s`', is_object($rule) ? get_class($rule) : gettype($rule), $key));
+                throw new \RuntimeException(sprintf('Cannot define `%2$s` using definition type `%1$s`',
+                    is_object($rule) ? get_class($rule) : gettype($rule), $key));
         }
 
         $instance->token($key, static::$name);

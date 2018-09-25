@@ -43,10 +43,12 @@ class MathObjectTest extends ParserTestCase
             ['(', $expression, ')'], $integer
         );
         $term->parser       = new Choice(
-            (new Sequence($factor, '*', $term))->pushResult(null, 'multiply'), (new Sequence($factor, '/', $term))->pushResult(null, 'divide'), $factor
+            (new Sequence($factor, '*', $term))->pushResult(null, 'multiply'),
+            (new Sequence($factor, '/', $term))->pushResult(null, 'divide'), $factor
         );
         $expression->parser = new Choice(
-            (new Sequence($term, '+', $expression))->pushResult(null, 'add'), (new Sequence($term, '-', $expression))->pushResult(null, 'subtract'), $term
+            (new Sequence($term, '+', $expression))->pushResult(null, 'add'),
+            (new Sequence($term, '-', $expression))->pushResult(null, 'subtract'), $term
         );
 
         self::$math = $expression;

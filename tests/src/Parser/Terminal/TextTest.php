@@ -2,7 +2,7 @@
 
 namespace tests\src\parser\terminal;
 
-use \vanderlee\comprehend\parser\terminal\Text;
+use vanderlee\comprehend\parser\terminal\Text;
 
 class TextTest extends \tests\ParserTestCase
 {

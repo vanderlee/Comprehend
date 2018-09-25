@@ -33,6 +33,7 @@ trait TokenTrait
     private function processTokenCallback()
     {
         $children = [];
+        /** @var self $success */
         foreach ($this->successes as $success) {
             $children[] = $success->processTokenCallback();
         }

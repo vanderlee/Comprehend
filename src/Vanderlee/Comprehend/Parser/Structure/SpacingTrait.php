@@ -2,9 +2,9 @@
 
 namespace vanderlee\comprehend\parser\structure;
 
-use \vanderlee\comprehend\parser\Parser;
-use \vanderlee\comprehend\core\Context;
-use \vanderlee\comprehend\core\ArgumentsTrait;
+use vanderlee\comprehend\core\ArgumentsTrait;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Classes implementing this can scan
@@ -47,7 +47,7 @@ trait SpacingTrait
     {
         if ($spacer === true) {
             $this->spacer = true;
-        } elseif ($spacer === null || $spacer === false ) {
+        } elseif ($spacer === null || $spacer === false) {
             $this->spacer = null;
         } else {
             $this->spacer = self::getArgument($spacer);

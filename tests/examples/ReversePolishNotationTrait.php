@@ -5,6 +5,11 @@ namespace tests\example;
 trait ReversePolishNotationTrait
 {
 
+    /**
+     * Solve a reverse polish notation (postfix) expresion
+     * @param string[] $tokens
+     * @return float|int
+     */
     private function solveRpn(array $tokens)
     {
         $stack = [];
@@ -24,21 +29,25 @@ trait ReversePolishNotationTrait
         return $result;
     }
 
+    /** @noinspection PhpUnusedPrivateMethodInspection */
     private function solveRpnOperatorAdd($operand_1, $operand_2)
     {
         return $operand_1 + $operand_2;
     }
 
+    /** @noinspection PhpUnusedPrivateMethodInspection */
     private function solveRpnOperatorSubtract($operand_1, $operand_2)
     {
         return $operand_1 - $operand_2;
     }
 
+    /** @noinspection PhpUnusedPrivateMethodInspection */
     private function solveRpnOperatorMultiply($operand_1, $operand_2)
     {
         return $operand_1 * $operand_2;
     }
 
+    /** @noinspection PhpUnusedPrivateMethodInspection */
     private function solveRpnOperatorDivide($operand_1, $operand_2)
     {
         return $operand_1 / $operand_2;

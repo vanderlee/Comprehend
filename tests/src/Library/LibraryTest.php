@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedFieldInspection */
 
 namespace tests\src\library;
 
@@ -23,6 +23,7 @@ class LibraryTest extends ParserTestCase
 
     public function testMagicCallStatic()
     {
+        /** @noinspection PhpUndefinedMethodInspection */
         $this->assertInstanceOf(AbstractRuleset::class, Library::abnf());
     }
 

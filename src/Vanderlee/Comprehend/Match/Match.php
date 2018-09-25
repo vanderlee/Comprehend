@@ -12,7 +12,7 @@ use vanderlee\comprehend\core\Token;
  * @property-read bool $match Success or failure?
  * @property-read int $length Length of the match
  * @property-read array $results List of output results
- * @property-read string|null $result Default output result
+ * @property-read string|array|null $result Default output result
  * @property-read Token|null $token
  */
 abstract class Match
@@ -65,11 +65,11 @@ abstract class Match
     /**
      * Return the result for the name specified or the default value if not set.
      *
-     * @param string $name
+     * @param string|null $name
      * @param mixed $default
      * @return mixed
      */
-    public function getResult($name, $default = null)
+    public function getResult($name =  null, $default = null)
     {
         return $default;
     }
@@ -77,10 +77,10 @@ abstract class Match
     /**
      * Return whether there is a result for the name specified.
      *
-     * @param string $name
+     * @param string|null $name
      * @return boolean
      */
-    public function hasResult($name)
+    public function hasResult($name = null)
     {
         return false;
     }

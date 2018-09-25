@@ -2,8 +2,8 @@
 
 namespace vanderlee\comprehend\parser\terminal;
 
-use \vanderlee\comprehend\parser\Parser;
-use \vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Description of SetParser
@@ -37,7 +37,7 @@ class Set extends Parser
             throw new \InvalidArgumentException('Empty set');
         }
 
-        $this->set = count_chars($set, 3);
+        $this->set     = count_chars($set, 3);
         $this->include = (bool)$include;
     }
 
@@ -49,7 +49,7 @@ class Set extends Parser
 
         $this->pushCaseSensitivityToContext($context);
 
-        if (strchr($context->handleCase($this->set), $context->handleCase($input[$offset])) !== FALSE) {
+        if (strchr($context->handleCase($this->set), $context->handleCase($input[$offset])) !== false) {
             $this->popCaseSensitivityFromContext($context);
 
             return $this->makeMatch($this->include, $input, $offset, 1);

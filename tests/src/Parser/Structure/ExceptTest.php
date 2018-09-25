@@ -11,7 +11,8 @@ use vanderlee\comprehend\parser\structure\Except;
  */
 class ExceptTest extends ParserTestCase
 {
-    public function testConstructor() {
+    public function testConstructor()
+    {
         $this->assertInstanceOf(Except::class, new Except('a', 'aa'));
     }
 

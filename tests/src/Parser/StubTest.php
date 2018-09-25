@@ -38,6 +38,7 @@ class StubTest extends ParserTestCase
     {
         $stub = new Stub();
         $this->expectExceptionMessage("Property `i_do_not_exist` does not exist");
+        /** @noinspection PhpUndefinedFieldInspection */
         $stub->i_do_not_exist = 'foo';
     }
 
@@ -52,6 +53,7 @@ class StubTest extends ParserTestCase
     {
         $stub = new Stub();
         $this->expectExceptionMessage("Property `i_do_not_exist` does not exist");
+        /** @noinspection PhpUndefinedFieldInspection */
         echo $stub->i_do_not_exist;
     }
 
@@ -65,6 +67,7 @@ class StubTest extends ParserTestCase
     public function testToStringMissingParser()
     {
         $parser = new Stub;
+        /** @noinspection HtmlUnknownTag */
         $this->assertEquals('<undefined>', (string)$parser);
     }
 

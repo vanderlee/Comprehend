@@ -38,6 +38,7 @@ class SuccessTest extends ParserTestCase
         $this->assertEquals('Successfully matched 3 characters', (string)$success);
 
         $this->expectExceptionMessage("Property name `i_do_not_exist` not recognized");
+        /** @noinspection PhpUndefinedFieldInspection */
         $success->i_do_not_exist;
     }
 

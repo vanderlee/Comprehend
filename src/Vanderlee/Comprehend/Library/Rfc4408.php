@@ -13,6 +13,8 @@
 namespace vanderlee\comprehend\library;
 
 use vanderlee\comprehend\builder\AbstractRuleset;
+use vanderlee\comprehend\parser\Parser;
+use vanderlee\comprehend\parser\terminal\Integer;
 
 require_once 'functions.php';
 
@@ -34,9 +36,11 @@ class Rfc4408 extends AbstractRuleset
     public function __construct($overwrites = [])
     {
         /** @var Rfc2234 $abnf */
+        /** @noinspection PhpUndefinedMethodInspection */
         $abnf = Library::rfc4234();
 
         /** @var Rfc3513 $ipv6 */
+        /** @noinspection PhpUndefinedMethodInspection */
         $ipv6 = Library::rfc3513();
 
         /*
@@ -51,7 +55,8 @@ class Rfc4408 extends AbstractRuleset
             'terms'            => star([plus($abnf->SP), c($this->directive, $this->modifier)]),
             'directive'        => [opt($this->qualifier), $this->mechanism],
             'qualifier'        => set('+-?~'),
-            'mechanism'        => c($this->all, $this->include, $this->A, $this->MX, $this->PTR, $this->IP4, $this->IP6, $this->exists), // @todo order?
+            'mechanism'        => c($this->all, $this->include, $this->A, $this->MX, $this->PTR, $this->IP4, $this->IP6,
+                $this->exists), // @todo order?
             'modifier'         => c($this->redirect, $this->explanation, $this->unknown_modifier),
             'unknown_modifier' => [$this->name, '=', $this->macro_string],
             'name'             => [$abnf->ALPHA, star(c($abnf->ALPHA, $abnf->DIGIT, '-', '_', '.'))],

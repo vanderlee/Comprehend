@@ -93,7 +93,8 @@ class ArgumentsTraitParserTest extends ParserTestCase
         $this->assertEquals("( 'a' 'b' )", (string)ArgumentsTraitStub::getArguments([['a', 'b']])[0]);
         $this->assertEquals("( 'a' | 'b' )", (string)ArgumentsTraitStub::getArguments([['a', 'b']], false)[0]);
         $this->assertEquals("( 'a' ( 'b' | 'c' ) )", (string)ArgumentsTraitStub::getArguments([['a', ['b', 'c']]])[0]);
-        $this->assertEquals("( 'a' | ( 'b' 'c' ) )", (string)ArgumentsTraitStub::getArguments([['a', ['b', 'c']]], false)[0]);
+        $this->assertEquals("( 'a' | ( 'b' 'c' ) )",
+            (string)ArgumentsTraitStub::getArguments([['a', ['b', 'c']]], false)[0]);
 
         // Optimizable cases
         $this->assertEquals("'a'", (string)ArgumentsTraitStub::getArguments([['a']])[0]);

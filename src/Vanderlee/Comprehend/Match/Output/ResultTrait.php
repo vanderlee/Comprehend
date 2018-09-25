@@ -31,6 +31,7 @@ trait ResultTrait
 
         return $this;
     }
+
     /**
      * Handle all registered result callbacks for this match and any matches
      * at deeper levels of this match.
@@ -39,6 +40,7 @@ trait ResultTrait
      */
     private function processResultCallbacks(&$results)
     {
+        /** @var self $success */
         foreach ($this->successes as $success) {
             $success->processResultCallbacks($results);
         }

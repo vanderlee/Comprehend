@@ -63,7 +63,8 @@ class Success extends Match
     /**
      * Resolve any custom callbacks
      *
-     * @return $this
+     * @return $this|Match
+     * @throws \ErrorException
      */
     public function resolve()
     {

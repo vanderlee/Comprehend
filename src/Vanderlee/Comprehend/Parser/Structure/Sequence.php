@@ -2,8 +2,8 @@
 
 namespace vanderlee\comprehend\parser\structure;
 
-use \vanderlee\comprehend\parser\Parser;
-use \vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Description of SequenceParser
@@ -12,7 +12,6 @@ use \vanderlee\comprehend\core\Context;
  */
 class Sequence extends IterableParser
 {
-
     use SpacingTrait;
 
     public function __construct(...$arguments)
@@ -31,8 +30,9 @@ class Sequence extends IterableParser
         $this->pushSpacer($context);
 
         $total = 0;
+        /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
-            if ($total > 0) {
+           if ($total > 0) {
                 $skip = $context->skipSpacing($input, $offset + $total);
                 if ($skip === false) {
                     return $this->failure($input, $offset, $total);

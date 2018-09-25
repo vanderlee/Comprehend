@@ -19,7 +19,7 @@ trait ArgumentsTrait
     /**
      * Convert the argument to a parser
      *
-     * @param $argument
+     * @param mixed $argument
      * @param bool $arrayToSequence if argument is an array, convert to Sequence (`true`) or Choice (`false`)
      * @return Parser
      */
@@ -48,7 +48,8 @@ trait ArgumentsTrait
             return $argument;
         }
 
-        throw new \InvalidArgumentException(sprintf('Invalid argument type `%1$s`', is_object($argument) ? get_class($argument) : gettype($argument)));
+        throw new \InvalidArgumentException(sprintf('Invalid argument type `%1$s`',
+            is_object($argument) ? get_class($argument) : gettype($argument)));
     }
 
     protected static function getArguments($arguments, $arrayToSequence = true)

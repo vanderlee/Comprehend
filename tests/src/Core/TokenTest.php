@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUndefinedMethodInspection */
 
 namespace tests\src\core;
 
@@ -114,6 +114,7 @@ class TokenTest extends ParserTestCase
         $match = $foo->match('foo');
         $this->assertResult(true, 3, $match);
         $this->expectExceptionMessage("Undefined property `i_do_not_exist`");
+        /** @noinspection PhpUndefinedFieldInspection */
         $match->token->i_do_not_exist;
     }
 
@@ -152,6 +153,7 @@ class TokenTest extends ParserTestCase
         $match = $foo->match('foo');
         $this->assertResult(true, 3, $match);
 
+        /** @noinspection HtmlUnknownTag */
         $this->assertEquals('<?xml version="1.0"?>' . "\n"
             . '<Word xmlns:Snap="Snap">'
             . '<vanderlee_comprehend_parser_terminal_Char>f</vanderlee_comprehend_parser_terminal_Char>'

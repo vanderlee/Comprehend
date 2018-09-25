@@ -2,9 +2,9 @@
 
 namespace vanderlee\comprehend\directive;
 
-use \vanderlee\comprehend\parser\Parser;
-use \vanderlee\comprehend\core\Context;
-use \vanderlee\comprehend\core\ArgumentsTrait;
+use vanderlee\comprehend\core\ArgumentsTrait;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Description of OrDirective
@@ -32,9 +32,8 @@ class Prefer extends Parser
     private $preference = null;
 
     /**
-     *
-     * @param \vanderlee\comprehend\parser\structure\Choice $parser
      * @param mixed $preference
+     * @param mixed $parser
      * @throws \DomainException
      */
     public function __construct($preference, $parser)
@@ -42,7 +41,8 @@ class Prefer extends Parser
         if (!in_array($preference, [
             self::FIRST,
             self::LONGEST,
-            self::SHORTEST])) {
+            self::SHORTEST
+        ])) {
             throw new \DomainException("Invalid preference `{$preference}` ");
         }
         $this->preference = $preference;
@@ -63,11 +63,11 @@ class Prefer extends Parser
         switch ($this->preference) {
             default:
             case self::FIRST:
-                return (string) $this->parser;
+                return (string)$this->parser;
             case self::LONGEST:
-                return 'longest-of' . (string) $this->parser;
+                return 'longest-of' . (string)$this->parser;
             case self::SHORTEST:
-                return 'shortest-of' . (string) $this->parser;
+                return 'shortest-of' . (string)$this->parser;
         }
     }
 

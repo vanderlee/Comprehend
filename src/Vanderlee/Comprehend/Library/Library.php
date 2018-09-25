@@ -2,6 +2,8 @@
 
 namespace vanderlee\comprehend\library;
 
+use vanderlee\comprehend\parser\Parser;
+
 class Library
 {
     /**
@@ -50,6 +52,10 @@ class Library
         return $this->classes[$class];
     }
 
+    /**
+     * @param string|null $configFile
+     * @return self
+     */
     public static function getInstance($configFile = null)
     {
         $configFile = $configFile ?: realpath(__DIR__ . '/../../../../env/library.php');

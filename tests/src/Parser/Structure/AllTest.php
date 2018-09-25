@@ -13,7 +13,8 @@ use vanderlee\comprehend\parser\structure\Sequence;
  */
 class AllTest extends ParserTestCase
 {
-    public function testConstructor() {
+    public function testConstructor()
+    {
         $this->assertInstanceOf(All::class, new All('a', 'aa'));
     }
 
@@ -25,6 +26,11 @@ class AllTest extends ParserTestCase
 
     /**
      * @dataProvider allData
+     * @param All $parser
+     * @param string $input
+     * @param int $offset
+     * @param bool $match
+     * @param int $length
      */
     public function testAll(All $parser, $input, $offset, $match, $length)
     {

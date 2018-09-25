@@ -14,6 +14,11 @@ class AnyTest extends ParserTestCase
 
     /**
      * @dataProvider anyData
+     * @param Any $parser
+     * @param string $input
+     * @param int $offset
+     * @param bool $match
+     * @param int $length
      */
     public function testAny(Any $parser, $input, $offset, $match, $length)
     {

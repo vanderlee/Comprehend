@@ -7,16 +7,17 @@ namespace vanderlee\comprehend\match;
  *
  * @author Martijn
  */
-class Failure extends Match {
-	
-	public function __get($name)
-	{
-		return $name === 'match' ? false : parent::__get($name);
-	}
+class Failure extends Match
+{
 
-	public function __toString()
-	{
-		return 'Failed match at ' . $this->length . ' characters';
-	}
+    public function __get($name)
+    {
+        return $name === 'match' ? false : parent::__get($name);
+    }
+
+    public function __toString()
+    {
+        return 'Failed match at ' . $this->length . ' characters';
+    }
 
 }

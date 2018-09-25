@@ -2,8 +2,8 @@
 
 namespace vanderlee\comprehend\parser\structure;
 
-use \vanderlee\comprehend\core\ArgumentsTrait;
-use \vanderlee\comprehend\parser\Parser;
+use vanderlee\comprehend\core\ArgumentsTrait;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Abstract class indicating a parser that consists of multiple parsers and can be accessed as an array.

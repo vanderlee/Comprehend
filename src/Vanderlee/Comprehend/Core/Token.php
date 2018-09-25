@@ -2,13 +2,18 @@
 
 namespace vanderlee\comprehend\core;
 
-use vanderlee\comprehend\parser\terminal\Text;
-
 /**
  * Class Token
  *
  * @package vanderlee\comprehend\core
  *
+ * @property-read Token[] $children
+ * @property-read string $class
+ * @property-read string $group
+ * @property-read string $input
+ * @property-read int $length
+ * @property-read int $offset
+ * @property-read string $name
  * @property-read string $text
  */
 class Token implements \JsonSerializable
@@ -31,7 +36,7 @@ class Token implements \JsonSerializable
         $this->group    = $group;
         $this->name     = $name;
         $this->input    = $input;
-        $this->offset   = $offset;
+        $this->offset   = &$offset;
         $this->length   = $length;
         $this->children = $children;
         $this->class    = $class;
@@ -92,7 +97,7 @@ class Token implements \JsonSerializable
     private function createXmlNode(\DOMDocument $document)
     {
         $name  = $this->name ?? $this->class;
-        $name = preg_replace('/[^-_a-zA-Z0-9]/', '_', $name);
+        $name  = preg_replace('/[^-_a-zA-Z0-9]/', '_', $name);
         $group = preg_replace('/[^-_a-zA-Z0-9]/', '_', $this->group);
         $value = $this->children ? null : $this->text;
 

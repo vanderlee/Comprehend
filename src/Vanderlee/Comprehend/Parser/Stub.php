@@ -2,8 +2,8 @@
 
 namespace vanderlee\comprehend\parser;
 
-use \vanderlee\comprehend\core\Context;
-use \vanderlee\comprehend\core\ArgumentsTrait;
+use vanderlee\comprehend\core\ArgumentsTrait;
+use vanderlee\comprehend\core\Context;
 
 /**
  * Description of StubParser
@@ -12,50 +12,52 @@ use \vanderlee\comprehend\core\ArgumentsTrait;
  *
  * @author Martijn
  */
-class Stub extends Parser {
-	
-	use ArgumentsTrait;
+class Stub extends Parser
+{
 
-	/**
-	 * @var Parser|null
-	 */
-	private $parser = null;
+    use ArgumentsTrait;
 
-	public function __set($name, $parser)
-	{
-		if ($name == 'parser') {
-			return $this->parser = self::getArgument($parser);
-		}
-		
-		throw new \InvalidArgumentException("Property `{$name}` does not exist");
-	}
+    /**
+     * @var Parser|null
+     */
+    private $parser = null;
 
-	public function __get($name)
-	{
-		if ($name == 'parser') {
-			return $this->parser;
-		}
-		
-		throw new \InvalidArgumentException("Property `{$name}` does not exist");
-	}
+    public function __set($name, $parser)
+    {
+        if ($name == 'parser') {
+            return $this->parser = self::getArgument($parser);
+        }
 
-	protected function parse(&$input, $offset, Context $context)
-	{
-		if ($this->parser === null) {
-			throw new \UnexpectedValueException('Missing parser');
-		}
+        throw new \InvalidArgumentException("Property `{$name}` does not exist");
+    }
 
-		$match = $this->parser->parse($input, $offset, $context);
-		if ($match->match) {
-			return $this->success($input, $offset, $match->length, $match);
-		}
+    public function __get($name)
+    {
+        if ($name == 'parser') {
+            return $this->parser;
+        }
 
-		return $this->failure($input, $offset, $match->length);
-	}
+        throw new \InvalidArgumentException("Property `{$name}` does not exist");
+    }
 
-	public function __toString()
-	{
-		return $this->parser ? (string) $this->parser : '<undefined>';
-	}
+    protected function parse(&$input, $offset, Context $context)
+    {
+        if ($this->parser === null) {
+            throw new \UnexpectedValueException('Missing parser');
+        }
+
+        $match = $this->parser->parse($input, $offset, $context);
+        if ($match->match) {
+            return $this->success($input, $offset, $match->length, $match);
+        }
+
+        return $this->failure($input, $offset, $match->length);
+    }
+
+    public function __toString()
+    {
+        /** @noinspection HtmlUnknownTag */
+        return $this->parser ? (string)$this->parser : '<undefined>';
+    }
 
 }

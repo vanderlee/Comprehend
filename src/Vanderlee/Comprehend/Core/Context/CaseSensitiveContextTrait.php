@@ -6,7 +6,7 @@ trait CaseSensitiveContextTrait
 {
     private $case_sensitivity = [];
 
-    public function pushCaseSensitivity($case_sensitive = TRUE)
+    public function pushCaseSensitivity($case_sensitive = true)
     {
         array_push($this->case_sensitivity, (bool)$case_sensitive);
     }

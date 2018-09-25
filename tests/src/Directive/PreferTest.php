@@ -13,6 +13,7 @@ class PreferTest extends ParserTestCase
 {
     public function testConstructor()
     {
+        /** @noinspection PhpParamsInspection */
         $this->assertInstanceOf(Prefer::class, new Prefer(Prefer::FIRST, 'a'));
     }
 

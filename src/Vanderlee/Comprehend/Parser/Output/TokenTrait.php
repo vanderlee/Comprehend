@@ -31,6 +31,8 @@ trait TokenTrait
 
     /**
      * @param string $token
+     * @param string|null $group
+     * @param bool $isTerminal
      * @return $this
      */
     public function token($token, $group = null, $isTerminal = false)

@@ -2,9 +2,9 @@
 
 namespace vanderlee\comprehend\builder;
 
-use \vanderlee\comprehend\parser\Parser;
-use \vanderlee\comprehend\core\Context;
-use \vanderlee\comprehend\match\Success;
+use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\match\Success;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Description of Factory

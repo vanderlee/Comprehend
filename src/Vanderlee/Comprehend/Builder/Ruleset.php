@@ -2,7 +2,7 @@
 
 namespace vanderlee\comprehend\builder;
 
-use \vanderlee\comprehend\parser\Parser;
+use vanderlee\comprehend\parser\Parser;
 
 /**
  * Description of Ruleset

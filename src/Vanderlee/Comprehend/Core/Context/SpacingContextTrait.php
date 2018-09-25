@@ -3,7 +3,7 @@
 namespace vanderlee\comprehend\core\context;
 
 use vanderlee\comprehend\core\ArgumentsTrait;
-use \vanderlee\comprehend\parser\Parser;
+use vanderlee\comprehend\parser\Parser;
 
 trait SpacingContextTrait
 {
