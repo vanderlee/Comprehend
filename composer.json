@@ -1,5 +1,24 @@
 {
+  "name": "vanderlee/comprehend",
+  "description": "Framework for building BNF LR(1) parsers",
+  "type": "library",
+  "keywords": ["parser", "bnf", "abnf", "lexer", "tokenizer", "ast"],
+  "homepage": "https://github.com/vanderlee/Comprehend",
+  "license": "MIT",
+  "support": {
+    "issues": "https://github.com/vanderlee/Comprehend/issues",
+    "source": "https://github.com/vanderlee/Comprehend/"
+  },
+  "require": {
+    "php": ">=7.0.0"
+  },
   "require-dev": {
-    "phpunit/phpunit": "7.1.*"
+    "phpunit/phpunit": "7.1.*",
+    "codacy/coverage": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "Vanderlee\\Comprehend\\": "src/Vanderlee/Comprehend"
+    }
   }
 }

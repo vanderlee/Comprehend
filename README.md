@@ -8,6 +8,8 @@ Copyright &copy; 2011-2018 Martijn W. van der Lee [Toyls.com](https://toyls.com)
 
 Build [LR(1)](https://en.wikipedia.org/wiki/Canonical_LR_parser) parsers in PHP with ease.
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c065154c0f524d55b6767f6ed8a18657)](https://www.codacy.com/app/vanderlee/Comprehend?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vanderlee/Comprehend&amp;utm_campaign=Badge_Grade)
+
 Features
 --------
  -	Closely follows BNF syntax using objects as operands.
