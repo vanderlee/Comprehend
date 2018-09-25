@@ -48,7 +48,7 @@ class Rfc4408 extends AbstractRuleset
             'version'          => 'v=spf1',
 
             // 4.6.1. Term Evaluation
-            'terms'            => star([plus($abnf->SP, c($this->directive, $this->modifier))]),
+            'terms'            => star([plus($abnf->SP), c($this->directive, $this->modifier)]),
             'directive'        => [opt($this->qualifier), $this->mechanism],
             'qualifier'        => set('+-?~'),
             'mechanism'        => c($this->all, $this->include, $this->A, $this->MX, $this->PTR, $this->IP4, $this->IP6, $this->exists), // @todo order?

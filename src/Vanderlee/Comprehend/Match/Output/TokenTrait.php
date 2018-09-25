@@ -45,7 +45,7 @@ trait TokenTrait
     }
 
     /**
-     * @return array
+     * @return Token
      */
     public function getToken()
     {

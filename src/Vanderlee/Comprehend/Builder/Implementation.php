@@ -15,17 +15,17 @@ class Implementation extends Parser
 {
 
     /**
-     * @var Parser
+     * @var Parser|callable|null
      */
     public $parser = null;
 
     /**
-     * @var callable
+     * @var callable|null
      */
     public $validator = null;
 
     /**
-     * @var callable
+     * @var callable|null
      */
     public $processor    = null;
     public $processorKey = null;
@@ -88,11 +88,11 @@ class Implementation extends Parser
 
         // Copy match into new match, only pass original callbacks if processor not set
         $successes = empty($this->definition->processors) ? $match : [];
-        $match     = $match->match
+        $match     = ($match instanceof Success)
             ? $this->success($input, $offset, $match->length, $successes)
             : $this->failure($input, $offset, $match->length);
 
-        if ($match->match && !empty($this->definition->processors)) {
+        if ($match instanceof Success && !empty($this->definition->processors)) {
             foreach ($this->definition->processors as $key => $processor) {
                 $match->addResultCallback(function (&$results) use ($key, $processor, $localResults) {
                     $results[$key] = $processor($localResults, $results);

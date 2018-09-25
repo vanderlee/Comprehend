@@ -18,6 +18,8 @@ use vanderlee\comprehend\parser\Parser;
 /**
  * @property-read Parser DQUOTE
  * @property-read Parser case_sensitive_string
+ * @property-read Parser quoted_string
+ * @property-read Parser case_insensitive_string
  */
 class Rfc7405 extends Rfc2234
 {

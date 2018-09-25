@@ -17,7 +17,7 @@ class Library
 
     /**
      * Map of [ class name => class instance ]
-     * @var string[]
+     * @var Parser[]
      */
     private $classes = [];
 
@@ -27,8 +27,8 @@ class Library
     }
 
     /**
-     * @param $name
-     * @return array
+     * @param string $name
+     * @return Parser
      * @throws \Exception
      */
     private function getClass($name)
