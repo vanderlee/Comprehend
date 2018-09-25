@@ -3,6 +3,7 @@
 namespace vanderlee\comprehend\parser\structure;
 
 use vanderlee\comprehend\core\Context;
+use vanderlee\comprehend\match\Success;
 use vanderlee\comprehend\parser\Parser;
 
 /**
@@ -60,7 +61,7 @@ class Repeat extends Parser
             $skip = $length > 0 ? $context->skipSpacing($input, $offset + $length) : 0;
             if ($skip !== false) {
                 $match = $this->parser->parse($input, $offset + $length + $skip, $context);
-                if ($match->match) {
+                if ($match instanceof Success) {
                     $length          += $skip + $match->length;
                     $child_matches[] = $match;
                 }

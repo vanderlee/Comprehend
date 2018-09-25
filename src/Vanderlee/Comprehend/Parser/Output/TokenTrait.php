@@ -13,6 +13,7 @@ trait TokenTrait
 
     /**
      * Name of the token
+     *
      * @var null
      */
     private $tokenName = null;
@@ -20,12 +21,14 @@ trait TokenTrait
     /**
      * Group to which this token belongs (mostly for standard Library tokens
      *
-     * @var null
+     * @var string|null
      */
     private $tokenGroup = null;
 
     /**
-     * @var null
+     * Is this token the deepest node in this tree to report a token on?
+     *
+     * @var bool
      */
     private $tokenIsTerminal = false;
 
