@@ -1,5 +1,8 @@
 Comprehend - a PHP *BNF parser framework
 ========================================
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/166a0195bb024bd289b7e917c6610595)](https://app.codacy.com/app/vanderlee/Comprehend?utm_source=github.com&utm_medium=referral&utm_content=vanderlee/Comprehend&utm_campaign=Badge_Grade_Dashboard)
+
 v0.3
 
 Copyright &copy; 2011-2018 Martijn W. van der Lee [Toyls.com](https://toyls.com)
