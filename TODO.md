@@ -1,5 +1,6 @@
 # Todo
 ## Milestone 1
+ -  Try to match Matches internally on `instanceof` or `is_a()`.
  -  Library
     -   Follow SPF chain 
  -  PHP 5.x as target
