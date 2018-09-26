@@ -1,9 +1,9 @@
 <?php
 
-namespace tests\src\core;
+namespace Tests\Src\Core;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\core\Context;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Core\Context;
 
 /**
  * @group core

@@ -1,9 +1,9 @@
 <?php
 
-namespace tests\src\parser\structure;
+namespace Tests\Src\Parser\Structure;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\parser\structure\Except;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Parser\Structure\Except;
 
 /**
  * @group structure

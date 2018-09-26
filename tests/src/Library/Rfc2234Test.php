@@ -1,10 +1,10 @@
 <?php /** @noinspection PhpUndefinedFieldInspection */
 
-namespace tests\src\library;
+namespace Tests\Src\Library;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\library\Rfc2234;
-use vanderlee\comprehend\parser\Parser;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Library\Rfc2234;
+use Vanderlee\Comprehend\Parser\Parser;
 
 /**
  * @group library

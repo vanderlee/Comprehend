@@ -2,7 +2,7 @@
 
 namespace tests;
 
-use vanderlee\comprehend\match\Match;
+use Vanderlee\Comprehend\Match\Match;
 
 /**
  * Description of TestCase

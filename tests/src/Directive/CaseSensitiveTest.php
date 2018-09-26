@@ -1,9 +1,9 @@
 <?php
 
-namespace tests\src\directive;
+namespace Tests\Src\Directive;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\directive\CaseSensitive;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Directive\CaseSensitive;
 
 /**
  * @group directive

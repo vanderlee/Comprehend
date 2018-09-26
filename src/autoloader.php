@@ -1,9 +1,12 @@
 <?php
 
 spl_autoload_register(function ($class) {
-    $file = __DIR__ . DIRECTORY_SEPARATOR . $class . '.php';
-    if (!class_exists($class) && is_file($file)) {
-        /** @noinspection PhpIncludeInspection */
-        require_once $file;
+    static $prefix = 'Vanderlee\\Comprehend\\';
+    if (stripos($class, $prefix) === 0) {
+        $file = __DIR__ . DIRECTORY_SEPARATOR . str_ireplace($prefix, '', $class) . '.php';
+        if (is_file($file)) {
+            /** @noinspection PhpIncludeInspection */
+            require_once $file;
+        }
     }
 });

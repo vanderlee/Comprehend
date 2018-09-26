@@ -1,9 +1,9 @@
 <?php
 
-namespace tests\src\parser\terminal;
+namespace Tests\Src\Parser\Terminal;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\parser\terminal\Start;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Parser\Terminal\Start;
 
 /**
  * @group structure

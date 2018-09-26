@@ -1,14 +1,14 @@
 <?php
 
-namespace tests\src\core;
+namespace Tests\Src\Core;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\core\ArgumentsTrait;
-use vanderlee\comprehend\parser\structure\Choice;
-use vanderlee\comprehend\parser\structure\Sequence;
-use vanderlee\comprehend\parser\terminal\Any;
-use vanderlee\comprehend\parser\terminal\Char;
-use vanderlee\comprehend\parser\terminal\Text;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Core\ArgumentsTrait;
+use Vanderlee\Comprehend\Parser\Structure\Choice;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Terminal\Any;
+use Vanderlee\Comprehend\Parser\Terminal\Char;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 class ArgumentsTraitStub
 {

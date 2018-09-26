@@ -2,9 +2,9 @@
 
 namespace Tests\Src\Parser\Output;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\parser\structure\Sequence;
-use vanderlee\comprehend\parser\terminal\Text;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /**
  * Test the results

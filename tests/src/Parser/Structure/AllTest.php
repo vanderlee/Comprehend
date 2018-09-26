@@ -1,11 +1,11 @@
 <?php
 
-namespace tests\src\parser\structure;
+namespace Tests\Src\Parser\Structure;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\parser\structure\All;
-use vanderlee\comprehend\parser\structure\Repeat;
-use vanderlee\comprehend\parser\structure\Sequence;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Parser\Structure\All;
+use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
 
 /**
  * @group structure

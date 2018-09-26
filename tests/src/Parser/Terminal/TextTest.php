@@ -1,10 +1,10 @@
 <?php
 
-namespace tests\src\parser\terminal;
+namespace Tests\Src\Parser\Terminal;
 
-use vanderlee\comprehend\parser\terminal\Text;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 
-class TextTest extends \tests\ParserTestCase
+class TextTest extends \Tests\ParserTestCase
 {
 
     public function testConstruction()

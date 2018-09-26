@@ -1,9 +1,9 @@
 <?php
 
-namespace tests\src\parser\structure;
+namespace Tests\Src\Parser\Structure;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\parser\structure\Repeat;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Parser\Structure\Repeat;
 
 /**
  * @group structure

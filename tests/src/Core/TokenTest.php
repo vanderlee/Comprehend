@@ -1,15 +1,16 @@
 <?php /** @noinspection PhpUndefinedMethodInspection */
 
-namespace tests\src\core;
+namespace Tests\Src\Core;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\core\Token;
-use vanderlee\comprehend\library\Library;
-use vanderlee\comprehend\parser\structure\Choice;
-use vanderlee\comprehend\parser\structure\Repeat;
-use vanderlee\comprehend\parser\structure\Sequence;
-use vanderlee\comprehend\parser\terminal\Set;
-use vanderlee\comprehend\parser\terminal\Text;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Core\Token;
+use Vanderlee\Comprehend\Library\Library;
+use Vanderlee\Comprehend\Library\Rfc3986;
+use Vanderlee\Comprehend\Parser\Structure\Choice;
+use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Terminal\Set;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /**
  * Node tests
@@ -78,7 +79,7 @@ class TokenTest extends ParserTestCase
 
     public function testRfcGroup()
     {
-        $scheme     = Library::uri()->scheme;
+        $scheme     = (new Rfc3986())->scheme;
         $colon      = (new Text(':'));
         $hier_start = (new Sequence($scheme, $colon))->token('HierStartToken');
 
@@ -126,7 +127,7 @@ class TokenTest extends ParserTestCase
         $this->assertResult(true, 3, $match);
 
         $this->assertEquals('Word (`foo`)' . PHP_EOL
-            . '  vanderlee\comprehend\parser\terminal\Char (`f`)' . PHP_EOL
+            . '  Vanderlee\Comprehend\Parser\Terminal\Char (`f`)' . PHP_EOL
             . '  Ooh! (`oo`)', (string)$match->token);
     }
 
@@ -138,11 +139,11 @@ class TokenTest extends ParserTestCase
         $this->assertResult(true, 3, $match);
 
         $this->assertEquals('{"group":null,"name":"Word","text":"foo","offset":0,"length":3'
-            . ',"class":"vanderlee\\\\comprehend\\\\parser\\\\structure\\\\Sequence","children":['
+            . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Structure\\\\Sequence","children":['
             . '{"group":null,"name":null,"text":"f","offset":0,"length":1'
-            . ',"class":"vanderlee\\\\comprehend\\\\parser\\\\terminal\\\\Char","children":[]},'
+            . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Char","children":[]},'
             . '{"group":null,"name":"Ooh!","text":"oo","offset":1,"length":2'
-            . ',"class":"vanderlee\\\\comprehend\\\\parser\\\\terminal\\\\Text","children":[]}'
+            . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Text","children":[]}'
             . ']}', json_encode($match->token));
     }
 
@@ -156,7 +157,7 @@ class TokenTest extends ParserTestCase
         /** @noinspection HtmlUnknownTag */
         $this->assertEquals('<?xml version="1.0"?>' . "\n"
             . '<Word xmlns:Snap="Snap">'
-            . '<vanderlee_comprehend_parser_terminal_Char>f</vanderlee_comprehend_parser_terminal_Char>'
+            . '<Vanderlee_Comprehend_Parser_Terminal_Char>f</Vanderlee_Comprehend_Parser_Terminal_Char>'
             . '<Snap:Ooh_ xmlns:Snap="Snap">oo</Snap:Ooh_>'
             . '</Word>' . "\n", $match->token->toXml()->saveXML());
     }

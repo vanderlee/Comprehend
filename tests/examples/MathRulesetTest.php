@@ -2,17 +2,17 @@
 
 /** @noinspection PhpUndefinedFieldInspection */
 
-namespace tests\example;
+namespace Tests\example;
 
 require_once 'ReversePolishNotationTrait.php';
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\builder\Ruleset;
-use vanderlee\comprehend\parser\Parser;
-use vanderlee\comprehend\parser\structure\Choice;
-use vanderlee\comprehend\parser\structure\Repeat;
-use vanderlee\comprehend\parser\structure\Sequence;
-use vanderlee\comprehend\parser\terminal\Range;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\builder\Ruleset;
+use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Parser\Structure\Choice;
+use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Terminal\Range;
 
 /**
  * Example of a simple maths parser, constructed using basic objects

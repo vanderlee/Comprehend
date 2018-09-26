@@ -1,9 +1,9 @@
 <?php
 
-namespace tests\src\builder;
+namespace Tests\Src\builder;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\builder\Definition;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\builder\Definition;
 
 /**
  * @group structure

@@ -1,37 +1,28 @@
 # Todo
 ## Milestone 1
- -  Try to match Matches internally on `instanceof` or `is_a()`.
- -  Library
-    -   Follow SPF chain 
- -  PHP 5.x as target
- -  Backwards RPN evaluator
- -  Match() must match entire length?
-     -   Boolean option!
- -  Packagist JSON
+ -  Test AbstractRuleset->call() (indirect) with instance with token already set
+ -  Try to match Matches internally on `instanceof` or `is_a()` to avoid warnings on `->match`
+ -  PHP 5.latest as low target (can we do this with PHPUnit support?) 
+ -  Match() must match entire length or parse
+     -   Boolean option
+     -   Adjust many testcases
  -	Readme's
       -  Core readme: introduction to the framework and link-out to docs
       -  Concepts document
       -  Tutorial document
       -  BNF-to-object example
       -  Object reference
- -  Tests
-     -  prefer context
-     -  case sensitive context
-     -  match classes
- -	Examples
-     - Practical example
- -  Extra "type" terminal parsers (don't cost anything to include and not use)
-     -  digit, alpha, hex, integer, float (IEEE-standard?), etc...
+ -  Extra "type" terminal parsers (like Integer).
+    -   Cheap to do, but means a lot more classes to know and learn.
+    -   digit, alpha, hex, float (IEEE-standard?), etc...
+        -   Only when implementation can provide functionality beyond Regex parser.
  -  Library: configurable path of config file?
- -  RFC
-     -  Implement MORE!
-        -   D.-backbone parts
- -  Restructure traits to reduce dependance
+ -  RFCs
+    -   Inherit RFCs (easy way to do aliasses?)
  
 ## Milestone 2
  -  Alternative $input; stream(seekable),generator
  -  Failure; line/position finder
- -  Ruleset; on define, add a token/result rule.
  -	Debug logging mode
  -  Callback for result value; late processing
  -  AST generation

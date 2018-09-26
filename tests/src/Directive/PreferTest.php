@@ -1,10 +1,10 @@
 <?php
 
-namespace tests\src\directive;
+namespace Tests\Src\Directive;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\directive\Prefer;
-use vanderlee\comprehend\parser\structure\Choice;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Directive\Prefer;
+use Vanderlee\Comprehend\Parser\Structure\Choice;
 
 /**
  * @group directive

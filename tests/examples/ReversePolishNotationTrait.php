@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\example;
+namespace Tests\example;
 
 trait ReversePolishNotationTrait
 {

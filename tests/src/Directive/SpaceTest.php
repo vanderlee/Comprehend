@@ -1,11 +1,11 @@
 <?php
 
-namespace tests\src\directive;
+namespace Tests\Src\Directive;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\directive\Space;
-use vanderlee\comprehend\parser\structure\Repeat;
-use vanderlee\comprehend\parser\structure\Sequence;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Directive\Space;
+use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
 
 /**
  * @group directive

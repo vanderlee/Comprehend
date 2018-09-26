@@ -3,15 +3,15 @@
 
 /** @noinspection PhpUndefinedFieldInspection */
 
-namespace tests\src\builder;
+namespace Tests\Src\builder;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\builder\Definition;
-use vanderlee\comprehend\builder\Ruleset;
-use vanderlee\comprehend\parser\Parser;
-use vanderlee\comprehend\parser\structure\Repeat;
-use vanderlee\comprehend\parser\structure\Sequence;
-use vanderlee\comprehend\parser\terminal\Text;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\builder\Definition;
+use Vanderlee\Comprehend\builder\Ruleset;
+use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /**
  * @group structure
@@ -199,7 +199,7 @@ class RulesetTest extends ParserTestCase
 
     public function testSetAndGetForwardBad()
     {
-        $r    = new Ruleset;
+        $r = new Ruleset;
         $this->assertInstanceOf(Parser::class, $r->line);
         $this->expectExceptionMessage("Cannot redefine `line` using definition type `NULL`");
         $r->line = null;

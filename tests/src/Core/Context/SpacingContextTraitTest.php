@@ -1,11 +1,11 @@
 <?php
 
-namespace tests\src\core;
+namespace Tests\Src\Core;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\parser\structure\Repeat;
-use vanderlee\comprehend\parser\structure\Sequence;
-use vanderlee\comprehend\parser\terminal\Char;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Terminal\Char;
 
 /**
  * @group core

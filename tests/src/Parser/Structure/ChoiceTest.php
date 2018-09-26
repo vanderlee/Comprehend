@@ -1,11 +1,11 @@
 <?php
 
-namespace tests\src\parser\structure;
+namespace Tests\Src\Parser\Structure;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\directive\Prefer;
-use vanderlee\comprehend\parser\structure\Choice;
-use vanderlee\comprehend\parser\terminal\Text;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Directive\Prefer;
+use Vanderlee\Comprehend\Parser\Structure\Choice;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /**
  * @group structure

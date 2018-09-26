@@ -1,9 +1,9 @@
 <?php
 
-namespace tests\src\match;
+namespace Tests\Src\Match;
 
-use tests\ParserTestCase;
-use vanderlee\comprehend\match\Success;
+use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Match\Success;
 
 /**
  * @group match
