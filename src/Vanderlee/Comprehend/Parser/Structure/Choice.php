@@ -111,7 +111,7 @@ class Choice extends IterableParser
                 break;
 
             case Prefer::SHORTEST:
-                $match = $this->parseShortest($input,$offset, $context);
+                $match = $this->parseShortest($input, $offset, $context);
                 break;
         }
 

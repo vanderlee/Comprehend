@@ -32,7 +32,7 @@ class Sequence extends IterableParser
         $total = 0;
         /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
-           if ($total > 0) {
+            if ($total > 0) {
                 $skip = $context->skipSpacing($input, $offset + $total);
                 if ($skip === false) {
                     return $this->failure($input, $offset, $total);

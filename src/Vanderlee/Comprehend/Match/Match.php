@@ -69,7 +69,7 @@ abstract class Match
      * @param mixed $default
      * @return mixed
      */
-    public function getResult($name =  null, $default = null)
+    public function getResult($name = null, $default = null)
     {
         return $default;
     }
