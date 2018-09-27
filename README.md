@@ -1,6 +1,6 @@
 Comprehend - a PHP *BNF parser framework
 ========================================
-v1.0.0
+v1.0.1
 
 Copyright &copy; 2011-2018 Martijn W. van der Lee [Toyls.com](https://toyls.com)
 

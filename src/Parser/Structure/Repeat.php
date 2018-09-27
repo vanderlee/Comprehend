@@ -38,7 +38,7 @@ class Repeat extends Parser
         return new self($parser, 1, null);
     }
 
-    public static function kleene($parser)
+    public static function star($parser)
     {
         return new self($parser, 0, null);
     }

@@ -38,7 +38,7 @@ class MathObjectTest extends ParserTestCase
         $term       = new Stub;
         $expression = new Stub;
 
-        $integer            = (new Sequence(Repeat::kleene('-'), Repeat::plus(new Range('0', '9'))))->pushResult();
+        $integer            = (new Sequence(Repeat::star('-'), Repeat::plus(new Range('0', '9'))))->pushResult();
         $factor             = new Choice(
             ['(', $expression, ')'], $integer
         );

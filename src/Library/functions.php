@@ -18,7 +18,7 @@ function plus($parser)
 
 function star($parser)
 {
-    return Repeat::kleene($parser);
+    return Repeat::star($parser);
 }
 
 function opt($parser)

@@ -29,7 +29,7 @@ class RepeatTest extends ParserTestCase
         $this->assertResult(true, 1, $c->match('a'));
         $this->assertResult(true, 2, $c->match('aa'));
 
-        $c = Repeat::kleene('a');
+        $c = Repeat::star('a');
         $this->assertResult(true, 0, $c->match(''));
         $this->assertResult(true, 1, $c->match('a'));
         $this->assertResult(true, 2, $c->match('aa'));
