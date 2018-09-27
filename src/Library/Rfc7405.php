@@ -3,7 +3,7 @@
 /**
  * RFC 7405 - Case-Sensitive String Support in ABNF
  *
- * Updated by RFC 7405
+ * Updates RFC 5234
  *
  * @see https://tools.ietf.org/html/rfc7405
  * @package Vanderlee\Comprehend\Library
@@ -21,7 +21,7 @@ use Vanderlee\Comprehend\Parser\Parser;
  * @property-read Parser quoted_string
  * @property-read Parser case_insensitive_string
  */
-class Rfc7405 extends Rfc2234
+class Rfc7405 extends Rfc5234
 {
     protected static $name = 'Rfc7405';
 

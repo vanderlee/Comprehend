@@ -65,7 +65,7 @@ class Integer extends Parser
         // Build pattern
         $set0    = substr(self::$set, 0, $this->base);
         $set1    = substr(self::$set, 1, $this->base - 1);
-        $pattern = '/^(?:0|-?[' . $set1 . '][' . $set0 . ']*)/' . ($context->isCaseSensitive() ? '' : 'i');
+        $pattern = '/(?:0|-?[' . $set1 . '][' . $set0 . ']*)/A' . ($context->isCaseSensitive() ? '' : 'i');
 
         $this->popCaseSensitivityFromContext($context);
 

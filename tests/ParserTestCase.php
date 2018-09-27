@@ -20,7 +20,7 @@ class ParserTestCase extends \PHPUnit\Framework\TestCase
      */
     protected function assertResult($match, $length, Match $result, $message = '')
     {
-        $this->assertSame($match, $result->match, $message);
+        $this->assertSame($match, $result->match, $message . " (@{$result->length})");
         $this->assertSame($length, $result->length, $message);
     }
 }

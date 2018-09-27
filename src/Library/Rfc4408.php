@@ -26,6 +26,9 @@ require_once 'functions.php';
  *
  * @property-read Parser record Complete SPF record
  * @property-read Parser version SPF version tag
+ * @property-read Parser qnum Integer value between 0 and 255
+ * @property-read Parser IP4 IPv4 address with optional CIDR range
+ * @property-read Parser IP6 IPv6 address with optional CIDR range
  *
  * @package Vanderlee\Comprehend\Library
  */
@@ -74,11 +77,11 @@ class Rfc4408 extends AbstractRuleset
 
             // 5.6. "ip4" and "ip6"
             'IP4'              => ['ip4', ':', $this->ip4_network, opt($this->ip4_cidr_length)],
-            'IP6'              => ['ip6', ':', ":", $this->ip6_network, opt($this->ip6_cidr_length)],
+            'IP6'              => ['ip6', ':', $this->ip6_network, opt($this->ip6_cidr_length)],
             'ip4_cidr_length'  => ['/', plus($abnf->DIGIT)],
             'ip6_cidr_length'  => ['/', plus($abnf->DIGIT)],
             'dual_cidr_length' => [opt($this->ip4_cidr_length), opt(['/', $this->ip6_cidr_length])],
-            'ip4_network'      => [$this->qnum, '.', $this->qnum, '.', $this->qnum, '.', $this->qnum],
+            'ip4_network'      => s($this->qnum, '.', $this->qnum, '.', $this->qnum, '.', $this->qnum),
             'qnum'             => new Integer(0, 255),
             'ip6_network'      => $ipv6->ipv6_address,
 
