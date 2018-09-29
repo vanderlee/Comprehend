@@ -90,7 +90,7 @@ class Rfc2234 extends AbstractRuleset
             'rule'          => s($this->rulename, $this->defined_as, $this->elements, $this->c_nl),
             'rulelist'      => plus(c($this->rule, [$c_wsps, $this->c_nl])),
 
-            self::DEFAULT => $this->rulelist,
+            self::ROOT => $this->rulelist,
         ];
 
         parent::__construct(array_merge($rules, $overwrites));

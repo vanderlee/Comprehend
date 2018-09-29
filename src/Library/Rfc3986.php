@@ -142,7 +142,7 @@ class Rfc3986 extends AbstractRuleset
             // 4.3.  Absolute URI
             'absolute_URI'  => s($this->scheme, ':', $this->hier_part, opt(['?', $this->query])),
 
-            //            self::DEFAULT => $this->rulelist,
+            //            self::ROOT => $this->rulelist,
         ];
 
         parent::__construct(array_merge($rules, $overwrites));

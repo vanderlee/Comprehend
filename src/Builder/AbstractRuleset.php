@@ -19,7 +19,7 @@ abstract class AbstractRuleset extends Parser
     /**
      * Constant to specify default parser for this ruleset, which is called when Ruleset is used as a Parser.
      */
-    const DEFAULT = 'DEFAULT';
+    const ROOT = 'ROOT';
 
     /**
      * Name of this ruleset. Intended for use with the standard library rulesets
@@ -257,11 +257,11 @@ abstract class AbstractRuleset extends Parser
     private function initDefaultParser()
     {
         if ($this->parser === null) {
-            if (!isset($this->instanceRules[self::DEFAULT])) {
+            if (!isset($this->instanceRules[self::ROOT])) {
                 throw new \UnexpectedValueException('Missing default parser');
             }
 
-            $this->parser = static::call($this->instanceRules, self::DEFAULT);
+            $this->parser = static::call($this->instanceRules, self::ROOT);
         }
     }
 

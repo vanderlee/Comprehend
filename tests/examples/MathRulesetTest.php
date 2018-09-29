@@ -71,7 +71,7 @@ class MathRulesetTest extends ParserTestCase
             ),
         ]);
 
-        self::$math->define(Ruleset::DEFAULT, 'expression');
+        self::$math->define(Ruleset::ROOT, 'expression');
     }
 
     /**

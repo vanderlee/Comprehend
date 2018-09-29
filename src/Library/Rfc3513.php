@@ -52,7 +52,7 @@ class Rfc3513 extends AbstractRuleset
             'ipv6_address'  => $rfc3986->IPv6address,
             'prefix_length' => new Integer(0, 128),
 
-            self::DEFAULT => $this->ipv6,
+            self::ROOT => $this->ipv6,
         ];
 
         parent::__construct(array_merge($rules, $overwrites));

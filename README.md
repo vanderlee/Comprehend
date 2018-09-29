@@ -37,5 +37,5 @@ Example
 ### Comprehend, using Ruleset constructor
     $list   = new Ruleset([
         'word'           => plus(regex('/[a-z][A-Z]/')), 
-        Ruleset::DEFAULT => s($word, star([',', $word])),
+        Ruleset::ROOT => s($word, star([',', $word])),
     ]);

@@ -117,7 +117,7 @@ class Rfc4408 extends AbstractRuleset
             // Implement as separate ruleset?
             // Does it conflict with the record definition?
 
-            self::DEFAULT => $this->record,
+            self::ROOT => $this->record,
         ];
 
         parent::__construct(array_merge($rules, $overwrites));

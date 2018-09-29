@@ -154,14 +154,14 @@ class RulesetTest extends ParserTestCase
 
     public function testSetToString()
     {
-        $r = new Ruleset(Ruleset::DEFAULT, 'x');
+        $r = new Ruleset(Ruleset::ROOT, 'x');
         $this->assertEquals("'x'", (string)$r);
     }
 
     public function testSetDefaultNull()
     {
-        $r = new Ruleset(Ruleset::DEFAULT, 1.234);
-        $this->expectExceptionMessage("Cannot define `DEFAULT` using definition type `double`");
+        $r = new Ruleset(Ruleset::ROOT, 1.234);
+        $this->expectExceptionMessage("Cannot define `ROOT` using definition type `double`");
         $r('foo');
     }
 
@@ -207,13 +207,13 @@ class RulesetTest extends ParserTestCase
 
     public function testSetDefault()
     {
-        $r = new Ruleset(Ruleset::DEFAULT, 'foo');
+        $r = new Ruleset(Ruleset::ROOT, 'foo');
         $this->assertResult(true, 3, $r('foo'));
     }
 
     public function testSetDefaultFailure()
     {
-        $r = new Ruleset(Ruleset::DEFAULT, 'foo');
+        $r = new Ruleset(Ruleset::ROOT, 'foo');
         $this->assertResult(false, 0, $r('bar'));
     }
 
