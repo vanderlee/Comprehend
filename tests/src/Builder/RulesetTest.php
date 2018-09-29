@@ -39,8 +39,10 @@ class RulesetTest extends ParserTestCase
     public function testConstructorMultiple()
     {
         $r = new Ruleset(['Foo' => 'foo', 'Bar' => 'bar']);
-        $this->assertResult(true, 3, $r->Foo()('foo'));
-        $this->assertResult(true, 3, $r->Bar()('bar'));
+        $foo = $r->Foo();
+        $bar = $r->Bar();
+        $this->assertResult(true, 3, $foo('foo'));
+        $this->assertResult(true, 3, $bar('bar'));
     }
 
     public function testSetFunction()

@@ -170,7 +170,8 @@ class DefinitionTest extends ParserTestCase
             return intval($value) * 3;
         });
 
-        $match = $definition()->setResult('bar')('12');
+        $parser = $definition()->setResult('bar');
+        $match = $parser('12');
         $this->assertResult(true, 2, $match);
         $this->assertEquals(3, $match->results['foo']);
         $this->assertEquals(12, $match->results['bar']);
