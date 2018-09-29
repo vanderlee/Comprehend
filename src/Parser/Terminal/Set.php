@@ -31,7 +31,7 @@ class Set extends Parser
      * @param bool $include Set to false to match only characters NOT in the set
      * @throws \Exception
      */
-    public function __construct(string $set, $include = true)
+    public function __construct($set, $include = true)
     {
         if (mb_strlen($set) <= 0) {
             throw new \InvalidArgumentException('Empty set');

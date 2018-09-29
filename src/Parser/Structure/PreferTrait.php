@@ -34,7 +34,11 @@ trait PreferTrait
         }
     }
 
-    public function setPreference(string $preference)
+    /**
+     * @param string $preference
+     * @return $this
+     */
+    public function setPreference($preference)
     {
         $this->preference = $preference;
 

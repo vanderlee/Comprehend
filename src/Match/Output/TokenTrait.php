@@ -39,7 +39,8 @@ trait TokenTrait
         }
 
         if ($this->tokenCallback) {
-            return ($this->tokenCallback)($children);
+            $tokenCallback = $this->tokenCallback;
+            return $tokenCallback($children);
         }
 
         return null;

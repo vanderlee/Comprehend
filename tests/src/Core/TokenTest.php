@@ -4,7 +4,6 @@ namespace Tests\Src\Core;
 
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Core\Token;
-use Vanderlee\Comprehend\Library\Library;
 use Vanderlee\Comprehend\Library\Rfc3986;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
@@ -164,8 +163,12 @@ class TokenTest extends ParserTestCase
 
     protected function extractTokenSignatures(Token $token)
     {
-        $signature = ($token->group ? $token->group . '::' : '')
-            . ($token->name ?? $token->class);
+        $signature = ($token->group
+                ? $token->group . '::'
+                : '')
+            . ($token->name
+                ? $token->name
+                : $token->class);
 
         $children = [];
         foreach ($token->children as $child) {

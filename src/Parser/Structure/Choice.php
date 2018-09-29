@@ -47,6 +47,7 @@ class Choice extends IterableParser
     private function parseFirst(&$input, $offset, Context $context)
     {
         $max = 0;
+        /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
             $match = $parser->parse($input, $offset, $context);
             if ($match->match) {
@@ -60,6 +61,7 @@ class Choice extends IterableParser
     private function parseLongest(&$input, $offset, Context $context)
     {
         $max_match = $this->failure($input, $offset);
+        /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
             $match = $parser->parse($input, $offset, $context);
             if ($match->match == $max_match->match) {
@@ -79,6 +81,7 @@ class Choice extends IterableParser
     {
         /** @var Match $match */
         $match = null;
+        /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
             $attempt = $parser->parse($input, $offset, $context);
 

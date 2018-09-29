@@ -69,15 +69,16 @@ class DefinitionTest extends ParserTestCase
 
     public function testQuotedList()
     {
-        $qs = (new Definition(self::QUOTED_STRING))();
+        $definition = new Definition(self::QUOTED_STRING);
+        $qs         = $definition();
         $this->assertResult(true, 5, $qs('"foo"'));
         $this->assertResult(false, 5, $qs('"foo`'));
 
-        $qs = (new Definition(self::QUOTED_STRING))('e');
+        $qs = $definition('e');
         $this->assertResult(true, 4, $qs('emoe'));
         $this->assertResult(false, 3, $qs('emo'));
 
-        $qs = (new Definition(self::QUOTED_STRING))('"/');
+        $qs = $definition('"/');
         $this->assertResult(true, 5, $qs('/foo/'));
         $this->assertResult(true, 5, $qs('"foo"'));
         $this->assertResult(false, 5, $qs('"foo/'));
@@ -104,10 +105,10 @@ class DefinitionTest extends ParserTestCase
     public function testWrap()
     {
         // Must be odd
-        $original = (new Definition(new Repeat(new Range('0', '9'), 1)))
-            ->addValidator(function ($text) {
-                return intval($text) % 2 === 1;
-            });
+        $original = new Definition(new Repeat(new Range('0', '9'), 1));
+        $original->addValidator(function ($text) {
+            return intval($text) % 2 === 1;
+        });
 
         $inherited = new Definition($original);
 
@@ -134,10 +135,10 @@ class DefinitionTest extends ParserTestCase
     public function testClone()
     {
         // Must be odd
-        $original = (new Definition(new Repeat(new Range('0', '9'), 1)))
-            ->addValidator(function ($text) {
-                return intval($text) % 2 === 1;
-            });
+        $original = new Definition(new Repeat(new Range('0', '9'), 1));
+        $original->addValidator(function ($text) {
+            return intval($text) % 2 === 1;
+        });
 
         $clone = clone $original; // works as is!
         //

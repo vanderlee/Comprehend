@@ -68,7 +68,8 @@ trait ResultTrait
     //@todo deprecate? Saves no time and is part of collection
     public function getResult($name = null, $default = null)
     {
-        return $this->getResults()[$name] ?? $default;
+        $results = $this->getResults();
+        return isset($results[$name]) ? $results[$name] : $default;
     }
 
     //@todo deprecate? Saves no time and is part of collection

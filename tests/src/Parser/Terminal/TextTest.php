@@ -22,8 +22,14 @@ class TextTest extends \Tests\ParserTestCase
      * @group terminal
      * @group parser
      * @dataProvider textData
+     *
+     * @param Text $parser
+     * @param string $input
+     * @param int $offset
+     * @param bool $match
+     * @param int $length
      */
-    public function testText(Text $parser, string $input, int $offset, bool $match, int $length)
+    public function testText(Text $parser, $input, $offset, $match, $length)
     {
         $this->assertResult($match, $length, $parser->match($input, $offset), (string)$parser);
     }

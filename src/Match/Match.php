@@ -46,7 +46,7 @@ abstract class Match
      *
      * @param int $length
      */
-    public function __construct(int $length = 0)
+    public function __construct($length = 0)
     {
         $this->length = $length;
     }

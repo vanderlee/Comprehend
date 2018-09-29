@@ -59,8 +59,12 @@ class Token implements \JsonSerializable
 
     private function toString($depth = 0)
     {
-        $signature = ($this->group ? $this->group . '::' : '')
-            . ($this->name ?? $this->class);
+        $signature = ($this->group
+                ? $this->group . '::'
+                : '')
+            . ($this->name
+                ? $this->name
+                : $this->class);
 
         $output = str_repeat('  ', $depth) . "{$signature} (`{$this->text}`)";
 
@@ -96,16 +100,17 @@ class Token implements \JsonSerializable
      */
     private function createXmlNode(\DOMDocument $document)
     {
-        $name  = $this->name ?? $this->class;
-        $name  = preg_replace('/[^-_a-zA-Z0-9]/', '_', $name);
+        $value = $this->children
+            ? null
+            : $this->text;
+        $name  = preg_replace('/[^-_a-zA-Z0-9]/', '_', $this->name
+            ? $this->name
+            : $this->class);
         $group = preg_replace('/[^-_a-zA-Z0-9]/', '_', $this->group);
-        $value = $this->children ? null : $this->text;
 
-        if ($this->group !== null) {
-            $element = $document->createElementNS($this->group, $group . ':' . $name, $value);
-        } else {
-            $element = $document->createElement($name, $value);
-        }
+        $element = $this->group
+            ? $document->createElementNS($this->group, $group . ':' . $name, $value)
+            : $document->createElement($name, $value);
 
         foreach ($this->children as $child) {
             $element->appendChild($child->createXmlNode($document));

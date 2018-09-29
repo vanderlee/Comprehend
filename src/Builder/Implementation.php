@@ -53,7 +53,9 @@ class Implementation extends Parser
                 if (!is_callable($this->parser)) {
                     throw new \Exception('Parser not defined');
                 }
-                $this->parser = ($this->parser)(...$this->arguments);
+
+                $parser = ($this->parser);
+                $this->parser = $parser(...$this->arguments);
             }
         }
     }
@@ -79,7 +81,7 @@ class Implementation extends Parser
                 $text = substr($input, $offset, $match->length);
 
                 foreach ($this->definition->validators as $validator) {
-                    if (!($validator)($text, $localResults)) {
+                    if (!($validator($text, $localResults))) {
                         return $this->failure($input, $offset, $match->length);
                     }
                 }
