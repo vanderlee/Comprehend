@@ -1,6 +1,6 @@
 <?php
 
-namespace Vanderlee\Comprehend\builder;
+namespace Vanderlee\Comprehend\Builder;
 
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Match\Success;

@@ -3,11 +3,11 @@
 
 /** @noinspection PhpUndefinedFieldInspection */
 
-namespace Tests\Src\builder;
+namespace Tests\Src\Builder;
 
 use Tests\ParserTestCase;
-use Vanderlee\Comprehend\builder\Definition;
-use Vanderlee\Comprehend\builder\Ruleset;
+use Vanderlee\Comprehend\Builder\Definition;
+use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;

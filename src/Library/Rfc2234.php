@@ -11,7 +11,7 @@
 
 namespace Vanderlee\Comprehend\Library;
 
-use Vanderlee\Comprehend\builder\AbstractRuleset;
+use Vanderlee\Comprehend\Builder\AbstractRuleset;
 use Vanderlee\Comprehend\Parser\Parser;
 
 require_once 'functions.php';

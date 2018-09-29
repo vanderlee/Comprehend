@@ -7,7 +7,7 @@ namespace Tests\example;
 require_once 'ReversePolishNotationTrait.php';
 
 use Tests\ParserTestCase;
-use Vanderlee\Comprehend\builder\Ruleset;
+use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;

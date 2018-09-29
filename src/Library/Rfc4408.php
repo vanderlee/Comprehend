@@ -12,7 +12,7 @@
 
 namespace Vanderlee\Comprehend\Library;
 
-use Vanderlee\Comprehend\builder\AbstractRuleset;
+use Vanderlee\Comprehend\Builder\AbstractRuleset;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Integer;
 
