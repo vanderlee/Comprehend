@@ -1,5 +1,7 @@
 # Todo
 ## Milestone 1
+ -  Test redefine of referenced parsers in Rulesets
+ -  Ruleset; global context settings (lazy binding)  
  -  Test AbstractRuleset->call() (indirect) with instance with token already set
  -  Try to match Matches internally on `instanceof` or `is_a()` to avoid warnings on `->match`
  -  PHP 5.latest as low target (can we do this with PHPUnit support?) 
