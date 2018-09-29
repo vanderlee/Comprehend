@@ -16,13 +16,6 @@ class NotTest extends ParserTestCase
         $this->assertInstanceOf(Not::class, new Not('a'));
     }
 
-    public function testEmpty()
-    {
-        $this->expectException(\ArgumentCountError::class);
-        /** @noinspection PhpParamsInspection */
-        new Not();
-    }
-
     /**
      * @dataProvider notData
      */
