@@ -22,6 +22,12 @@ class SequenceTest extends ParserTestCase
 
     /**
      * @dataProvider sequenceData
+     *
+     * @param Sequence $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testSequence(Sequence $parser, $input, $offset, $match, $length)
     {

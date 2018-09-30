@@ -37,6 +37,12 @@ class RegexTest extends ParserTestCase
 
     /**
      * @dataProvider regexData
+     *
+     * @param Regex $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testRegex(Regex $parser, $input, $offset, $match, $length)
     {

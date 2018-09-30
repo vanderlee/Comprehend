@@ -11,11 +11,17 @@ use Vanderlee\Comprehend\Parser\Terminal\Set;
  */
 class SetTest extends ParserTestCase
 {
+    /**
+     * @throws \Exception
+     */
     public function testConstruction()
     {
         $this->assertInstanceOf(Set::class, new Set('abc'));
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testEmpty()
     {
         $this->expectExceptionMessage('Empty set');
@@ -24,6 +30,12 @@ class SetTest extends ParserTestCase
 
     /**
      * @dataProvider setData
+     *
+     * @param Set $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testSet(Set $parser, $input, $offset, $match, $length)
     {
@@ -33,6 +45,10 @@ class SetTest extends ParserTestCase
         $this->assertSame($length, $result->length, (string)$parser);
     }
 
+    /**
+     * @return array
+     * @throws \Exception
+     */
     public function setData()
     {
         return [

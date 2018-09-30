@@ -25,6 +25,11 @@ class DefinitionTest extends ParserTestCase
         return new Sequence($item, new Repeat(new Sequence($delimiter, $item)));
     }
 
+    /**
+     * @param string $enclosures
+     * @return Choice|Sequence
+     * @throws \Exception
+     */
     public static function makeQuotedStringParser($enclosures = '"')
     {
         if (mb_strlen($enclosures) === 1) {
@@ -94,7 +99,9 @@ class DefinitionTest extends ParserTestCase
         $this->assertResult(true, 2, $number('11'));
         $this->assertResult(true, 2, $number('21'));
 
-        $d->addValidator(function ($text, $results) {
+        $d->addValidator(function (
+            /** @noinspection PhpUnusedParameterInspection */
+            $text, $results) {
             return intval($results['first']) % 2 === 1;
         });
         $number = $d();

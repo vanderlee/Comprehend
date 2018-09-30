@@ -43,6 +43,12 @@ class RepeatTest extends ParserTestCase
 
     /**
      * @dataProvider repeatData
+     *
+     * @param Repeat $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testRepeat(Repeat $parser, $input, $offset, $match, $length)
     {

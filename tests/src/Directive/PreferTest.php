@@ -25,6 +25,12 @@ class PreferTest extends ParserTestCase
 
     /**
      * @dataProvider preferData
+     *
+     * @param Prefer $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testPrefer(Prefer $parser, $input, $offset, $match, $length)
     {

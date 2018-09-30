@@ -18,6 +18,12 @@ class NotTest extends ParserTestCase
 
     /**
      * @dataProvider notData
+     *
+     * @param Not $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testNot(Not $parser, $input, $offset, $match, $length)
     {

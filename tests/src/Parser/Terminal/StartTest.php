@@ -14,6 +14,12 @@ class StartTest extends ParserTestCase
 
     /**
      * @dataProvider startData
+     *
+     * @param Start $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testStart(Start $parser, $input, $offset, $match, $length)
     {

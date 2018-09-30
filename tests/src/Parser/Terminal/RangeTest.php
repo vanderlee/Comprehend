@@ -48,6 +48,12 @@ class RangeTest extends ParserTestCase
 
     /**
      * @dataProvider rangeData
+     *
+     * @param Range $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testRange(Range $parser, $input, $offset, $match, $length)
     {

@@ -76,6 +76,10 @@ class MathRulesetTest extends ParserTestCase
 
     /**
      * @dataProvider dataExpression
+     *
+     * @param $expression
+     * @param $expected
+     * @param $result
      */
     public function testExpression($expression, $expected, $result)
     {

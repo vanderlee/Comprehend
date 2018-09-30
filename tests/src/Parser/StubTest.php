@@ -54,7 +54,7 @@ class StubTest extends ParserTestCase
         $stub = new Stub();
         $this->expectExceptionMessage("Property `i_do_not_exist` does not exist");
         /** @noinspection PhpUndefinedFieldInspection */
-        echo $stub->i_do_not_exist;
+        $this->assertNull($stub->i_do_not_exist);
     }
 
     public function testToString()

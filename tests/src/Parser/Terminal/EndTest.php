@@ -14,6 +14,12 @@ class EndTest extends ParserTestCase
 
     /**
      * @dataProvider endData
+     *
+     * @param End $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testEnd(End $parser, $input, $offset, $match, $length)
     {

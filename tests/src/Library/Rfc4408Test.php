@@ -16,6 +16,11 @@ class Rfc4408Test extends ParserTestCase
 
     /**
      * @dataProvider rulesData
+     *
+     * @param Parser $parser
+     * @param $input
+     * @param $match
+     * @param $length
      */
     public function testRules(Parser $parser, $input, $match, $length)
     {

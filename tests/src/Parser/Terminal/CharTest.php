@@ -30,6 +30,12 @@ class CharTest extends ParserTestCase
 
     /**
      * @dataProvider charData
+     *
+     * @param Char $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testChar(Char $parser, $input, $offset, $match, $length)
     {

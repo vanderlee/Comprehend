@@ -13,7 +13,13 @@ class NothingTest extends ParserTestCase
 {
 
     /**
-     * @dataProvider nothingData
+     * /@dataProvider nothingData
+     *
+     * @param Nothing $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testNothing(Nothing $parser, $input, $offset, $match, $length)
     {

@@ -20,14 +20,13 @@ class ChoiceTest extends ParserTestCase
     }
 
     /**
-     * @param Choice $parser
-     * @param string $flag
-     * @param string $input
-     * @param int $offset
-     * @param bool $match
-     * @param int $length
-     *
      * @dataProvider choiceData
+     *
+     * @param Choice $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testChoice(Choice $parser, $input, $offset, $match, $length)
     {

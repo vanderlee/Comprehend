@@ -11,35 +11,53 @@ use Vanderlee\Comprehend\Parser\Terminal\Integer;
  */
 class IntegerTest extends ParserTestCase
 {
+    /**
+     * @throws \Exception
+     */
     public function testConstructor()
     {
         $this->assertInstanceOf(Integer::class, new Integer());
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testConstructorBadMinimum()
     {
         $this->expectExceptionMessage("Minimum must be integer or `null`");
         new Integer('a');
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testConstructorBadMaximum()
     {
         $this->expectExceptionMessage("Maximum must be integer or `null`");
         new Integer(0, 'a');
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testConstructorBadOrder()
     {
         $this->expectExceptionMessage("Maximum must be greater than minimum");
         new Integer(1, -1);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testConstructorInvalidBaseTooLow()
     {
         $this->expectExceptionMessage("Invalid base");
         new Integer(0, null, 1);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testConstructorInvalidBaseTooHigh()
     {
         $this->expectExceptionMessage("Invalid base");
@@ -48,6 +66,12 @@ class IntegerTest extends ParserTestCase
 
     /**
      * @dataProvider integerData
+     *
+     * @param Integer $parser
+     * @param $input
+     * @param $offset
+     * @param $match
+     * @param $length
      */
     public function testInteger(Integer $parser, $input, $offset, $match, $length)
     {
@@ -58,6 +82,10 @@ class IntegerTest extends ParserTestCase
         $this->assertResult($match, $length, $result, $message);
     }
 
+    /**
+     * @return array
+     * @throws \Exception
+     */
     public function integerData()
     {
         return [
