@@ -11,6 +11,7 @@ Build object oriented [LR(1)](https://en.wikipedia.org/wiki/Canonical_LR_parser)
 [![Code Coverage](https://scrutinizer-ci.com/g/vanderlee/Comprehend/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/vanderlee/Comprehend/?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c065154c0f524d55b6767f6ed8a18657)](https://www.codacy.com/app/vanderlee/Comprehend?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vanderlee/Comprehend&amp;utm_campaign=Badge_Grade)
 ![Travis (.org)](https://img.shields.io/travis/vanderlee/Comprehend.svg?label=Travis-CI)
+[![Maintainability](https://api.codeclimate.com/v1/badges/3bd38eba7f4912bf2f66/maintainability)](https://codeclimate.com/github/vanderlee/Comprehend/maintainability)
 
 
 Copyright &copy; 2011-2018 Martijn W. van der Lee [Toyls.com](https://toyls.com), MIT license applies.

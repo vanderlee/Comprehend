@@ -22,6 +22,22 @@ class RangeTest extends ParserTestCase
         new Range(null, null);
     }
 
+    public function testNoFirst()
+    {
+        $range = new Range(null, 'd');
+        $this->assertResult(true, 1, $range->match('c'));
+        $this->assertResult(true, 1, $range->match('d'));
+        $this->assertResult(false, 0, $range->match('e'));
+    }
+
+    public function testNoLast()
+    {
+        $range = new Range('d', null);
+        $this->assertResult(false, 0, $range->match('c'));
+        $this->assertResult(true, 1, $range->match('d'));
+        $this->assertResult(true, 1, $range->match('e'));
+    }
+
     public function testFirstEmpty()
     {
         $this->expectExceptionMessage('Empty argument');

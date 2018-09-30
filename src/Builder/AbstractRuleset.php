@@ -104,10 +104,12 @@ abstract class AbstractRuleset extends Parser
                         $rule->generator = self::getArgument($definition);
                         return;
                 }
-            }
 
-            throw new \RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`',
-                is_object($definition) ? get_class($definition) : gettype($definition), $key));
+                throw new \RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`',
+                    is_object($definition)
+                        ? get_class($definition)
+                        : gettype($definition), $key));
+            }
         }
 
         $rules[$key] = $definition;
@@ -172,41 +174,29 @@ abstract class AbstractRuleset extends Parser
 
         switch (true) {
             case $rule instanceof Definition:
-                // Parser Definition
+                // Parser definition
                 $instance = new Implementation($rule, $arguments);
                 break;
 
-            case $rule instanceof Parser:
-                // Parser
-                $instance = clone $rule;
-                break;
-
-            case is_callable($rule):
-                // Generator function (should return Parser)
-                $instance = $rule(...$arguments);
-                if (!$instance instanceof Parser) {
-                    throw new \InvalidArgumentException("Generator function for rule {$key} does not return Parser");
-                }
-                break;
-
-            case is_string($rule) && class_exists($rule) && is_subclass_of($rule, Parser::class):
-                // Class name of a Parser class
-                $instance = new $rule(...$arguments);
-                break;
-
             case is_string($rule) && isset($rules[$rule]):
-                // Self-referential call
+                // Reference other rule
                 $instance = static::call($rules, $rule, $arguments);
                 break;
 
-            case is_array($rule) || is_string($rule) || is_int($rule):
-                // S-C-S Array syntax
-                $instance = self::getArgument($rule);
+            case $rule instanceof Parser:
+            case is_callable($rule):
+            //case is_string($rule) && class_exists($rule) && is_subclass_of($rule, Parser::class):
+            case is_array($rule):
+            case is_string($rule):
+            case is_int($rule):
+                $instance = new RuleBinding($rules[$key], $arguments);
                 break;
 
             default:
                 throw new \RuntimeException(sprintf('Cannot define `%2$s` using definition type `%1$s`',
-                    is_object($rule) ? get_class($rule) : gettype($rule), $key));
+                    is_object($rule)
+                        ? get_class($rule)
+                        : gettype($rule), $key));
         }
 
         if (!$instance->hasToken()) {

@@ -69,7 +69,9 @@ trait ResultTrait
     public function getResult($name = null, $default = null)
     {
         $results = $this->getResults();
-        return isset($results[$name]) ? $results[$name] : $default;
+        return isset($results[$name])
+            ? $results[$name]
+            : $default;
     }
 
     //@todo deprecate? Saves no time and is part of collection

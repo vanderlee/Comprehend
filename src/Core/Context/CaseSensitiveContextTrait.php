@@ -24,6 +24,8 @@ trait CaseSensitiveContextTrait
     // Helper
     public function handleCase($text)
     {
-        return $this->isCaseSensitive() ? $text : mb_strtolower($text);
+        return $this->isCaseSensitive()
+            ? $text
+            : mb_strtolower($text);
     }
 }

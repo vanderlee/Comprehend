@@ -61,8 +61,10 @@ class RulesetTest extends ParserTestCase
         $r->line = function () {
             return null;
         };
-        $this->expectExceptionMessage("Generator function for rule line does not return Parser");
-        $r->line();
+        $line = $r->line;
+        $this->expectExceptionMessage("Generator function does not return Parser");
+        $line->match('x');
+
     }
 
     public function testSetClassName()
@@ -341,4 +343,14 @@ class RulesetTest extends ParserTestCase
         $this->assertResult(true, 5, $Csv('x,x,x'));
     }
 
+    public function testRedefineReferenced()
+    {
+        $r = new Ruleset;
+//        $r->word = new Definition(new Text('foo'));
+        $r->word = 'foo';
+        $r->twice = Repeat::exact($r->word, 2);
+        $this->assertResult(true, 6, $r->twice->match('foofoo'));
+        $r->word = 'bar';
+        $this->assertResult(true, 6, $r->twice->match('barbar'));
+    }
 }

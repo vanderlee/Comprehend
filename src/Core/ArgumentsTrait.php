@@ -32,7 +32,9 @@ trait ArgumentsTrait
                 return self::getArgument(reset($argument));
             }
 
-            return $arrayToSequence ? new Sequence(...$argument) : new Choice(...$argument);
+            return $arrayToSequence
+                ? new Sequence(...$argument)
+                : new Choice(...$argument);
         } elseif (is_string($argument)) {
             switch (strlen($argument)) {
                 case 0:
@@ -49,7 +51,9 @@ trait ArgumentsTrait
         }
 
         throw new \InvalidArgumentException(sprintf('Invalid argument type `%1$s`',
-            is_object($argument) ? get_class($argument) : gettype($argument)));
+            is_object($argument)
+                ? get_class($argument)
+                : gettype($argument)));
     }
 
     protected static function getArguments($arguments, $arrayToSequence = true)

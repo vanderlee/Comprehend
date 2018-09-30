@@ -57,7 +57,9 @@ class Stub extends Parser
     public function __toString()
     {
         /** @noinspection HtmlUnknownTag */
-        return $this->parser ? (string)$this->parser : '<undefined>';
+        return $this->parser
+            ? (string)$this->parser
+            : '<undefined>';
     }
 
 }

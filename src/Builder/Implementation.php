@@ -47,17 +47,17 @@ class Implementation extends Parser
      */
     private function build()
     {
-        if ($this->parser === null) {
+//        if ($this->parser === null) {
             $this->parser = $this->definition->generator;
             if (!$this->parser instanceof Parser) {
                 if (!is_callable($this->parser)) {
                     throw new \Exception('Parser not defined');
                 }
 
-                $parser = ($this->parser);
+                $parser       = ($this->parser);
                 $this->parser = $parser(...$this->arguments);
             }
-        }
+//        }
     }
 
     /**
@@ -89,7 +89,9 @@ class Implementation extends Parser
         }
 
         // Copy match into new match, only pass original callbacks if processor not set
-        $successes = empty($this->definition->processors) ? $match : [];
+        $successes = empty($this->definition->processors)
+            ? $match
+            : [];
         $match     = ($match instanceof Success)
             ? $this->success($input, $offset, $match->length, $successes)
             : $this->failure($input, $offset, $match->length);
@@ -104,7 +106,6 @@ class Implementation extends Parser
 
         return $match;
     }
-
 
     public function __toString()
     {

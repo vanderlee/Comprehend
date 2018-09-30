@@ -53,7 +53,9 @@ class Success extends Match
                 return $results;
             case 'result':
                 $results = $this->getResults();
-                return isset($results[null]) ?  $results[null] : null;
+                return isset($results[null])
+                    ? $results[null]
+                    : null;
             case 'token':
                 return $this->getToken();
         }

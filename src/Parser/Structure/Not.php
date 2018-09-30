@@ -26,7 +26,9 @@ class Not extends Parser
     protected function parse(&$input, $offset, Context $context)
     {
         $match = $this->parser->parse($input, $offset, $context);
-        return $match->match ? $this->failure($input, $offset, $match->length) : $this->success($input, $offset, 0);
+        return $match->match
+            ? $this->failure($input, $offset, $match->length)
+            : $this->success($input, $offset, 0);
     }
 
     public function __toString()

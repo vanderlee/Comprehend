@@ -15,7 +15,9 @@ class End extends Parser
 
     protected function parse(&$input, $offset, Context $context)
     {
-        return $offset == mb_strlen($input) ? $this->success($input, $offset) : $this->failure($input, $offset);
+        return $offset == mb_strlen($input)
+            ? $this->success($input, $offset)
+            : $this->failure($input, $offset);
     }
 
     public function __toString()

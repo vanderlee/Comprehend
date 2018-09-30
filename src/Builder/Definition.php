@@ -11,8 +11,10 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Definition
 {
-
-    public $generator  = null;
+    /**
+     * @var callable|Parser
+     */
+    public $generator;
     public $validators = [];
     public $processors = [];
 
@@ -28,6 +30,17 @@ class Definition
         if (is_callable($validator)) {
             $this->validators[] = $validator;
         }
+    }
+
+    /**
+     * Copy the configuration of another definition
+     *
+     * @param Definition $definition
+     */
+    public function copy(Definition $definition) {
+        $this->generator = $definition->generator;
+        $this->validators = $definition->validators;
+        $this->processors = $definition->processors;
     }
 
     public function setGenerator($parser)

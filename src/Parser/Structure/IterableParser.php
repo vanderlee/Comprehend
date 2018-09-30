@@ -51,6 +51,8 @@ abstract class IterableParser extends Parser implements \IteratorAggregate, \Arr
 
     public function offsetGet($offset)
     {
-        return isset($this->parsers[$offset]) ? $this->parsers[$offset] : null;
+        return isset($this->parsers[$offset])
+            ? $this->parsers[$offset]
+            : null;
     }
 }

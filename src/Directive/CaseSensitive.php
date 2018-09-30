@@ -48,7 +48,9 @@ class CaseSensitive extends Parser
 
     public function __toString()
     {
-        return ($this->sensitivity ? 'case' : 'no-case') . '( ' . $this->parser . ' )';
+        return ($this->sensitivity
+                ? 'case'
+                : 'no-case') . '( ' . $this->parser . ' )';
     }
 
 }

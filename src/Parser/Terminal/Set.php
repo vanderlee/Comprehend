@@ -62,7 +62,9 @@ class Set extends Parser
 
     public function __toString()
     {
-        return ($this->include ? '' : chr(0xAC)) . '( \'' . join('\' | \'', str_split($this->set)) . '\' )';
+        return ($this->include
+                ? ''
+                : chr(0xAC)) . '( \'' . join('\' | \'', str_split($this->set)) . '\' )';
     }
 
 }

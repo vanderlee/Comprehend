@@ -34,7 +34,9 @@ class Space extends Parser
      */
     public function __construct($spacer, $parser)
     {
-        $this->spacer = $spacer === null ? null : self::getArgument($spacer);
+        $this->spacer = $spacer === null
+            ? null
+            : self::getArgument($spacer);
         $this->parser = self::getArgument($parser);
     }
 

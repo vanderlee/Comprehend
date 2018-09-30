@@ -48,6 +48,11 @@ class Repeat extends Parser
         return new self($parser, 0, 1);
     }
 
+    public static function exact($parser, $times)
+    {
+        return new self($parser, $times, $times);
+    }
+
     protected function parse(&$input, $offset, Context $context)
     {
         $this->pushSpacer($context);
@@ -58,7 +63,9 @@ class Repeat extends Parser
         $length = 0;
         do {
             // No skipping at very start
-            $skip = $length > 0 ? $context->skipSpacing($input, $offset + $length) : 0;
+            $skip = $length > 0
+                ? $context->skipSpacing($input, $offset + $length)
+                : 0;
             if ($skip !== false) {
                 $match = $this->parser->parse($input, $offset + $length + $skip, $context);
                 if ($match instanceof Success) {
@@ -72,7 +79,8 @@ class Repeat extends Parser
 
         $this->popSpacer($context);
 
-        return $match ? $this->success($input, $offset, $length, $child_matches)
+        return $match
+            ? $this->success($input, $offset, $length, $child_matches)
             : $this->failure($input, $offset, $length);
     }
 
@@ -80,10 +88,16 @@ class Repeat extends Parser
     {
         // Output ABNF formatting
 
-        $min = $this->min > 0 ? $this->min : '';
-        $max = $this->max === null ? '' : $this->max;
+        $min = $this->min > 0
+            ? $this->min
+            : '';
+        $max = $this->max === null
+            ? ''
+            : $this->max;
 
-        return ($min === $max ? $min : ($min . '*' . $max)) . $this->parser;
+        return ($min === $max
+                ? $min
+                : ($min . '*' . $max)) . $this->parser;
     }
 
 }

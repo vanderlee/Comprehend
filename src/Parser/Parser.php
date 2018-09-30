@@ -93,7 +93,9 @@ abstract class Parser
      */
     protected function success(&$input, $offset, $length = 0, &$successes = [])
     {
-        $successes = is_array($successes) ? $successes : [$successes];
+        $successes = is_array($successes)
+            ? $successes
+            : [$successes];
 
         $success = new Success($length, $successes);
 

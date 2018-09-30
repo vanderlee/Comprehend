@@ -21,7 +21,9 @@ trait SpacingContextTrait
 
     public function pushSpacer($skipper = null)
     {
-        $this->spacers[] = ($skipper === null || $skipper === true) ? $skipper : $this->getArgument($skipper);
+        $this->spacers[] = ($skipper === null || $skipper === true)
+            ? $skipper
+            : $this->getArgument($skipper);
     }
 
     public function popSpacer()
@@ -42,7 +44,9 @@ trait SpacingContextTrait
 
         if ($spacer instanceof Parser) {
             $match = $spacer->match($in, $offset);
-            return $match->match ? $match->length : false;
+            return $match->match
+                ? $match->length
+                : false;
         }
 
         return 0;
