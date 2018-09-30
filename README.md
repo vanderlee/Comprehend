@@ -1,16 +1,18 @@
 Comprehend - a PHP *BNF parser framework
 ========================================
-v1.0.1
+Build object oriented [LR(1)](https://en.wikipedia.org/wiki/Canonical_LR_parser) lexer, tokenizers and parsers in PHP using BNF-based syntax.
 
-Copyright &copy; 2011-2018 Martijn W. van der Lee [Toyls.com](https://toyls.com)
-
-[MIT licensed](http://www.opensource.org/licenses/mit-license.php)
-
-Build [LR(1)](https://en.wikipedia.org/wiki/Canonical_LR_parser) parsers in PHP with ease.
+[![Packagist](https://img.shields.io/packagist/v/vanderlee/comprehend.svg)](https://packagist.org/packages/vanderlee/comprehend)
+[![PHP from Packagist](https://img.shields.io/packagist/php-v/vanderlee/comprehend.svg)](http://php.net/supported-versions.php)
+[![Packagist](https://img.shields.io/packagist/l/vanderlee/comprehend.svg)](http://www.opensource.org/licenses/mit-license.php)
 
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/vanderlee/Comprehend/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/vanderlee/Comprehend/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/vanderlee/Comprehend/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/vanderlee/Comprehend/?branch=master)
+[![Build Status](https://scrutinizer-ci.com/g/vanderlee/Comprehend/badges/build.png?b=master)](https://scrutinizer-ci.com/g/vanderlee/Comprehend/build-status/master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c065154c0f524d55b6767f6ed8a18657)](https://www.codacy.com/app/vanderlee/Comprehend?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vanderlee/Comprehend&amp;utm_campaign=Badge_Grade)
-[![Build Status](https://travis-ci.org/vanderlee/Comprehend.svg?branch=master)](https://travis-ci.org/vanderlee/Comprehend)
+<!--[![Build Status](https://travis-ci.org/vanderlee/Comprehend.svg?branch=master)](https://travis-ci.org/vanderlee/Comprehend)-->
+
+Copyright &copy; 2011-2018 Martijn W. van der Lee [Toyls.com](https://toyls.com), MIT license applies.
 
 Features
 --------
