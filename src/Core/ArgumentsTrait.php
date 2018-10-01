@@ -17,6 +17,47 @@ trait ArgumentsTrait
 {
 
     /**
+     * Parser array argument
+     *
+     * @param mixed $argument
+     * @param bool $arrayToSequence
+     * @return Parser|Choice|Sequence
+     */
+    private static function getArrayArgument($argument, $arrayToSequence)
+    {
+        if (empty($argument)) {
+            throw new \InvalidArgumentException('Empty array argument');
+        }
+
+        if (count($argument) === 1) {
+            return self::getArgument(reset($argument));
+        }
+
+        return $arrayToSequence
+            ? new Sequence(...$argument)
+            : new Choice(...$argument);
+    }
+
+    /**
+     * Parse string argument
+     *
+     * @param mixed $argument
+     * @return Char|Text
+     */
+    private static function getStringArgument($argument)
+    {
+        if (strlen($argument) === 0) {
+            throw new \InvalidArgumentException('Empty argument');
+        }
+
+        if (strlen($argument) === 1) {
+            return new Char($argument);
+        }
+
+        return new Text($argument);
+    }
+
+    /**
      * Convert the argument to a parser
      *
      * @param mixed $argument
@@ -26,27 +67,18 @@ trait ArgumentsTrait
     protected static function getArgument($argument, $arrayToSequence = true)
     {
         if (is_array($argument)) {
-            if (empty($argument)) {
-                throw new \InvalidArgumentException('Empty array argument');
-            } elseif (count($argument) === 1) {
-                return self::getArgument(reset($argument));
-            }
+            return self::getArrayArgument($argument, $arrayToSequence);
+        }
 
-            return $arrayToSequence
-                ? new Sequence(...$argument)
-                : new Choice(...$argument);
-        } elseif (is_string($argument)) {
-            switch (strlen($argument)) {
-                case 0:
-                    throw new \InvalidArgumentException('Empty argument');
-                case 1:
-                    return new Char($argument);
-                default:
-                    return new Text($argument);
-            }
-        } elseif (is_int($argument)) {
+        if (is_string($argument)) {
+            return self::getStringArgument($argument);
+        }
+
+        if (is_int($argument)) {
             return new Char($argument);
-        } elseif ($argument instanceof Parser) {
+        }
+
+        if ($argument instanceof Parser) {
             return $argument;
         }
 
@@ -56,6 +88,13 @@ trait ArgumentsTrait
                 : gettype($argument)));
     }
 
+    /**
+     * Parse an array of arguments
+     *
+     * @param array $arguments
+     * @param bool $arrayToSequence
+     * @return array
+     */
     protected static function getArguments($arguments, $arrayToSequence = true)
     {
         return array_map(function ($argument) use ($arrayToSequence) {

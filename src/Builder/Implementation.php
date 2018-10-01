@@ -2,7 +2,10 @@
 
 namespace Vanderlee\Comprehend\Builder;
 
+use Exception;
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -36,20 +39,33 @@ class Implementation extends Parser
     private $definition = null;
     private $arguments  = null;
 
+    /**
+     * @param Definition $definition
+     * @param array $arguments
+     */
     public function __construct(Definition &$definition, array $arguments = [])
     {
         $this->definition = $definition;
         $this->arguments  = $arguments;
     }
 
+    /**
+     * @param $name
+     * @return callable|null|Parser
+     */
     public function __get($name)
     {
         if ($name === 'parser') {
-            $this->build();
+            try {
+                $this->build();
+            } catch (Exception $exception) {
+                $this->parser = null;
+            }
+
             return $this->parser;
         }
 
-        throw new \InvalidArgumentException("Property `{$name}` does not exist");
+        throw new InvalidArgumentException("Property `{$name}` does not exist");
     }
 
     /**
@@ -61,7 +77,7 @@ class Implementation extends Parser
             $this->parser = $this->definition->generator;
             if (!$this->parser instanceof Parser) {
                 if (!is_callable($this->parser)) {
-                    throw new \Exception('Parser not defined');
+                    throw new Exception('Parser not defined');
                 }
 
                 $parser       = ($this->parser);
@@ -74,8 +90,8 @@ class Implementation extends Parser
      * @param string $input
      * @param int $offset
      * @param Context $context
-     * @return \Vanderlee\Comprehend\Match\Failure|\Vanderlee\Comprehend\Match\Match|Success
-     * @throws \Exception
+     * @return Failure|Success
+     * @throws Exception
      */
     protected function parse(&$input, $offset, Context $context)
     {
@@ -86,14 +102,9 @@ class Implementation extends Parser
         $localResults = []; // this is redundant, but suppresses PHP scanner warnings
         if ($match instanceof Success) {
             $localResults = $match->results;
-
-            if (!empty($this->definition->validators)) {
-                $text = substr($input, $offset, $match->length);
-
-                foreach ($this->definition->validators as $validator) {
-                    if (!($validator($text, $localResults))) {
-                        return $this->failure($input, $offset, $match->length);
-                    }
+            foreach ($this->definition->validators as $validator) {
+                if (!($validator(substr($input, $offset, $match->length), $localResults))) {
+                    return $this->failure($input, $offset, $match->length);
                 }
             }
         }
@@ -106,7 +117,9 @@ class Implementation extends Parser
             ? $this->success($input, $offset, $match->length, $successes)
             : $this->failure($input, $offset, $match->length);
 
-        if ($match instanceof Success && !empty($this->definition->processors)) {
+        if ($match instanceof Success
+            && !empty($this->definition->processors)) {
+
             foreach ($this->definition->processors as $key => $processor) {
                 $match->addResultCallback(function (&$results) use ($key, $processor, $localResults) {
                     $results[$key] = $processor($localResults, $results);
@@ -117,11 +130,14 @@ class Implementation extends Parser
         return $match;
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         try {
             $this->build();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // ignore
         }
 

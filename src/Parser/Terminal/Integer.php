@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
+use Exception;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -37,15 +38,22 @@ class Integer extends Parser
 
     public function __construct($minimum = 0, $maximum = null, $base = 10)
     {
-        if ($minimum !== null && !is_int($minimum)) {
-            throw new \Exception('Minimum must be integer or `null`');
+        if ($minimum !== null
+            && !is_int($minimum)) {
+
+            throw new Exception('Minimum must be integer or `null`');
         }
 
-        if ($maximum !== null && !is_int($maximum)) {
-            throw new \Exception('Maximum must be integer or `null`');
+        if ($maximum !== null
+            && !is_int($maximum)) {
+
+            throw new Exception('Maximum must be integer or `null`');
         }
 
-        if ($minimum !== null && $maximum !== null && $minimum > $maximum) {
+        if ($minimum !== null
+            && $maximum !== null
+            && $minimum > $maximum) {
+
             throw new \Exception('Maximum must be greater than minimum');
         }
 
@@ -53,7 +61,9 @@ class Integer extends Parser
         $this->maximum = $maximum;
 
         $this->base = intval($base);
-        if ($base < 2 || $base > strlen(self::$set)) {
+        if ($base < 2
+            || $base > strlen(self::$set)) {
+
             throw new \Exception('Invalid base');
         }
     }

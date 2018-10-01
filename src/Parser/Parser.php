@@ -39,8 +39,8 @@ abstract class Parser
     /**
      * Match the input with this parser, starting from the offset position.
      *
-     * @param $input
-     * @param $offset
+     * @param string $input
+     * @param int $offset
      * @param Context $context
      * @return \Vanderlee\Comprehend\Match\Match
      */
