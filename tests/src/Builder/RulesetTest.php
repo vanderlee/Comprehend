@@ -61,7 +61,7 @@ class RulesetTest extends ParserTestCase
         $r->line = function () {
             return null;
         };
-        $this->expectExceptionMessage("Generator function for rule `line` does not return Parser");
+        $this->expectExceptionMessage("Generator function for `line` does not return Parser");
         $line    = $r->line;
         $line->match('x');
 
@@ -165,7 +165,7 @@ class RulesetTest extends ParserTestCase
     public function testSetDefaultNull()
     {
         $r = new Ruleset(Ruleset::ROOT, 1.234);
-        $this->expectExceptionMessage("Cannot define `ROOT` using definition type `double`");
+        $this->expectExceptionMessage("Cannot instantiate `ROOT` using definition type `double`");
         $r('foo');
     }
 

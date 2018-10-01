@@ -19,8 +19,8 @@ class Except extends Parser
 
     use ArgumentsTrait;
 
-    private $parser_match = null;
-    private $parser_not   = null;
+    private $parserMatch = null;
+    private $parserNot   = null;
 
     /**
      *
@@ -29,14 +29,14 @@ class Except extends Parser
      */
     public function __construct($match, $not)
     {
-        $this->parser_match = self::getArgument($match);
-        $this->parser_not   = self::getArgument($not);
+        $this->parserMatch = self::getArgument($match);
+        $this->parserNot   = self::getArgument($not);
     }
 
     protected function parse(&$input, $offset, Context $context)
     {
-        $match = $this->parser_match->parse($input, $offset, $context);
-        $not   = $this->parser_not->parse($input, $offset, $context);
+        $match = $this->parserMatch->parse($input, $offset, $context);
+        $not   = $this->parserNot->parse($input, $offset, $context);
 
         if (($match instanceof Success) && ($not instanceof Failure)) {
             return $this->success($input, $offset, $match->length, $match);
@@ -47,7 +47,7 @@ class Except extends Parser
 
     public function __toString()
     {
-        return '( ' . $this->parser_match . ' - ' . $this->parser_not . ' )';
+        return '( ' . $this->parserMatch . ' - ' . $this->parserNot . ' )';
     }
 
 }

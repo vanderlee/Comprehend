@@ -18,12 +18,12 @@ class Context
     use PreferContextTrait;
     use SpacingContextTrait;
 
-    public function __construct($skipper = null, $case_sensitive = true, $preference = Prefer::FIRST)
+    public function __construct($skipper = null, $caseSensitive = true, $preference = Prefer::FIRST)
     {
         self::assertPreference($preference);
 
         $this->pushSpacer($skipper);
-        $this->pushCaseSensitivity($case_sensitive);
+        $this->pushCaseSensitivity($caseSensitive);
         $this->pushPreference($preference);
     }
 

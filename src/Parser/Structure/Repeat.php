@@ -57,7 +57,7 @@ class Repeat extends Parser
     {
         $this->pushSpacer($context);
 
-        $child_matches = [];
+        $childMatches = [];
 
         $match  = null;
         $length = 0;
@@ -70,17 +70,17 @@ class Repeat extends Parser
                 $match = $this->parser->parse($input, $offset + $length + $skip, $context);
                 if ($match instanceof Success) {
                     $length          += $skip + $match->length;
-                    $child_matches[] = $match;
+                    $childMatches[] = $match;
                 }
             }
-        } while ($skip !== false && ($match instanceof Success) && ($this->max === null || count($child_matches) < $this->max));
+        } while ($skip !== false && ($match instanceof Success) && ($this->max === null || count($childMatches) < $this->max));
 
-        $match = (count($child_matches) >= $this->min) && ($this->max === null || count($child_matches) <= $this->max);
+        $match = (count($childMatches) >= $this->min) && ($this->max === null || count($childMatches) <= $this->max);
 
         $this->popSpacer($context);
 
         return $match
-            ? $this->success($input, $offset, $length, $child_matches)
+            ? $this->success($input, $offset, $length, $childMatches)
             : $this->failure($input, $offset, $length);
     }
 

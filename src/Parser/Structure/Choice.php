@@ -61,21 +61,21 @@ class Choice extends IterableParser
 
     private function parseLongest(&$input, $offset, Context $context)
     {
-        $max_match = $this->failure($input, $offset);
+        $maxMatch = $this->failure($input, $offset);
         /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
             $match = $parser->parse($input, $offset, $context);
-            if ($match->match === $max_match->match) {
-                if ($match->length > $max_match->length) {
-                    $max_match = ($match instanceof Success)
+            if ($match->match === $maxMatch->match) {
+                if ($match->length > $maxMatch->length) {
+                    $maxMatch = ($match instanceof Success)
                         ? $this->success($input, $offset, $match->length, $match)
                         : $this->failure($input, $offset, $match->length);
                 }
             } elseif ($match instanceof Success) {
-                $max_match = $this->success($input, $offset, $match->length, $match);
+                $maxMatch = $this->success($input, $offset, $match->length, $match);
             }
         }
-        return $max_match;
+        return $maxMatch;
     }
 
     private function parseShortest(&$input, $offset, Context $context)

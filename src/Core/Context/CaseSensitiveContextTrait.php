@@ -4,21 +4,21 @@ namespace Vanderlee\Comprehend\Core\Context;
 
 trait CaseSensitiveContextTrait
 {
-    private $case_sensitivity = [];
+    private $caseSensitivity = [];
 
-    public function pushCaseSensitivity($case_sensitive = true)
+    public function pushCaseSensitivity($caseSensitive = true)
     {
-        array_push($this->case_sensitivity, (bool)$case_sensitive);
+        array_push($this->caseSensitivity, (bool)$caseSensitive);
     }
 
     public function popCaseSensitivity()
     {
-        return array_pop($this->case_sensitivity);
+        return array_pop($this->caseSensitivity);
     }
 
     public function isCaseSensitive()
     {
-        return end($this->case_sensitivity);
+        return end($this->caseSensitivity);
     }
 
     // Helper
