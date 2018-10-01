@@ -22,6 +22,7 @@ require_once 'functions.php';
  * @property-read Parser HEXDIG Hexadecimal character
  * @property-read Parser BIT Binary digit
  * @property-read Parser SB Whitespace
+ * @property-read Parser DQUOTE "
  *
  * @package Vanderlee\Comprehend\Library
  */

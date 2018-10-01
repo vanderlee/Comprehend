@@ -48,6 +48,8 @@ class Implementation extends Parser
             $this->build();
             return $this->parser;
         }
+
+        throw new \InvalidArgumentException("Property `{$name}` does not exist");
     }
 
     /**
