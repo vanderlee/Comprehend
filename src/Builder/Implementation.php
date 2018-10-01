@@ -20,7 +20,7 @@ class Implementation extends Parser
     /**
      * @var Parser|callable|null
      */
-    public $parser = null;
+    private $parser = null;
 
     /**
      * @var callable|null

@@ -32,17 +32,6 @@ class Definition
         }
     }
 
-    /**
-     * Copy the configuration of another definition
-     *
-     * @param Definition $definition
-     */
-    public function copy(Definition $definition) {
-        $this->generator = $definition->generator;
-        $this->validators = $definition->validators;
-        $this->processors = $definition->processors;
-    }
-
     public function setGenerator($parser)
     {
         $this->generator = $parser;

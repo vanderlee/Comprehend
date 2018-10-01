@@ -17,6 +17,11 @@ class SpaceTest extends ParserTestCase
         $this->assertInstanceOf(Space::class, new Space(' ', 'x'));
     }
 
+    public function testConstructorNull()
+    {
+        $this->assertInstanceOf(Space::class, new Space(null, 'x'));
+    }
+
     /**
      * @dataProvider spaceData
      *
@@ -110,6 +115,13 @@ class SpaceTest extends ParserTestCase
                 0,
                 true,
                 5
+            ],
+            [
+                new Space(null, (new Sequence('a', (new Sequence('b', 'c'))))),
+                'abcd',
+                0,
+                true,
+                3
             ],
         ];
     }

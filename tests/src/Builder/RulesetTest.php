@@ -209,6 +209,14 @@ class RulesetTest extends ParserTestCase
         $r->line = null;
     }
 
+    public function testSetAndGetForwardBadClass()
+    {
+        $r = new Ruleset;
+        $this->assertInstanceOf(Parser::class, $r->line);
+        $this->expectExceptionMessage("Cannot redefine `line` using definition type `stdClass`");
+        $r->line = new \stdClass();
+    }
+
     public function testSetDefault()
     {
         $r = new Ruleset(Ruleset::ROOT, 'foo');

@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Directive\Prefer;
@@ -17,34 +18,54 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Choice extends IterableParser
 {
+    use ArgumentsTrait,
+        PreferTrait;
 
-    use ArgumentsTrait;
-    use PreferTrait;
-
+    /**
+     * @param mixed ...$arguments
+     */
     public function __construct(...$arguments)
     {
         if (empty($arguments)) {
-            throw new \InvalidArgumentException('No arguments');
+            throw new InvalidArgumentException('No arguments');
         }
 
         $this->parsers = self::getArguments($arguments);
     }
 
+    /**
+     * @param mixed ...$arguments
+     * @return Choice
+     */
     public static function first(...$arguments)
     {
         return (new self(...$arguments))->preferFirst();
     }
 
+    /**
+     * @param mixed ...$arguments
+     * @return Choice
+     */
     public static function shortest(...$arguments)
     {
         return (new self(...$arguments))->preferShortest();
     }
 
+    /**
+     * @param mixed ...$arguments
+     * @return Choice
+     */
     public static function longest(...$arguments)
     {
         return (new self(...$arguments))->preferLongest();
     }
 
+    /**
+     * @param string $input
+     * @param int $offset
+     * @param Context $context
+     * @return Failure|Success
+     */
     private function parseFirst(&$input, $offset, Context $context)
     {
         $max = 0;
@@ -59,6 +80,12 @@ class Choice extends IterableParser
         return $this->failure($input, $offset, $max);
     }
 
+    /**
+     * @param string $input
+     * @param int $offset
+     * @param Context $context
+     * @return Failure|Success
+     */
     private function parseLongest(&$input, $offset, Context $context)
     {
         $maxMatch = $this->failure($input, $offset);
@@ -78,6 +105,12 @@ class Choice extends IterableParser
         return $maxMatch;
     }
 
+    /**
+     * @param string $input
+     * @param int $offset
+     * @param Context $context
+     * @return Failure|Success
+     */
     private function parseShortest(&$input, $offset, Context $context)
     {
         /** @var Match $match */
@@ -88,18 +121,26 @@ class Choice extends IterableParser
 
             switch (true) {
                 case!$match: // Keep attempt if first.
-                case ($attempt instanceof Success) && ($match instanceof Failure): // Keep attempt if first match
-                case $attempt->match === $match->match && $attempt->length < $match->length: // Keep attempt if equally successful but shorter
+                case ($attempt instanceof Success)
+                    && ($match instanceof Failure): // Keep attempt if first match
+                case $attempt->match === $match->match
+                    && $attempt->length < $match->length: // Keep attempt if equally successful but shorter
+
                     $match = $attempt;
             }
         }
 
-        // This will fail! $match is not necessarily the shortest
         return ($match instanceof Success)
             ? $this->success($input, $offset, $match->length, $match)
             : $this->failure($input, $offset, $match->length);
     }
 
+    /**
+     * @param string $input
+     * @param int $offset
+     * @param Context $context
+     * @return Failure|Success
+     */
     protected function parse(&$input, $offset, Context $context)
     {
         $this->pushPreferenceToContext($context);
@@ -137,6 +178,9 @@ class Choice extends IterableParser
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         $prefix = $this->preference === Prefer::LONGEST

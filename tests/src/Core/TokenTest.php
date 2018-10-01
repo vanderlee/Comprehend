@@ -120,14 +120,17 @@ class TokenTest extends ParserTestCase
 
     public function testToString()
     {
-        $foo = (new Sequence('f', (new Text('oo'))->token('Ooh!')))->token('Word');
+        $foo = (new Sequence('f', (new Text('oo'))->token('Ooh!'),
+            (new Text('bar'))->token('Bar', 'group')
+        ))->token('Word');
 
-        $match = $foo->match('foo');
-        $this->assertResult(true, 3, $match);
+        $match = $foo->match('foobar');
+        $this->assertResult(true, 6, $match);
 
-        $this->assertEquals('Word (`foo`)' . PHP_EOL
+        $this->assertEquals('Word (`foobar`)' . PHP_EOL
             . '  Vanderlee\Comprehend\Parser\Terminal\Char (`f`)' . PHP_EOL
-            . '  Ooh! (`oo`)', (string)$match->token);
+            . '  Ooh! (`oo`)' . PHP_EOL
+            . '  group::Bar (`bar`)', (string)$match->token);
     }
 
     public function testJsonEncode()

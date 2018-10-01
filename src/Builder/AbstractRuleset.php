@@ -2,6 +2,9 @@
 
 namespace Vanderlee\Comprehend\Builder;
 
+use Exception;
+use RuntimeException;
+use UnexpectedValueException;
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Match\Success;
@@ -82,7 +85,7 @@ abstract class AbstractRuleset extends Parser
     {
         if ($this->parser === null) {
             if (!isset($this->instanceRules[self::ROOT])) {
-                throw new \UnexpectedValueException('Missing default parser');
+                throw new UnexpectedValueException('Missing default parser');
             }
 
             $this->parser = static::call($this->instanceRules, self::ROOT);
@@ -119,27 +122,22 @@ abstract class AbstractRuleset extends Parser
                 return;
             }
 
-            if ($definition instanceof Parser) {
+            if ($definition instanceof Parser
+                || is_callable($definition)) {
+
                 $rules[$key]->generator = $definition;
                 return;
             }
 
-            if (is_callable($definition)) {
-                $rules[$key]->generator = $definition;
-                return;
-            }
-
-            if (is_array($definition)
-                || is_string($definition)
-                || is_int($definition)) {
+            try {
                 $rules[$key]->generator = self::getArgument($definition);
                 return;
+            } catch (Exception $exception) {
+                throw new RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`',
+                    is_object($definition)
+                        ? get_class($definition)
+                        : gettype($definition), $key));
             }
-
-            throw new \RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`',
-                is_object($definition)
-                    ? get_class($definition)
-                    : gettype($definition), $key));
         }
 
         $rules[$key] = $definition;
@@ -163,7 +161,7 @@ abstract class AbstractRuleset extends Parser
         }
 
         if (in_array($name, self::$reserved)) {
-            throw new \RuntimeException("Cannot define reserved name `{$name}`");
+            throw new RuntimeException("Cannot define reserved name `{$name}`");
         }
 
         self::setRule($rules, $name, $definition);
@@ -277,7 +275,7 @@ abstract class AbstractRuleset extends Parser
     {
         try {
             $this->initDefaultParser();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // ignore
         }
 
