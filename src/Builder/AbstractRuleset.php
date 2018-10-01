@@ -14,26 +14,14 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 abstract class AbstractRuleset extends Parser
 {
-    use ArgumentsTrait;
+    use ArgumentsTrait,
+        RuleToParserTrait;
 
     /**
      * Constant to specify default parser for this ruleset, which is called when Ruleset is used as a Parser.
      */
     const ROOT = 'ROOT';
 
-    /**
-     * List of static methods (in order) to attempt instantiating a rule
-     *
-     * @var string[]
-     */
-    private static $ruleMethods = [
-        'ruleToDefinition',
-        'ruleToParser',
-        'ruleToCallable',
-        'ruleToClassname',
-        'ruleToReference',
-        'ruleToArgument',
-    ];
 
     /**
      * List of reserved parser names. These are used as methods instead.
@@ -216,112 +204,6 @@ abstract class AbstractRuleset extends Parser
     }
 
     /**
-     * @param array $rules
-     * @param string $key
-     * @param array $arguments
-     * @return Implementation
-     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
-     */
-    private static function ruleToDefinition(&$rules, $key, $arguments)
-    {
-        if ($rules[$key] instanceof Definition) {
-            return new Implementation($rules[$key], $arguments);
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array $rules
-     * @param string $key
-     * @param array $arguments
-     * @return Parser
-     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
-     */
-    private static function ruleToParser(&$rules, $key)
-    {
-        if ($rules[$key] instanceof Parser) {
-            return clone $rules[$key];
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array $rules
-     * @param string $key
-     * @param array $arguments
-     * @return Parser
-     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
-     */
-    private static function ruleToCallable(&$rules, $key, $arguments)
-    {
-        if (is_callable($rules[$key])) {
-            $instance = $rules[$key](...$arguments);
-            if ($instance instanceof Parser) {
-                return $instance;
-            }
-
-            throw new \InvalidArgumentException("Generator function for `{$key}` does not return Parser");
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array $rules
-     * @param string $key
-     * @param array $arguments
-     * @return Parser
-     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
-     */
-    private static function ruleToClassname(&$rules, $key, $arguments)
-    {
-        if (is_string($rules[$key])
-            && class_exists($rules[$key])
-            && is_subclass_of($rules[$key], Parser::class)) {
-            return new $rules[$key](...$arguments);
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array $rules
-     * @param string $key
-     * @param array $arguments
-     * @return Parser
-     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
-     */
-    private static function ruleToReference(&$rules, $key, $arguments)
-    {
-        if (is_string($rules[$key])
-            && isset($rules[$rules[$key]])) {
-            return static::call($rules, $rules[$key], $arguments);
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array $rules
-     * @param string $key
-     * @param array $arguments
-     * @return Parser
-     * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
-     */
-    private static function ruleToArgument(&$rules, $key)
-    {
-        if (is_array($rules[$key])
-            || is_string($rules[$key])
-            || is_int($rules[$key])) {
-            return self::getArgument($rules[$key]);
-        }
-
-        return null;
-    }
-
-    /**
      * Create a new instance of a definition
      *
      * @param $rules
@@ -331,16 +213,22 @@ abstract class AbstractRuleset extends Parser
      */
     protected static function call(&$rules, $key, $arguments = [])
     {
+        // Undefined rule; return empty definition implementation
         if (!isset($rules[$key])) {
             $rules[$key] = new Definition();
-            self::applyToken($key, self::ruleToDefinition($rules, $key, $arguments));
+            return self::applyToken($key, new Implementation($rules[$key], $arguments));
         }
 
-        foreach (self::$ruleMethods as $ruleMethod) {
-            $instance = self::$ruleMethod($rules, $key, $arguments);
-            if ($instance) {
-                return self::applyToken($key, $instance);
-            }
+        // Rule reference
+        if (is_string($rules[$key])
+            && isset($rules[$rules[$key]])) {
+            return self::applyToken($key, static::call($rules, $rules[$key], $arguments));
+        }
+
+        // Generic rule interpreters
+        $instance = self::ruleToParser($rules[$key], $arguments);
+        if ($instance) {
+            return self::applyToken($key, $instance);
         }
 
         throw new \RuntimeException(sprintf('Cannot instantiate `%2$s` using definition type `%1$s`',

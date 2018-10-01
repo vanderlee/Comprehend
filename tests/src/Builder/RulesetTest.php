@@ -61,7 +61,7 @@ class RulesetTest extends ParserTestCase
         $r->line = function () {
             return null;
         };
-        $this->expectExceptionMessage("Generator function for `line` does not return Parser");
+        $this->expectExceptionMessage("Cannot instantiate `line` using definition type `Closure`");
         $line    = $r->line;
         $line->match('x');
 
