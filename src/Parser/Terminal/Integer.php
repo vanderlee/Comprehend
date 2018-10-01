@@ -4,9 +4,9 @@ namespace Vanderlee\Comprehend\Parser\Terminal;
 
 use Exception;
 use Vanderlee\Comprehend\Core\Context;
-use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Parser\Parser;
 
 /**
  * Matches an integer within the specified range
@@ -65,7 +65,7 @@ class Integer extends Parser
     }
 
     /**
-     * @param int $minimum
+     * @param int|null $minimum
      * @throws Exception
      */
     private function setMinimum($minimum)
@@ -80,7 +80,7 @@ class Integer extends Parser
     }
 
     /**
-     * @param int $maximum
+     * @param int|null $maximum
      * @throws Exception
      */
     private function setMaximum($maximum)
@@ -116,9 +116,12 @@ class Integer extends Parser
         if (preg_match($pattern, $input, $match, 0, $offset) === 1) {
             do {
                 $integer = intval($match[0], $this->base);
-                if (($this->minimum === null || $integer >= $this->minimum)
-                    && ($this->maximum === null || $integer <= $this->maximum)
+                if (($this->minimum === null
+                        || $integer >= $this->minimum)
+                    && ($this->maximum === null
+                        || $integer <= $this->maximum)
                     && $match[0] !== '-') {
+
                     return $this->success($input, $offset, mb_strlen($match[0]));
                 }
 
