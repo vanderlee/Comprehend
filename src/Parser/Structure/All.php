@@ -4,6 +4,7 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
@@ -35,7 +36,7 @@ class All extends Parser
         foreach ($this->parsers as $parser) {
             $match  = $parser->parse($input, $offset, $context);
             $length = min($length, $match->length);
-            if (!$match->match) {
+            if (!($match instanceof Success)) {
                 return $this->failure($input, $offset, $length);
             }
         }

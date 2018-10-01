@@ -5,6 +5,7 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Directive\Prefer;
+use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Match;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -50,7 +51,7 @@ class Choice extends IterableParser
         /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
             $match = $parser->parse($input, $offset, $context);
-            if ($match->match) {
+            if ($match instanceof Success) {
                 return $this->success($input, $offset, $match->length, $match);
             }
             $max = max($max, $match->length);
@@ -64,7 +65,7 @@ class Choice extends IterableParser
         /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
             $match = $parser->parse($input, $offset, $context);
-            if ($match->match == $max_match->match) {
+            if ($match->match === $max_match->match) {
                 if ($match->length > $max_match->length) {
                     $max_match = ($match instanceof Success)
                         ? $this->success($input, $offset, $match->length, $match)
@@ -87,7 +88,7 @@ class Choice extends IterableParser
 
             switch (true) {
                 case!$match: // Keep attempt if first.
-                case $attempt->match && !$match->match: // Keep attempt if first match
+                case ($attempt instanceof Success) && ($match instanceof Failure): // Keep attempt if first match
                 case $attempt->match === $match->match && $attempt->length < $match->length: // Keep attempt if equally successful but shorter
                     $match = $attempt;
             }

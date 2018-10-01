@@ -15,7 +15,7 @@ class Start extends Parser
 
     protected function parse(&$input, $offset, Context $context)
     {
-        return $offset == 0
+        return $offset === 0
             ? $this->success($input, $offset)
             : $this->failure($input, $offset);
     }

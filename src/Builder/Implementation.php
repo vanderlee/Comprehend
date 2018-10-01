@@ -42,12 +42,20 @@ class Implementation extends Parser
         $this->arguments  = $arguments;
     }
 
+    public function __get($name)
+    {
+        if ($name === 'parser') {
+            $this->build();
+            return $this->parser;
+        }
+    }
+
     /**
      * @throws \Exception
      */
     private function build()
     {
-//        if ($this->parser === null) {
+        if ($this->parser === null) {
             $this->parser = $this->definition->generator;
             if (!$this->parser instanceof Parser) {
                 if (!is_callable($this->parser)) {
@@ -57,7 +65,7 @@ class Implementation extends Parser
                 $parser       = ($this->parser);
                 $this->parser = $parser(...$this->arguments);
             }
-//        }
+        }
     }
 
     /**
@@ -74,7 +82,7 @@ class Implementation extends Parser
         $match = $this->parser->parse($input, $offset, $context);
 
         $localResults = []; // this is redundant, but suppresses PHP scanner warnings
-        if ($match->match) {
+        if ($match instanceof Success) {
             $localResults = $match->results;
 
             if (!empty($this->definition->validators)) {

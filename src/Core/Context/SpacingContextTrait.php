@@ -3,6 +3,7 @@
 namespace Vanderlee\Comprehend\Core\Context;
 
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
+use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 trait SpacingContextTrait
@@ -44,7 +45,7 @@ trait SpacingContextTrait
 
         if ($spacer instanceof Parser) {
             $match = $spacer->match($in, $offset);
-            return $match->match
+            return ($match instanceof Success)
                 ? $match->length
                 : false;
         }

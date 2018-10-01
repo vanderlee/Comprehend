@@ -4,6 +4,8 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\Failure;
+use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
@@ -36,7 +38,7 @@ class Except extends Parser
         $match = $this->parser_match->parse($input, $offset, $context);
         $not   = $this->parser_not->parse($input, $offset, $context);
 
-        if ($match->match && !$not->match) {
+        if (($match instanceof Success) && ($not instanceof Failure)) {
             return $this->success($input, $offset, $match->length, $match);
         }
 

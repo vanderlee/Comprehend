@@ -13,6 +13,15 @@ use Vanderlee\Comprehend\Parser\Structure\Sequence;
  */
 class Rfc4408Test extends ParserTestCase
 {
+    protected function getRfc()
+    {
+        return new Rfc4408();
+    }
+
+    public function testConstruct()
+    {
+        $this->assertNotNull($this->getRfc());
+    }
 
     /**
      * @dataProvider rulesData
@@ -24,12 +33,12 @@ class Rfc4408Test extends ParserTestCase
      */
     public function testRules(Parser $parser, $input, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input), (string) $parser . ' <=> ' . $input);
+        $this->assertResult($match, $length, $parser->match($input), (string)$parser . ' <=> ' . $input);
     }
 
     public function rulesData()
     {
-        $spf = new Rfc4408();
+        $spf = $this->getRfc();
 
         return [
             // Core rules

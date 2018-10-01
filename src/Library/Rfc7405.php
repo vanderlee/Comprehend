@@ -16,7 +16,6 @@ require_once 'functions.php';
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * @property-read Parser DQUOTE
  * @property-read Parser case_sensitive_string
  * @property-read Parser quoted_string
  * @property-read Parser case_insensitive_string

@@ -39,6 +39,11 @@ class RepeatTest extends ParserTestCase
         $this->assertResult(true, 1, $c->match('a'));
         $this->assertResult(true, 1, $c->match('aa'));
 
+        $c = Repeat::exact('a', 2);
+        $this->assertResult(false, 0, $c->match(''));
+        $this->assertResult(false, 1, $c->match('a'));
+        $this->assertResult(true, 2, $c->match('aa'));
+        $this->assertResult(true, 2, $c->match('aaa'));
     }
 
     /**

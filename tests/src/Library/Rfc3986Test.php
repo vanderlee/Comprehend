@@ -12,6 +12,15 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Rfc3986Test extends ParserTestCase
 {
+    protected function getRfc()
+    {
+        return new Rfc3986();
+    }
+
+    public function testConstruct()
+    {
+        $this->assertNotNull($this->getRfc());
+    }
 
     /**
      * @dataProvider rulesData
@@ -29,7 +38,7 @@ class Rfc3986Test extends ParserTestCase
     public function rulesData()
     {
         /** @var Rfc3986 $uri */
-        $uri = new Rfc3986();
+        $uri = $this->getRfc();
 
         return [
             [$uri->dec_octet, '0', true, 1],

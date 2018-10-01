@@ -42,7 +42,7 @@ class Regex extends Parser
         $this->popCaseSensitivityFromContext($context);
 
         if (preg_match($pattern, $input, $match, 0, $offset) !== false) {
-            if (count($match) > 0 && mb_strlen($match[0]) > 0 && strpos($input, $match[0], $offset) == $offset) {
+            if (count($match) > 0 && mb_strlen($match[0]) > 0 && strpos($input, $match[0], $offset) === $offset) {
                 return $this->success($input, $offset, mb_strlen($match[0]));
             }
         }

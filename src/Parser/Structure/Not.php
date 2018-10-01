@@ -4,6 +4,7 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
@@ -26,7 +27,7 @@ class Not extends Parser
     protected function parse(&$input, $offset, Context $context)
     {
         $match = $this->parser->parse($input, $offset, $context);
-        return $match->match
+        return ($match instanceof Success)
             ? $this->failure($input, $offset, $match->length)
             : $this->success($input, $offset, 0);
     }

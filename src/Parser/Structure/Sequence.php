@@ -3,6 +3,7 @@
 namespace Vanderlee\Comprehend\Parser\Structure;
 
 use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
@@ -42,7 +43,7 @@ class Sequence extends IterableParser
             $match = $parser->parse($input, $offset + $total, $context);
             $total += $match->length;
 
-            if (!$match->match) {  // must match
+            if (!($match instanceof Success)) {  // must match
                 $this->popSpacer($context);
 
                 return $this->failure($input, $offset, $total);

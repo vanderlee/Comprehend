@@ -173,23 +173,37 @@ abstract class AbstractRuleset extends Parser
         $rule = $rules[$key];
 
         switch (true) {
+            // Parser Definition
             case $rule instanceof Definition:
-                // Parser definition
                 $instance = new Implementation($rule, $arguments);
                 break;
 
+            // Parser
+            case $rule instanceof Parser:
+                $instance = clone $rule;
+                break;
+
+            // Generator function (should return Parser)
+            case is_callable($rule):
+                $instance = $rule(...$arguments);
+                if (!$instance instanceof Parser) {
+                    throw new \InvalidArgumentException("Generator function for rule `{$key}` does not return Parser");
+                }
+                break;
+
+            // Class name of a Parser class
+            case is_string($rule) && class_exists($rule) && is_subclass_of($rule, Parser::class):
+                $instance = new $rule(...$arguments);
+                break;
+
+            // Self-referential call
             case is_string($rule) && isset($rules[$rule]):
-                // Reference other rule
                 $instance = static::call($rules, $rule, $arguments);
                 break;
 
-            case $rule instanceof Parser:
-            case is_callable($rule):
-            //case is_string($rule) && class_exists($rule) && is_subclass_of($rule, Parser::class):
-            case is_array($rule):
-            case is_string($rule):
-            case is_int($rule):
-                $instance = new RuleBinding($rules[$key], $arguments);
+            // S-C-S Array syntax
+            case is_array($rule) || is_string($rule) || is_int($rule):
+                $instance = self::getArgument($rule);
                 break;
 
             default:

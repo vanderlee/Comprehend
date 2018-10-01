@@ -4,6 +4,7 @@ namespace Vanderlee\Comprehend\Parser;
 
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\Success;
 
 /**
  * Description of StubParser
@@ -24,7 +25,7 @@ class Stub extends Parser
 
     public function __set($name, $parser)
     {
-        if ($name == 'parser') {
+        if ($name === 'parser') {
             return $this->parser = self::getArgument($parser);
         }
 
@@ -33,7 +34,7 @@ class Stub extends Parser
 
     public function __get($name)
     {
-        if ($name == 'parser') {
+        if ($name === 'parser') {
             return $this->parser;
         }
 
@@ -47,7 +48,7 @@ class Stub extends Parser
         }
 
         $match = $this->parser->parse($input, $offset, $context);
-        if ($match->match) {
+        if ($match instanceof Success) {
             return $this->success($input, $offset, $match->length, $match);
         }
 

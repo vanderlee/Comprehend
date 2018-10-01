@@ -13,22 +13,32 @@ use Vanderlee\Comprehend\Parser\Parser;
 class Rfc2234Test extends ParserTestCase
 {
 
+    protected function getRfc()
+    {
+        return new Rfc2234();
+    }
+
+    public function testConstruct()
+    {
+        $this->assertNotNull($this->getRfc());
+    }
+
     /**
-     * @dataProvider rulesData
+     * @dataProvider rfc2234Data
      *
      * @param Parser $parser
      * @param $input
      * @param $match
      * @param $length
      */
-    public function testRules(Parser $parser, $input, $match, $length)
+    public function testRfc2234(Parser $parser, $input, $match, $length)
     {
         $this->assertResult($match, $length, $parser->match($input), (string)$parser);
     }
 
-    public function rulesData()
+    public function rfc2234Data()
     {
-        $abnf = new Rfc2234();
+        $abnf = $this->getRfc();
 
         return [
             // Core rules

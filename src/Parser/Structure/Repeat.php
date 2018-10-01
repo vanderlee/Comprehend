@@ -73,9 +73,9 @@ class Repeat extends Parser
                     $child_matches[] = $match;
                 }
             }
-        } while ($skip !== false && $match->match && ($this->max == null || count($child_matches) < $this->max));
+        } while ($skip !== false && ($match instanceof Success) && ($this->max === null || count($child_matches) < $this->max));
 
-        $match = (count($child_matches) >= $this->min) && ($this->max == null || count($child_matches) <= $this->max);
+        $match = (count($child_matches) >= $this->min) && ($this->max === null || count($child_matches) <= $this->max);
 
         $this->popSpacer($context);
 
