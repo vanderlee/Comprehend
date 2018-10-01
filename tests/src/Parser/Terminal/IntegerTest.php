@@ -51,7 +51,7 @@ class IntegerTest extends ParserTestCase
      */
     public function testConstructorInvalidBaseTooLow()
     {
-        $this->expectExceptionMessage("Invalid base");
+        $this->expectExceptionMessage("Unsupported base");
         new Integer(0, null, 1);
     }
 
@@ -60,7 +60,7 @@ class IntegerTest extends ParserTestCase
      */
     public function testConstructorInvalidBaseTooHigh()
     {
-        $this->expectExceptionMessage("Invalid base");
+        $this->expectExceptionMessage("Unsupported base");
         new Integer(0, null, 10 + 26 + 1);
     }
 

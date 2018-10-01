@@ -5,6 +5,8 @@ namespace Vanderlee\Comprehend\Parser\Terminal;
 use Exception;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Match\Failure;
+use Vanderlee\Comprehend\Match\Success;
 
 /**
  * Matches an integer within the specified range
@@ -16,7 +18,7 @@ class Integer extends Parser
     use CaseSensitiveTrait;
 
     /**
-     * List of digits to use for the different bases (upto 36)
+     * List of digits to use for the different bases (up to 36)
      * @var string
      */
     private static $set = '0123456789abcdefghijklmnopqrstuvwxyz';
@@ -36,20 +38,14 @@ class Integer extends Parser
      */
     private $base;
 
+    /**
+     * @param int|null $minimum
+     * @param int|null $maximum
+     * @param int $base
+     * @throws Exception
+     */
     public function __construct($minimum = 0, $maximum = null, $base = 10)
     {
-        if ($minimum !== null
-            && !is_int($minimum)) {
-
-            throw new Exception('Minimum must be integer or `null`');
-        }
-
-        if ($maximum !== null
-            && !is_int($maximum)) {
-
-            throw new Exception('Maximum must be integer or `null`');
-        }
-
         if ($minimum !== null
             && $maximum !== null
             && $minimum > $maximum) {
@@ -57,17 +53,53 @@ class Integer extends Parser
             throw new \Exception('Maximum must be greater than minimum');
         }
 
-        $this->minimum = $minimum;
-        $this->maximum = $maximum;
+        $this->setMinimum($minimum);
+        $this->setMaximum($maximum);
 
         $this->base = intval($base);
         if ($base < 2
             || $base > strlen(self::$set)) {
 
-            throw new \Exception('Invalid base');
+            throw new \Exception('Unsupported base');
         }
     }
 
+    /**
+     * @param int $minimum
+     * @throws Exception
+     */
+    private function setMinimum($minimum)
+    {
+        if ($minimum !== null
+            && !is_int($minimum)) {
+
+            throw new Exception('Minimum must be integer or `null`');
+        }
+
+        $this->minimum = $minimum;
+    }
+
+    /**
+     * @param int $maximum
+     * @throws Exception
+     */
+    private function setMaximum($maximum)
+    {
+        if ($maximum !== null
+            && !is_int($maximum)) {
+
+            throw new Exception('Maximum must be integer or `null`');
+        }
+
+        $this->maximum = $maximum;
+    }
+
+    /**
+     * @param string $input
+     * @param int $offset
+     * @param Context $context
+     * @return Failure|Success
+     */
     protected function parse(&$input, $offset, Context $context)
     {
         $this->pushCaseSensitivityToContext($context);
@@ -97,6 +129,9 @@ class Integer extends Parser
         return $this->failure($input, $offset);
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         return ($this->minimum === null
