@@ -6,13 +6,12 @@ use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of CharParser
+ * Description of CharParser.
  *
  * @author Martijn
  */
 class Char extends Parser
 {
-
     use CaseSensitiveTrait;
 
     private $character = null;
@@ -51,7 +50,6 @@ class Char extends Parser
 
     public function __toString()
     {
-        return '\'' . $this->character . '\'';
+        return '\''.$this->character.'\'';
     }
-
 }

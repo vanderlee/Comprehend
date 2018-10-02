@@ -12,7 +12,6 @@ use Vanderlee\Comprehend\Parser\Terminal\Char;
  */
 class SpacingContextTraitTest extends ParserTestCase
 {
-
     public function testSequenceLexeme()
     {
         $spacer = new Repeat('-', 0);
@@ -94,5 +93,4 @@ class SpacingContextTraitTest extends ParserTestCase
         $this->assertResult(false, 5, $outer->match('foo-b-a-r-baz'));
         $this->assertResult(true, 13, $outer->match('foo-b.a.r-baz'));
     }
-
 }

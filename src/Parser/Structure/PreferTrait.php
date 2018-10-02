@@ -7,15 +7,14 @@ use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Classes implementing this can scan
+ * Classes implementing this can scan.
  *
  * @author Martijn
  */
 trait PreferTrait
 {
-
     /**
-     * Parser used for scanning the text
+     * Parser used for scanning the text.
      *
      * @var Parser
      */
@@ -67,5 +66,4 @@ trait PreferTrait
 
         return $this;
     }
-
 }

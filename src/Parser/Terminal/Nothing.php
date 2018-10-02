@@ -14,7 +14,6 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Nothing extends Parser
 {
-
     protected function parse(&$input, $offset, Context $context)
     {
         return $this->makeMatch($offset <= mb_strlen($input), $input, 0);
@@ -24,5 +23,4 @@ class Nothing extends Parser
     {
         return '0.';
     }
-
 }

@@ -10,10 +10,9 @@ use Vanderlee\Comprehend\Match\Failure;
  */
 class FailureTest extends ParserTestCase
 {
-
     public function testZero()
     {
-        $failure = new Failure;
+        $failure = new Failure();
 
         $this->assertEquals(0, $failure->length);
         $this->assertFalse($failure->match);
@@ -34,9 +33,8 @@ class FailureTest extends ParserTestCase
         $this->assertFalse($failure->match);
         $this->assertEquals('Failed match at 3 characters', (string) $failure);
 
-        $this->expectExceptionMessage("Property name `i_do_not_exist` not recognized");
-        /** @noinspection PhpUndefinedFieldInspection */
+        $this->expectExceptionMessage('Property name `i_do_not_exist` not recognized');
+        /* @noinspection PhpUndefinedFieldInspection */
         $failure->i_do_not_exist;
     }
-
 }

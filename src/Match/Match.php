@@ -5,7 +5,7 @@ namespace Vanderlee\Comprehend\Match;
 use Vanderlee\Comprehend\Core\Token;
 
 /**
- * Description of ParserToken
+ * Description of ParserToken.
  *
  * @author Martijn
  *
@@ -17,14 +17,14 @@ use Vanderlee\Comprehend\Core\Token;
  */
 abstract class Match
 {
-
     private $length;
 
     /**
      * @param string $name
      *
-     * @return mixed
      * @throws \Exception
+     *
+     * @return mixed
      */
     public function __get($name)
     {
@@ -34,16 +34,16 @@ abstract class Match
             case 'results':
                 return [];
             case 'result':
-                return null;
+                return;
             case 'token':
-                return null;
+                return;
         }
 
         throw new \InvalidArgumentException("Property name `{$name}` not recognized");
     }
 
     /**
-     * Create a new match
+     * Create a new match.
      *
      * @param int $length
      */
@@ -54,7 +54,7 @@ abstract class Match
 
     /**
      * Resolve any match stuff (should only ever be called from AbstractParser!
-     * Not for human consumption
+     * Not for human consumption.
      *
      * @return $this
      */
@@ -81,11 +81,10 @@ abstract class Match
      *
      * @param string|null $name
      *
-     * @return boolean
+     * @return bool
      */
     public function hasResult($name = null)
     {
         return false;
     }
-
 }

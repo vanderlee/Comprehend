@@ -7,7 +7,7 @@ use Vanderlee\Comprehend\Match\Output\ResultTrait;
 use Vanderlee\Comprehend\Match\Output\TokenTrait;
 
 /**
- * Successful match of a parser
+ * Successful match of a parser.
  *
  * @author Martijn
  */
@@ -31,7 +31,7 @@ class Success extends Match
     private $successes = [];
 
     /**
-     * Create a new match
+     * Create a new match.
      *
      * @param int               $length
      * @param Success[]|Success $successes
@@ -51,9 +51,11 @@ class Success extends Match
             case 'results':
                 $results = $this->getResults();
                 unset($results[null]);
+
                 return $results;
             case 'result':
                 $results = $this->getResults();
+
                 return isset($results[null])
                     ? $results[null]
                     : null;
@@ -65,10 +67,11 @@ class Success extends Match
     }
 
     /**
-     * Resolve any custom callbacks
+     * Resolve any custom callbacks.
+     *
+     * @throws \ErrorException
      *
      * @return $this|Match
-     * @throws \ErrorException
      */
     public function resolve()
     {
@@ -84,7 +87,6 @@ class Success extends Match
 
     public function __toString()
     {
-        return 'Successfully matched ' . $this->length . ' characters';
+        return 'Successfully matched '.$this->length.' characters';
     }
-
 }

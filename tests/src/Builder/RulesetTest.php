@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpDynamicAsStaticMethodCallInspection */
+<?php
+
+/** @noinspection PhpDynamicAsStaticMethodCallInspection */
 /** @noinspection PhpUndefinedMethodInspection */
 
 /** @noinspection PhpUndefinedFieldInspection */
@@ -19,7 +21,6 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
  */
 class RulesetTest extends ParserTestCase
 {
-
     const CSV_RECORD = [__CLASS__, 'makeCsvRecordParser'];
 
     public static function makeCsvRecordParser($item, $delimiter = ',')
@@ -47,7 +48,7 @@ class RulesetTest extends ParserTestCase
 
     public function testSetFunction()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $r->line = function ($char) {
             return new Repeat($char);
         };
@@ -57,19 +58,17 @@ class RulesetTest extends ParserTestCase
 
     public function testSetFunctionException()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $r->line = function () {
-            return null;
         };
-        $this->expectExceptionMessage("Cannot instantiate `line` using definition type `Closure`");
+        $this->expectExceptionMessage('Cannot instantiate `line` using definition type `Closure`');
         $line = $r->line;
         $line->match('x');
-
     }
 
     public function testSetClassName()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $r->line = Text::class;
         $line = $r->line('foo');
         $this->assertResult(true, 3, $line('foo'));
@@ -77,16 +76,16 @@ class RulesetTest extends ParserTestCase
 
     public function testSetUndefined()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $r->line = null;
         $line = $r->line();
-        $this->expectExceptionMessage("Parser not defined");
+        $this->expectExceptionMessage('Parser not defined');
         $line('foo');
     }
 
     public function testSetArray()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $r->line = ['a', 'b'];
         $line = $r->line();
         $this->assertResult(true, 2, $line('ab'));
@@ -94,7 +93,7 @@ class RulesetTest extends ParserTestCase
 
     public function testSetDefinition()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $r->line = new Definition(function ($char) {
             return new Repeat($char);
         });
@@ -104,7 +103,7 @@ class RulesetTest extends ParserTestCase
 
     public function testSetParser()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $r->line = new Repeat('x');
         $line = $r->line();
         $this->assertResult(true, 5, $line('xxxxx'));
@@ -112,7 +111,7 @@ class RulesetTest extends ParserTestCase
 
     public function testSetForwardFunction()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $line = $r->line('x');
         $r->line = function ($char) {
             return new Repeat($char);
@@ -122,7 +121,7 @@ class RulesetTest extends ParserTestCase
 
     public function testSetForwardDefinition()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $line = $r->line('x');
         $r->line = new Definition(function ($char) {
             return new Repeat($char);
@@ -132,7 +131,7 @@ class RulesetTest extends ParserTestCase
 
     public function testSetForwardParser()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $line = $r->line();
         $r->line = new Repeat('x');
         $this->assertResult(true, 5, $line('xxxxx'));
@@ -140,7 +139,7 @@ class RulesetTest extends ParserTestCase
 
     public function testSetAndGetFunction()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $r->line = function ($char = 'x') {
             return new Repeat($char);
         };
@@ -150,7 +149,7 @@ class RulesetTest extends ParserTestCase
 
     public function testSetAndGetParser()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $r->line = new Repeat('x');
         $line = $r->line;
         $this->assertResult(true, 5, $line('xxxxx'));
@@ -165,19 +164,19 @@ class RulesetTest extends ParserTestCase
     public function testSetDefaultNull()
     {
         $r = new Ruleset(Ruleset::ROOT, 1.234);
-        $this->expectExceptionMessage("Cannot instantiate `ROOT` using definition type `double`");
+        $this->expectExceptionMessage('Cannot instantiate `ROOT` using definition type `double`');
         $r('foo');
     }
 
     public function testDefaultToString()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $this->assertEquals('', (string) $r);
     }
 
     public function testSetAndGetForwardFunction()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $line = $r->line;
         $r->line = function ($char = 'x') {
             return new Repeat($char);
@@ -187,7 +186,7 @@ class RulesetTest extends ParserTestCase
 
     public function testSetAndGetForwardParser()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $line = $r->line;
         $r->line = new Repeat('x');
         $this->assertResult(true, 5, $line('xxxxx'));
@@ -195,7 +194,7 @@ class RulesetTest extends ParserTestCase
 
     public function testSetAndGetForwardArray()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $line = $r->line;
         $r->line = ['a', 'b'];
         $this->assertResult(true, 2, $line('ab'));
@@ -203,17 +202,17 @@ class RulesetTest extends ParserTestCase
 
     public function testSetAndGetForwardBad()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $this->assertInstanceOf(Parser::class, $r->line);
-        $this->expectExceptionMessage("Cannot redefine `line` using definition type `NULL`");
+        $this->expectExceptionMessage('Cannot redefine `line` using definition type `NULL`');
         $r->line = null;
     }
 
     public function testSetAndGetForwardBadClass()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $this->assertInstanceOf(Parser::class, $r->line);
-        $this->expectExceptionMessage("Cannot redefine `line` using definition type `stdClass`");
+        $this->expectExceptionMessage('Cannot redefine `line` using definition type `stdClass`');
         $r->line = new \stdClass();
     }
 
@@ -231,7 +230,7 @@ class RulesetTest extends ParserTestCase
 
     public function testUnsetParser()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
         $r->line = new Repeat('x');
         $line = $r->line();
         $this->assertResult(true, 5, $line('xxxxx'));
@@ -276,7 +275,7 @@ class RulesetTest extends ParserTestCase
 
     public function testInstanceDefine()
     {
-        $r = new Ruleset;
+        $r = new Ruleset();
 
         // Function
         $r->define('line', function ($char) {

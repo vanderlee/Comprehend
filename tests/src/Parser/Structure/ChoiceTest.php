@@ -15,7 +15,7 @@ class ChoiceTest extends ParserTestCase
 {
     public function testEmpty()
     {
-        $this->expectExceptionMessage("No arguments");
+        $this->expectExceptionMessage('No arguments');
         new Choice();
     }
 

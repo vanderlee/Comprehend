@@ -5,7 +5,7 @@ namespace Vanderlee\Comprehend\Match\Output;
 trait CallbackTrait
 {
     /**
-     * List of ordinary callbacks to process
+     * List of ordinary callbacks to process.
      *
      * @var callable[]
      */

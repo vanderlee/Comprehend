@@ -11,7 +11,6 @@ use Vanderlee\Comprehend\Parser\Terminal\Nothing;
  */
 class NothingTest extends ParserTestCase
 {
-
     /**
      * @dataProvider nothingData
      *
@@ -39,5 +38,4 @@ class NothingTest extends ParserTestCase
             'Char, beyond'  => [new Nothing(), 'a', 2, false, 0],
         ];
     }
-
 }
