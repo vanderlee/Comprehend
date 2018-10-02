@@ -13,7 +13,7 @@ class NothingTest extends ParserTestCase
 {
 
     /**
-     * /@dataProvider nothingData
+     * @dataProvider nothingData
      *
      * @param Nothing $parser
      * @param         $input

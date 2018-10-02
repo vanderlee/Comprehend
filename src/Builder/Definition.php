@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Builder;
 
+use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
@@ -11,6 +12,8 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Definition
 {
+    use ArgumentsTrait;
+
     /**
      * @var callable|Parser
      */
@@ -30,6 +33,29 @@ class Definition
         if (is_callable($validator)) {
             $this->validators[] = $validator;
         }
+    }
+
+    /**
+     * (Re-)define this definition from any supported source
+     *
+     * @param mixed $definition
+     *
+     * @throws InvalidArgumentException
+     */
+    public function define($definition) {
+        if ($definition instanceof Definition) {
+            $this->generator = $definition->generator;
+            $this->validators = $definition->validators;
+            return;
+        }
+
+        if ($definition instanceof Parser
+            || is_callable($definition)) {
+            $this->generator = $definition;
+            return;
+        }
+
+        $this->generator = self::getArgument($definition);
     }
 
     public function setGenerator($parser)

@@ -118,43 +118,16 @@ abstract class AbstractRuleset extends Parser
         if (isset($rules[$key])
             && $rules[$key] instanceof Definition) {
 
-            if ($definition instanceof Definition) {
-                $rules[$key]->generator = $definition->generator;
-                $rules[$key]->validators = $definition->validators;
-                return;
-            }
-
-            if ($definition instanceof Parser
-                || is_callable($definition)) {
-
-                $rules[$key]->generator = $definition;
-                return;
-            }
-
             try {
-                $rules[$key]->generator = self::getArgument($definition);
+                $rules[$key]->define($definition);
                 return;
             } catch (Exception $exception) {
                 throw new RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`',
-                    self::typeToString($definition), $key));
+                    self::getArgumentType($definition), $key));
             }
         }
 
         $rules[$key] = $definition;
-    }
-
-    /**
-     * Convert a variable type to a string
-     *
-     * @param mixed $variable
-     *
-     * @return string
-     */
-    private static function typeToString($variable)
-    {
-        return is_object($variable)
-            ? get_class($variable)
-            : gettype($variable);
     }
 
     /**
@@ -247,7 +220,7 @@ abstract class AbstractRuleset extends Parser
         }
 
         throw new \RuntimeException(sprintf('Cannot instantiate `%2$s` using definition type `%1$s`',
-            self::typeToString($rules[$key]), $key));
+            self::getArgumentType($rules[$key]), $key));
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Core;
 
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
@@ -27,7 +28,7 @@ trait ArgumentsTrait
     private static function getArrayArgument($argument, $arrayToSequence)
     {
         if (empty($argument)) {
-            throw new \InvalidArgumentException('Empty array argument');
+            throw new InvalidArgumentException('Empty array argument');
         }
 
         if (count($argument) === 1) {
@@ -49,7 +50,7 @@ trait ArgumentsTrait
     private static function getStringArgument($argument)
     {
         if (strlen($argument) === 0) {
-            throw new \InvalidArgumentException('Empty argument');
+            throw new InvalidArgumentException('Empty argument');
         }
 
         if (strlen($argument) === 1) {
@@ -66,6 +67,8 @@ trait ArgumentsTrait
      * @param bool  $arrayToSequence if argument is an array, convert to Sequence (`true`) or Choice (`false`)
      *
      * @return Parser
+     *
+     * @throws InvalidArgumentException
      */
     protected static function getArgument($argument, $arrayToSequence = true)
     {
@@ -85,10 +88,9 @@ trait ArgumentsTrait
             return $argument;
         }
 
-        throw new \InvalidArgumentException(sprintf('Invalid argument type `%1$s`',
-            is_object($argument)
-                ? get_class($argument)
-                : gettype($argument)));
+        throw new InvalidArgumentException(sprintf('Invalid argument type `%1$s`',
+            self::getArgumentType($argument)
+        ));
     }
 
     /**
@@ -104,5 +106,19 @@ trait ArgumentsTrait
         return array_map(function ($argument) use ($arrayToSequence) {
             return self::getArgument($argument, $arrayToSequence);
         }, $arguments);
+    }
+
+    /**
+     * Convert a variable type to a string
+     *
+     * @param mixed $variable
+     *
+     * @return string
+     */
+    protected static function getArgumentType($variable)
+    {
+        return is_object($variable)
+            ? get_class($variable)
+            : gettype($variable);
     }
 }
