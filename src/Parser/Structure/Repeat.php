@@ -60,7 +60,6 @@ class Repeat extends Parser
 
         $this->pushSpacer($context);
 
-        $match  = null;
         $length = 0;
         do {
             // No skipping at very start

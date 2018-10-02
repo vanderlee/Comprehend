@@ -92,7 +92,7 @@ class Implementation extends Parser
      *
      * @param Match $match
      * @param string $text
-     * @return array|bool
+     * @return array|false
      */
     private function validateResults(Match $match, $text)
     {
