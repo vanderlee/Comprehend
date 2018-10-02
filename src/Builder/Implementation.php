@@ -6,6 +6,7 @@ use Exception;
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Match\Failure;
+use Vanderlee\Comprehend\Match\Match;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -87,6 +88,48 @@ class Implementation extends Parser
     }
 
     /**
+     * Get and validate a set of results for the local scope of this parser
+     *
+     * @param Match $match
+     * @param string $text
+     * @return array|bool
+     */
+    private function validateResults(Match $match, $text)
+    {
+        $results = [];
+        if ($match instanceof Success) {
+            $results = $match->results;
+            foreach ($this->definition->validators as $validator) {
+                if (!($validator($text, $results))) {
+                    return false;
+                }
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Apply a callback to handle all processors.
+     *
+     * @param Success $match
+     * @param array $localResults
+     * @return Success
+     */
+    private function addProcessors(Success $match, $localResults) {
+        if (!empty($this->definition->processors)) {
+            $processors = $this->definition->processors;
+            $match->addResultCallback(function (&$results) use ($processors, $localResults) {
+                foreach ($processors as $key => $processor) {
+                    $results[$key] = $processor($localResults, $results);
+                }
+            });
+        }
+
+        return $match;
+    }
+
+    /**
      * @param string $input
      * @param int $offset
      * @param Context $context
@@ -99,35 +142,19 @@ class Implementation extends Parser
 
         $match = $this->parser->parse($input, $offset, $context);
 
-        $localResults = []; // this is redundant, but suppresses PHP scanner warnings
+        $results = $this->validateResults($match, substr($input, $offset, $match->length));
+        if ($results === false) {
+            return $this->failure($input, $offset, $match->length);
+        }
+
         if ($match instanceof Success) {
-            $localResults = $match->results;
-            foreach ($this->definition->validators as $validator) {
-                if (!($validator(substr($input, $offset, $match->length), $localResults))) {
-                    return $this->failure($input, $offset, $match->length);
-                }
-            }
+            $successes = empty($this->definition->processors)
+                ? $match
+                : [];
+            return $this->addProcessors($this->success($input, $offset, $match->length, $successes), $results);
         }
 
-        // Copy match into new match, only pass original callbacks if processor not set
-        $successes = empty($this->definition->processors)
-            ? $match
-            : [];
-        $match     = ($match instanceof Success)
-            ? $this->success($input, $offset, $match->length, $successes)
-            : $this->failure($input, $offset, $match->length);
-
-        if ($match instanceof Success
-            && !empty($this->definition->processors)) {
-
-            foreach ($this->definition->processors as $key => $processor) {
-                $match->addResultCallback(function (&$results) use ($key, $processor, $localResults) {
-                    $results[$key] = $processor($localResults, $results);
-                });
-            }
-        }
-
-        return $match;
+        return $this->failure($input, $offset, $match->length);
     }
 
     /**

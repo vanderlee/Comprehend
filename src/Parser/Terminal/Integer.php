@@ -94,6 +94,14 @@ class Integer extends Parser
         $this->maximum = $maximum;
     }
 
+    private function isInRange($integer)
+    {
+        return ($this->minimum === null
+                || $integer >= $this->minimum)
+            && ($this->maximum === null
+                || $integer <= $this->maximum);
+    }
+
     /**
      * @param string $input
      * @param int $offset
@@ -116,10 +124,7 @@ class Integer extends Parser
         if (preg_match($pattern, $input, $match, 0, $offset) === 1) {
             do {
                 $integer = intval($match[0], $this->base);
-                if (($this->minimum === null
-                        || $integer >= $this->minimum)
-                    && ($this->maximum === null
-                        || $integer <= $this->maximum)
+                if ($this->isInRange($integer)
                     && $match[0] !== '-') {
 
                     return $this->success($input, $offset, mb_strlen($match[0]));

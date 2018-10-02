@@ -55,9 +55,10 @@ class Repeat extends Parser
 
     protected function parse(&$input, $offset, Context $context)
     {
-        $this->pushSpacer($context);
 
         $childMatches = [];
+
+        $this->pushSpacer($context);
 
         $match  = null;
         $length = 0;
@@ -66,20 +67,23 @@ class Repeat extends Parser
             $skip = $length > 0
                 ? $context->skipSpacing($input, $offset + $length)
                 : 0;
-            if ($skip !== false) {
-                $match = $this->parser->parse($input, $offset + $length + $skip, $context);
-                if ($match instanceof Success) {
-                    $length          += $skip + $match->length;
-                    $childMatches[] = $match;
-                }
-            }
-        } while ($skip !== false && ($match instanceof Success) && ($this->max === null || count($childMatches) < $this->max));
 
-        $match = (count($childMatches) >= $this->min) && ($this->max === null || count($childMatches) <= $this->max);
+            if ($skip === false) {
+                break;
+            }
+
+            $match = $this->parser->parse($input, $offset + $length + $skip, $context);
+            if ($match instanceof Success) {
+                $length         += $skip + $match->length;
+                $childMatches[] = $match;
+            }
+        } while (($match instanceof Success)
+        && ($this->max === null
+            || count($childMatches) < $this->max));
 
         $this->popSpacer($context);
 
-        return $match
+        return count($childMatches) >= $this->min
             ? $this->success($input, $offset, $length, $childMatches)
             : $this->failure($input, $offset, $length);
     }
