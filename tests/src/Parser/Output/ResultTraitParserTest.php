@@ -7,13 +7,12 @@ use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /**
- * Test the results
+ * Test the results.
  *
  * @author Martijn
  */
 class ResultTraitParserTest extends ParserTestCase
 {
-
     public function testConcatFlat()
     {
         $parser = new Sequence(

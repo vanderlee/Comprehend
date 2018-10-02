@@ -7,7 +7,7 @@ use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Match\Success;
 
 /**
- * Description of StubParser
+ * Description of StubParser.
  *
  * @property Parser|null $parser
  *
@@ -15,7 +15,6 @@ use Vanderlee\Comprehend\Match\Success;
  */
 class Stub extends Parser
 {
-
     use ArgumentsTrait;
 
     /**
@@ -57,10 +56,9 @@ class Stub extends Parser
 
     public function __toString()
     {
-        /** @noinspection HtmlUnknownTag */
+        /* @noinspection HtmlUnknownTag */
         return $this->parser
             ? (string) $this->parser
             : '<undefined>';
     }
-
 }

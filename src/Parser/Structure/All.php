@@ -8,13 +8,12 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Matches if and only if all parsers individually match. Returned length is the shortest length of all matches
+ * Matches if and only if all parsers individually match. Returned length is the shortest length of all matches.
  *
  * @author Martijn
  */
 class All extends Parser
 {
-
     use ArgumentsTrait;
 
     /**
@@ -40,12 +39,12 @@ class All extends Parser
                 return $this->failure($input, $offset, $length);
             }
         }
+
         return $this->success($input, $offset, $length);
     }
 
     public function __toString()
     {
-        return '( ' . join(' + ', $this->parsers) . ' )';
+        return '( '.implode(' + ', $this->parsers).' )';
     }
-
 }

@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 namespace Tests\Src\Library;
 
@@ -12,7 +14,6 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Rfc2234Test extends ParserTestCase
 {
-
     protected function getRfc()
     {
         return new Rfc2234();
@@ -74,5 +75,4 @@ class Rfc2234Test extends ParserTestCase
             [$abnf->hex_val, 'xG', false, 1],
         ];
     }
-
 }

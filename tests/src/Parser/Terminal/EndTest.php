@@ -11,7 +11,6 @@ use Vanderlee\Comprehend\Parser\Terminal\End;
  */
 class EndTest extends ParserTestCase
 {
-
     /**
      * @dataProvider endData
      *
@@ -37,5 +36,4 @@ class EndTest extends ParserTestCase
             [new End(), 'aa', 2, true, 0],
         ];
     }
-
 }

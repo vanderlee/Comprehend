@@ -39,5 +39,4 @@ class CaseSensitiveTest extends ParserTestCase
             [new CaseSensitive(false, 'FOO'), 'foo', 0, true, 3],
         ];
     }
-
 }

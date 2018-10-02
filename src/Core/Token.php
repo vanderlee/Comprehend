@@ -3,9 +3,8 @@
 namespace Vanderlee\Comprehend\Core;
 
 /**
- * Class Token
+ * Class Token.
  *
- * @package Vanderlee\Comprehend\Core
  *
  * @property-read Token[] $children
  * @property-read string  $class
@@ -18,13 +17,12 @@ namespace Vanderlee\Comprehend\Core;
  */
 class Token implements \JsonSerializable
 {
-
-    private $group  = null;
-    private $name   = null;
-    private $input  = null;
+    private $group = null;
+    private $name = null;
+    private $input = null;
     private $offset = null;
     private $length = null;
-    private $class  = null;
+    private $class = null;
 
     /**
      * @var Token[]
@@ -60,16 +58,16 @@ class Token implements \JsonSerializable
     private function toString($depth = 0)
     {
         $signature = ($this->group
-                ? $this->group . '::'
+                ? $this->group.'::'
                 : '')
-            . ($this->name
+            .($this->name
                 ? $this->name
                 : $this->class);
 
-        $output = str_repeat('  ', $depth) . "{$signature} (`{$this->text}`)";
+        $output = str_repeat('  ', $depth)."{$signature} (`{$this->text}`)";
 
         foreach ($this->children as $child) {
-            $output .= PHP_EOL . $child->toString($depth + 1);
+            $output .= PHP_EOL.$child->toString($depth + 1);
         }
 
         return $output;
@@ -93,7 +91,7 @@ class Token implements \JsonSerializable
     }
 
     /**
-     * Create an XML node of this token
+     * Create an XML node of this token.
      *
      * @param \DOMDocument $document
      *
@@ -110,7 +108,7 @@ class Token implements \JsonSerializable
         $group = preg_replace('/[^-_a-zA-Z0-9]/', '_', $this->group);
 
         $element = $this->group
-            ? $document->createElementNS($this->group, $group . ':' . $name, $value)
+            ? $document->createElementNS($this->group, $group.':'.$name, $value)
             : $document->createElement($name, $value);
 
         foreach ($this->children as $child) {
@@ -122,7 +120,7 @@ class Token implements \JsonSerializable
 
     /**
      * Convert object to JSON for json_encode
-     * Implements /JsonSerializable interface
+     * Implements /JsonSerializable interface.
      */
     public function jsonSerialize()
     {
@@ -152,5 +150,4 @@ class Token implements \JsonSerializable
 
         return $array;
     }
-
 }

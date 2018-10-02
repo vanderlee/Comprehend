@@ -6,13 +6,12 @@ use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of SetParser
+ * Description of SetParser.
  *
  * @author Martijn
  */
 class Set extends Parser
 {
-
     use CaseSensitiveTrait;
 
     private $set = null;
@@ -50,7 +49,7 @@ class Set extends Parser
 
         $this->pushCaseSensitivityToContext($context);
 
-        if (strchr($context->handleCase($this->set), $context->handleCase($input[$offset])) !== false) {
+        if (strstr($context->handleCase($this->set), $context->handleCase($input[$offset])) !== false) {
             $this->popCaseSensitivityFromContext($context);
 
             return $this->makeMatch($this->include, $input, $offset, 1);
@@ -65,7 +64,6 @@ class Set extends Parser
     {
         return ($this->include
                 ? ''
-                : chr(0xAC)) . '( \'' . join('\' | \'', str_split($this->set)) . '\' )';
+                : chr(0xAC)).'( \''.implode('\' | \'', str_split($this->set)).'\' )';
     }
-
 }

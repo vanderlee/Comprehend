@@ -81,11 +81,12 @@ class Choice extends IterableParser
             }
             $max = max($max, $match->length);
         }
+
         return $this->failure($input, $offset, $max);
     }
 
     /**
-     * Determine the longest and most successful match
+     * Determine the longest and most successful match.
      *
      * @param Match $attempt
      * @param Match $match
@@ -131,7 +132,7 @@ class Choice extends IterableParser
     }
 
     /**
-     * Determine the shortest and most successful match
+     * Determine the shortest and most successful match.
      *
      * @param Match|null $attempt
      * @param Match      $match
@@ -211,7 +212,7 @@ class Choice extends IterableParser
     }
 
     /**
-     * Add one or more parsers as choices
+     * Add one or more parsers as choices.
      *
      * @param string[]|int[]|Parser[] $arguments
      *
@@ -237,6 +238,6 @@ class Choice extends IterableParser
                 :
                 '');
 
-        return $prefix . '( ' . join(' | ', $this->parsers) . ' )';
+        return $prefix.'( '.implode(' | ', $this->parsers).' )';
     }
 }

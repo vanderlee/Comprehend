@@ -23,7 +23,6 @@ abstract class AbstractRuleset extends Parser
      */
     const ROOT = 'ROOT';
 
-
     /**
      * List of reserved parser names. These are used as methods instead.
      *
@@ -101,6 +100,7 @@ abstract class AbstractRuleset extends Parser
         if ($match instanceof Success) {
             return $this->success($input, $offset, $match->length, $match);
         }
+
         return $this->failure($input, $offset, $match->length);
     }
 
@@ -117,22 +117,23 @@ abstract class AbstractRuleset extends Parser
     {
         if (isset($rules[$key])
             && $rules[$key] instanceof Definition) {
-
             if ($definition instanceof Definition) {
                 $rules[$key]->generator = $definition->generator;
                 $rules[$key]->validators = $definition->validators;
+
                 return;
             }
 
             if ($definition instanceof Parser
                 || is_callable($definition)) {
-
                 $rules[$key]->generator = $definition;
+
                 return;
             }
 
             try {
                 $rules[$key]->generator = self::getArgument($definition);
+
                 return;
             } catch (Exception $exception) {
                 throw new RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`',
@@ -144,7 +145,7 @@ abstract class AbstractRuleset extends Parser
     }
 
     /**
-     * Convert a variable type to a string
+     * Convert a variable type to a string.
      *
      * @param mixed $variable
      *
@@ -162,7 +163,7 @@ abstract class AbstractRuleset extends Parser
      *
      * @param array        $rules
      * @param string|array $name
-     * @param Mixed|null   $definition
+     * @param mixed|null   $definition
      *
      * @throws \Exception
      */
@@ -172,6 +173,7 @@ abstract class AbstractRuleset extends Parser
             foreach ($name as $key => $value) {
                 self::defineRule($rules, $key, $value);
             }
+
             return;
         }
 
@@ -218,7 +220,7 @@ abstract class AbstractRuleset extends Parser
     }
 
     /**
-     * Create a new instance of a definition
+     * Create a new instance of a definition.
      *
      * @param       $rules
      * @param       $key
@@ -231,6 +233,7 @@ abstract class AbstractRuleset extends Parser
         // Undefined rule; return empty definition implementation
         if (!isset($rules[$key])) {
             $rules[$key] = new Definition();
+
             return self::applyToken($key, new Implementation($rules[$key], $arguments));
         }
 
@@ -251,13 +254,14 @@ abstract class AbstractRuleset extends Parser
     }
 
     /**
-     * Handle instance/object definitions
+     * Handle instance/object definitions.
      *
      * @param string $name
      * @param array  $arguments
      *
-     * @return Parser
      * @throws \Exception
+     *
+     * @return Parser
      */
     public function __call($name, $arguments = [])
     {
@@ -265,13 +269,14 @@ abstract class AbstractRuleset extends Parser
     }
 
     /**
-     * Handle static/class definitions
+     * Handle static/class definitions.
      *
      * @param string $name
      * @param array  $arguments
      *
-     * @return Parser
      * @throws \Exception
+     *
+     * @return Parser
      */
     public static function __callStatic($name, $arguments = [])
     {

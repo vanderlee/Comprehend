@@ -11,7 +11,6 @@ use Vanderlee\Comprehend\Parser\Terminal\Regex;
  */
 class RegexTest extends ParserTestCase
 {
-
     public function testConstruction()
     {
         $this->assertInstanceOf(Regex::class, new Regex('/a/'));
@@ -66,5 +65,4 @@ class RegexTest extends ParserTestCase
             [(new Regex('~[a-f]+~'))->caseInsensitive(), 'ABC', 0, true, 3],
         ];
     }
-
 }

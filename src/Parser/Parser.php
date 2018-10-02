@@ -48,15 +48,15 @@ abstract class Parser
     abstract protected function parse(&$input, $offset, Context $context);
 
     /**
-     * @param string  $input
-     * @param integer $offset
+     * @param string $input
+     * @param int    $offset
      *
      * @return Match;
      */
     public function match($input, $offset = 0)
     {
         if ($offset < 0) {
-            throw new \InvalidArgumentException("Negative offset");
+            throw new \InvalidArgumentException('Negative offset');
         }
 
         return $this->parse($input, $offset, new Context())->resolve();
@@ -68,7 +68,7 @@ abstract class Parser
     }
 
     /**
-     * Create a match
+     * Create a match.
      *
      * @param bool              $success
      * @param string            $input
@@ -86,7 +86,7 @@ abstract class Parser
     }
 
     /**
-     * Create a successful match
+     * Create a successful match.
      *
      * @param string            $input
      * @param int               $offset
@@ -131,7 +131,7 @@ abstract class Parser
     }
 
     /**
-     * Create a failed match
+     * Create a failed match.
      *
      * @param string $input
      * @param int    $offset

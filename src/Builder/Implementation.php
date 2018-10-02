@@ -11,13 +11,12 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of Factory
+ * Description of Factory.
  *
  * @author Martijn
  */
 class Implementation extends Parser
 {
-
     /**
      * @var Parser|callable|null
      */
@@ -31,14 +30,14 @@ class Implementation extends Parser
     /**
      * @var callable|null
      */
-    public $processor    = null;
+    public $processor = null;
     public $processorKey = null;
 
     /**
      * @var Definition
      */
     private $definition = null;
-    private $arguments  = null;
+    private $arguments = null;
 
     /**
      * @param Definition $definition
@@ -89,7 +88,7 @@ class Implementation extends Parser
     }
 
     /**
-     * Get and validate a set of results for the local scope of this parser
+     * Get and validate a set of results for the local scope of this parser.
      *
      * @param Match  $match
      * @param string $text
@@ -138,8 +137,9 @@ class Implementation extends Parser
      * @param int     $offset
      * @param Context $context
      *
-     * @return Failure|Success
      * @throws Exception
+     *
+     * @return Failure|Success
      */
     protected function parse(&$input, $offset, Context $context)
     {
@@ -156,6 +156,7 @@ class Implementation extends Parser
             $successes = empty($this->definition->processors)
                 ? $match
                 : [];
+
             return $this->addProcessors($this->success($input, $offset, $match->length, $successes), $results);
         }
 
@@ -175,5 +176,4 @@ class Implementation extends Parser
 
         return (string) $this->parser;
     }
-
 }

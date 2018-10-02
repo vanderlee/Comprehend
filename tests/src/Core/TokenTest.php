@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
+<?php
+
+/** @noinspection PhpUndefinedMethodInspection */
 
 namespace Tests\Src\Core;
 
@@ -12,13 +14,12 @@ use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /**
- * Node tests
+ * Node tests.
  *
  * @author Martijn
  */
 class TokenTest extends ParserTestCase
 {
-
     public function testTokens()
     {
         $foo = (new Text('foo'))->token('FooToken');
@@ -113,8 +114,8 @@ class TokenTest extends ParserTestCase
         $foo = (new Text('foo'))->token('Word');
         $match = $foo->match('foo');
         $this->assertResult(true, 3, $match);
-        $this->expectExceptionMessage("Undefined property `i_do_not_exist`");
-        /** @noinspection PhpUndefinedFieldInspection */
+        $this->expectExceptionMessage('Undefined property `i_do_not_exist`');
+        /* @noinspection PhpUndefinedFieldInspection */
         $match->token->i_do_not_exist;
     }
 
@@ -127,10 +128,10 @@ class TokenTest extends ParserTestCase
         $match = $foo->match('foobar');
         $this->assertResult(true, 6, $match);
 
-        $this->assertEquals('Word (`foobar`)' . PHP_EOL
-            . '  Vanderlee\Comprehend\Parser\Terminal\Char (`f`)' . PHP_EOL
-            . '  Ooh! (`oo`)' . PHP_EOL
-            . '  group::Bar (`bar`)', (string) $match->token);
+        $this->assertEquals('Word (`foobar`)'.PHP_EOL
+            .'  Vanderlee\Comprehend\Parser\Terminal\Char (`f`)'.PHP_EOL
+            .'  Ooh! (`oo`)'.PHP_EOL
+            .'  group::Bar (`bar`)', (string) $match->token);
     }
 
     public function testJsonEncode()
@@ -141,35 +142,35 @@ class TokenTest extends ParserTestCase
         $this->assertResult(true, 3, $match);
 
         $this->assertEquals('{"group":null,"name":"Word","text":"foo","offset":0,"length":3'
-            . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Structure\\\\Sequence","children":['
-            . '{"group":null,"name":null,"text":"f","offset":0,"length":1'
-            . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Char","children":[]},'
-            . '{"group":null,"name":"Ooh!","text":"oo","offset":1,"length":2'
-            . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Text","children":[]}'
-            . ']}', json_encode($match->token));
+            .',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Structure\\\\Sequence","children":['
+            .'{"group":null,"name":null,"text":"f","offset":0,"length":1'
+            .',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Char","children":[]},'
+            .'{"group":null,"name":"Ooh!","text":"oo","offset":1,"length":2'
+            .',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Text","children":[]}'
+            .']}', json_encode($match->token));
     }
 
     public function testToXml()
     {
-        $foo = (new Sequence('f', (new Text('oo'))->token('Ooh!', "Snap")))->token('Word');
+        $foo = (new Sequence('f', (new Text('oo'))->token('Ooh!', 'Snap')))->token('Word');
 
         $match = $foo->match('foo');
         $this->assertResult(true, 3, $match);
 
-        /** @noinspection HtmlUnknownTag */
-        $this->assertEquals('<?xml version="1.0"?>' . "\n"
-            . '<Word xmlns:Snap="Snap">'
-            . '<Vanderlee_Comprehend_Parser_Terminal_Char>f</Vanderlee_Comprehend_Parser_Terminal_Char>'
-            . '<Snap:Ooh_ xmlns:Snap="Snap">oo</Snap:Ooh_>'
-            . '</Word>' . "\n", $match->token->toXml()->saveXML());
+        /* @noinspection HtmlUnknownTag */
+        $this->assertEquals('<?xml version="1.0"?>'."\n"
+            .'<Word xmlns:Snap="Snap">'
+            .'<Vanderlee_Comprehend_Parser_Terminal_Char>f</Vanderlee_Comprehend_Parser_Terminal_Char>'
+            .'<Snap:Ooh_ xmlns:Snap="Snap">oo</Snap:Ooh_>'
+            .'</Word>'."\n", $match->token->toXml()->saveXML());
     }
 
     protected function extractTokenSignatures(Token $token)
     {
         $signature = ($token->group
-                ? $token->group . '::'
+                ? $token->group.'::'
                 : '')
-            . ($token->name
+            .($token->name
                 ? $token->name
                 : $token->class);
 

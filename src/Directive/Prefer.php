@@ -7,15 +7,14 @@ use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of OrDirective
+ * Description of OrDirective.
  *
  * @author Martijn
  */
 class Prefer extends Parser
 {
-
-    const FIRST    = 'first';
-    const LONGEST  = 'longest';
+    const FIRST = 'first';
+    const LONGEST = 'longest';
     const SHORTEST = 'shortest';
 
     use ArgumentsTrait;
@@ -26,9 +25,9 @@ class Prefer extends Parser
     private $parser = null;
 
     /**
-     * One of self::*
+     * One of self::*.
      *
-     * @var integer
+     * @var int
      */
     private $preference = null;
 
@@ -43,7 +42,7 @@ class Prefer extends Parser
         if (!in_array($preference, [
             self::FIRST,
             self::LONGEST,
-            self::SHORTEST
+            self::SHORTEST,
         ])) {
             throw new \DomainException("Invalid preference `{$preference}` ");
         }
@@ -57,6 +56,7 @@ class Prefer extends Parser
         $context->pushPreference($this->preference);
         $match = $this->parser->parse($input, $offset, $context);
         $context->popPreference();
+
         return $match;
     }
 
@@ -67,10 +67,9 @@ class Prefer extends Parser
             case self::FIRST:
                 return (string) $this->parser;
             case self::LONGEST:
-                return 'longest-of' . (string) $this->parser;
+                return 'longest-of'.(string) $this->parser;
             case self::SHORTEST:
-                return 'shortest-of' . (string) $this->parser;
+                return 'shortest-of'.(string) $this->parser;
         }
     }
-
 }
