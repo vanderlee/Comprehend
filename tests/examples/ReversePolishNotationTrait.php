@@ -4,9 +4,8 @@ namespace Tests\example;
 
 trait ReversePolishNotationTrait
 {
-
     /**
-     * Solve a reverse polish notation (postfix) expresion
+     * Solve a reverse polish notation (postfix) expresion.
      *
      * @param string[] $tokens
      *
@@ -20,7 +19,7 @@ trait ReversePolishNotationTrait
             if (!is_numeric($token)) {
                 $operand_2 = array_pop($stack);
                 $operand_1 = array_pop($stack);
-                $result = call_user_func([$this, 'solveRpnOperator' . ucfirst($token)], $operand_1, $operand_2);
+                $result = call_user_func([$this, 'solveRpnOperator'.ucfirst($token)], $operand_1, $operand_2);
                 array_push($stack, $result);
             } else {
                 array_push($stack, $token);
@@ -54,5 +53,4 @@ trait ReversePolishNotationTrait
     {
         return $operand_1 / $operand_2;
     }
-
 }

@@ -5,15 +5,14 @@ namespace Vanderlee\Comprehend\Parser\Terminal;
 use Vanderlee\Comprehend\Core\Context;
 
 /**
- * Classes implementing this can scan
+ * Classes implementing this can scan.
  *
  * @author Martijn
  */
 trait CaseSensitiveTrait
 {
-
     /**
-     * @var boolean
+     * @var bool
      */
     private $caseSensitivity = null;
 
@@ -56,5 +55,4 @@ trait CaseSensitiveTrait
 
         return $this;
     }
-
 }

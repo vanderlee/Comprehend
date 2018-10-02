@@ -103,5 +103,4 @@ class RangeTest extends ParserTestCase
             '[a-m]/i > ZOO' => [(new Range('a', 'm', false))->caseInsensitive(), 'ZOO', 0, true, 1],
         ];
     }
-
 }

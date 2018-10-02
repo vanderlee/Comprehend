@@ -7,17 +7,16 @@ use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Classes implementing this can scan
+ * Classes implementing this can scan.
  *
  * @author Martijn
  */
 trait SpacingTrait
 {
-
     use ArgumentsTrait;
 
     /**
-     * Parser used for scanning the text
+     * Parser used for scanning the text.
      *
      * @var Parser
      */
@@ -57,5 +56,4 @@ trait SpacingTrait
 
         return $this;
     }
-
 }

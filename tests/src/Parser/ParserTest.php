@@ -24,7 +24,7 @@ class ParserTest extends ParserTestCase
         $this->assertResult(true, 1, $parser('a'));
         $this->assertResult(true, 1, $parser->match('a'));
         $this->assertResult(false, 0, $parser->match('b'));
-        $this->expectExceptionMessage("Negative offset");
+        $this->expectExceptionMessage('Negative offset');
         $parser->match('a', -1);
     }
 
@@ -47,7 +47,6 @@ class ParserTest extends ParserTestCase
         $this->assertEquals('a', $result->token->text);
     }
 
-
     public function testCharacter()
     {
         $this->assertResult(true, 1, (new Char(ord('a')))->match('aa'));
@@ -55,13 +54,13 @@ class ParserTest extends ParserTestCase
 
     public function testCharacterEmpty()
     {
-        $this->expectExceptionMessage("Empty argument");
+        $this->expectExceptionMessage('Empty argument');
         new Char('');
     }
 
     public function testCharacterInvalid()
     {
-        $this->expectExceptionMessage("Non-character argument");
+        $this->expectExceptionMessage('Non-character argument');
         new Char('aa');
     }
 }

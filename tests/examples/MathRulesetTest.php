@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
+<?php
+
+/** @noinspection PhpUndefinedMethodInspection */
 
 /** @noinspection PhpUndefinedFieldInspection */
 
@@ -15,7 +17,7 @@ use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
 
 /**
- * Example of a simple maths parser, constructed using basic objects
+ * Example of a simple maths parser, constructed using basic objects.
  *
  * expression    ::= term '+' expression | term '-' expression | term
  * term            ::= factor '*' term | factor '/' term | factor
@@ -26,11 +28,10 @@ use Vanderlee\Comprehend\Parser\Terminal\Range;
  */
 class MathRulesetTest extends ParserTestCase
 {
-
     use ReversePolishNotationTrait;
 
     /**
-     * Math expression parser
+     * Math expression parser.
      *
      * @var Parser
      */
@@ -104,5 +105,4 @@ class MathRulesetTest extends ParserTestCase
             'Parenthesis before priority'  => ['(2+3)*4', [2, 3, 'add', 4, 'multiply'], 20],
         ];
     }
-
 }

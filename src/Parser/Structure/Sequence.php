@@ -7,7 +7,7 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of SequenceParser
+ * Description of SequenceParser.
  *
  * @author Martijn
  */
@@ -58,7 +58,7 @@ class Sequence extends IterableParser
     }
 
     /**
-     * Add one or more parsers to the end of this sequence
+     * Add one or more parsers to the end of this sequence.
      *
      * @param string[]|int[]|Parser[] $arguments
      *
@@ -73,7 +73,6 @@ class Sequence extends IterableParser
 
     public function __toString()
     {
-        return '( ' . join(' ', $this->parsers) . ' )';
+        return '( '.implode(' ', $this->parsers).' )';
     }
-
 }

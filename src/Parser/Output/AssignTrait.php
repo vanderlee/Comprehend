@@ -3,12 +3,10 @@
 namespace Vanderlee\Comprehend\Parser\Output;
 
 /**
- *
  * @author Martijn
  */
 trait AssignTrait
 {
-
     /**
      * List of result names to assign the matched text to.
      *
@@ -17,7 +15,7 @@ trait AssignTrait
     private $assignCallbacks = [];
 
     /**
-     * Resolve all callbacks registered to this trait
+     * Resolve all callbacks registered to this trait.
      *
      * @param $text
      */
@@ -44,5 +42,4 @@ trait AssignTrait
 
         return $this;
     }
-
 }

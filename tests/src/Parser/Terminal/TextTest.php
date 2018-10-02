@@ -6,7 +6,6 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 class TextTest extends \Tests\ParserTestCase
 {
-
     public function testConstruction()
     {
         $this->assertInstanceOf(Text::class, new Text('foo'));
@@ -14,7 +13,7 @@ class TextTest extends \Tests\ParserTestCase
 
     public function testEmpty()
     {
-        $this->expectExceptionMessage("Empty argument");
+        $this->expectExceptionMessage('Empty argument');
         new Text('');
     }
 
@@ -51,5 +50,4 @@ class TextTest extends \Tests\ParserTestCase
             [(new Text('FOO'))->caseInsensitive(), 'FOO', 0, true, 3],
         ];
     }
-
 }

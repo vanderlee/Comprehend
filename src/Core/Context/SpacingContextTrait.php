@@ -45,6 +45,7 @@ trait SpacingContextTrait
 
         if ($spacer instanceof Parser) {
             $match = $spacer->match($in, $offset);
+
             return ($match instanceof Success)
                 ? $match->length
                 : false;

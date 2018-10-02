@@ -11,7 +11,6 @@ use Vanderlee\Comprehend\Parser\Terminal\Any;
  */
 class AnyTest extends ParserTestCase
 {
-
     /**
      * @dataProvider anyData
      *
@@ -39,5 +38,4 @@ class AnyTest extends ParserTestCase
             [new Any(), 'aa', 1, true, 1],
         ];
     }
-
 }

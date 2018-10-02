@@ -6,13 +6,12 @@ use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Matches regular expressions
+ * Matches regular expressions.
  *
  * @author Martijn
  */
 class Regex extends Parser
 {
-
     use CaseSensitiveTrait;
 
     /**
@@ -36,7 +35,7 @@ class Regex extends Parser
     protected function parse(&$input, $offset, Context $context)
     {
         $this->pushCaseSensitivityToContext($context);
-        $pattern = $this->pattern . ($context->isCaseSensitive()
+        $pattern = $this->pattern.($context->isCaseSensitive()
                 ? ''
                 : 'i');
         $this->popCaseSensitivityFromContext($context);
@@ -54,5 +53,4 @@ class Regex extends Parser
     {
         return (string) $this->pattern;
     }
-
 }

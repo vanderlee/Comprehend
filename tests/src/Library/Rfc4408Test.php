@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 namespace Tests\Src\Library;
 
@@ -33,7 +35,7 @@ class Rfc4408Test extends ParserTestCase
      */
     public function testRules(Parser $parser, $input, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input), (string) $parser . ' <=> ' . $input);
+        $this->assertResult($match, $length, $parser->match($input), (string) $parser.' <=> '.$input);
     }
 
     public function rulesData()
@@ -63,5 +65,4 @@ class Rfc4408Test extends ParserTestCase
             [$spf->IP4, 'ip4:123.45.67.89/33', true, 19],   // @todo valid according to BNF but invalid IPv4 address!
         ];
     }
-
 }

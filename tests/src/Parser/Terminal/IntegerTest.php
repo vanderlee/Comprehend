@@ -24,7 +24,7 @@ class IntegerTest extends ParserTestCase
      */
     public function testConstructorBadMinimum()
     {
-        $this->expectExceptionMessage("Minimum must be integer or `null`");
+        $this->expectExceptionMessage('Minimum must be integer or `null`');
         new Integer('a');
     }
 
@@ -33,7 +33,7 @@ class IntegerTest extends ParserTestCase
      */
     public function testConstructorBadMaximum()
     {
-        $this->expectExceptionMessage("Maximum must be integer or `null`");
+        $this->expectExceptionMessage('Maximum must be integer or `null`');
         new Integer(0, 'a');
     }
 
@@ -42,7 +42,7 @@ class IntegerTest extends ParserTestCase
      */
     public function testConstructorBadOrder()
     {
-        $this->expectExceptionMessage("Maximum must be greater than minimum");
+        $this->expectExceptionMessage('Maximum must be greater than minimum');
         new Integer(1, -1);
     }
 
@@ -51,7 +51,7 @@ class IntegerTest extends ParserTestCase
      */
     public function testConstructorInvalidBaseTooLow()
     {
-        $this->expectExceptionMessage("Unsupported base");
+        $this->expectExceptionMessage('Unsupported base');
         new Integer(0, null, 1);
     }
 
@@ -60,31 +60,32 @@ class IntegerTest extends ParserTestCase
      */
     public function testConstructorInvalidBaseTooHigh()
     {
-        $this->expectExceptionMessage("Unsupported base");
+        $this->expectExceptionMessage('Unsupported base');
         new Integer(0, null, 10 + 26 + 1);
     }
 
     /**
      * @dataProvider integerData
      *
-     * @param Integer $parser
-     * @param         $input
-     * @param         $offset
-     * @param         $match
-     * @param         $length
+     * @param int $parser
+     * @param     $input
+     * @param     $offset
+     * @param     $match
+     * @param     $length
      */
     public function testInteger(Integer $parser, $input, $offset, $match, $length)
     {
         $result = $parser->match($input, $offset);
 
-        $message = $input . ' = ' . (string) $parser;
+        $message = $input.' = '.(string) $parser;
 
         $this->assertResult($match, $length, $result, $message);
     }
 
     /**
-     * @return array
      * @throws \Exception
+     *
+     * @return array
      */
     public function integerData()
     {
@@ -129,5 +130,4 @@ class IntegerTest extends ParserTestCase
             [(new Integer(16, 254, 16))->caseInsensitive(), 'FF', 0, false, 0],
         ];
     }
-
 }

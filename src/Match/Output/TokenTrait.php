@@ -6,9 +6,8 @@ use Vanderlee\Comprehend\Core\Token;
 
 trait TokenTrait
 {
-
     /**
-     * List of callbacks to process for tokens
+     * List of callbacks to process for tokens.
      *
      * @var callable
      */
@@ -42,10 +41,9 @@ trait TokenTrait
 
         if ($this->tokenCallback) {
             $tokenCallback = $this->tokenCallback;
+
             return $tokenCallback($children);
         }
-
-        return null;
     }
 
     /**

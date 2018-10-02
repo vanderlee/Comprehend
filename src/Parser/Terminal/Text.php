@@ -6,16 +6,15 @@ use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of TextParser
+ * Description of TextParser.
  *
  * @author Martijn
  */
 class Text extends Parser
 {
-
     use CaseSensitiveTrait;
 
-    private $text   = null;
+    private $text = null;
     private $length = null;
 
     public function __construct($text)
@@ -48,7 +47,6 @@ class Text extends Parser
 
     public function __toString()
     {
-        return '"' . $this->text . '"';
+        return '"'.$this->text.'"';
     }
-
 }

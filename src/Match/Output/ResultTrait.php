@@ -4,16 +4,15 @@ namespace Vanderlee\Comprehend\Match\Output;
 
 trait ResultTrait
 {
-
     /**
-     * Map of resolved result callbacks
+     * Map of resolved result callbacks.
      *
      * @var array|null
      */
     private $resultCache = null;
 
     /**
-     * List of partial-resolvable result callbacks
+     * List of partial-resolvable result callbacks.
      *
      * @var callable[]
      */
@@ -53,7 +52,7 @@ trait ResultTrait
     }
 
     /**
-     * Pre-calculate results
+     * Pre-calculate results.
      *
      * @return array
      */
@@ -71,6 +70,7 @@ trait ResultTrait
     public function getResult($name = null, $default = null)
     {
         $results = $this->getResults();
+
         return isset($results[$name])
             ? $results[$name]
             : $default;

@@ -44,5 +44,4 @@ class NotTest extends ParserTestCase
             [new Not('a'), 'ab', 1, true, 0],
         ];
     }
-
 }

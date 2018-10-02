@@ -6,7 +6,7 @@ use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Shorthand for parser definitions
+ * Shorthand for parser definitions.
  *
  * @author Martijn
  */
@@ -36,22 +36,25 @@ class Definition
     }
 
     /**
-     * (Re-)define this definition from any supported source
+     * (Re-)define this definition from any supported source.
      *
      * @param mixed $definition
      *
      * @throws InvalidArgumentException
      */
-    public function define($definition) {
-        if ($definition instanceof Definition) {
+    public function define($definition)
+    {
+        if ($definition instanceof self) {
             $this->generator = $definition->generator;
             $this->validators = $definition->validators;
+
             return;
         }
 
         if ($definition instanceof Parser
             || is_callable($definition)) {
             $this->generator = $definition;
+
             return;
         }
 
@@ -89,7 +92,7 @@ class Definition
     /**
      * Build an instance of this parser definition.
      *
-     * @param Mixed[] $arguments
+     * @param mixed[] $arguments
      *
      * @return Implementation
      */
@@ -102,7 +105,7 @@ class Definition
      * Build an instance of this parser definition.
      * Alias of `build()` method.
      *
-     * @param Mixed[] $arguments
+     * @param mixed[] $arguments
      *
      * @return Implementation
      */
@@ -110,5 +113,4 @@ class Definition
     {
         return $this->build(...$arguments);
     }
-
 }

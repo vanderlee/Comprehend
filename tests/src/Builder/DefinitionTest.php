@@ -16,8 +16,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Set;
  */
 class DefinitionTest extends ParserTestCase
 {
-
-    const CSV_RECORD    = [__CLASS__, 'makeCsvRecordParser'];
+    const CSV_RECORD = [__CLASS__, 'makeCsvRecordParser'];
     const QUOTED_STRING = [__CLASS__, 'makeQuotedStringParser'];
 
     public static function makeCsvRecordParser($item, $delimiter = ',')
@@ -28,8 +27,9 @@ class DefinitionTest extends ParserTestCase
     /**
      * @param string $enclosures
      *
-     * @return Choice|Sequence
      * @throws \Exception
+     *
+     * @return Choice|Sequence
      */
     public static function makeQuotedStringParser($enclosures = '"')
     {
@@ -55,12 +55,11 @@ class DefinitionTest extends ParserTestCase
 
     public function testDefinitionSetParser()
     {
-        $definition = (new Definition)->setGenerator(self::CSV_RECORD);
+        $definition = (new Definition())->setGenerator(self::CSV_RECORD);
 
         $List = $definition->build('x');
         $this->assertResult(true, 5, $List('x,x,x'));
     }
-
 
     public function testValidatorInConstructor()
     {
@@ -101,7 +100,7 @@ class DefinitionTest extends ParserTestCase
         $this->assertResult(true, 2, $number('21'));
 
         $d->addValidator(function (
-            /** @noinspection PhpUnusedParameterInspection */
+            /* @noinspection PhpUnusedParameterInspection */
             $text,
             $results
         ) {

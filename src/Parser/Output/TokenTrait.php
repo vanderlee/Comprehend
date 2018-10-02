@@ -5,21 +5,19 @@ namespace Vanderlee\Comprehend\Parser\Output;
 use Vanderlee\Comprehend\Core\Token;
 
 /**
- *
  * @author Martijn
  */
 trait TokenTrait
 {
-
     /**
-     * Name of the token
+     * Name of the token.
      *
      * @var null
      */
     private $tokenName = null;
 
     /**
-     * Group to which this token belongs (mostly for standard Library tokens
+     * Group to which this token belongs (mostly for standard Library tokens.
      *
      * @var string|null
      */
@@ -63,7 +61,7 @@ trait TokenTrait
         if ($this->tokenIsTerminal) {
             $children = [];
         }
+
         return new Token($this->tokenGroup, $this->tokenName, $input, $offset, $length, $children, $class);
     }
-
 }
