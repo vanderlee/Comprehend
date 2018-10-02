@@ -81,6 +81,29 @@ class Choice extends IterableParser
     }
 
     /**
+     * Determine the longest and most successful match
+     *
+     * @param Match $attempt
+     * @param Match $match
+     * @return Match
+     */
+    private static function determineLongestOf(Match $attempt, Match $match) {
+        if ($attempt->match === $match->match) {
+            if ($attempt->length > $match->length) {
+                return $attempt;
+            }
+
+            return $match;
+        }
+
+        if ($attempt instanceof Success) {
+            return $attempt;
+        }
+
+        return $match;
+    }
+
+    /**
      * @param string $input
      * @param int $offset
      * @param Context $context
@@ -88,21 +111,41 @@ class Choice extends IterableParser
      */
     private function parseLongest(&$input, $offset, Context $context)
     {
-        $maxMatch = $this->failure($input, $offset);
+        $match = $this->failure($input, $offset);
+
         /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
-            $match = $parser->parse($input, $offset, $context);
-            if ($match->match === $maxMatch->match) {
-                if ($match->length > $maxMatch->length) {
-                    $maxMatch = ($match instanceof Success)
-                        ? $this->success($input, $offset, $match->length, $match)
-                        : $this->failure($input, $offset, $match->length);
-                }
-            } elseif ($match instanceof Success) {
-                $maxMatch = $this->success($input, $offset, $match->length, $match);
-            }
+            $match = self::determineLongestOf($parser->parse($input, $offset, $context), $match);
         }
-        return $maxMatch;
+
+        return ($match instanceof Success)
+            ? $this->success($input, $offset, $match->length, $match)
+            : $this->failure($input, $offset, $match->length);
+    }
+
+    /**
+     * Determine the shortest and most successful match
+     *
+     * @param Match|null $attempt
+     * @param Match $match
+     * @return Match
+     */
+    private static function determineShortestOf(Match $attempt, Match $match = null) {
+        if ($match === null) {
+            return $attempt;
+        }
+
+        if ($attempt instanceof Success
+                && $match instanceof Failure) {
+            return $attempt;
+        }
+
+        if ($attempt->match === $match->match
+            && $attempt->length < $match->length) {
+            return $attempt;
+        }
+
+        return $match;
     }
 
     /**
@@ -115,19 +158,10 @@ class Choice extends IterableParser
     {
         /** @var Match $match */
         $match = null;
+
         /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
-            $attempt = $parser->parse($input, $offset, $context);
-
-            switch (true) {
-                case!$match: // Keep attempt if first.
-                case ($attempt instanceof Success)
-                    && ($match instanceof Failure): // Keep attempt if first match
-                case $attempt->match === $match->match
-                    && $attempt->length < $match->length: // Keep attempt if equally successful but shorter
-
-                    $match = $attempt;
-            }
+            $match = self::determineShortestOf($parser->parse($input, $offset, $context), $match);
         }
 
         return ($match instanceof Success)
