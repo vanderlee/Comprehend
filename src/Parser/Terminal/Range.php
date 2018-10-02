@@ -35,7 +35,7 @@ class Range extends Parser
             ? null
             : self::parseCharacter($last);
 
-        $this->in = (bool)$in;
+        $this->in = (bool) $in;
     }
 
     protected function parse(&$input, $offset, Context $context)
@@ -50,8 +50,8 @@ class Range extends Parser
         $this->pushCaseSensitivityToContext($context);
 
         $first = ord($context->handleCase($this->first));
-        $last  = ord($context->handleCase($this->last));
-        $ord   = ord($context->handleCase($input[$offset]));
+        $last = ord($context->handleCase($this->last));
+        $ord = ord($context->handleCase($input[$offset]));
 
         $this->popCaseSensitivityFromContext($context);
 

@@ -70,7 +70,7 @@ class ResultTraitParserTest extends ParserTestCase
     public function testSetResultValue()
     {
         $parser = (new Text('foo'))->setResult('var', 'found it');
-        $match  = $parser->match('foobar');
+        $match = $parser->match('foobar');
 
         $this->assertResult(true, 3, $match);
         $this->assertEquals('found it', $match->results['var']);
@@ -82,7 +82,7 @@ class ResultTraitParserTest extends ParserTestCase
         $parser = (new Text('foo'))->setResult('var', function ($text) {
             return strrev($text);
         });
-        $match  = $parser->match('foobarbaz');
+        $match = $parser->match('foobarbaz');
 
         $this->assertResult(true, 3, $match);
         $this->assertEquals('oof', $match->results['var']);
@@ -98,7 +98,7 @@ class ResultTraitParserTest extends ParserTestCase
                 return strrev($text);
             })
         );
-        $match  = $parser->match('foobarbazbob');
+        $match = $parser->match('foobarbazbob');
 
         $this->assertResult(true, 9, $match);
         $this->assertEquals('fooBARzab', $match->results['var']);
@@ -114,7 +114,7 @@ class ResultTraitParserTest extends ParserTestCase
                 return strrev($text);
             })
         );
-        $match  = $parser->match('foobarbazbob');
+        $match = $parser->match('foobarbazbob');
 
         $this->assertResult(true, 9, $match);
         $this->assertEquals(['foo', 'BAR', 'zab'], $match->results['var']);

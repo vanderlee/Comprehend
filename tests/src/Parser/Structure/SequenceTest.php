@@ -24,14 +24,14 @@ class SequenceTest extends ParserTestCase
      * @dataProvider sequenceData
      *
      * @param Sequence $parser
-     * @param $input
-     * @param $offset
-     * @param $match
-     * @param $length
+     * @param          $input
+     * @param          $offset
+     * @param          $match
+     * @param          $length
      */
     public function testSequence(Sequence $parser, $input, $offset, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input, $offset), (string)$parser);
+        $this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
     }
 
     public function sequenceData()
@@ -85,14 +85,14 @@ class SequenceTest extends ParserTestCase
             (new Text('a'))->assignTo($a), (new Text('b'))->assignTo($b)
         ))->assignTo($sequence);
 
-        $a     = $b = $sequence = null;
+        $a = $b = $sequence = null;
         $match = $parser->match('a');
         $this->assertFalse($match->match);
         $this->assertEquals(null, $sequence);
         $this->assertEquals(null, $a);
         $this->assertEquals(null, $b);
 
-        $a     = $b = $sequence = null;
+        $a = $b = $sequence = null;
         $match = $parser->match('ab');
         $this->assertTrue($match->match);
         $this->assertEquals('ab', $sequence);

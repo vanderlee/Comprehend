@@ -20,7 +20,7 @@ class Definition
 
     /**
      * @param Parser|callable $generator Either a parser or a function returning a parser ('generator')
-     * @param callable[] $validator
+     * @param callable[]      $validator
      */
     public function __construct($generator = null, $validator = null)
     {
@@ -64,6 +64,7 @@ class Definition
      * Build an instance of this parser definition.
      *
      * @param Mixed[] $arguments
+     *
      * @return Implementation
      */
     public function build(...$arguments)
@@ -76,6 +77,7 @@ class Definition
      * Alias of `build()` method.
      *
      * @param Mixed[] $arguments
+     *
      * @return Implementation
      */
     public function __invoke(...$arguments)

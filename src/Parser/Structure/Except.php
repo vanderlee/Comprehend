@@ -30,13 +30,13 @@ class Except extends Parser
     public function __construct($match, $not)
     {
         $this->parserMatch = self::getArgument($match);
-        $this->parserNot   = self::getArgument($not);
+        $this->parserNot = self::getArgument($not);
     }
 
     protected function parse(&$input, $offset, Context $context)
     {
         $match = $this->parserMatch->parse($input, $offset, $context);
-        $not   = $this->parserNot->parse($input, $offset, $context);
+        $not = $this->parserNot->parse($input, $offset, $context);
 
         if (($match instanceof Success) && ($not instanceof Failure)) {
             return $this->success($input, $offset, $match->length, $match);

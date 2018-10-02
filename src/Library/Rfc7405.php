@@ -5,7 +5,7 @@
  *
  * Updates RFC 5234
  *
- * @see https://tools.ietf.org/html/rfc7405
+ * @see     https://tools.ietf.org/html/rfc7405
  * @package Vanderlee\Comprehend\Library
  */
 

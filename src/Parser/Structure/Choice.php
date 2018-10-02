@@ -35,6 +35,7 @@ class Choice extends IterableParser
 
     /**
      * @param mixed ...$arguments
+     *
      * @return Choice
      */
     public static function first(...$arguments)
@@ -44,6 +45,7 @@ class Choice extends IterableParser
 
     /**
      * @param mixed ...$arguments
+     *
      * @return Choice
      */
     public static function shortest(...$arguments)
@@ -53,6 +55,7 @@ class Choice extends IterableParser
 
     /**
      * @param mixed ...$arguments
+     *
      * @return Choice
      */
     public static function longest(...$arguments)
@@ -61,9 +64,10 @@ class Choice extends IterableParser
     }
 
     /**
-     * @param string $input
-     * @param int $offset
+     * @param string  $input
+     * @param int     $offset
      * @param Context $context
+     *
      * @return Failure|Success
      */
     private function parseFirst(&$input, $offset, Context $context)
@@ -85,9 +89,11 @@ class Choice extends IterableParser
      *
      * @param Match $attempt
      * @param Match $match
+     *
      * @return Match
      */
-    private static function determineLongestOf(Match $attempt, Match $match) {
+    private static function determineLongestOf(Match $attempt, Match $match)
+    {
         if ($attempt->match === $match->match) {
             if ($attempt->length > $match->length) {
                 return $attempt;
@@ -104,9 +110,10 @@ class Choice extends IterableParser
     }
 
     /**
-     * @param string $input
-     * @param int $offset
+     * @param string  $input
+     * @param int     $offset
      * @param Context $context
+     *
      * @return Failure|Success
      */
     private function parseLongest(&$input, $offset, Context $context)
@@ -127,16 +134,18 @@ class Choice extends IterableParser
      * Determine the shortest and most successful match
      *
      * @param Match|null $attempt
-     * @param Match $match
+     * @param Match      $match
+     *
      * @return Match
      */
-    private static function determineShortestOf(Match $attempt, Match $match = null) {
+    private static function determineShortestOf(Match $attempt, Match $match = null)
+    {
         if ($match === null) {
             return $attempt;
         }
 
         if ($attempt instanceof Success
-                && $match instanceof Failure) {
+            && $match instanceof Failure) {
             return $attempt;
         }
 
@@ -149,9 +158,10 @@ class Choice extends IterableParser
     }
 
     /**
-     * @param string $input
-     * @param int $offset
+     * @param string  $input
+     * @param int     $offset
      * @param Context $context
+     *
      * @return Failure|Success
      */
     private function parseShortest(&$input, $offset, Context $context)
@@ -170,9 +180,10 @@ class Choice extends IterableParser
     }
 
     /**
-     * @param string $input
-     * @param int $offset
+     * @param string  $input
+     * @param int     $offset
      * @param Context $context
+     *
      * @return Failure|Success
      */
     protected function parse(&$input, $offset, Context $context)
@@ -203,6 +214,7 @@ class Choice extends IterableParser
      * Add one or more parsers as choices
      *
      * @param string[]|int[]|Parser[] $arguments
+     *
      * @return $this
      */
     public function add(...$arguments)

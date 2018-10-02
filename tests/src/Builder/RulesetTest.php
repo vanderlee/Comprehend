@@ -29,7 +29,7 @@ class RulesetTest extends ParserTestCase
 
     public function testConstructorFunction()
     {
-        $r    = new Ruleset('line', function ($char) {
+        $r = new Ruleset('line', function ($char) {
             return new Repeat($char);
         });
         $line = $r->line('x');
@@ -38,7 +38,7 @@ class RulesetTest extends ParserTestCase
 
     public function testConstructorMultiple()
     {
-        $r   = new Ruleset(['Foo' => 'foo', 'Bar' => 'bar']);
+        $r = new Ruleset(['Foo' => 'foo', 'Bar' => 'bar']);
         $foo = $r->Foo();
         $bar = $r->Bar();
         $this->assertResult(true, 3, $foo('foo'));
@@ -47,73 +47,73 @@ class RulesetTest extends ParserTestCase
 
     public function testSetFunction()
     {
-        $r       = new Ruleset;
+        $r = new Ruleset;
         $r->line = function ($char) {
             return new Repeat($char);
         };
-        $line    = $r->line('x');
+        $line = $r->line('x');
         $this->assertResult(true, 5, $line('xxxxx'));
     }
 
     public function testSetFunctionException()
     {
-        $r       = new Ruleset;
+        $r = new Ruleset;
         $r->line = function () {
             return null;
         };
         $this->expectExceptionMessage("Cannot instantiate `line` using definition type `Closure`");
-        $line    = $r->line;
+        $line = $r->line;
         $line->match('x');
 
     }
 
     public function testSetClassName()
     {
-        $r       = new Ruleset;
+        $r = new Ruleset;
         $r->line = Text::class;
-        $line    = $r->line('foo');
+        $line = $r->line('foo');
         $this->assertResult(true, 3, $line('foo'));
     }
 
     public function testSetUndefined()
     {
-        $r       = new Ruleset;
+        $r = new Ruleset;
         $r->line = null;
-        $line    = $r->line();
+        $line = $r->line();
         $this->expectExceptionMessage("Parser not defined");
         $line('foo');
     }
 
     public function testSetArray()
     {
-        $r       = new Ruleset;
+        $r = new Ruleset;
         $r->line = ['a', 'b'];
-        $line    = $r->line();
+        $line = $r->line();
         $this->assertResult(true, 2, $line('ab'));
     }
 
     public function testSetDefinition()
     {
-        $r       = new Ruleset;
+        $r = new Ruleset;
         $r->line = new Definition(function ($char) {
             return new Repeat($char);
         });
-        $line    = $r->line('x');
+        $line = $r->line('x');
         $this->assertResult(true, 5, $line('xxxxx'));
     }
 
     public function testSetParser()
     {
-        $r       = new Ruleset;
+        $r = new Ruleset;
         $r->line = new Repeat('x');
-        $line    = $r->line();
+        $line = $r->line();
         $this->assertResult(true, 5, $line('xxxxx'));
     }
 
     public function testSetForwardFunction()
     {
-        $r       = new Ruleset;
-        $line    = $r->line('x');
+        $r = new Ruleset;
+        $line = $r->line('x');
         $r->line = function ($char) {
             return new Repeat($char);
         };
@@ -122,8 +122,8 @@ class RulesetTest extends ParserTestCase
 
     public function testSetForwardDefinition()
     {
-        $r       = new Ruleset;
-        $line    = $r->line('x');
+        $r = new Ruleset;
+        $line = $r->line('x');
         $r->line = new Definition(function ($char) {
             return new Repeat($char);
         });
@@ -132,34 +132,34 @@ class RulesetTest extends ParserTestCase
 
     public function testSetForwardParser()
     {
-        $r       = new Ruleset;
-        $line    = $r->line();
+        $r = new Ruleset;
+        $line = $r->line();
         $r->line = new Repeat('x');
         $this->assertResult(true, 5, $line('xxxxx'));
     }
 
     public function testSetAndGetFunction()
     {
-        $r       = new Ruleset;
+        $r = new Ruleset;
         $r->line = function ($char = 'x') {
             return new Repeat($char);
         };
-        $line    = $r->line;
+        $line = $r->line;
         $this->assertResult(true, 5, $line('xxxxx'));
     }
 
     public function testSetAndGetParser()
     {
-        $r       = new Ruleset;
+        $r = new Ruleset;
         $r->line = new Repeat('x');
-        $line    = $r->line;
+        $line = $r->line;
         $this->assertResult(true, 5, $line('xxxxx'));
     }
 
     public function testSetToString()
     {
         $r = new Ruleset(Ruleset::ROOT, 'x');
-        $this->assertEquals("'x'", (string)$r);
+        $this->assertEquals("'x'", (string) $r);
     }
 
     public function testSetDefaultNull()
@@ -172,13 +172,13 @@ class RulesetTest extends ParserTestCase
     public function testDefaultToString()
     {
         $r = new Ruleset;
-        $this->assertEquals('', (string)$r);
+        $this->assertEquals('', (string) $r);
     }
 
     public function testSetAndGetForwardFunction()
     {
-        $r       = new Ruleset;
-        $line    = $r->line;
+        $r = new Ruleset;
+        $line = $r->line;
         $r->line = function ($char = 'x') {
             return new Repeat($char);
         };
@@ -187,16 +187,16 @@ class RulesetTest extends ParserTestCase
 
     public function testSetAndGetForwardParser()
     {
-        $r       = new Ruleset;
-        $line    = $r->line;
+        $r = new Ruleset;
+        $line = $r->line;
         $r->line = new Repeat('x');
         $this->assertResult(true, 5, $line('xxxxx'));
     }
 
     public function testSetAndGetForwardArray()
     {
-        $r       = new Ruleset;
-        $line    = $r->line;
+        $r = new Ruleset;
+        $line = $r->line;
         $r->line = ['a', 'b'];
         $this->assertResult(true, 2, $line('ab'));
     }
@@ -231,9 +231,9 @@ class RulesetTest extends ParserTestCase
 
     public function testUnsetParser()
     {
-        $r       = new Ruleset;
+        $r = new Ruleset;
         $r->line = new Repeat('x');
-        $line    = $r->line();
+        $line = $r->line();
         $this->assertResult(true, 5, $line('xxxxx'));
         unset($r->line);
         $this->assertFalse(isset($r->line));

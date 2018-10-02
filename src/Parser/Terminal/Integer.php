@@ -19,6 +19,7 @@ class Integer extends Parser
 
     /**
      * List of digits to use for the different bases (up to 36)
+     *
      * @var string
      */
     private static $set = '0123456789abcdefghijklmnopqrstuvwxyz';
@@ -41,7 +42,8 @@ class Integer extends Parser
     /**
      * @param int|null $minimum
      * @param int|null $maximum
-     * @param int $base
+     * @param int      $base
+     *
      * @throws Exception
      */
     public function __construct($minimum = 0, $maximum = null, $base = 10)
@@ -66,6 +68,7 @@ class Integer extends Parser
 
     /**
      * @param int|null $minimum
+     *
      * @throws Exception
      */
     private function setMinimum($minimum)
@@ -81,6 +84,7 @@ class Integer extends Parser
 
     /**
      * @param int|null $maximum
+     *
      * @throws Exception
      */
     private function setMaximum($maximum)
@@ -103,9 +107,10 @@ class Integer extends Parser
     }
 
     /**
-     * @param string $input
-     * @param int $offset
+     * @param string  $input
+     * @param int     $offset
      * @param Context $context
+     *
      * @return Failure|Success
      */
     protected function parse(&$input, $offset, Context $context)
@@ -113,8 +118,8 @@ class Integer extends Parser
         $this->pushCaseSensitivityToContext($context);
 
         // Build pattern
-        $set0    = substr(self::$set, 0, $this->base);
-        $set1    = substr(self::$set, 1, $this->base - 1);
+        $set0 = substr(self::$set, 0, $this->base);
+        $set1 = substr(self::$set, 1, $this->base - 1);
         $pattern = '/(?:0|-?[' . $set1 . '][' . $set0 . ']*)/A' . ($context->isCaseSensitive()
                 ? ''
                 : 'i');

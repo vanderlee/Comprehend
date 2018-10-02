@@ -66,17 +66,17 @@ class RangeTest extends ParserTestCase
      * @dataProvider rangeData
      *
      * @param Range $parser
-     * @param $input
-     * @param $offset
-     * @param $match
-     * @param $length
+     * @param       $input
+     * @param       $offset
+     * @param       $match
+     * @param       $length
      */
     public function testRange(Range $parser, $input, $offset, $match, $length)
     {
         $result = $parser->match($input, $offset);
 
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $this->assertSame($match, $result->match, (string) $parser);
+        $this->assertSame($length, $result->length, (string) $parser);
     }
 
     public function rangeData()

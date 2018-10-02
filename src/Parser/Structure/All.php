@@ -34,7 +34,7 @@ class All extends Parser
     {
         $length = PHP_INT_MAX;
         foreach ($this->parsers as $parser) {
-            $match  = $parser->parse($input, $offset, $context);
+            $match = $parser->parse($input, $offset, $context);
             $length = min($length, $match->length);
             if (!($match instanceof Success)) {
                 return $this->failure($input, $offset, $length);

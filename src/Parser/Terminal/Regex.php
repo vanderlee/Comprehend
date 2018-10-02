@@ -52,7 +52,7 @@ class Regex extends Parser
 
     public function __toString()
     {
-        return (string)$this->pattern;
+        return (string) $this->pattern;
     }
 
 }

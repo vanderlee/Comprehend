@@ -17,15 +17,16 @@ class CaseSensitiveTest extends ParserTestCase
 
     /**
      * @dataProvider caseSensitiveData
+     *
      * @param CaseSensitive $parser
-     * @param string $input
-     * @param int $offset
-     * @param bool $match
-     * @param int $length
+     * @param string        $input
+     * @param int           $offset
+     * @param bool          $match
+     * @param int           $length
      */
     public function testCaseSensitive(CaseSensitive $parser, $input, $offset, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input, $offset), (string)$parser);
+        $this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
     }
 
     public function caseSensitiveData()

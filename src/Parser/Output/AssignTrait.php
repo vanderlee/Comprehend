@@ -11,6 +11,7 @@ trait AssignTrait
 
     /**
      * List of result names to assign the matched text to.
+     *
      * @var callable[]
      */
     private $assignCallbacks = [];
@@ -32,6 +33,7 @@ trait AssignTrait
      * Only assign if successfully matched entire parent up to root.
      *
      * @param mixed $variable
+     *
      * @return $this
      */
     public function assignTo(&$variable)

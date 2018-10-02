@@ -8,7 +8,7 @@ trait CaseSensitiveContextTrait
 
     public function pushCaseSensitivity($caseSensitive = true)
     {
-        array_push($this->caseSensitivity, (bool)$caseSensitive);
+        array_push($this->caseSensitivity, (bool) $caseSensitive);
     }
 
     public function popCaseSensitivity()

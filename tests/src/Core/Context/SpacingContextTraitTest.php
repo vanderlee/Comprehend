@@ -71,8 +71,8 @@ class SpacingContextTraitTest extends ParserTestCase
     public function testStackSpacing()
     {
         $spacer = new Repeat('-', 0, 1);
-        $inner  = new Sequence('b', 'a', 'r');
-        $outer  = new Sequence('foo', $inner, 'baz');
+        $inner = new Sequence('b', 'a', 'r');
+        $outer = new Sequence('foo', $inner, 'baz');
         $outer->spacing($spacer);
 
         $this->assertResult(true, 11, $outer->match('foo-bar-baz'));

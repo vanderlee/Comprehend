@@ -11,8 +11,6 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of abstract Ruleset
- *
  * @author Martijn
  */
 abstract class AbstractRuleset extends Parser
@@ -34,11 +32,11 @@ abstract class AbstractRuleset extends Parser
     private static $reserved = [
         'define',
         'defined',
-        'undefine'
+        'undefine',
     ];
 
     /**
-     * Name of this ruleset. Intended for use with the standard library rulesets
+     * Name of this ruleset. Intended for use with the standard library rulesets.
      *
      * @var string
      */
@@ -64,9 +62,10 @@ abstract class AbstractRuleset extends Parser
     /**
      * Ruleset constructor, defining initial instance rules.
      *
-     * @param string|array $key Either a key of an initial rule to define or a [ key : definition ] array
-     * @param null|string $definition Definition of the initial rule or `null` if `$key` is an array
-     * @param null|string $name optional identifier for this ruleset
+     * @param string|array $key        Either a key of an initial rule to define or a [ key : definition ] array
+     * @param null|string  $definition Definition of the initial rule or `null` if `$key` is an array
+     * @param null|string  $name       optional identifier for this ruleset
+     *
      * @throws \Exception
      */
     public function __construct($key = null, $definition = null, $name = null)
@@ -79,7 +78,7 @@ abstract class AbstractRuleset extends Parser
     }
 
     /**
-     * Instantiate the default parser (if available)
+     * Instantiate the default parser (if available).
      *
      * @return null|Implementation|Parser
      */
@@ -106,11 +105,12 @@ abstract class AbstractRuleset extends Parser
     }
 
     /**
-     * Set a definition
+     * Set a definition.
      *
      * @param Definition[]|Parser[]|callable[] $rules
-     * @param string $key
-     * @param Definition|Parser|callable $definition
+     * @param string                           $key
+     * @param Definition|Parser|callable       $definition
+     *
      * @throws \Exception
      */
     protected static function setRule(&$rules, $key, $definition)
@@ -119,7 +119,7 @@ abstract class AbstractRuleset extends Parser
             && $rules[$key] instanceof Definition) {
 
             if ($definition instanceof Definition) {
-                $rules[$key]->generator  = $definition->generator;
+                $rules[$key]->generator = $definition->generator;
                 $rules[$key]->validators = $definition->validators;
                 return;
             }
@@ -136,9 +136,7 @@ abstract class AbstractRuleset extends Parser
                 return;
             } catch (Exception $exception) {
                 throw new RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`',
-                    is_object($definition)
-                        ? get_class($definition)
-                        : gettype($definition), $key));
+                    self::typeToString($definition), $key));
             }
         }
 
@@ -146,11 +144,26 @@ abstract class AbstractRuleset extends Parser
     }
 
     /**
-     * Define a rule
+     * Convert a variable type to a string
      *
-     * @param array $rules
+     * @param mixed $variable
+     *
+     * @return string
+     */
+    private static function typeToString($variable)
+    {
+        return is_object($variable)
+            ? get_class($variable)
+            : gettype($variable);
+    }
+
+    /**
+     * Define a rule.
+     *
+     * @param array        $rules
      * @param string|array $name
-     * @param Mixed|null $definition
+     * @param Mixed|null   $definition
+     *
      * @throws \Exception
      */
     protected static function defineRule(&$rules, $name, $definition = null)
@@ -170,15 +183,16 @@ abstract class AbstractRuleset extends Parser
     }
 
     /**
-     * Check if a specified name is defined in the rules map provided
+     * Check if a specified name is defined in the rules map provided.
      *
      * @param $rules
      * @param $names
+     *
      * @return bool
      */
     protected static function isRuleDefined(&$rules, $names)
     {
-        foreach ((array)$names as $key) {
+        foreach ((array) $names as $key) {
             if (!isset($rules[$key])) {
                 return false;
             }
@@ -189,7 +203,7 @@ abstract class AbstractRuleset extends Parser
 
     protected static function undefineRule(&$rules, $names)
     {
-        foreach ((array)$names as $key) {
+        foreach ((array) $names as $key) {
             unset($rules[$key]);
         }
     }
@@ -206,9 +220,10 @@ abstract class AbstractRuleset extends Parser
     /**
      * Create a new instance of a definition
      *
-     * @param $rules
-     * @param $key
+     * @param       $rules
+     * @param       $key
      * @param array $arguments
+     *
      * @return Implementation|Parser
      */
     protected static function call(&$rules, $key, $arguments = [])
@@ -232,16 +247,15 @@ abstract class AbstractRuleset extends Parser
         }
 
         throw new \RuntimeException(sprintf('Cannot instantiate `%2$s` using definition type `%1$s`',
-            is_object($rules[$key])
-                ? get_class($rules[$key])
-                : gettype($rules[$key]), $key));
+            self::typeToString($rules[$key]), $key));
     }
 
     /**
      * Handle instance/object definitions
      *
      * @param string $name
-     * @param array $arguments
+     * @param array  $arguments
+     *
      * @return Parser
      * @throws \Exception
      */
@@ -254,7 +268,8 @@ abstract class AbstractRuleset extends Parser
      * Handle static/class definitions
      *
      * @param string $name
-     * @param array $arguments
+     * @param array  $arguments
+     *
      * @return Parser
      * @throws \Exception
      */
@@ -276,7 +291,7 @@ abstract class AbstractRuleset extends Parser
     public function __toString()
     {
         try {
-            return (string)$this->getRootParser();
+            return (string) $this->getRootParser();
         } catch (Exception $e) {
             // ignore
         }

@@ -32,7 +32,8 @@ class Success extends Match
 
     /**
      * Create a new match
-     * @param int $length
+     *
+     * @param int               $length
      * @param Success[]|Success $successes
      */
     public function __construct($length = 0, &$successes = [])

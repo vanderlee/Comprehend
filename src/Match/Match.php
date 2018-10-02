@@ -9,11 +9,11 @@ use Vanderlee\Comprehend\Core\Token;
  *
  * @author Martijn
  *
- * @property-read bool $match Success or failure?
- * @property-read int $length Length of the match
- * @property-read array $results List of output results
- * @property-read string|array|null $result Default output result
- * @property-read Token|null $token
+ * @property-read bool              $match   Success or failure?
+ * @property-read int               $length  Length of the match
+ * @property-read array             $results List of output results
+ * @property-read string|array|null $result  Default output result
+ * @property-read Token|null        $token
  */
 abstract class Match
 {
@@ -22,6 +22,7 @@ abstract class Match
 
     /**
      * @param string $name
+     *
      * @return mixed
      * @throws \Exception
      */
@@ -66,7 +67,8 @@ abstract class Match
      * Return the result for the name specified or the default value if not set.
      *
      * @param string|null $name
-     * @param mixed $default
+     * @param mixed       $default
+     *
      * @return mixed
      */
     public function getResult($name = null, $default = null)
@@ -78,6 +80,7 @@ abstract class Match
      * Return whether there is a result for the name specified.
      *
      * @param string|null $name
+     *
      * @return boolean
      */
     public function hasResult($name = null)

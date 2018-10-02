@@ -30,7 +30,7 @@ class Space extends Parser
      * Set (or disable) a spacer for the parser
      *
      * @param Parser|string|int|bool|null $spacer
-     * @param Parser|string|int $parser
+     * @param Parser|string|int           $parser
      */
     public function __construct($spacer, $parser)
     {
@@ -51,7 +51,7 @@ class Space extends Parser
 
     public function __toString()
     {
-        return (string)$this->parser;
+        return (string) $this->parser;
     }
 
 }

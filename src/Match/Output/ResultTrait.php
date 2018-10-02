@@ -14,6 +14,7 @@ trait ResultTrait
 
     /**
      * List of partial-resolvable result callbacks
+     *
      * @var callable[]
      */
     private $resultCallbacks = [];
@@ -23,6 +24,7 @@ trait ResultTrait
      * only if this match was part of the matched rules.
      *
      * @param callable $callback
+     *
      * @return $this
      */
     public function addResultCallback(callable $callback)

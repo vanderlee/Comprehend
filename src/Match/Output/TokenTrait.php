@@ -9,6 +9,7 @@ trait TokenTrait
 
     /**
      * List of callbacks to process for tokens
+     *
      * @var callable
      */
     private $tokenCallback = null;
@@ -18,6 +19,7 @@ trait TokenTrait
      * only if this match was part of the matched rules.
      *
      * @param callable $callback
+     *
      * @return $this
      */
     public function setTokenCallback(callable $callback)

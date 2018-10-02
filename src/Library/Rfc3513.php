@@ -6,7 +6,7 @@
  * Obsoleted by RFC 4291
  * Obsoletes RFC 2373
  *
- * @see https://tools.ietf.org/html/rfc4408
+ * @see     https://tools.ietf.org/html/rfc4408
  * @package Vanderlee\Comprehend\Library
  */
 
@@ -26,7 +26,7 @@ require_once 'functions.php';
  *  1234:0:0:0:0:0:12.34.56.78
  *  1234::12.34.56.78
  *
- * @property-read Parser ipv6 IPv6 address with CIDR range
+ * @property-read Parser ipv6         IPv6 address with CIDR range
  * @property-read Parser ipv6_address IPv6 address without CIDR range
  *
  * @package Vanderlee\Comprehend\Library

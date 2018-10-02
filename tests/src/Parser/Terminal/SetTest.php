@@ -32,17 +32,17 @@ class SetTest extends ParserTestCase
      * @dataProvider setData
      *
      * @param Set $parser
-     * @param $input
-     * @param $offset
-     * @param $match
-     * @param $length
+     * @param     $input
+     * @param     $offset
+     * @param     $match
+     * @param     $length
      */
     public function testSet(Set $parser, $input, $offset, $match, $length)
     {
         $result = $parser->match($input, $offset);
 
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $this->assertSame($match, $result->match, (string) $parser);
+        $this->assertSame($length, $result->length, (string) $parser);
     }
 
     /**

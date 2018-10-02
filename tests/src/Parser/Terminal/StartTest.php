@@ -16,17 +16,17 @@ class StartTest extends ParserTestCase
      * @dataProvider startData
      *
      * @param Start $parser
-     * @param $input
-     * @param $offset
-     * @param $match
-     * @param $length
+     * @param       $input
+     * @param       $offset
+     * @param       $match
+     * @param       $length
      */
     public function testStart(Start $parser, $input, $offset, $match, $length)
     {
         $result = $parser->match($input, $offset);
 
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $this->assertSame($match, $result->match, (string) $parser);
+        $this->assertSame($length, $result->length, (string) $parser);
     }
 
     public function startData()

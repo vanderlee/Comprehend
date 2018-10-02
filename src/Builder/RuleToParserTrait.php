@@ -22,6 +22,7 @@ trait RuleToParserTrait
     /**
      * @param mixed $rule
      * @param array $arguments
+     *
      * @return Implementation
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
@@ -36,6 +37,7 @@ trait RuleToParserTrait
 
     /**
      * @param mixed $rule
+     *
      * @return Parser
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
@@ -51,6 +53,7 @@ trait RuleToParserTrait
     /**
      * @param mixed $rule
      * @param array $arguments
+     *
      * @return Parser
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
@@ -66,6 +69,7 @@ trait RuleToParserTrait
     /**
      * @param mixed $rule
      * @param array $arguments
+     *
      * @return Parser
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
@@ -82,6 +86,7 @@ trait RuleToParserTrait
 
     /**
      * @param mixed $rule
+     *
      * @return Parser
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
@@ -98,7 +103,8 @@ trait RuleToParserTrait
 
     /**
      * @param Mixed $rule
-     * @param $arguments
+     * @param       $arguments
+     *
      * @return Parser|null
      */
     private static function ruleToParser(&$rule, $arguments)

@@ -4,7 +4,6 @@ namespace Tests\Src\Builder;
 
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Builder\Definition;
-use Vanderlee\Comprehend\Builder\Implementation;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
@@ -24,7 +23,7 @@ class ImplementationTest extends ParserTestCase
     public function testNoParserDefinedString()
     {
         $definition = new Definition();
-        $this->assertEquals('', (string)$definition());
+        $this->assertEquals('', (string) $definition());
     }
 
     public function testMagicGetParserDefined()
@@ -51,7 +50,7 @@ class ImplementationTest extends ParserTestCase
 
     public function testMagicGetParserFromGenerator()
     {
-        $definition = new Definition(function() {
+        $definition = new Definition(function () {
             return new Text('foo');
         });
         $implementation = $definition->build();

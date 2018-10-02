@@ -27,6 +27,7 @@ class DefinitionTest extends ParserTestCase
 
     /**
      * @param string $enclosures
+     *
      * @return Choice|Sequence
      * @throws \Exception
      */
@@ -75,7 +76,7 @@ class DefinitionTest extends ParserTestCase
     public function testQuotedList()
     {
         $definition = new Definition(self::QUOTED_STRING);
-        $qs         = $definition();
+        $qs = $definition();
         $this->assertResult(true, 5, $qs('"foo"'));
         $this->assertResult(false, 5, $qs('"foo`'));
 
@@ -93,7 +94,7 @@ class DefinitionTest extends ParserTestCase
 
     public function testFirstDigitOdd()
     {
-        $d      = new Definition(new Sequence((new Range('1', '9'))->setResult('first'),
+        $d = new Definition(new Sequence((new Range('1', '9'))->setResult('first'),
             new Repeat(new Range('0', '9'))));
         $number = $d();
         $this->assertResult(true, 2, $number('11'));
@@ -101,7 +102,9 @@ class DefinitionTest extends ParserTestCase
 
         $d->addValidator(function (
             /** @noinspection PhpUnusedParameterInspection */
-            $text, $results) {
+            $text,
+            $results
+        ) {
             return intval($results['first']) % 2 === 1;
         });
         $number = $d();

@@ -29,12 +29,12 @@ class CaseSensitive extends Parser
     /**
      *
      * @param Parser|string|integer $parser
-     * @param bool $sensitivity
+     * @param bool                  $sensitivity
      */
     public function __construct($sensitivity, $parser)
     {
-        $this->parser      = self::getArgument($parser);
-        $this->sensitivity = (bool)$sensitivity;
+        $this->parser = self::getArgument($parser);
+        $this->sensitivity = (bool) $sensitivity;
     }
 
     protected function parse(&$input, $offset, Context $context)

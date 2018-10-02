@@ -21,8 +21,8 @@ class TokenTest extends ParserTestCase
 
     public function testTokens()
     {
-        $foo    = (new Text('foo'))->token('FooToken');
-        $bar    = (new Text('bar'));
+        $foo = (new Text('foo'))->token('FooToken');
+        $bar = (new Text('bar'));
         $foobar = (new Sequence($foo, $bar))->token('FoobarToken', 'test');
 
         $match = $foobar->match('foobarbaz');
@@ -78,8 +78,8 @@ class TokenTest extends ParserTestCase
 
     public function testRfcGroup()
     {
-        $scheme     = (new Rfc3986())->scheme;
-        $colon      = (new Text(':'));
+        $scheme = (new Rfc3986())->scheme;
+        $colon = (new Text(':'));
         $hier_start = (new Sequence($scheme, $colon))->token('HierStartToken');
 
         $match = $hier_start->match('foo:');
@@ -110,7 +110,7 @@ class TokenTest extends ParserTestCase
 
     public function testUndefinedProperty()
     {
-        $foo   = (new Text('foo'))->token('Word');
+        $foo = (new Text('foo'))->token('Word');
         $match = $foo->match('foo');
         $this->assertResult(true, 3, $match);
         $this->expectExceptionMessage("Undefined property `i_do_not_exist`");
@@ -130,7 +130,7 @@ class TokenTest extends ParserTestCase
         $this->assertEquals('Word (`foobar`)' . PHP_EOL
             . '  Vanderlee\Comprehend\Parser\Terminal\Char (`f`)' . PHP_EOL
             . '  Ooh! (`oo`)' . PHP_EOL
-            . '  group::Bar (`bar`)', (string)$match->token);
+            . '  group::Bar (`bar`)', (string) $match->token);
     }
 
     public function testJsonEncode()

@@ -61,6 +61,7 @@ class Sequence extends IterableParser
      * Add one or more parsers to the end of this sequence
      *
      * @param string[]|int[]|Parser[] $arguments
+     *
      * @return $this
      */
     public function add(...$arguments)

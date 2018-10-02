@@ -6,6 +6,7 @@ trait CallbackTrait
 {
     /**
      * List of ordinary callbacks to process
+     *
      * @var callable[]
      */
     private $customCallbacks = [];
@@ -15,6 +16,7 @@ trait CallbackTrait
      * only if this match was part of the matched rules.
      *
      * @param callable $callback
+     *
      * @return $this
      */
     public function addCustomCallback(callable $callback)

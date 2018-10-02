@@ -10,6 +10,7 @@ trait PreferContextTrait
 
     /**
      * @param $preference
+     *
      * @throws \DomainException
      */
     private static function assertPreference($preference)

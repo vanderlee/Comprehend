@@ -28,7 +28,8 @@ class Set extends Parser
      * Match any single character in the set or not in the set.
      *
      * @param string $set
-     * @param bool $include Set to false to match only characters NOT in the set
+     * @param bool   $include Set to false to match only characters NOT in the set
+     *
      * @throws \Exception
      */
     public function __construct($set, $include = true)
@@ -37,8 +38,8 @@ class Set extends Parser
             throw new \InvalidArgumentException('Empty set');
         }
 
-        $this->set     = count_chars($set, 3);
-        $this->include = (bool)$include;
+        $this->set = count_chars($set, 3);
+        $this->include = (bool) $include;
     }
 
     protected function parse(&$input, $offset, Context $context)

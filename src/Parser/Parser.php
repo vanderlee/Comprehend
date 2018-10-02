@@ -39,16 +39,18 @@ abstract class Parser
     /**
      * Match the input with this parser, starting from the offset position.
      *
-     * @param string $input
-     * @param int $offset
+     * @param string  $input
+     * @param int     $offset
      * @param Context $context
+     *
      * @return \Vanderlee\Comprehend\Match\Match
      */
     abstract protected function parse(&$input, $offset, Context $context);
 
     /**
-     * @param string $input
+     * @param string  $input
      * @param integer $offset
+     *
      * @return Match;
      */
     public function match($input, $offset = 0)
@@ -68,11 +70,12 @@ abstract class Parser
     /**
      * Create a match
      *
-     * @param bool $success
-     * @param string $input
-     * @param int $offset
-     * @param int $length
+     * @param bool              $success
+     * @param string            $input
+     * @param int               $offset
+     * @param int               $length
      * @param Success[]|Success $successes
+     *
      * @return Match
      */
     protected function makeMatch($success, &$input, $offset, $length = 0, &$successes = [])
@@ -85,10 +88,11 @@ abstract class Parser
     /**
      * Create a successful match
      *
-     * @param string $input
-     * @param int $offset
-     * @param int $length
+     * @param string            $input
+     * @param int               $offset
+     * @param int               $length
      * @param Success[]|Success $successes
+     *
      * @return Success
      */
     protected function success(&$input, $offset, $length = 0, &$successes = [])
@@ -130,8 +134,9 @@ abstract class Parser
      * Create a failed match
      *
      * @param string $input
-     * @param int $offset
-     * @param int $length
+     * @param int    $offset
+     * @param int    $length
+     *
      * @return Failure
      */
     protected function failure(&$input, $offset, $length = 0)
@@ -143,6 +148,7 @@ abstract class Parser
      * Assign a function to be called if (and only if) this parser matched successfully as part of the whole syntax.
      *
      * @param callable $callback
+     *
      * @return $this
      */
     public function callback(callable $callback)

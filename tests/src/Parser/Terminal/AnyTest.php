@@ -14,18 +14,19 @@ class AnyTest extends ParserTestCase
 
     /**
      * @dataProvider anyData
-     * @param Any $parser
+     *
+     * @param Any    $parser
      * @param string $input
-     * @param int $offset
-     * @param bool $match
-     * @param int $length
+     * @param int    $offset
+     * @param bool   $match
+     * @param int    $length
      */
     public function testAny(Any $parser, $input, $offset, $match, $length)
     {
         $result = $parser->match($input, $offset);
 
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $this->assertSame($match, $result->match, (string) $parser);
+        $this->assertSame($length, $result->length, (string) $parser);
     }
 
     public function anyData()

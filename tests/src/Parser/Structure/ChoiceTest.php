@@ -23,14 +23,14 @@ class ChoiceTest extends ParserTestCase
      * @dataProvider choiceData
      *
      * @param Choice $parser
-     * @param $input
-     * @param $offset
-     * @param $match
-     * @param $length
+     * @param        $input
+     * @param        $offset
+     * @param        $match
+     * @param        $length
      */
     public function testChoice(Choice $parser, $input, $offset, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input, $offset), (string)$parser);
+        $this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
     }
 
     public function choiceData()
@@ -120,21 +120,21 @@ class ChoiceTest extends ParserTestCase
             (new Text('a'))->assignTo($a), (new Text('b'))->assignTo($b)
         ))->assignTo($choice);
 
-        $a     = $b = $choice = null;
+        $a = $b = $choice = null;
         $match = $parser->match('a');
         $this->assertTrue($match->match);
         $this->assertEquals('a', $choice);
         $this->assertEquals('a', $a);
         $this->assertEquals(null, $b);
 
-        $a     = $b = $choice = null;
+        $a = $b = $choice = null;
         $match = $parser->match('b');
         $this->assertTrue($match->match);
         $this->assertEquals('b', $choice);
         $this->assertEquals(null, $a);
         $this->assertEquals('b', $b);
 
-        $a     = $b = $choice = null;
+        $a = $b = $choice = null;
         $match = $parser->match('c');
         $this->assertFalse($match->match);
         $this->assertEquals(null, $choice);

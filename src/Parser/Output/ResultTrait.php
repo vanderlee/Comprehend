@@ -11,6 +11,7 @@ trait ResultTrait
 
     /**
      * List of result names to assign the matched text to.
+     *
      * @var callable[]
      */
     private $resultCallbacks = [];
@@ -26,8 +27,9 @@ trait ResultTrait
      * After parsing, assign the matched input of this parser to the named result.
      * Only assign if successfully matched entire parent up to root.
      *
-     * @param string|integer $key
+     * @param string|integer       $key
      * @param null|callable|string $value
+     *
      * @return $this
      */
     public function setResult($key = null, $value = null)
@@ -49,8 +51,9 @@ trait ResultTrait
      * If result exists, concatenate the matched text as a string, otherwise
      * create it. If result is an array, concat to the last entry.
      *
-     * @param null|string $key
+     * @param null|string          $key
      * @param null|callable|string $value
+     *
      * @return $this
      */
     public function concatResult($key = null, $value = null)
@@ -63,7 +66,7 @@ trait ResultTrait
             }
 
             if (!isset($results[$key])) {
-                $results[$key] = (string)$text;
+                $results[$key] = (string) $text;
             } elseif (is_array($results[$key])) {
                 $results[$key][] = array_pop($results[$key]) . $text;
             } else {
@@ -77,8 +80,9 @@ trait ResultTrait
     /**
      * Turn the result into an array and start a new entry.
      *
-     * @param null|string $key
+     * @param null|string          $key
      * @param null|callable|string $value
+     *
      * @return $this
      */
     public function pushResult($key = null, $value = null)

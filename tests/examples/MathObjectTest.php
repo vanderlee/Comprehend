@@ -29,20 +29,21 @@ class MathObjectTest extends ParserTestCase
 
     /**
      * Math expression parser
+     *
      * @var Parser
      */
     private static $math;
 
     public static function setUpBeforeClass()
     {
-        $term       = new Stub;
+        $term = new Stub;
         $expression = new Stub;
 
-        $integer            = (new Sequence(Repeat::star('-'), Repeat::plus(new Range('0', '9'))))->pushResult();
-        $factor             = new Choice(
+        $integer = (new Sequence(Repeat::star('-'), Repeat::plus(new Range('0', '9'))))->pushResult();
+        $factor = new Choice(
             ['(', $expression, ')'], $integer
         );
-        $term->parser       = new Choice(
+        $term->parser = new Choice(
             (new Sequence($factor, '*', $term))->pushResult(null, 'multiply'),
             (new Sequence($factor, '/', $term))->pushResult(null, 'divide'), $factor
         );

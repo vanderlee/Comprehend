@@ -6,7 +6,7 @@
  * Updated by RFC 7405
  * Obsoletes RFC 4234
  *
- * @see https://tools.ietf.org/html/rfc5234
+ * @see     https://tools.ietf.org/html/rfc5234
  * @package Vanderlee\Comprehend\Library
  */
 

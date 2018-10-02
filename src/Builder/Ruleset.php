@@ -19,9 +19,10 @@ use Vanderlee\Comprehend\Parser\Parser;
 class Ruleset extends AbstractRuleset
 {
     /**
-     * @param array $rules
-     * @param string $key
+     * @param array      $rules
+     * @param string     $key
      * @param array|null $arguments
+     *
      * @return bool|Implementation|Parser|void
      * @throws \Exception
      */
@@ -45,8 +46,10 @@ class Ruleset extends AbstractRuleset
 
     /**
      * Define an instance rule
+     *
      * @param string $name
-     * @param Mixed $definition
+     * @param Mixed  $definition
+     *
      * @throws \Exception
      */
     public function __set($name, $definition)
@@ -56,6 +59,7 @@ class Ruleset extends AbstractRuleset
 
     /**
      * Undefine an instance rule
+     *
      * @param string $name
      */
     public function __unset($name)

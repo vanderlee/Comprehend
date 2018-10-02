@@ -42,16 +42,17 @@ class Implementation extends Parser
 
     /**
      * @param Definition $definition
-     * @param array $arguments
+     * @param array      $arguments
      */
     public function __construct(Definition &$definition, array $arguments = [])
     {
         $this->definition = $definition;
-        $this->arguments  = $arguments;
+        $this->arguments = $arguments;
     }
 
     /**
      * @param $name
+     *
      * @return callable|null|Parser
      */
     public function __get($name)
@@ -81,7 +82,7 @@ class Implementation extends Parser
                     throw new Exception('Parser not defined');
                 }
 
-                $parser       = ($this->parser);
+                $parser = ($this->parser);
                 $this->parser = $parser(...$this->arguments);
             }
         }
@@ -90,8 +91,9 @@ class Implementation extends Parser
     /**
      * Get and validate a set of results for the local scope of this parser
      *
-     * @param Match $match
+     * @param Match  $match
      * @param string $text
+     *
      * @return array|false
      */
     private function validateResults(Match $match, $text)
@@ -113,10 +115,12 @@ class Implementation extends Parser
      * Apply a callback to handle all processors.
      *
      * @param Success $match
-     * @param array $localResults
+     * @param array   $localResults
+     *
      * @return Success
      */
-    private function addProcessors(Success $match, $localResults) {
+    private function addProcessors(Success $match, $localResults)
+    {
         if (!empty($this->definition->processors)) {
             $processors = $this->definition->processors;
             $match->addResultCallback(function (&$results) use ($processors, $localResults) {
@@ -130,9 +134,10 @@ class Implementation extends Parser
     }
 
     /**
-     * @param string $input
-     * @param int $offset
+     * @param string  $input
+     * @param int     $offset
      * @param Context $context
+     *
      * @return Failure|Success
      * @throws Exception
      */
@@ -168,7 +173,7 @@ class Implementation extends Parser
             // ignore
         }
 
-        return (string)$this->parser;
+        return (string) $this->parser;
     }
 
 }

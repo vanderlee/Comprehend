@@ -59,7 +59,7 @@ class Stub extends Parser
     {
         /** @noinspection HtmlUnknownTag */
         return $this->parser
-            ? (string)$this->parser
+            ? (string) $this->parser
             : '<undefined>';
     }
 

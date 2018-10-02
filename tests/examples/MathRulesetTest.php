@@ -31,6 +31,7 @@ class MathRulesetTest extends ParserTestCase
 
     /**
      * Math expression parser
+     *
      * @var Parser
      */
     private static $math;

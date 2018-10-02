@@ -16,6 +16,7 @@ trait PreferTrait
 
     /**
      * Parser used for scanning the text
+     *
      * @var Parser
      */
     private $preference = null;
@@ -36,6 +37,7 @@ trait PreferTrait
 
     /**
      * @param string $preference
+     *
      * @return $this
      */
     public function setPreference($preference)

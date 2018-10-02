@@ -13,9 +13,9 @@ class ParserTestCase extends \PHPUnit\Framework\TestCase
 {
 
     /**
-     * @param bool $match
-     * @param int $length
-     * @param Match $result
+     * @param bool   $match
+     * @param int    $length
+     * @param Match  $result
      * @param string $message
      */
     protected function assertResult($match, $length, Match $result, $message = '')

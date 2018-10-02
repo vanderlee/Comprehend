@@ -27,6 +27,7 @@ class Prefer extends Parser
 
     /**
      * One of self::*
+     *
      * @var integer
      */
     private $preference = null;
@@ -34,6 +35,7 @@ class Prefer extends Parser
     /**
      * @param mixed $preference
      * @param mixed $parser
+     *
      * @throws \DomainException
      */
     public function __construct($preference, $parser)
@@ -63,11 +65,11 @@ class Prefer extends Parser
         switch ($this->preference) {
             default:
             case self::FIRST:
-                return (string)$this->parser;
+                return (string) $this->parser;
             case self::LONGEST:
-                return 'longest-of' . (string)$this->parser;
+                return 'longest-of' . (string) $this->parser;
             case self::SHORTEST:
-                return 'shortest-of' . (string)$this->parser;
+                return 'shortest-of' . (string) $this->parser;
         }
     }
 

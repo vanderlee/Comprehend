@@ -6,7 +6,7 @@
  * Updated by RFC 6652
  * Obsoleted by RFC 7208
  *
- * @see https://tools.ietf.org/html/rfc4408
+ * @see     https://tools.ietf.org/html/rfc4408
  * @package Vanderlee\Comprehend\Library
  */
 
@@ -24,11 +24,11 @@ require_once 'functions.php';
  * ABNF in official RFC specs does not take into account left hand recursion issues.
  * Instances are fixed manually where appropriate.
  *
- * @property-read Parser record Complete SPF record
+ * @property-read Parser record  Complete SPF record
  * @property-read Parser version SPF version tag
- * @property-read Parser qnum Integer value between 0 and 255
- * @property-read Parser IP4 IPv4 address with optional CIDR range
- * @property-read Parser IP6 IPv6 address with optional CIDR range
+ * @property-read Parser qnum    Integer value between 0 and 255
+ * @property-read Parser IP4     IPv4 address with optional CIDR range
+ * @property-read Parser IP6     IPv6 address with optional CIDR range
  *
  * @package Vanderlee\Comprehend\Library
  */

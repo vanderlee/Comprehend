@@ -1,5 +1,6 @@
 # Todo
 ## Milestone 1
+ -  Consistent copyright notices
  -  Ruleset; global context settings (lazy binding)
  -  Ruleset; dedupe/refactor argument parsing
  -  Test AbstractRuleset->call() (indirect) with instance with token already set

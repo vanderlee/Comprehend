@@ -27,9 +27,9 @@ class Rfc3513Test extends ParserTestCase
      * @dataProvider rfc3513Data
      *
      * @param Parser $parser
-     * @param $input
-     * @param $match
-     * @param $length
+     * @param        $input
+     * @param        $match
+     * @param        $length
      */
     public function testRfc3513(Parser $parser, $input, $match, $length)
     {

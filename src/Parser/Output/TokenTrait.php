@@ -33,15 +33,16 @@ trait TokenTrait
     private $tokenIsTerminal = false;
 
     /**
-     * @param string $token
+     * @param string      $token
      * @param string|null $group
-     * @param bool $isTerminal
+     * @param bool        $isTerminal
+     *
      * @return $this
      */
     public function token($token, $group = null, $isTerminal = false)
     {
-        $this->tokenName       = $token;
-        $this->tokenGroup      = $group;
+        $this->tokenName = $token;
+        $this->tokenGroup = $group;
         $this->tokenIsTerminal = $isTerminal;
 
         return $this;

@@ -25,8 +25,8 @@ class Repeat extends Parser
     public function __construct($parser, $min = 0, $max = null)
     {
         $this->parser = $this->getArgument($parser);
-        $this->min    = $min;
-        $this->max    = $max;
+        $this->min = $min;
+        $this->max = $max;
 
         if ($this->max !== null && $this->max < $this->min) {
             throw new \InvalidArgumentException('Invalid repeat range specified');
@@ -73,7 +73,7 @@ class Repeat extends Parser
 
             $match = $this->parser->parse($input, $offset + $length + $skip, $context);
             if ($match instanceof Success) {
-                $length         += $skip + $match->length;
+                $length += $skip + $match->length;
                 $childMatches[] = $match;
             }
         } while (($match instanceof Success)

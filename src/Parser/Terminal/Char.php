@@ -27,7 +27,7 @@ class Char extends Parser
     public function __construct($character, $include = true)
     {
         $this->character = self::parseCharacter($character);
-        $this->include   = $include;
+        $this->include = $include;
     }
 
     protected function parse(&$input, $offset, Context $context)

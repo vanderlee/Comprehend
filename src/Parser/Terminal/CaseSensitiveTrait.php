@@ -33,6 +33,7 @@ trait CaseSensitiveTrait
 
     /**
      * @param bool $preference
+     *
      * @return $this
      */
     public function setCaseSensitivity($preference)

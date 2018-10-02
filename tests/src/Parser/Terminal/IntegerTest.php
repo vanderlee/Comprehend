@@ -68,16 +68,16 @@ class IntegerTest extends ParserTestCase
      * @dataProvider integerData
      *
      * @param Integer $parser
-     * @param $input
-     * @param $offset
-     * @param $match
-     * @param $length
+     * @param         $input
+     * @param         $offset
+     * @param         $match
+     * @param         $length
      */
     public function testInteger(Integer $parser, $input, $offset, $match, $length)
     {
         $result = $parser->match($input, $offset);
 
-        $message = $input . ' = ' . (string)$parser;
+        $message = $input . ' = ' . (string) $parser;
 
         $this->assertResult($match, $length, $result, $message);
     }

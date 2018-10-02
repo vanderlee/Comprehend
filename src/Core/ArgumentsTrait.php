@@ -20,7 +20,8 @@ trait ArgumentsTrait
      * Parser array argument
      *
      * @param mixed $argument
-     * @param bool $arrayToSequence
+     * @param bool  $arrayToSequence
+     *
      * @return Parser|Choice|Sequence
      */
     private static function getArrayArgument($argument, $arrayToSequence)
@@ -42,6 +43,7 @@ trait ArgumentsTrait
      * Parse string argument
      *
      * @param mixed $argument
+     *
      * @return Char|Text
      */
     private static function getStringArgument($argument)
@@ -61,7 +63,8 @@ trait ArgumentsTrait
      * Convert the argument to a parser
      *
      * @param mixed $argument
-     * @param bool $arrayToSequence if argument is an array, convert to Sequence (`true`) or Choice (`false`)
+     * @param bool  $arrayToSequence if argument is an array, convert to Sequence (`true`) or Choice (`false`)
+     *
      * @return Parser
      */
     protected static function getArgument($argument, $arrayToSequence = true)
@@ -92,7 +95,8 @@ trait ArgumentsTrait
      * Parse an array of arguments
      *
      * @param array $arguments
-     * @param bool $arrayToSequence
+     * @param bool  $arrayToSequence
+     *
      * @return array
      */
     protected static function getArguments($arguments, $arrayToSequence = true)

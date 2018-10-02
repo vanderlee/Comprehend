@@ -16,17 +16,17 @@ class NothingTest extends ParserTestCase
      * /@dataProvider nothingData
      *
      * @param Nothing $parser
-     * @param $input
-     * @param $offset
-     * @param $match
-     * @param $length
+     * @param         $input
+     * @param         $offset
+     * @param         $match
+     * @param         $length
      */
     public function testNothing(Nothing $parser, $input, $offset, $match, $length)
     {
         $result = $parser->match($input, $offset);
 
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $this->assertSame($match, $result->match, (string) $parser);
+        $this->assertSame($length, $result->length, (string) $parser);
     }
 
     public function nothingData()

@@ -5,7 +5,7 @@
  *
  * Obsoleted by RFC 4234
  *
- * @see https://tools.ietf.org/html/rfc2234
+ * @see     https://tools.ietf.org/html/rfc2234
  * @package Vanderlee\Comprehend\Library
  */
 
@@ -17,11 +17,11 @@ use Vanderlee\Comprehend\Parser\Parser;
 require_once 'functions.php';
 
 /**
- * @property-read Parser ALPHA Alphabetic characters (upper- and lowercase)
- * @property-read Parser DIGIT Decimal character
+ * @property-read Parser ALPHA  Alphabetic characters (upper- and lowercase)
+ * @property-read Parser DIGIT  Decimal character
  * @property-read Parser HEXDIG Hexadecimal character
- * @property-read Parser BIT Binary digit
- * @property-read Parser SB Whitespace
+ * @property-read Parser BIT    Binary digit
+ * @property-read Parser SB     Whitespace
  * @property-read Parser DQUOTE "
  *
  * @package Vanderlee\Comprehend\Library
@@ -38,9 +38,9 @@ class Rfc2234 extends AbstractRuleset
          * altering meaning or syntax. They exist outside the named scope.
          */
         $hexdigs = plus($this->HEXDIG);
-        $digits  = plus($this->DIGIT);
-        $bits    = plus($this->BIT);
-        $c_wsps  = star($this->c_wsp);
+        $digits = plus($this->DIGIT);
+        $bits = plus($this->BIT);
+        $c_wsps = star($this->c_wsp);
 
         /*
          * Normal rules

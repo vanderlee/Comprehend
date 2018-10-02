@@ -39,17 +39,17 @@ class RegexTest extends ParserTestCase
      * @dataProvider regexData
      *
      * @param Regex $parser
-     * @param $input
-     * @param $offset
-     * @param $match
-     * @param $length
+     * @param       $input
+     * @param       $offset
+     * @param       $match
+     * @param       $length
      */
     public function testRegex(Regex $parser, $input, $offset, $match, $length)
     {
         $result = $parser->match($input, $offset);
 
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $this->assertSame($match, $result->match, (string) $parser);
+        $this->assertSame($length, $result->length, (string) $parser);
     }
 
     public function regexData()
