@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 namespace Tests\Src\Library;
 
@@ -54,5 +56,4 @@ class Rfc3986Test extends ParserTestCase
             //            [$uri->IPv4address, '11.2.3.4', true, 7],
         ];
     }
-
 }

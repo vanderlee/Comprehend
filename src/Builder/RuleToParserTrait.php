@@ -7,7 +7,7 @@ use Vanderlee\Comprehend\Parser\Parser;
 trait RuleToParserTrait
 {
     /**
-     * List of static methods (in order) to attempt instantiating a rule
+     * List of static methods (in order) to attempt instantiating a rule.
      *
      * @var string[]
      */
@@ -31,8 +31,6 @@ trait RuleToParserTrait
         if ($rule instanceof Definition) {
             return new Implementation($rule, $arguments);
         }
-
-        return null;
     }
 
     /**
@@ -46,8 +44,6 @@ trait RuleToParserTrait
         if ($rule instanceof Parser) {
             return clone $rule;
         }
-
-        return null;
     }
 
     /**
@@ -62,8 +58,6 @@ trait RuleToParserTrait
         if (is_callable($rule)) {
             return $rule(...$arguments);
         }
-
-        return null;
     }
 
     /**
@@ -80,8 +74,6 @@ trait RuleToParserTrait
             && is_subclass_of($rule, Parser::class)) {
             return new $rule(...$arguments);
         }
-
-        return null;
     }
 
     /**
@@ -97,12 +89,10 @@ trait RuleToParserTrait
             || is_int($rule)) {
             return self::getArgument($rule);
         }
-
-        return null;
     }
 
     /**
-     * @param Mixed $rule
+     * @param mixed $rule
      * @param       $arguments
      *
      * @return Parser|null
@@ -115,7 +105,5 @@ trait RuleToParserTrait
                 return $instance;
             }
         }
-
-        return null;
     }
 }

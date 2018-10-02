@@ -13,7 +13,7 @@ use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
 
 /**
- * Example of a simple maths parser, constructed using basic objects
+ * Example of a simple maths parser, constructed using basic objects.
  *
  * expression    ::= term '+' expression | term '-' expression | term
  * term            ::= factor '*' term | factor '/' term | factor
@@ -24,11 +24,10 @@ use Vanderlee\Comprehend\Parser\Terminal\Range;
  */
 class MathObjectTest extends ParserTestCase
 {
-
     use ReversePolishNotationTrait;
 
     /**
-     * Math expression parser
+     * Math expression parser.
      *
      * @var Parser
      */
@@ -36,8 +35,8 @@ class MathObjectTest extends ParserTestCase
 
     public static function setUpBeforeClass()
     {
-        $term = new Stub;
-        $expression = new Stub;
+        $term = new Stub();
+        $expression = new Stub();
 
         $integer = (new Sequence(Repeat::star('-'), Repeat::plus(new Range('0', '9'))))->pushResult();
         $factor = new Choice(
@@ -85,5 +84,4 @@ class MathObjectTest extends ParserTestCase
             //			'Parenthesis before priority #2' => ['2+(3*4)', [2, 3, 4, 'multiply', 'add'], 14],
         ];
     }
-
 }

@@ -10,20 +10,18 @@ use Vanderlee\Comprehend\Parser\Parser;
 
 /**
  * Match the first parser but not the second.
- * Essentially the same as (A - B) = (A + !B)
+ * Essentially the same as (A - B) = (A + !B).
  *
  * @author Martijn
  */
 class Except extends Parser
 {
-
     use ArgumentsTrait;
 
     private $parserMatch = null;
-    private $parserNot   = null;
+    private $parserNot = null;
 
     /**
-     *
      * @param Parser|string $match
      * @param Parser|string $not
      */
@@ -47,7 +45,6 @@ class Except extends Parser
 
     public function __toString()
     {
-        return '( ' . $this->parserMatch . ' - ' . $this->parserNot . ' )';
+        return '( '.$this->parserMatch.' - '.$this->parserNot.' )';
     }
-
 }

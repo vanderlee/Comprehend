@@ -8,7 +8,7 @@ use Vanderlee\Comprehend\Core\Context\SpacingContextTrait;
 use Vanderlee\Comprehend\Directive\Prefer;
 
 /**
- * Maintains the current context of the parser chain
+ * Maintains the current context of the parser chain.
  *
  * @author Martijn
  */
@@ -26,5 +26,4 @@ class Context
         $this->pushCaseSensitivity($caseSensitive);
         $this->pushPreference($preference);
     }
-
 }

@@ -1,13 +1,14 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 /**
- * RFC 3513 - Internet Protocol Version 6 (IPv6) Addressing Architecture
+ * RFC 3513 - Internet Protocol Version 6 (IPv6) Addressing Architecture.
  *
  * Obsoleted by RFC 4291
  * Obsoletes RFC 2373
  *
  * @see     https://tools.ietf.org/html/rfc4408
- * @package Vanderlee\Comprehend\Library
  */
 
 namespace Vanderlee\Comprehend\Library;
@@ -24,12 +25,10 @@ require_once 'functions.php';
  *  1234:0:0:0:0:0:200C:417A
  *  1234::200C:417A,
  *  1234:0:0:0:0:0:12.34.56.78
- *  1234::12.34.56.78
+ *  1234::12.34.56.78.
  *
  * @property-read Parser ipv6         IPv6 address with CIDR range
  * @property-read Parser ipv6_address IPv6 address without CIDR range
- *
- * @package Vanderlee\Comprehend\Library
  */
 class Rfc3513 extends AbstractRuleset
 {
@@ -41,7 +40,7 @@ class Rfc3513 extends AbstractRuleset
          * We'll use RFC3986 for the IPv6 definition for convenience sake.
          * This may not be 100% accurate, but RFC 3513's definition is sloppy at best.
          */
-        $rfc3986 = new Rfc3986;
+        $rfc3986 = new Rfc3986();
 
         /*
          * Normal rules

@@ -11,7 +11,6 @@ use Vanderlee\Comprehend\Parser\Terminal\Start;
  */
 class StartTest extends ParserTestCase
 {
-
     /**
      * @dataProvider startData
      *
@@ -37,5 +36,4 @@ class StartTest extends ParserTestCase
             [new Start(), 'aa', 2, false, 0],
         ];
     }
-
 }

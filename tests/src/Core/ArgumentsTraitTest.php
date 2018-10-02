@@ -29,13 +29,12 @@ class ArgumentsTraitStub
 }
 
 /**
- * Description of ArgumentsTraitTest
+ * Description of ArgumentsTraitTest.
  *
  * @author Martijn
  */
 class ArgumentsTraitParserTest extends ParserTestCase
 {
-
     public function testgetArgumentInvalidType()
     {
         $this->expectExceptionMessage('Invalid argument type `boolean`');
@@ -53,7 +52,7 @@ class ArgumentsTraitParserTest extends ParserTestCase
         $this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArgument('x'));
         $this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArgument(0x50));
         $this->assertInstanceOf(Text::class, ArgumentsTraitStub::getArgument('ab'));
-        $this->assertInstanceOf(Any::class, ArgumentsTraitStub::getArgument(new Any));
+        $this->assertInstanceOf(Any::class, ArgumentsTraitStub::getArgument(new Any()));
         $this->assertInstanceOf(Sequence::class, ArgumentsTraitStub::getArgument(['a', 'b']));
     }
 
@@ -80,7 +79,7 @@ class ArgumentsTraitParserTest extends ParserTestCase
         $this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArguments(['x', 'y'])[0]);
         $this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArguments([0x50, 0x51])[0]);
         $this->assertInstanceOf(Text::class, ArgumentsTraitStub::getArguments(['ab', 'cd'])[0]);
-        $this->assertInstanceOf(Any::class, ArgumentsTraitStub::getArguments([new Any, 'a'])[0]);
+        $this->assertInstanceOf(Any::class, ArgumentsTraitStub::getArguments([new Any(), 'a'])[0]);
         $this->assertInstanceOf(Sequence::class, ArgumentsTraitStub::getArguments([['a', 'b'], 'c'])[0]);
         $this->assertInstanceOf(Choice::class, ArgumentsTraitStub::getArguments([['a', 'b'], 'c'], false)[0]);
         $this->assertInstanceOf(Char::class, ArgumentsTraitStub::getArguments([['a'], 'bc'])[0]);
@@ -106,5 +105,4 @@ class ArgumentsTraitParserTest extends ParserTestCase
         $this->assertEquals("'a'", (string) ArgumentsTraitStub::getArguments([[['a']]])[0]);
         $this->assertEquals("'a'", (string) ArgumentsTraitStub::getArguments([[['a']]], false)[0]);
     }
-
 }

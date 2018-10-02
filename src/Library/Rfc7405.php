@@ -1,12 +1,13 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 /**
- * RFC 7405 - Case-Sensitive String Support in ABNF
+ * RFC 7405 - Case-Sensitive String Support in ABNF.
  *
  * Updates RFC 5234
  *
  * @see     https://tools.ietf.org/html/rfc7405
- * @package Vanderlee\Comprehend\Library
  */
 
 namespace Vanderlee\Comprehend\Library;

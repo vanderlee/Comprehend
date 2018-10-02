@@ -6,24 +6,22 @@ use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of RangeParser
+ * Description of RangeParser.
  *
  * @author Martijn
  */
 class Range extends Parser
 {
-
     use CaseSensitiveTrait;
 
     private $first = null;
-    private $last  = null;
-    private $in    = true;
+    private $last = null;
+    private $in = true;
 
     public function __construct($first, $last, $in = true)
     {
         if ($first === null
             && $last === null) {
-
             throw new \InvalidArgumentException('Empty arguments');
         }
 
@@ -44,7 +42,6 @@ class Range extends Parser
             return $this->failure($input, $offset);
         }
 
-
         $isSuccess = !$this->in; // By default not successful if required to match only within range
 
         $this->pushCaseSensitivityToContext($context);
@@ -58,7 +55,6 @@ class Range extends Parser
         if ($first <= $ord
             && ($this->last === null
                 || $ord <= $last)) {
-
             $isSuccess = !$isSuccess;
         }
 
@@ -71,5 +67,4 @@ class Range extends Parser
     {
         return sprintf('x%02x-x%02x', ord($this->first), ord($this->last));
     }
-
 }

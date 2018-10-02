@@ -46,8 +46,9 @@ class SetTest extends ParserTestCase
     }
 
     /**
-     * @return array
      * @throws \Exception
+     *
+     * @return array
      */
     public function setData()
     {
@@ -73,5 +74,4 @@ class SetTest extends ParserTestCase
             [(new Set('a', false))->caseInsensitive(), 'A', 0, false, 0],
         ];
     }
-
 }

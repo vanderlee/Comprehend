@@ -5,13 +5,12 @@ namespace tests;
 use Vanderlee\Comprehend\Match\Match;
 
 /**
- * Description of TestCase
+ * Description of TestCase.
  *
  * @author Martijn
  */
 class ParserTestCase extends \PHPUnit\Framework\TestCase
 {
-
     /**
      * @param bool   $match
      * @param int    $length
@@ -20,7 +19,7 @@ class ParserTestCase extends \PHPUnit\Framework\TestCase
      */
     protected function assertResult($match, $length, Match $result, $message = '')
     {
-        $this->assertSame($match, $result->match, $message . " (@{$result->length})");
+        $this->assertSame($match, $result->match, $message." (@{$result->length})");
         $this->assertSame($length, $result->length, $message);
     }
 }

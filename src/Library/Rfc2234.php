@@ -1,12 +1,13 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 /**
- * RFC 2234 - Augmented BNF for Syntax Specifications: ABNF
+ * RFC 2234 - Augmented BNF for Syntax Specifications: ABNF.
  *
  * Obsoleted by RFC 4234
  *
  * @see     https://tools.ietf.org/html/rfc2234
- * @package Vanderlee\Comprehend\Library
  */
 
 namespace Vanderlee\Comprehend\Library;
@@ -23,8 +24,6 @@ require_once 'functions.php';
  * @property-read Parser BIT    Binary digit
  * @property-read Parser SB     Whitespace
  * @property-read Parser DQUOTE "
- *
- * @package Vanderlee\Comprehend\Library
  */
 class Rfc2234 extends AbstractRuleset
 {

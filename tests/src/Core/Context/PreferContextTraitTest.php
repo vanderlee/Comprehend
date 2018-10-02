@@ -10,10 +10,9 @@ use Vanderlee\Comprehend\Core\Context;
  */
 class PreferContextTraitTest extends ParserTestCase
 {
-
     public function testUnsupportedType()
     {
-        $this->expectExceptionMessage("Invalid preference `bad preference`");
+        $this->expectExceptionMessage('Invalid preference `bad preference`');
         new Context(null, true, 'bad preference');
     }
 }

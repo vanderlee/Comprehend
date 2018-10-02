@@ -13,10 +13,9 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
  */
 class SequenceTest extends ParserTestCase
 {
-
     public function testEmpty()
     {
-        $this->expectExceptionMessage("No arguments");
+        $this->expectExceptionMessage('No arguments');
         new Sequence();
     }
 
@@ -135,5 +134,4 @@ class SequenceTest extends ParserTestCase
         $seq->add('c');
         $this->assertResult(true, 3, $seq->match('abc'));
     }
-
 }

@@ -8,13 +8,12 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of NotParser
+ * Description of NotParser.
  *
  * @author Martijn
  */
 class Not extends Parser
 {
-
     use ArgumentsTrait;
 
     private $parser = null;
@@ -27,6 +26,7 @@ class Not extends Parser
     protected function parse(&$input, $offset, Context $context)
     {
         $match = $this->parser->parse($input, $offset, $context);
+
         return ($match instanceof Success)
             ? $this->failure($input, $offset, $match->length)
             : $this->success($input, $offset, 0);
@@ -34,7 +34,6 @@ class Not extends Parser
 
     public function __toString()
     {
-        return '!' . $this->parser;
+        return '!'.$this->parser;
     }
-
 }

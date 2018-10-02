@@ -60,5 +60,4 @@ class AllTest extends ParserTestCase
             [new All('aa', new Repeat('a', 3, 3)), 'aaa', 0, true, 2],
         ];
     }
-
 }

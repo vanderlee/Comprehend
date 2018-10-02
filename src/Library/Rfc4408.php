@@ -1,13 +1,14 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 /**
- * RFC 4408 - Sender Policy Framework (SPF) for Authorizing Use of Domains in E-Mail, Version 1
+ * RFC 4408 - Sender Policy Framework (SPF) for Authorizing Use of Domains in E-Mail, Version 1.
  *
  * Updated by RFC 6652
  * Obsoleted by RFC 7208
  *
  * @see     https://tools.ietf.org/html/rfc4408
- * @package Vanderlee\Comprehend\Library
  */
 
 namespace Vanderlee\Comprehend\Library;
@@ -19,7 +20,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Integer;
 require_once 'functions.php';
 
 /**
- * Class Rfc4408
+ * Class Rfc4408.
  *
  * ABNF in official RFC specs does not take into account left hand recursion issues.
  * Instances are fixed manually where appropriate.
@@ -29,8 +30,6 @@ require_once 'functions.php';
  * @property-read Parser qnum    Integer value between 0 and 255
  * @property-read Parser IP4     IPv4 address with optional CIDR range
  * @property-read Parser IP6     IPv6 address with optional CIDR range
- *
- * @package Vanderlee\Comprehend\Library
  */
 class Rfc4408 extends AbstractRuleset
 {
@@ -38,9 +37,9 @@ class Rfc4408 extends AbstractRuleset
 
     public function __construct($overwrites = [])
     {
-        $abnf = new Rfc4234;
+        $abnf = new Rfc4234();
 
-        $ipv6 = new Rfc3513;
+        $ipv6 = new Rfc3513();
 
         /*
          * Normal rules

@@ -18,13 +18,13 @@ class CharTest extends ParserTestCase
 
     public function testEmpty()
     {
-        $this->expectExceptionMessage("Empty argument");
+        $this->expectExceptionMessage('Empty argument');
         new Char('');
     }
 
     public function testTooLong()
     {
-        $this->expectExceptionMessage("Non-character argument");
+        $this->expectExceptionMessage('Non-character argument');
         new Char('aa');
     }
 
@@ -72,5 +72,4 @@ class CharTest extends ParserTestCase
             [(new Char('a', false))->caseInsensitive(), 'b', 0, true, 1],
         ];
     }
-
 }
