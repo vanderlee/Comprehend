@@ -5,7 +5,7 @@ namespace Vanderlee\Comprehend\Builder;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Shorthand for parser definitions
+ * Shorthand for parser definitions.
  *
  * @author Martijn
  */
@@ -63,7 +63,7 @@ class Definition
     /**
      * Build an instance of this parser definition.
      *
-     * @param Mixed[] $arguments
+     * @param mixed[] $arguments
      *
      * @return Implementation
      */
@@ -76,7 +76,7 @@ class Definition
      * Build an instance of this parser definition.
      * Alias of `build()` method.
      *
-     * @param Mixed[] $arguments
+     * @param mixed[] $arguments
      *
      * @return Implementation
      */
@@ -84,5 +84,4 @@ class Definition
     {
         return $this->build(...$arguments);
     }
-
 }

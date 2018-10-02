@@ -46,5 +46,4 @@ class ExceptTest extends ParserTestCase
             [new Except('a', 'b'), 'b', 0, false, 0],
         ];
     }
-
 }

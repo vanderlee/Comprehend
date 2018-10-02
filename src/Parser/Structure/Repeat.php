@@ -7,20 +7,19 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of RepeatParser
+ * Description of RepeatParser.
  *
  * @author Martijn
  */
 class Repeat extends Parser
 {
-
     use SpacingTrait;
 
     //use GreedyTrait;
 
     private $parser = null;
-    private $min    = null;
-    private $max    = null;
+    private $min = null;
+    private $max = null;
 
     public function __construct($parser, $min = 0, $max = null)
     {
@@ -55,7 +54,6 @@ class Repeat extends Parser
 
     protected function parse(&$input, $offset, Context $context)
     {
-
         $childMatches = [];
 
         $this->pushSpacer($context);
@@ -100,7 +98,6 @@ class Repeat extends Parser
 
         return ($min === $max
                 ? $min
-                : ($min . '*' . $max)) . $this->parser;
+                : ($min.'*'.$max)).$this->parser;
     }
-
 }

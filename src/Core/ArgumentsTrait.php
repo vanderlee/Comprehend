@@ -9,15 +9,14 @@ use Vanderlee\Comprehend\Parser\Terminal\Char;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /**
- * Process arguments
+ * Process arguments.
  *
  * @author Martijn
  */
 trait ArgumentsTrait
 {
-
     /**
-     * Parser array argument
+     * Parser array argument.
      *
      * @param mixed $argument
      * @param bool  $arrayToSequence
@@ -40,7 +39,7 @@ trait ArgumentsTrait
     }
 
     /**
-     * Parse string argument
+     * Parse string argument.
      *
      * @param mixed $argument
      *
@@ -60,7 +59,7 @@ trait ArgumentsTrait
     }
 
     /**
-     * Convert the argument to a parser
+     * Convert the argument to a parser.
      *
      * @param mixed $argument
      * @param bool  $arrayToSequence if argument is an array, convert to Sequence (`true`) or Choice (`false`)
@@ -92,7 +91,7 @@ trait ArgumentsTrait
     }
 
     /**
-     * Parse an array of arguments
+     * Parse an array of arguments.
      *
      * @param array $arguments
      * @param bool  $arrayToSequence

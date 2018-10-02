@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 namespace Tests\Src\Library;
 
@@ -50,5 +52,4 @@ class Rfc7405Test extends Rfc5234Test
             [$abnf->case_insensitive_string, 'SenSiTive', false, 0],
         ];
     }
-
 }

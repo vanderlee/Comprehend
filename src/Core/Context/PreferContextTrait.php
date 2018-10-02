@@ -40,6 +40,4 @@ trait PreferContextTrait
     {
         return end($this->preference);
     }
-
-
 }

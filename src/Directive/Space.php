@@ -7,13 +7,12 @@ use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of LexemeDirective
+ * Description of LexemeDirective.
  *
  * @author Martijn
  */
 class Space extends Parser
 {
-
     use ArgumentsTrait;
 
     /**
@@ -27,7 +26,7 @@ class Space extends Parser
     private $parser = null;
 
     /**
-     * Set (or disable) a spacer for the parser
+     * Set (or disable) a spacer for the parser.
      *
      * @param Parser|string|int|bool|null $spacer
      * @param Parser|string|int           $parser
@@ -53,5 +52,4 @@ class Space extends Parser
     {
         return (string) $this->parser;
     }
-
 }

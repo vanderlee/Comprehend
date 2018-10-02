@@ -3,13 +3,12 @@
 namespace Vanderlee\Comprehend\Match;
 
 /**
- * Result of a failed parse
+ * Result of a failed parse.
  *
  * @author Martijn
  */
 class Failure extends Match
 {
-
     public function __get($name)
     {
         return $name === 'match'
@@ -19,7 +18,6 @@ class Failure extends Match
 
     public function __toString()
     {
-        return 'Failed match at ' . $this->length . ' characters';
+        return 'Failed match at '.$this->length.' characters';
     }
-
 }

@@ -7,13 +7,12 @@ use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Description of CaseDirective
+ * Description of CaseDirective.
  *
  * @author Martijn
  */
 class CaseSensitive extends Parser
 {
-
     use ArgumentsTrait;
 
     /**
@@ -27,9 +26,8 @@ class CaseSensitive extends Parser
     private $sensitivity = null;
 
     /**
-     *
-     * @param Parser|string|integer $parser
-     * @param bool                  $sensitivity
+     * @param Parser|string|int $parser
+     * @param bool              $sensitivity
      */
     public function __construct($sensitivity, $parser)
     {
@@ -50,7 +48,6 @@ class CaseSensitive extends Parser
     {
         return ($this->sensitivity
                 ? 'case'
-                : 'no-case') . '( ' . $this->parser . ' )';
+                : 'no-case').'( '.$this->parser.' )';
     }
-
 }

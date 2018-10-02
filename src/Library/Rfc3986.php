@@ -1,8 +1,9 @@
 <?php
+
 /** @noinspection PhpUndefinedFieldInspection */
 
 /**
- * RFC 3986 - Uniform Resource Identifier (URI): Generic Syntax
+ * RFC 3986 - Uniform Resource Identifier (URI): Generic Syntax.
  *
  * @see https://tools.ietf.org/html/rfc3986
  */
@@ -19,8 +20,6 @@ require_once 'functions.php';
  * @property-read Parser IPv6address
  * @property-read Parser IPv4address
  * @property-read Parser sub_delims
- *
- * @package Vanderlee\Comprehend\Library
  */
 class Rfc3986 extends AbstractRuleset
 {
@@ -35,7 +34,7 @@ class Rfc3986 extends AbstractRuleset
         // Defined out-of-order for performance reasons
         $rules = [
             // 2.1.  Percent-Encoding
-            'pct_encoded'   => s("%", $abnf->HEXDIG, $abnf->HEXDIG),
+            'pct_encoded'   => s('%', $abnf->HEXDIG, $abnf->HEXDIG),
 
             // 2.2.  Reserved Characters
             'sub_delims'    => set('!$&\'()*+,;='),
@@ -98,21 +97,21 @@ class Rfc3986 extends AbstractRuleset
                 ['::', repeat(5, 5, [$this->h16, ':']), $this->ls32],
                 [opt($this->h16), '::', repeat(4, 4, [$this->h16, ':']), $this->ls32],
                 [
-                    opt([repeat(0, 1, [$this->h16, ':',]), $this->h16]),
+                    opt([repeat(0, 1, [$this->h16, ':']), $this->h16]),
                     '::',
                     repeat(3, 3, [$this->h16, ':']),
-                    $this->ls32
+                    $this->ls32,
                 ],
                 [
-                    opt([repeat(0, 2, [$this->h16, ':',]), $this->h16]),
+                    opt([repeat(0, 2, [$this->h16, ':']), $this->h16]),
                     '::',
                     repeat(2, 2, [$this->h16, ':']),
-                    $this->ls32
+                    $this->ls32,
                 ],
-                [opt([repeat(0, 3, [$this->h16, ':',]), $this->h16]), '::', $this->h16, ':', $this->ls32],
-                [opt([repeat(0, 4, [$this->h16, ':',]), $this->h16]), '::', $this->ls32],
-                [opt([repeat(0, 5, [$this->h16, ':',]), $this->h16]), '::', $this->h16],
-                [opt([repeat(0, 6, [$this->h16, ':',]), $this->h16]), '::']
+                [opt([repeat(0, 3, [$this->h16, ':']), $this->h16]), '::', $this->h16, ':', $this->ls32],
+                [opt([repeat(0, 4, [$this->h16, ':']), $this->h16]), '::', $this->ls32],
+                [opt([repeat(0, 5, [$this->h16, ':']), $this->h16]), '::', $this->h16],
+                [opt([repeat(0, 6, [$this->h16, ':']), $this->h16]), '::']
             ),
             'dec_octet'     => c(
                 ['25', range('0', '5')], // 250-255
@@ -132,7 +131,7 @@ class Rfc3986 extends AbstractRuleset
                 $this->path_abempty,
                 $this->path_absolute,
                 $this->path_noscheme,
-                $this->path_empty
+                $this->path_empty,
             ]),
             'relative_ref'  => s($this->relative_part, opt(['?', $this->query]), opt(['#', $this->fragment])),
 

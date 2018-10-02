@@ -101,5 +101,4 @@ class RepeatTest extends ParserTestCase
             [new Repeat('ab', 2, 2), 'ababab', 0, true, 4],
         ];
     }
-
 }

@@ -9,7 +9,7 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Matches an integer within the specified range
+ * Matches an integer within the specified range.
  *
  * @author Martijn
  */
@@ -18,7 +18,7 @@ class Integer extends Parser
     use CaseSensitiveTrait;
 
     /**
-     * List of digits to use for the different bases (up to 36)
+     * List of digits to use for the different bases (up to 36).
      *
      * @var string
      */
@@ -51,7 +51,6 @@ class Integer extends Parser
         if ($minimum !== null
             && $maximum !== null
             && $minimum > $maximum) {
-
             throw new \Exception('Maximum must be greater than minimum');
         }
 
@@ -61,7 +60,6 @@ class Integer extends Parser
         $this->base = intval($base);
         if ($base < 2
             || $base > strlen(self::$set)) {
-
             throw new \Exception('Unsupported base');
         }
     }
@@ -75,7 +73,6 @@ class Integer extends Parser
     {
         if ($minimum !== null
             && !is_int($minimum)) {
-
             throw new Exception('Minimum must be integer or `null`');
         }
 
@@ -91,7 +88,6 @@ class Integer extends Parser
     {
         if ($maximum !== null
             && !is_int($maximum)) {
-
             throw new Exception('Maximum must be integer or `null`');
         }
 
@@ -120,7 +116,7 @@ class Integer extends Parser
         // Build pattern
         $set0 = substr(self::$set, 0, $this->base);
         $set1 = substr(self::$set, 1, $this->base - 1);
-        $pattern = '/(?:0|-?[' . $set1 . '][' . $set0 . ']*)/A' . ($context->isCaseSensitive()
+        $pattern = '/(?:0|-?['.$set1.']['.$set0.']*)/A'.($context->isCaseSensitive()
                 ? ''
                 : 'i');
 
@@ -131,7 +127,6 @@ class Integer extends Parser
                 $integer = intval($match[0], $this->base);
                 if ($this->isInRange($integer)
                     && $match[0] !== '-') {
-
                     return $this->success($input, $offset, mb_strlen($match[0]));
                 }
 
@@ -149,9 +144,8 @@ class Integer extends Parser
     {
         return ($this->minimum === null
                 ? '<-INF'
-                : ('[' . $this->minimum)) . ',' . ($this->maximum === null
+                : ('['.$this->minimum)).','.($this->maximum === null
                 ? 'INF>'
-                : ($this->maximum . ']'));
+                : ($this->maximum.']'));
     }
-
 }

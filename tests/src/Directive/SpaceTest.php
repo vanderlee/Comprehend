@@ -51,7 +51,7 @@ class SpaceTest extends ParserTestCase
                 'a-b-c-d',
                 0,
                 false,
-                3
+                3,
             ],
             [new Space($spacer, new Sequence('a', new Space(null, new Sequence('b', 'c')), 'd')), 'a-bc-d', 0, true, 6],
             [new Space($spacer, new Sequence('a', new Space(null, new Sequence('b', 'c')), 'd')), 'abcd', 0, true, 4],
@@ -62,7 +62,7 @@ class SpaceTest extends ParserTestCase
                 'a-b-c-d',
                 0,
                 false,
-                3
+                3,
             ],
             [new Space($spacer, new Sequence('a', (new Sequence('b', 'c'))->spacing(null), 'd')), 'a-bc-d', 0, true, 6],
             [new Space($spacer, new Sequence('a', (new Sequence('b', 'c'))->spacing(null), 'd')), 'abcd', 0, true, 4],
@@ -73,14 +73,14 @@ class SpaceTest extends ParserTestCase
                 'a-b-c-d',
                 0,
                 false,
-                3
+                3,
             ],
             [
                 new Space($spacer, new Sequence('a', (new Sequence('b', 'c'))->spacing(false), 'd')),
                 'a-bc-d',
                 0,
                 true,
-                6
+                6,
             ],
             [new Space($spacer, new Sequence('a', (new Sequence('b', 'c'))->spacing(false), 'd')), 'abcd', 0, true, 4],
             [
@@ -88,7 +88,7 @@ class SpaceTest extends ParserTestCase
                 'ab-cd',
                 0,
                 false,
-                2
+                2,
             ],
 
             [
@@ -96,7 +96,7 @@ class SpaceTest extends ParserTestCase
                 'a-b-c-d',
                 0,
                 true,
-                7
+                7,
             ],
             [new Space($spacer, new Sequence('a', (new Sequence('b', 'c'))->spacing(true), 'd')), 'a-bc-d', 0, true, 6],
             [new Space($spacer, new Sequence('a', (new Sequence('b', 'c'))->spacing(true), 'd')), 'abcd', 0, true, 4],
@@ -107,23 +107,22 @@ class SpaceTest extends ParserTestCase
                 'a-b-c-d',
                 0,
                 false,
-                1
+                1,
             ],
             [
                 new Space($spacer, (new Sequence('a', (new Sequence('b', 'c'))->spacing(true), 'd'))->spacing(false)),
                 'ab-cd',
                 0,
                 true,
-                5
+                5,
             ],
             [
                 new Space(null, (new Sequence('a', (new Sequence('b', 'c'))))),
                 'abcd',
                 0,
                 true,
-                3
+                3,
             ],
         ];
     }
-
 }

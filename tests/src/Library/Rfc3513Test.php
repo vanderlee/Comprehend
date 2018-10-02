@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 namespace Tests\Src\Library;
 
@@ -12,7 +14,6 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Rfc3513Test extends ParserTestCase
 {
-
     protected function getRfc()
     {
         return new Rfc3513();
@@ -51,5 +52,4 @@ class Rfc3513Test extends ParserTestCase
             [$ipv6->ipv6, '::1/1', true, 5],
         ];
     }
-
 }

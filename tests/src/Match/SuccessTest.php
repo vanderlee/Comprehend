@@ -10,10 +10,9 @@ use Vanderlee\Comprehend\Match\Success;
  */
 class SuccessTest extends ParserTestCase
 {
-
     public function testZero()
     {
-        $Success = new Success;
+        $Success = new Success();
 
         $this->assertEquals(0, $Success->length);
         $this->assertTrue($Success->match);
@@ -37,8 +36,8 @@ class SuccessTest extends ParserTestCase
         $this->assertTrue($success->match);
         $this->assertEquals('Successfully matched 3 characters', (string) $success);
 
-        $this->expectExceptionMessage("Property name `i_do_not_exist` not recognized");
-        /** @noinspection PhpUndefinedFieldInspection */
+        $this->expectExceptionMessage('Property name `i_do_not_exist` not recognized');
+        /* @noinspection PhpUndefinedFieldInspection */
         $success->i_do_not_exist;
     }
 
@@ -50,7 +49,7 @@ class SuccessTest extends ParserTestCase
         $success = new Success(3);
 
         $success->resolve();
-        $this->expectExceptionMessage("Match already resolved");
+        $this->expectExceptionMessage('Match already resolved');
         $success->resolve();
     }
 }
