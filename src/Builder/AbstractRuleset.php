@@ -49,7 +49,7 @@ abstract class AbstractRuleset extends Parser
      *
      * @var null|Parser
      */
-    private $parser = null;
+    private $defaultParserCache = null;
 
     /**
      * @var Definition[]|Parser[]|callable[]
@@ -80,23 +80,25 @@ abstract class AbstractRuleset extends Parser
 
     /**
      * Instantiate the default parser (if available)
+     *
+     * @return null|Implementation|Parser
      */
-    private function initDefaultParser()
+    private function getRootParser()
     {
-        if ($this->parser === null) {
+        if ($this->defaultParserCache === null) {
             if (!isset($this->instanceRules[self::ROOT])) {
                 throw new UnexpectedValueException('Missing default parser');
             }
 
-            $this->parser = static::call($this->instanceRules, self::ROOT);
+            $this->defaultParserCache = static::call($this->instanceRules, self::ROOT);
         }
+
+        return $this->defaultParserCache;
     }
 
     protected function parse(&$input, $offset, Context $context)
     {
-        $this->initDefaultParser();
-
-        $match = $this->parser->parse($input, $offset, $context);
+        $match = $this->getRootParser()->parse($input, $offset, $context);
         if ($match instanceof Success) {
             return $this->success($input, $offset, $match->length, $match);
         }
@@ -274,11 +276,11 @@ abstract class AbstractRuleset extends Parser
     public function __toString()
     {
         try {
-            $this->initDefaultParser();
+            return (string)$this->getRootParser();
         } catch (Exception $e) {
             // ignore
         }
 
-        return (string)$this->parser;
+        return '';
     }
 }

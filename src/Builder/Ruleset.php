@@ -18,17 +18,26 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Ruleset extends AbstractRuleset
 {
+    /**
+     * @param array $rules
+     * @param string $key
+     * @param array|null $arguments
+     * @return bool|Implementation|Parser|void
+     * @throws \Exception
+     */
     protected static function call(&$rules, $key, $arguments = [])
     {
         switch ($key) {
             case 'define':
-                return self::defineRule($rules, ...$arguments);
+                self::defineRule($rules, $arguments[0], isset($arguments[1]) ? $arguments[1] : null);
+                return;
 
             case 'defined':
-                return self::isRuleDefined($rules, ...$arguments);
+                return self::isRuleDefined($rules, $arguments[0]);
 
             case 'undefine':
-                return self::undefineRule($rules, ...$arguments);
+                self::undefineRule($rules, $arguments[0]);
+                return;
         }
 
         return parent::call($rules, $key, $arguments);
