@@ -14,14 +14,14 @@ class Char extends Parser
 {
     use CaseSensitiveTrait;
 
-    private $character = null;
+    private $character;
 
     /**
      * Match the specified character (`true`) or everything else (`false`).
      *
      * @var bool
      */
-    private $include = true;
+    private $include;
 
     public function __construct($character, $include = true)
     {
@@ -50,6 +50,6 @@ class Char extends Parser
 
     public function __toString()
     {
-        return '\''.$this->character.'\'';
+        return '\'' . $this->character . '\'';
     }
 }

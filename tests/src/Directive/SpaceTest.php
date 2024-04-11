@@ -33,7 +33,7 @@ class SpaceTest extends ParserTestCase
      */
     public function testSpace(Space $parser, $input, $offset, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
+        $this->assertResult($match, $length, $parser->match($input, $offset), (string)$parser);
     }
 
     public function spaceData()

@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Library;
 
+use Exception;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
@@ -46,12 +47,15 @@ function range($from, $to)
     return new Range($from, $to);
 }
 
-function set($set)
+/**
+ * @throws Exception
+ */
+function set(string $set)
 {
     return new Set($set);
 }
 
-function regex($pattern)
+function regex(string $pattern)
 {
     return new Regex($pattern);
 }

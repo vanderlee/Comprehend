@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Core\Context;
 
+use DomainException;
 use Vanderlee\Comprehend\Directive\Prefer;
 
 trait PreferContextTrait
@@ -11,7 +12,7 @@ trait PreferContextTrait
     /**
      * @param $preference
      *
-     * @throws \DomainException
+     * @throws DomainException
      */
     private static function assertPreference($preference)
     {
@@ -20,7 +21,7 @@ trait PreferContextTrait
             Prefer::LONGEST,
             Prefer::SHORTEST,
         ])) {
-            throw new \DomainException("Invalid preference `{$preference}`");
+            throw new DomainException('Invalid preference `' . $preference . '`');
         }
     }
 
@@ -28,7 +29,7 @@ trait PreferContextTrait
     {
         self::assertPreference($preference);
 
-        array_push($this->preference, $preference);
+        $this->preference[] = $preference;
     }
 
     public function popPreference()

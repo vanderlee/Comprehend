@@ -2,6 +2,8 @@
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
+use Exception;
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -27,18 +29,18 @@ class Set extends Parser
      * Match any single character in the set or not in the set.
      *
      * @param string $set
-     * @param bool   $include Set to false to match only characters NOT in the set
+     * @param bool $include Set false to match only characters NOT in the set
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function __construct($set, $include = true)
+    public function __construct(string $set, bool $include = true)
     {
         if (mb_strlen($set) <= 0) {
-            throw new \InvalidArgumentException('Empty set');
+            throw new InvalidArgumentException('Empty set');
         }
 
         $this->set = count_chars($set, 3);
-        $this->include = (bool) $include;
+        $this->include = $include;
     }
 
     protected function parse(&$input, $offset, Context $context)
@@ -64,6 +66,6 @@ class Set extends Parser
     {
         return ($this->include
                 ? ''
-                : chr(0xAC)).'( \''.implode('\' | \'', str_split($this->set)).'\' )';
+                : chr(0xAC)) . '( \'' . implode('\' | \'', str_split($this->set)) . '\' )';
     }
 }

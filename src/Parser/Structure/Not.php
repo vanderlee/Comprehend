@@ -16,7 +16,7 @@ class Not extends Parser
 {
     use ArgumentsTrait;
 
-    private $parser = null;
+    private $parser;
 
     public function __construct($parser)
     {
@@ -29,11 +29,11 @@ class Not extends Parser
 
         return ($match instanceof Success)
             ? $this->failure($input, $offset, $match->length)
-            : $this->success($input, $offset, 0);
+            : $this->success($input, $offset);
     }
 
     public function __toString()
     {
-        return '!'.$this->parser;
+        return '!' . $this->parser;
     }
 }

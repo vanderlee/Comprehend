@@ -34,7 +34,7 @@ class Rfc3986Test extends ParserTestCase
      */
     public function testRules(Parser $parser, $input, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input), (string) $parser);
+        $this->assertResult($match, $length, $parser->match($input), (string)$parser);
     }
 
     public function rulesData()

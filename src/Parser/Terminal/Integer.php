@@ -42,7 +42,7 @@ class Integer extends Parser
     /**
      * @param int|null $minimum
      * @param int|null $maximum
-     * @param int      $base
+     * @param int $base
      *
      * @throws Exception
      */
@@ -51,7 +51,7 @@ class Integer extends Parser
         if ($minimum !== null
             && $maximum !== null
             && $minimum > $maximum) {
-            throw new \Exception('Maximum must be greater than minimum');
+            throw new Exception('Maximum must be greater than minimum');
         }
 
         $this->setMinimum($minimum);
@@ -60,7 +60,7 @@ class Integer extends Parser
         $this->base = intval($base);
         if ($base < 2
             || $base > strlen(self::$set)) {
-            throw new \Exception('Unsupported base');
+            throw new Exception('Unsupported base');
         }
     }
 
@@ -103,8 +103,8 @@ class Integer extends Parser
     }
 
     /**
-     * @param string  $input
-     * @param int     $offset
+     * @param string $input
+     * @param int $offset
      * @param Context $context
      *
      * @return Failure|Success
@@ -116,7 +116,7 @@ class Integer extends Parser
         // Build pattern
         $set0 = substr(self::$set, 0, $this->base);
         $set1 = substr(self::$set, 1, $this->base - 1);
-        $pattern = '/(?:0|-?['.$set1.']['.$set0.']*)/A'.($context->isCaseSensitive()
+        $pattern = '/(?:0|-?[' . $set1 . '][' . $set0 . ']*)/A' . ($context->isCaseSensitive()
                 ? ''
                 : 'i');
 
@@ -144,8 +144,8 @@ class Integer extends Parser
     {
         return ($this->minimum === null
                 ? '<-INF'
-                : ('['.$this->minimum)).','.($this->maximum === null
+                : ('[' . $this->minimum)) . ',' . ($this->maximum === null
                 ? 'INF>'
-                : ($this->maximum.']'));
+                : ($this->maximum . ']'));
     }
 }

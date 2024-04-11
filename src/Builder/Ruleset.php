@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Builder;
 
+use Exception;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
@@ -19,19 +20,19 @@ use Vanderlee\Comprehend\Parser\Parser;
 class Ruleset extends AbstractRuleset
 {
     /**
-     * @param array      $rules
-     * @param string     $key
-     * @param array|null $arguments
-     *
-     * @throws \Exception
+     * @param array $rules
+     * @param string $key
+     * @param array $arguments
      *
      * @return bool|Implementation|Parser|void
+     * @throws Exception
+     *
      */
-    protected static function call(&$rules, $key, $arguments = [])
+    protected static function call(&$rules, $key, array $arguments = [])
     {
         switch ($key) {
             case 'define':
-                self::defineRule($rules, $arguments[0], isset($arguments[1]) ? $arguments[1] : null);
+                self::defineRule($rules, $arguments[0], $arguments[1] ?? null);
 
                 return;
 
@@ -51,9 +52,9 @@ class Ruleset extends AbstractRuleset
      * Define an instance rule.
      *
      * @param string $name
-     * @param mixed  $definition
+     * @param mixed $definition
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __set($name, $definition)
     {

@@ -2,6 +2,7 @@
 
 namespace Tests\Src\Parser\Terminal;
 
+use Exception;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
 
@@ -12,7 +13,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Set;
 class SetTest extends ParserTestCase
 {
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testConstruction()
     {
@@ -20,7 +21,7 @@ class SetTest extends ParserTestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testEmpty()
     {
@@ -41,14 +42,14 @@ class SetTest extends ParserTestCase
     {
         $result = $parser->match($input, $offset);
 
-        $this->assertSame($match, $result->match, (string) $parser);
-        $this->assertSame($length, $result->length, (string) $parser);
+        $this->assertSame($match, $result->match, (string)$parser);
+        $this->assertSame($length, $result->length, (string)$parser);
     }
 
     /**
-     * @throws \Exception
-     *
      * @return array
+     * @throws Exception
+     *
      */
     public function setData()
     {

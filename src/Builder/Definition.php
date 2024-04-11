@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Builder;
 
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -23,7 +24,7 @@ class Definition
 
     /**
      * @param Parser|callable $generator Either a parser or a function returning a parser ('generator')
-     * @param callable[]      $validator
+     * @param callable[] $validator
      */
     public function __construct($generator = null, $validator = null)
     {
@@ -92,7 +93,7 @@ class Definition
     /**
      * Build an instance of this parser definition.
      *
-     * @param mixed[] $arguments
+     * @param array $arguments
      *
      * @return Implementation
      */
@@ -105,7 +106,7 @@ class Definition
      * Build an instance of this parser definition.
      * Alias of `build()` method.
      *
-     * @param mixed[] $arguments
+     * @param array $arguments
      *
      * @return Implementation
      */

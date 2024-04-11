@@ -2,6 +2,9 @@
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
+use ArrayAccess;
+use ArrayIterator;
+use IteratorAggregate;
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -10,7 +13,7 @@ use Vanderlee\Comprehend\Parser\Parser;
  *
  * @author Martijn
  */
-abstract class IterableParser extends Parser implements \IteratorAggregate, \ArrayAccess
+abstract class IterableParser extends Parser implements IteratorAggregate, ArrayAccess
 {
     use ArgumentsTrait;
 
@@ -23,7 +26,7 @@ abstract class IterableParser extends Parser implements \IteratorAggregate, \Arr
 
     public function getIterator()
     {
-        return new \ArrayIterator($this->parsers);
+        return new ArrayIterator($this->parsers);
     }
 
     // implements ArrayAccess
@@ -51,8 +54,7 @@ abstract class IterableParser extends Parser implements \IteratorAggregate, \Arr
 
     public function offsetGet($offset)
     {
-        return isset($this->parsers[$offset])
-            ? $this->parsers[$offset]
-            : null;
+        return $this->parsers[$offset]
+            ?? null;
     }
 }

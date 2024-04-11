@@ -67,17 +67,16 @@ trait ResultTrait
     }
 
     //@todo deprecate? Saves no time and is part of collection
-    public function getResult($name = null, $default = null)
+    public function getResult(string $name = null, $default = null)
     {
         $results = $this->getResults();
 
-        return isset($results[$name])
-            ? $results[$name]
-            : $default;
+        return $results[$name]
+            ?? $default;
     }
 
     //@todo deprecate? Saves no time and is part of collection
-    public function hasResult($name = null)
+    public function hasResult(string $name = null): bool
     {
         return isset($this->getResults()[$name]);
     }

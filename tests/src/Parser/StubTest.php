@@ -60,13 +60,13 @@ class StubTest extends ParserTestCase
     {
         $parser = new Stub();
         $parser->parser = 'foo';
-        $this->assertEquals('"foo"', (string) $parser);
+        $this->assertEquals('"foo"', (string)$parser);
     }
 
     public function testToStringMissingParser()
     {
         $parser = new Stub();
         /* @noinspection HtmlUnknownTag */
-        $this->assertEquals('<undefined>', (string) $parser);
+        $this->assertEquals('<undefined>', (string)$parser);
     }
 }

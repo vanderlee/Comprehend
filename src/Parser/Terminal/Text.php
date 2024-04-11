@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -14,8 +15,8 @@ class Text extends Parser
 {
     use CaseSensitiveTrait;
 
-    private $text = null;
-    private $length = null;
+    private $text;
+    private $length;
 
     public function __construct($text)
     {
@@ -23,7 +24,7 @@ class Text extends Parser
 
         $this->length = mb_strlen($text);
         if ($this->length <= 0) {
-            throw new \InvalidArgumentException('Empty argument');
+            throw new InvalidArgumentException('Empty argument');
         }
     }
 
@@ -47,6 +48,6 @@ class Text extends Parser
 
     public function __toString()
     {
-        return '"'.$this->text.'"';
+        return '"' . $this->text . '"';
     }
 }

@@ -61,13 +61,13 @@ abstract class AbstractRuleset extends Parser
     /**
      * Ruleset constructor, defining initial instance rules.
      *
-     * @param string|array $key        Either a key of an initial rule to define or a [ key : definition ] array
-     * @param null|string  $definition Definition of the initial rule or `null` if `$key` is an array
-     * @param null|string  $name       optional identifier for this ruleset
+     * @param string|array $key Either a key of an initial rule to define or a [ key : definition ] array
+     * @param             $definition Definition of the initial rule or `null` if `$key` is an array
+     * @param string|null $name optional identifier for this ruleset
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function __construct($key = null, $definition = null, $name = null)
+    public function __construct($key = null, $definition = null, string $name = null)
     {
         if ($key !== null) {
             self::defineRule($this->instanceRules, $key, $definition);
@@ -94,6 +94,9 @@ abstract class AbstractRuleset extends Parser
         return $this->defaultParserCache;
     }
 
+    /**
+     * @throws Exception
+     */
     protected function parse(&$input, $offset, Context $context)
     {
         $match = $this->getRootParser()->parse($input, $offset, $context);
@@ -107,13 +110,13 @@ abstract class AbstractRuleset extends Parser
     /**
      * Set a definition.
      *
-     * @param Definition[]|Parser[]|callable[] $rules
-     * @param string                           $key
-     * @param Definition|Parser|callable       $definition
+     * @param callable[]|Definition[]|Parser[] $rules
+     * @param string $key
+     * @param Definition|Parser|callable $definition
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    protected static function setRule(&$rules, $key, $definition)
+    protected static function setRule(array &$rules, string $key, $definition)
     {
         if (isset($rules[$key])
             && $rules[$key] instanceof Definition) {
@@ -133,13 +136,13 @@ abstract class AbstractRuleset extends Parser
     /**
      * Define a rule.
      *
-     * @param array        $rules
+     * @param array $rules
      * @param string|array $name
-     * @param mixed|null   $definition
+     * @param mixed|null $definition
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    protected static function defineRule(&$rules, $name, $definition = null)
+    protected static function defineRule(array &$rules, $name, $definition = null)
     {
         if (is_array($name)) {
             foreach ($name as $key => $value) {
@@ -150,7 +153,7 @@ abstract class AbstractRuleset extends Parser
         }
 
         if (in_array($name, self::$reserved)) {
-            throw new RuntimeException("Cannot define reserved name `{$name}`");
+            throw new RuntimeException('Cannot define reserved name `' . $name . '`');
         }
 
         self::setRule($rules, $name, $definition);
@@ -164,9 +167,9 @@ abstract class AbstractRuleset extends Parser
      *
      * @return bool
      */
-    protected static function isRuleDefined(&$rules, $names)
+    protected static function isRuleDefined($rules, $names)
     {
-        foreach ((array) $names as $key) {
+        foreach ((array)$names as $key) {
             if (!isset($rules[$key])) {
                 return false;
             }
@@ -177,7 +180,7 @@ abstract class AbstractRuleset extends Parser
 
     protected static function undefineRule(&$rules, $names)
     {
-        foreach ((array) $names as $key) {
+        foreach ((array)$names as $key) {
             unset($rules[$key]);
         }
     }
@@ -200,7 +203,7 @@ abstract class AbstractRuleset extends Parser
      *
      * @return Implementation|Parser
      */
-    protected static function call(&$rules, $key, $arguments = [])
+    protected static function call(&$rules, $key, array $arguments = [])
     {
         // Undefined rule; return empty definition implementation
         if (!isset($rules[$key])) {
@@ -221,7 +224,7 @@ abstract class AbstractRuleset extends Parser
             return self::applyToken($key, $instance);
         }
 
-        throw new \RuntimeException(sprintf('Cannot instantiate `%2$s` using definition type `%1$s`',
+        throw new RuntimeException(sprintf('Cannot instantiate `%2$s` using definition type `%1$s`',
             self::getArgumentType($rules[$key]), $key));
     }
 
@@ -229,11 +232,11 @@ abstract class AbstractRuleset extends Parser
      * Handle instance/object definitions.
      *
      * @param string $name
-     * @param array  $arguments
-     *
-     * @throws \Exception
+     * @param array $arguments
      *
      * @return Parser
+     * @throws Exception
+     *
      */
     public function __call($name, $arguments = [])
     {
@@ -244,11 +247,11 @@ abstract class AbstractRuleset extends Parser
      * Handle static/class definitions.
      *
      * @param string $name
-     * @param array  $arguments
-     *
-     * @throws \Exception
+     * @param array $arguments
      *
      * @return Parser
+     * @throws Exception
+     *
      */
     public static function __callStatic($name, $arguments = [])
     {
@@ -268,7 +271,7 @@ abstract class AbstractRuleset extends Parser
     public function __toString()
     {
         try {
-            return (string) $this->getRootParser();
+            return (string)$this->getRootParser();
         } catch (Exception $e) {
             // ignore
         }

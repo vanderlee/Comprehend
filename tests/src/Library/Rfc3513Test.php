@@ -34,7 +34,7 @@ class Rfc3513Test extends ParserTestCase
      */
     public function testRfc3513(Parser $parser, $input, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input), "{$parser} == `{$input}`");
+        $this->assertResult($match, $length, $parser->match($input), $parser . ' == `' . $input . '`');
     }
 
     public function rfc3513Data()

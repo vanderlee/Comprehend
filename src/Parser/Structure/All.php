@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Match\Success;
@@ -24,7 +25,7 @@ class All extends Parser
     public function __construct(...$arguments)
     {
         if (count($arguments) < 2) {
-            throw new \InvalidArgumentException('Less than 2 arguments provided');
+            throw new InvalidArgumentException('Less than 2 arguments provided');
         }
         $this->parsers = self::getArguments($arguments);
     }
@@ -45,6 +46,6 @@ class All extends Parser
 
     public function __toString()
     {
-        return '( '.implode(' + ', $this->parsers).' )';
+        return '( ' . implode(' + ', $this->parsers) . ' )';
     }
 }

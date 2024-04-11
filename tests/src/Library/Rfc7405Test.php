@@ -30,7 +30,7 @@ class Rfc7405Test extends Rfc5234Test
      */
     public function testRfc7405(Parser $parser, $input, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input), (string) $parser);
+        $this->assertResult($match, $length, $parser->match($input), (string)$parser);
     }
 
     public function rfc7405Data()

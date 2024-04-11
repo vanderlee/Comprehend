@@ -6,7 +6,7 @@ use Exception;
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Match\Failure;
-use Vanderlee\Comprehend\Match\Match;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -23,27 +23,16 @@ class Implementation extends Parser
     private $parser = null;
 
     /**
-     * @var callable|null
-     */
-    public $validator = null;
-
-    /**
-     * @var callable|null
-     */
-    public $processor = null;
-    public $processorKey = null;
-
-    /**
      * @var Definition
      */
-    private $definition = null;
-    private $arguments = null;
+    private $definition;
+    private $arguments;
 
     /**
      * @param Definition $definition
-     * @param array      $arguments
+     * @param array $arguments
      */
-    public function __construct(Definition &$definition, array $arguments = [])
+    public function __construct(Definition $definition, array $arguments = [])
     {
         $this->definition = $definition;
         $this->arguments = $arguments;
@@ -66,11 +55,11 @@ class Implementation extends Parser
             return $this->parser;
         }
 
-        throw new InvalidArgumentException("Property `{$name}` does not exist");
+        throw new InvalidArgumentException('Property `' . $name . '` does not exist');
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     private function build()
     {
@@ -90,12 +79,12 @@ class Implementation extends Parser
     /**
      * Get and validate a set of results for the local scope of this parser.
      *
-     * @param Match  $match
+     * @param AbstractMatch $match
      * @param string $text
      *
      * @return array|false
      */
-    private function validateResults(Match $match, $text)
+    private function validateResults(AbstractMatch $match, $text)
     {
         $results = [];
         if ($match instanceof Success) {
@@ -114,7 +103,7 @@ class Implementation extends Parser
      * Apply a callback to handle all processors.
      *
      * @param Success $match
-     * @param array   $localResults
+     * @param array $localResults
      *
      * @return Success
      */
@@ -133,13 +122,13 @@ class Implementation extends Parser
     }
 
     /**
-     * @param string  $input
-     * @param int     $offset
+     * @param string $input
+     * @param int $offset
      * @param Context $context
      *
+     * @return Failure|Success
      * @throws Exception
      *
-     * @return Failure|Success
      */
     protected function parse(&$input, $offset, Context $context)
     {
@@ -174,6 +163,6 @@ class Implementation extends Parser
             // ignore
         }
 
-        return (string) $this->parser;
+        return (string)$this->parser;
     }
 }

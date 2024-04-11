@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Directive;
 
+use DomainException;
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -20,7 +21,7 @@ class Prefer extends Parser
     use ArgumentsTrait;
 
     /**
-     * @var \Vanderlee\Comprehend\Parser\Parser;
+     * @var Parser;
      */
     private $parser = null;
 
@@ -35,7 +36,7 @@ class Prefer extends Parser
      * @param mixed $preference
      * @param mixed $parser
      *
-     * @throws \DomainException
+     * @throws DomainException
      */
     public function __construct($preference, $parser)
     {
@@ -44,7 +45,7 @@ class Prefer extends Parser
             self::LONGEST,
             self::SHORTEST,
         ])) {
-            throw new \DomainException("Invalid preference `{$preference}` ");
+            throw new DomainException('Invalid preference `' . $preference . '`');
         }
         $this->preference = $preference;
 
@@ -65,11 +66,11 @@ class Prefer extends Parser
         switch ($this->preference) {
             default:
             case self::FIRST:
-                return (string) $this->parser;
+                return (string)$this->parser;
             case self::LONGEST:
-                return 'longest-of'.(string) $this->parser;
+                return 'longest-of' . $this->parser;
             case self::SHORTEST:
-                return 'shortest-of'.(string) $this->parser;
+                return 'shortest-of' . $this->parser;
         }
     }
 }

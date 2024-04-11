@@ -41,8 +41,8 @@ class CharTest extends ParserTestCase
     {
         $result = $parser->match($input, $offset);
 
-        $this->assertSame($match, $result->match, (string) $parser);
-        $this->assertSame($length, $result->length, (string) $parser);
+        $this->assertSame($match, $result->match, (string)$parser);
+        $this->assertSame($length, $result->length, (string)$parser);
     }
 
     public function charData()

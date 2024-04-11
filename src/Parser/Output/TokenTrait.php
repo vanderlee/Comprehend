@@ -17,7 +17,7 @@ trait TokenTrait
     private $tokenName = null;
 
     /**
-     * Group to which this token belongs (mostly for standard Library tokens.
+     * Group to which this token belongs (mostly for standard Library tokens).
      *
      * @var string|null
      */
@@ -31,9 +31,9 @@ trait TokenTrait
     private $tokenIsTerminal = false;
 
     /**
-     * @param string      $token
+     * @param string $token
      * @param string|null $group
-     * @param bool        $isTerminal
+     * @param bool $isTerminal
      *
      * @return $this
      */
@@ -56,7 +56,7 @@ trait TokenTrait
         return $this->tokenName !== null;
     }
 
-    private function resolveToken(&$input, $offset, $length, &$children, $class)
+    private function resolveToken($input, $offset, $length, &$children, $class)
     {
         if ($this->tokenIsTerminal) {
             $children = [];

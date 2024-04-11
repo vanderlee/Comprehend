@@ -2,9 +2,10 @@
 
 namespace Tests\Src\Parser\Terminal;
 
+use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
-class TextTest extends \Tests\ParserTestCase
+class TextTest extends ParserTestCase
 {
     public function testConstruction()
     {
@@ -22,15 +23,15 @@ class TextTest extends \Tests\ParserTestCase
      * @group        parser
      * @dataProvider textData
      *
-     * @param Text   $parser
+     * @param Text $parser
      * @param string $input
-     * @param int    $offset
-     * @param bool   $match
-     * @param int    $length
+     * @param int $offset
+     * @param bool $match
+     * @param int $length
      */
     public function testText(Text $parser, $input, $offset, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
+        $this->assertResult($match, $length, $parser->match($input, $offset), (string)$parser);
     }
 
     public function textData()

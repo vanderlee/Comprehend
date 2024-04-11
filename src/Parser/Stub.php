@@ -2,6 +2,8 @@
 
 namespace Vanderlee\Comprehend\Parser;
 
+use InvalidArgumentException;
+use UnexpectedValueException;
 use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Match\Success;
@@ -28,7 +30,7 @@ class Stub extends Parser
             return $this->parser = self::getArgument($parser);
         }
 
-        throw new \InvalidArgumentException("Property `{$name}` does not exist");
+        throw new InvalidArgumentException('Property `' . $name . '` does not exist');
     }
 
     public function __get($name)
@@ -37,13 +39,13 @@ class Stub extends Parser
             return $this->parser;
         }
 
-        throw new \InvalidArgumentException("Property `{$name}` does not exist");
+        throw new InvalidArgumentException('Property `' . $name . '` does not exist');
     }
 
     protected function parse(&$input, $offset, Context $context)
     {
         if ($this->parser === null) {
-            throw new \UnexpectedValueException('Missing parser');
+            throw new UnexpectedValueException('Missing parser');
         }
 
         $match = $this->parser->parse($input, $offset, $context);
@@ -58,7 +60,7 @@ class Stub extends Parser
     {
         /* @noinspection HtmlUnknownTag */
         return $this->parser
-            ? (string) $this->parser
+            ? (string)$this->parser
             : '<undefined>';
     }
 }

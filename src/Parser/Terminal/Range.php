@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -22,7 +23,7 @@ class Range extends Parser
     {
         if ($first === null
             && $last === null) {
-            throw new \InvalidArgumentException('Empty arguments');
+            throw new InvalidArgumentException('Empty arguments');
         }
 
         $this->first = $first === null
@@ -33,7 +34,7 @@ class Range extends Parser
             ? null
             : self::parseCharacter($last);
 
-        $this->in = (bool) $in;
+        $this->in = (bool)$in;
     }
 
     protected function parse(&$input, $offset, Context $context)

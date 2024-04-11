@@ -18,21 +18,21 @@ class CaseSensitive extends Parser
     /**
      * @var Parser
      */
-    private $parser = null;
+    private $parser;
 
     /**
      * @var bool
      */
-    private $sensitivity = null;
+    private $sensitivity;
 
     /**
      * @param Parser|string|int $parser
-     * @param bool              $sensitivity
+     * @param bool $sensitivity
      */
     public function __construct($sensitivity, $parser)
     {
         $this->parser = self::getArgument($parser);
-        $this->sensitivity = (bool) $sensitivity;
+        $this->sensitivity = (bool)$sensitivity;
     }
 
     protected function parse(&$input, $offset, Context $context)
@@ -48,6 +48,6 @@ class CaseSensitive extends Parser
     {
         return ($this->sensitivity
                 ? 'case'
-                : 'no-case').'( '.$this->parser.' )';
+                : 'no-case') . '( ' . $this->parser . ' )';
     }
 }

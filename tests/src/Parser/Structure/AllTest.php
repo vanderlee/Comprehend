@@ -27,18 +27,18 @@ class AllTest extends ParserTestCase
     /**
      * @dataProvider allData
      *
-     * @param All    $parser
+     * @param All $parser
      * @param string $input
-     * @param int    $offset
-     * @param bool   $match
-     * @param int    $length
+     * @param int $offset
+     * @param bool $match
+     * @param int $length
      */
     public function testAll(All $parser, $input, $offset, $match, $length)
     {
         $result = $parser->match($input, $offset);
 
-        $this->assertSame($match, $result->match, (string) $parser);
-        $this->assertSame($length, $result->length, (string) $parser);
+        $this->assertSame($match, $result->match, (string)$parser);
+        $this->assertSame($length, $result->length, (string)$parser);
     }
 
     public function allData()

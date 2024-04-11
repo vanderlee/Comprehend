@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -18,7 +19,7 @@ class Sequence extends IterableParser
     public function __construct(...$arguments)
     {
         if (empty($arguments)) {
-            throw new \InvalidArgumentException('No arguments');
+            throw new InvalidArgumentException('No arguments');
         }
 
         $this->parsers = self::getArguments($arguments, false);
@@ -73,6 +74,6 @@ class Sequence extends IterableParser
 
     public function __toString()
     {
-        return '( '.implode(' ', $this->parsers).' )';
+        return '( ' . implode(' ', $this->parsers) . ' )';
     }
 }

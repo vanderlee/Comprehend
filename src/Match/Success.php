@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Match;
 
+use ErrorException;
 use Vanderlee\Comprehend\Match\Output\CallbackTrait;
 use Vanderlee\Comprehend\Match\Output\ResultTrait;
 use Vanderlee\Comprehend\Match\Output\TokenTrait;
@@ -11,7 +12,7 @@ use Vanderlee\Comprehend\Match\Output\TokenTrait;
  *
  * @author Martijn
  */
-class Success extends Match
+class Success extends AbstractMatch
 {
     use TokenTrait, ResultTrait, CallbackTrait;
 
@@ -28,22 +29,22 @@ class Success extends Match
      *
      * @var Success[]
      */
-    private $successes = [];
+    private $successes;
 
     /**
      * Create a new match.
      *
-     * @param int               $length
+     * @param int $length
      * @param Success[]|Success $successes
      */
-    public function __construct($length = 0, &$successes = [])
+    public function __construct($length = 0, $successes = [])
     {
         parent::__construct($length);
 
         $this->successes = $successes;
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'match':
@@ -56,9 +57,8 @@ class Success extends Match
             case 'result':
                 $results = $this->getResults();
 
-                return isset($results[null])
-                    ? $results[null]
-                    : null;
+                return $results[null]
+                    ?? null;
             case 'token':
                 return $this->getToken();
         }
@@ -69,14 +69,14 @@ class Success extends Match
     /**
      * Resolve any custom callbacks.
      *
-     * @throws \ErrorException
+     * @return $this|AbstractMatch
+     * @throws ErrorException
      *
-     * @return $this|Match
      */
-    public function resolve()
+    public function resolve(): AbstractMatch
     {
         if ($this->resolved) {
-            throw new \ErrorException('Match already resolved');
+            throw new ErrorException('Match already resolved');
         }
         $this->resolved = true;
 
@@ -85,8 +85,8 @@ class Success extends Match
         return $this;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
-        return 'Successfully matched '.$this->length.' characters';
+        return 'Successfully matched ' . $this->length . ' characters';
     }
 }

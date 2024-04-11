@@ -31,10 +31,10 @@ class Rfc7405 extends Rfc5234
             /*
              * 2.2 ABNF Definition of ABNF - char-val
              */
-            'quoted_string'           => s($this->DQUOTE, star(c(range(0x20, 0x21), range(0x23, 0x7E))), $this->DQUOTE),
-            'case_sensitive_string'   => s('%s', $this->quoted_string),
+            'quoted_string' => s($this->DQUOTE, star(c(range(0x20, 0x21), range(0x23, 0x7E))), $this->DQUOTE),
+            'case_sensitive_string' => s('%s', $this->quoted_string),
             'case_insensitive_string' => s(opt('%i'), $this->quoted_string),
-            'char_val'                => c($this->case_insensitive_string, $this->case_sensitive_string),
+            'char_val' => c($this->case_insensitive_string, $this->case_sensitive_string),
         ];
 
         parent::__construct(array_merge($rules, $overwrites));

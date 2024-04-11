@@ -40,12 +40,12 @@ class MathRulesetTest extends ParserTestCase
     public static function setUpBeforeClass()
     {
         self::$math = new Ruleset([
-            's'      => Sequence::class,
-            'r'      => Range::class,
-            'opt'    => function ($parser) {
+            's' => Sequence::class,
+            'r' => Range::class,
+            'opt' => function ($parser) {
                 return new Repeat($parser, 0, 1);
             },
-            'plus'   => function ($parser) {
+            'plus' => function ($parser) {
                 return new Repeat($parser, 1);
             },
             'kleene' => Repeat::class,
@@ -53,15 +53,15 @@ class MathRulesetTest extends ParserTestCase
         ]);
 
         self::$math->define([
-            'integer'    => self::$math->s(
+            'integer' => self::$math->s(
                 self::$math->opt('-'),
                 self::$math->plus(
                     self::$math->r('0', '9')
                 )
             )->pushResult(),
-            'factor'     => self::$math->choice(self::$math->s('(', self::$math->expression, ')'),
+            'factor' => self::$math->choice(self::$math->s('(', self::$math->expression, ')'),
                 self::$math->integer),
-            'term'       => self::$math->choice(
+            'term' => self::$math->choice(
                 self::$math->s(self::$math->factor, '*', self::$math->term)->pushResult(null, 'multiply'),
                 self::$math->s(self::$math->factor, '/', self::$math->term)->pushResult(null, 'divide'),
                 self::$math->factor
@@ -94,15 +94,15 @@ class MathRulesetTest extends ParserTestCase
     public function dataExpression()
     {
         return [
-            'Addition'                     => ['6+2', [6, 2, 'add'], 8],
-            'Multiplication'               => ['6*2', [6, 2, 'multiply'], 12],
-            'Subtraction'                  => ['6-2', [6, 2, 'subtract'], 4],
-            'Division'                     => ['6/2', [6, 2, 'divide'], 3],
+            'Addition' => ['6+2', [6, 2, 'add'], 8],
+            'Multiplication' => ['6*2', [6, 2, 'multiply'], 12],
+            'Subtraction' => ['6-2', [6, 2, 'subtract'], 4],
+            'Division' => ['6/2', [6, 2, 'divide'], 3],
             'Equal prio; Right-to-left #1' => ['1+2-3', [1, 2, 3, 'subtract', 'add'], 0],
             'Equal prio; Right-to-left #2' => ['1-2+3', [1, 2, 3, 'add', 'subtract'], -4],
-            'Multiply before add #1'       => ['2*3+4', [2, 3, 'multiply', 4, 'add'], 10],
-            'Multiply before add #2'       => ['2+3*4', [2, 3, 4, 'multiply', 'add'], 14],
-            'Parenthesis before priority'  => ['(2+3)*4', [2, 3, 'add', 4, 'multiply'], 20],
+            'Multiply before add #1' => ['2*3+4', [2, 3, 'multiply', 4, 'add'], 10],
+            'Multiply before add #2' => ['2+3*4', [2, 3, 4, 'multiply', 'add'], 14],
+            'Parenthesis before priority' => ['(2+3)*4', [2, 3, 'add', 4, 'multiply'], 20],
         ];
     }
 }

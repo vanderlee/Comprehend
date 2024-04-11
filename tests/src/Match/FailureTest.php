@@ -16,7 +16,7 @@ class FailureTest extends ParserTestCase
 
         $this->assertEquals(0, $failure->length);
         $this->assertFalse($failure->match);
-        $this->assertEquals('Failed match at 0 characters', (string) $failure);
+        $this->assertEquals('Failed match at 0 characters', (string)$failure);
     }
 
     public function testMagicGet()
@@ -31,7 +31,7 @@ class FailureTest extends ParserTestCase
         $this->assertEquals(false, $failure->hasResult('foo'));
         $this->assertEquals('def', $failure->getResult('foo', 'def'));
         $this->assertFalse($failure->match);
-        $this->assertEquals('Failed match at 3 characters', (string) $failure);
+        $this->assertEquals('Failed match at 3 characters', (string)$failure);
 
         $this->expectExceptionMessage('Property name `i_do_not_exist` not recognized');
         /* @noinspection PhpUndefinedFieldInspection */

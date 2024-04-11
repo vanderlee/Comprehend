@@ -34,7 +34,7 @@ class PreferTest extends ParserTestCase
      */
     public function testPrefer(Prefer $parser, $input, $offset, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
+        $this->assertResult($match, $length, $parser->match($input, $offset), (string)$parser);
     }
 
     public function preferData()

@@ -89,20 +89,20 @@ class ArgumentsTraitParserTest extends ParserTestCase
     public function testGetArgumentOptimizeArrays()
     {
         // Non-optimizable cases
-        $this->assertEquals("( 'a' 'b' )", (string) ArgumentsTraitStub::getArguments([['a', 'b']])[0]);
-        $this->assertEquals("( 'a' | 'b' )", (string) ArgumentsTraitStub::getArguments([['a', 'b']], false)[0]);
-        $this->assertEquals("( 'a' ( 'b' | 'c' ) )", (string) ArgumentsTraitStub::getArguments([['a', ['b', 'c']]])[0]);
+        $this->assertEquals("( 'a' 'b' )", (string)ArgumentsTraitStub::getArguments([['a', 'b']])[0]);
+        $this->assertEquals("( 'a' | 'b' )", (string)ArgumentsTraitStub::getArguments([['a', 'b']], false)[0]);
+        $this->assertEquals("( 'a' ( 'b' | 'c' ) )", (string)ArgumentsTraitStub::getArguments([['a', ['b', 'c']]])[0]);
         $this->assertEquals("( 'a' | ( 'b' 'c' ) )",
-            (string) ArgumentsTraitStub::getArguments([['a', ['b', 'c']]], false)[0]);
+            (string)ArgumentsTraitStub::getArguments([['a', ['b', 'c']]], false)[0]);
 
         // Optimizable cases
-        $this->assertEquals("'a'", (string) ArgumentsTraitStub::getArguments([['a']])[0]);
-        $this->assertEquals("'a'", (string) ArgumentsTraitStub::getArguments([['a']], false)[0]);
-        $this->assertEquals("( 'a' 'b' )", (string) ArgumentsTraitStub::getArguments([['a', ['b']]])[0]);
-        $this->assertEquals("( 'a' | 'b' )", (string) ArgumentsTraitStub::getArguments([['a', ['b']]], false)[0]);
+        $this->assertEquals("'a'", (string)ArgumentsTraitStub::getArguments([['a']])[0]);
+        $this->assertEquals("'a'", (string)ArgumentsTraitStub::getArguments([['a']], false)[0]);
+        $this->assertEquals("( 'a' 'b' )", (string)ArgumentsTraitStub::getArguments([['a', ['b']]])[0]);
+        $this->assertEquals("( 'a' | 'b' )", (string)ArgumentsTraitStub::getArguments([['a', ['b']]], false)[0]);
 
         // Multi-layer optimizable cases
-        $this->assertEquals("'a'", (string) ArgumentsTraitStub::getArguments([[['a']]])[0]);
-        $this->assertEquals("'a'", (string) ArgumentsTraitStub::getArguments([[['a']]], false)[0]);
+        $this->assertEquals("'a'", (string)ArgumentsTraitStub::getArguments([[['a']]])[0]);
+        $this->assertEquals("'a'", (string)ArgumentsTraitStub::getArguments([[['a']]], false)[0]);
     }
 }

@@ -18,18 +18,18 @@ class Space extends Parser
     /**
      * @var null|Parser
      */
-    private $spacer = null;
+    private $spacer;
 
     /**
      * @var null|Parser
      */
-    private $parser = null;
+    private $parser;
 
     /**
      * Set (or disable) a spacer for the parser.
      *
      * @param Parser|string|int|bool|null $spacer
-     * @param Parser|string|int           $parser
+     * @param Parser|string|int $parser
      */
     public function __construct($spacer, $parser)
     {
@@ -50,6 +50,6 @@ class Space extends Parser
 
     public function __toString()
     {
-        return (string) $this->parser;
+        return (string)$this->parser;
     }
 }

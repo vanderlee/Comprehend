@@ -7,7 +7,7 @@ use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Match\Failure;
-use Vanderlee\Comprehend\Match\Match;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -36,9 +36,9 @@ class Choice extends IterableParser
     /**
      * @param mixed ...$arguments
      *
-     * @return Choice
+     * @return self
      */
-    public static function first(...$arguments)
+    public static function first(...$arguments): self
     {
         return (new self(...$arguments))->preferFirst();
     }
@@ -46,9 +46,9 @@ class Choice extends IterableParser
     /**
      * @param mixed ...$arguments
      *
-     * @return Choice
+     * @return self
      */
-    public static function shortest(...$arguments)
+    public static function shortest(...$arguments): self
     {
         return (new self(...$arguments))->preferShortest();
     }
@@ -56,16 +56,16 @@ class Choice extends IterableParser
     /**
      * @param mixed ...$arguments
      *
-     * @return Choice
+     * @return self
      */
-    public static function longest(...$arguments)
+    public static function longest(...$arguments): self
     {
         return (new self(...$arguments))->preferLongest();
     }
 
     /**
-     * @param string  $input
-     * @param int     $offset
+     * @param string $input
+     * @param int $offset
      * @param Context $context
      *
      * @return Failure|Success
@@ -88,12 +88,12 @@ class Choice extends IterableParser
     /**
      * Determine the longest and most successful match.
      *
-     * @param Match $attempt
-     * @param Match $match
+     * @param AbstractMatch $attempt
+     * @param AbstractMatch $match
      *
-     * @return Match
+     * @return AbstractMatch
      */
-    private static function determineLongestOf(Match $attempt, Match $match)
+    private static function determineLongestOf(AbstractMatch $attempt, AbstractMatch $match): AbstractMatch
     {
         if ($attempt->match === $match->match) {
             if ($attempt->length > $match->length) {
@@ -111,8 +111,8 @@ class Choice extends IterableParser
     }
 
     /**
-     * @param string  $input
-     * @param int     $offset
+     * @param string $input
+     * @param int $offset
      * @param Context $context
      *
      * @return Failure|Success
@@ -134,12 +134,12 @@ class Choice extends IterableParser
     /**
      * Determine the shortest and most successful match.
      *
-     * @param Match|null $attempt
-     * @param Match      $match
+     * @param AbstractMatch|null $attempt
+     * @param AbstractMatch $match
      *
-     * @return Match
+     * @return AbstractMatch
      */
-    private static function determineShortestOf(Match $attempt, Match $match = null)
+    private static function determineShortestOf(AbstractMatch $attempt, AbstractMatch $match = null)
     {
         if ($match === null) {
             return $attempt;
@@ -159,15 +159,15 @@ class Choice extends IterableParser
     }
 
     /**
-     * @param string  $input
-     * @param int     $offset
+     * @param string $input
+     * @param int $offset
      * @param Context $context
      *
      * @return Failure|Success
      */
     private function parseShortest(&$input, $offset, Context $context)
     {
-        /** @var Match $match */
+        /** @var AbstractMatch $match */
         $match = null;
 
         /** @var Parser $parser */
@@ -181,8 +181,8 @@ class Choice extends IterableParser
     }
 
     /**
-     * @param string  $input
-     * @param int     $offset
+     * @param string $input
+     * @param int $offset
      * @param Context $context
      *
      * @return Failure|Success
@@ -216,9 +216,9 @@ class Choice extends IterableParser
      *
      * @param string[]|int[]|Parser[] $arguments
      *
-     * @return $this
+     * @return self
      */
-    public function add(...$arguments)
+    public function add(...$arguments): self
     {
         $this->parsers = array_merge($this->parsers, self::getArguments($arguments));
 
@@ -238,6 +238,6 @@ class Choice extends IterableParser
                 :
                 '');
 
-        return $prefix.'( '.implode(' | ', $this->parsers).' )';
+        return $prefix . '( ' . implode(' | ', $this->parsers) . ' )';
     }
 }

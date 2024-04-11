@@ -10,7 +10,9 @@
     "source": "https://github.com/vanderlee/Comprehend/"
   },
   "require": {
-    "php": ">=7.0.0"
+    "php": ">=7.0.0",
+    "ext-dom": "*",
+    "ext-json": "*"
   },
   "require-dev": {
     "codacy/coverage": "dev-master",

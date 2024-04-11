@@ -30,7 +30,7 @@ class ChoiceTest extends ParserTestCase
      */
     public function testChoice(Choice $parser, $input, $offset, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
+        $this->assertResult($match, $length, $parser->match($input, $offset), (string)$parser);
     }
 
     public function choiceData()

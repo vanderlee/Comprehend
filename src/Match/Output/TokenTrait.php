@@ -29,7 +29,7 @@ trait TokenTrait
     }
 
     /**
-     * @return Token
+     * @return Token|null
      */
     private function processTokenCallback()
     {
@@ -44,6 +44,8 @@ trait TokenTrait
 
             return $tokenCallback($children);
         }
+
+        return null;
     }
 
     /**

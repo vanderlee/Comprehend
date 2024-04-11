@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -19,14 +20,14 @@ class Regex extends Parser
      */
     private $pattern = null;
 
-    public function __construct($pattern)
+    public function __construct(string $pattern)
     {
         if (empty($pattern)) {
-            throw new \InvalidArgumentException('Empty pattern');
+            throw new InvalidArgumentException('Empty pattern');
         }
 
         if (@preg_match($pattern, null) === false) {
-            throw new \InvalidArgumentException('Invalid pattern');
+            throw new InvalidArgumentException('Invalid pattern');
         }
 
         $this->pattern = $pattern;
@@ -35,7 +36,7 @@ class Regex extends Parser
     protected function parse(&$input, $offset, Context $context)
     {
         $this->pushCaseSensitivityToContext($context);
-        $pattern = $this->pattern.($context->isCaseSensitive()
+        $pattern = $this->pattern . ($context->isCaseSensitive()
                 ? ''
                 : 'i');
         $this->popCaseSensitivityFromContext($context);
@@ -51,6 +52,6 @@ class Regex extends Parser
 
     public function __toString()
     {
-        return (string) $this->pattern;
+        return (string)$this->pattern;
     }
 }

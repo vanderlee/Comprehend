@@ -7,6 +7,7 @@
 
 namespace Tests\Src\Builder;
 
+use stdClass;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\Ruleset;
@@ -158,7 +159,7 @@ class RulesetTest extends ParserTestCase
     public function testSetToString()
     {
         $r = new Ruleset(Ruleset::ROOT, 'x');
-        $this->assertEquals("'x'", (string) $r);
+        $this->assertEquals("'x'", (string)$r);
     }
 
     public function testSetDefaultNull()
@@ -171,7 +172,7 @@ class RulesetTest extends ParserTestCase
     public function testDefaultToString()
     {
         $r = new Ruleset();
-        $this->assertEquals('', (string) $r);
+        $this->assertEquals('', (string)$r);
     }
 
     public function testSetAndGetForwardFunction()
@@ -213,7 +214,7 @@ class RulesetTest extends ParserTestCase
         $r = new Ruleset();
         $this->assertInstanceOf(Parser::class, $r->line);
         $this->expectExceptionMessage('Cannot redefine `line` using definition type `stdClass`');
-        $r->line = new \stdClass();
+        $r->line = new stdClass();
     }
 
     public function testSetDefault()

@@ -46,71 +46,71 @@ class Rfc4408 extends AbstractRuleset
          */
         $rules = [
             // 4.5. Selecting Records
-            'record'           => [$this->version, $this->terms, $this->SP],
-            'version'          => 'v=spf1',
+            'record' => [$this->version, $this->terms, $this->SP],
+            'version' => 'v=spf1',
 
             // 4.6.1. Term Evaluation
-            'terms'            => star([plus($abnf->SP), c($this->directive, $this->modifier)]),
-            'directive'        => [opt($this->qualifier), $this->mechanism],
-            'qualifier'        => set('+-?~'),
-            'mechanism'        => c($this->all, $this->include, $this->A, $this->MX, $this->PTR, $this->IP4, $this->IP6,
+            'terms' => star([plus($abnf->SP), c($this->directive, $this->modifier)]),
+            'directive' => [opt($this->qualifier), $this->mechanism],
+            'qualifier' => set('+-?~'),
+            'mechanism' => c($this->all, $this->include, $this->A, $this->MX, $this->PTR, $this->IP4, $this->IP6,
                 $this->exists), // @todo order?
-            'modifier'         => c($this->redirect, $this->explanation, $this->unknown_modifier),
+            'modifier' => c($this->redirect, $this->explanation, $this->unknown_modifier),
             'unknown_modifier' => [$this->name, '=', $this->macro_string],
-            'name'             => [$abnf->ALPHA, star(c($abnf->ALPHA, $abnf->DIGIT, '-', '_', '.'))],
+            'name' => [$abnf->ALPHA, star(c($abnf->ALPHA, $abnf->DIGIT, '-', '_', '.'))],
 
             // 5.1. "all"
-            'all'              => 'all',
+            'all' => 'all',
 
             // 5.2. "include"
-            'include'          => ['include', ':', $this->domain_spec],
+            'include' => ['include', ':', $this->domain_spec],
 
             // 5.3. "a"
-            'A'                => ['a', opt(s(':', $this->domain_spec)), opt($this->dual_cidr_length)],
+            'A' => ['a', opt(s(':', $this->domain_spec)), opt($this->dual_cidr_length)],
 
             // 5.4. "mx"
-            'MX'               => ['mx', opt(s(':', $this->domain_spec)), opt($this->dual_cidr_length)],
+            'MX' => ['mx', opt(s(':', $this->domain_spec)), opt($this->dual_cidr_length)],
 
             // 5.5. "ptr"
-            'PTR'              => ['ptr', ':', $this->domain_spec],
+            'PTR' => ['ptr', ':', $this->domain_spec],
 
             // 5.6. "ip4" and "ip6"
-            'IP4'              => ['ip4', ':', $this->ip4_network, opt($this->ip4_cidr_length)],
-            'IP6'              => ['ip6', ':', $this->ip6_network, opt($this->ip6_cidr_length)],
-            'ip4_cidr_length'  => ['/', plus($abnf->DIGIT)],
-            'ip6_cidr_length'  => ['/', plus($abnf->DIGIT)],
+            'IP4' => ['ip4', ':', $this->ip4_network, opt($this->ip4_cidr_length)],
+            'IP6' => ['ip6', ':', $this->ip6_network, opt($this->ip6_cidr_length)],
+            'ip4_cidr_length' => ['/', plus($abnf->DIGIT)],
+            'ip6_cidr_length' => ['/', plus($abnf->DIGIT)],
             'dual_cidr_length' => [opt($this->ip4_cidr_length), opt(['/', $this->ip6_cidr_length])],
-            'ip4_network'      => s($this->qnum, '.', $this->qnum, '.', $this->qnum, '.', $this->qnum),
-            'qnum'             => new Integer(0, 255),
-            'ip6_network'      => $ipv6->ipv6_address,
+            'ip4_network' => s($this->qnum, '.', $this->qnum, '.', $this->qnum, '.', $this->qnum),
+            'qnum' => new Integer(0, 255),
+            'ip6_network' => $ipv6->ipv6_address,
 
             // 5.7. "exists"
-            'exists'           => ['exists', ':', $this->domain_spec],
+            'exists' => ['exists', ':', $this->domain_spec],
 
             // 6.1. redirect: Redirected Query
-            'redirect'         => ['redirect', '=', $this->domain_spec],
+            'redirect' => ['redirect', '=', $this->domain_spec],
 
             // 6.2. exp: Explanation
-            'explanation'      => ['exp', '=', $this->domain_spec],
+            'explanation' => ['exp', '=', $this->domain_spec],
 
             // 8. Macros
-            'domain_spec'      => [$this->macro_string, $this->domain_end],
-            'domain_end'       => c(['.', $this->toplabel, opt('.')], $this->macro_expand),
-            'toplabel'         => c(
+            'domain_spec' => [$this->macro_string, $this->domain_end],
+            'domain_end' => c(['.', $this->toplabel, opt('.')], $this->macro_expand),
+            'toplabel' => c(
                 [star($this->alphanum), $abnf->ALPHA, star($this->alphanum)],
                 [plus($this->alphanum), '=', star(c($this->alphanum, '-')), $this->alphanum]
             ), // LDH rule plus additional TLD restrictions (see [RFC3696], Section 2) @todo Read & implement
-            'alphanum'         => c($abnf->ALPHA, $abnf->DIGIT),
-            'explain_string'   => star(c($this->macro_string, $abnf->SP)),
-            'macro_string'     => star(c($this->macro_expand, $this->macro_literal)),
-            'macro_expand'     => c(
+            'alphanum' => c($abnf->ALPHA, $abnf->DIGIT),
+            'explain_string' => star(c($this->macro_string, $abnf->SP)),
+            'macro_string' => star(c($this->macro_expand, $this->macro_literal)),
+            'macro_expand' => c(
                 ['%{', $this->macro_letter, $this->transformers, star($this->delimiter), '}'],
                 '%%', '%_', '%-'
             ),
-            'macro_literal'    => c(range(0x21, 0x24), range(0x26, 0x7E)),
-            'macro_letter'     => set('slodiphcrt'),
-            'transformers'     => [star($abnf->DIGIT), opt('r')],
-            'delimiter'        => set('.-+,/_='),
+            'macro_literal' => c(range(0x21, 0x24), range(0x26, 0x7E)),
+            'macro_letter' => set('slodiphcrt'),
+            'transformers' => [star($abnf->DIGIT), opt('r')],
+            'delimiter' => set('.-+,/_='),
 
             // 7. The Received-SPF Header Field
             // Implement as separate ruleset?

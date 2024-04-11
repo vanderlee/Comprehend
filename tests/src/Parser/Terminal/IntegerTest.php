@@ -2,6 +2,7 @@
 
 namespace Tests\Src\Parser\Terminal;
 
+use Exception;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Integer;
 
@@ -12,7 +13,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Integer;
 class IntegerTest extends ParserTestCase
 {
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testConstructor()
     {
@@ -20,7 +21,7 @@ class IntegerTest extends ParserTestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testConstructorBadMinimum()
     {
@@ -29,7 +30,7 @@ class IntegerTest extends ParserTestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testConstructorBadMaximum()
     {
@@ -38,7 +39,7 @@ class IntegerTest extends ParserTestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testConstructorBadOrder()
     {
@@ -47,7 +48,7 @@ class IntegerTest extends ParserTestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testConstructorInvalidBaseTooLow()
     {
@@ -56,7 +57,7 @@ class IntegerTest extends ParserTestCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testConstructorInvalidBaseTooHigh()
     {
@@ -77,15 +78,15 @@ class IntegerTest extends ParserTestCase
     {
         $result = $parser->match($input, $offset);
 
-        $message = $input.' = '.(string) $parser;
+        $message = $input . ' = ' . (string)$parser;
 
         $this->assertResult($match, $length, $result, $message);
     }
 
     /**
-     * @throws \Exception
-     *
      * @return array
+     * @throws Exception
+     *
      */
     public function integerData()
     {

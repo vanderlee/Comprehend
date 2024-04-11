@@ -2,34 +2,40 @@
 
 namespace Vanderlee\Comprehend\Core;
 
+use DOMDocument;
+use DOMElement;
+use DOMException;
+use Exception;
+use JsonSerializable;
+
 /**
  * Class Token.
  *
  *
  * @property-read Token[] $children
- * @property-read string  $class
- * @property-read string  $group
- * @property-read string  $input
- * @property-read int     $length
- * @property-read int     $offset
- * @property-read string  $name
- * @property-read string  $text
+ * @property-read string $class
+ * @property-read string $group
+ * @property-read string $input
+ * @property-read int $length
+ * @property-read int $offset
+ * @property-read string $name
+ * @property-read string $text
  */
-class Token implements \JsonSerializable
+class Token implements JsonSerializable
 {
-    private $group = null;
-    private $name = null;
-    private $input = null;
-    private $offset = null;
-    private $length = null;
-    private $class = null;
+    private $group;
+    private $name;
+    private $input;
+    private $offset;
+    private $length;
+    private $class;
 
     /**
      * @var Token[]
      */
-    private $children = [];
+    private $children;
 
-    public function __construct($group, $name, &$input, $offset, $length, &$children = [], $class = null)
+    public function __construct($group, $name, $input, int $offset, $length, $children = [], $class = null)
     {
         $this->group = $group;
         $this->name = $name;
@@ -40,6 +46,9 @@ class Token implements \JsonSerializable
         $this->class = $class;
     }
 
+    /**
+     * @throws Exception
+     */
     public function __get($name)
     {
         switch ($name) {
@@ -52,22 +61,21 @@ class Token implements \JsonSerializable
                 }
         }
 
-        throw new \Exception("Undefined property `{$name}`");
+        throw new Exception('Undefined property `' . $name . '`');
     }
 
     private function toString($depth = 0)
     {
         $signature = ($this->group
-                ? $this->group.'::'
+                ? $this->group . '::'
                 : '')
-            .($this->name
-                ? $this->name
-                : $this->class);
+            . ($this->name
+                ?: $this->class);
 
-        $output = str_repeat('  ', $depth)."{$signature} (`{$this->text}`)";
+        $output = str_repeat('  ', $depth) . $signature . ' (`' . $this->text . '`)';
 
         foreach ($this->children as $child) {
-            $output .= PHP_EOL.$child->toString($depth + 1);
+            $output .= PHP_EOL . $child->toString($depth + 1);
         }
 
         return $output;
@@ -79,11 +87,12 @@ class Token implements \JsonSerializable
     }
 
     /**
-     * @return \DOMDocument
+     * @return DOMDocument
+     * @throws DOMException
      */
     public function toXml()
     {
-        $document = new \DOMDocument();
+        $document = new DOMDocument();
         $document->appendChild($this->createXmlNode($document));
         $document->normalizeDocument();
 
@@ -93,22 +102,23 @@ class Token implements \JsonSerializable
     /**
      * Create an XML node of this token.
      *
-     * @param \DOMDocument $document
+     * @param DOMDocument $document
      *
-     * @return \DOMElement
+     * @return DOMElement
+     *
+     * @throws DOMException
      */
-    private function createXmlNode(\DOMDocument $document)
+    private function createXmlNode(DOMDocument $document)
     {
         $value = $this->children
             ? null
             : $this->text;
         $name = preg_replace('/[^-_a-zA-Z0-9]/', '_', $this->name
-            ? $this->name
-            : $this->class);
+            ?: $this->class);
         $group = preg_replace('/[^-_a-zA-Z0-9]/', '_', $this->group);
 
         $element = $this->group
-            ? $document->createElementNS($this->group, $group.':'.$name, $value)
+            ? $document->createElementNS($this->group, $group . ':' . $name, $value)
             : $document->createElement($name, $value);
 
         foreach ($this->children as $child) {
@@ -135,12 +145,12 @@ class Token implements \JsonSerializable
     public function toArray()
     {
         $array = [
-            'group'    => $this->group,
-            'name'     => $this->name,
-            'text'     => $this->text,
-            'offset'   => $this->offset,
-            'length'   => $this->length,
-            'class'    => $this->class,
+            'group' => $this->group,
+            'name' => $this->name,
+            'text' => $this->text,
+            'offset' => $this->offset,
+            'length' => $this->length,
+            'class' => $this->class,
             'children' => [],
         ];
 

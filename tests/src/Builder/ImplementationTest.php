@@ -23,7 +23,7 @@ class ImplementationTest extends ParserTestCase
     public function testNoParserDefinedString()
     {
         $definition = new Definition();
-        $this->assertEquals('', (string) $definition());
+        $this->assertEquals('', (string)$definition());
     }
 
     public function testMagicGetParserDefined()

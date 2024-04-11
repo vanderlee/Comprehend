@@ -2,9 +2,10 @@
 
 namespace Vanderlee\Comprehend\Parser;
 
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Match\Failure;
-use Vanderlee\Comprehend\Match\Match;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Output\AssignTrait;
 use Vanderlee\Comprehend\Parser\Output\ResultTrait;
@@ -24,13 +25,13 @@ abstract class Parser
     protected static function parseCharacter($character)
     {
         if ($character === '' || $character === null) {
-            throw new \InvalidArgumentException('Empty argument');
+            throw new InvalidArgumentException('Empty argument');
         }
 
         if (is_int($character)) {
             return chr($character);
         } elseif (mb_strlen($character) > 1) {
-            throw new \InvalidArgumentException('Non-character argument');
+            throw new InvalidArgumentException('Non-character argument');
         }
 
         return $character;
@@ -39,24 +40,24 @@ abstract class Parser
     /**
      * Match the input with this parser, starting from the offset position.
      *
-     * @param string  $input
-     * @param int     $offset
+     * @param string $input
+     * @param int $offset
      * @param Context $context
      *
-     * @return \Vanderlee\Comprehend\Match\Match
+     * @return AbstractMatch
      */
     abstract protected function parse(&$input, $offset, Context $context);
 
     /**
      * @param string $input
-     * @param int    $offset
+     * @param int $offset
      *
-     * @return Match;
+     * @return AbstractMatch;
      */
     public function match($input, $offset = 0)
     {
         if ($offset < 0) {
-            throw new \InvalidArgumentException('Negative offset');
+            throw new InvalidArgumentException('Negative offset');
         }
 
         return $this->parse($input, $offset, new Context())->resolve();
@@ -70,13 +71,13 @@ abstract class Parser
     /**
      * Create a match.
      *
-     * @param bool              $success
-     * @param string            $input
-     * @param int               $offset
-     * @param int               $length
+     * @param bool $success
+     * @param string $input
+     * @param int $offset
+     * @param int $length
      * @param Success[]|Success $successes
      *
-     * @return Match
+     * @return AbstractMatch
      */
     protected function makeMatch($success, &$input, $offset, $length = 0, &$successes = [])
     {
@@ -88,14 +89,14 @@ abstract class Parser
     /**
      * Create a successful match.
      *
-     * @param string            $input
-     * @param int               $offset
-     * @param int               $length
+     * @param string $input
+     * @param int $offset
+     * @param int $length
      * @param Success[]|Success $successes
      *
      * @return Success
      */
-    protected function success(&$input, $offset, $length = 0, &$successes = [])
+    protected function success($input, $offset, $length = 0, &$successes = [])
     {
         $successes = is_array($successes)
             ? $successes
@@ -134,8 +135,8 @@ abstract class Parser
      * Create a failed match.
      *
      * @param string $input
-     * @param int    $offset
-     * @param int    $length
+     * @param int $offset
+     * @param int $length
      *
      * @return Failure
      */

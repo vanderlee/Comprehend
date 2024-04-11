@@ -23,72 +23,82 @@ trait RuleToParserTrait
      * @param mixed $rule
      * @param array $arguments
      *
-     * @return Implementation
+     * @return Implementation|null
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private static function definitionRuleToParser(&$rule, $arguments)
+    private static function definitionRuleToParser($rule, $arguments)
     {
         if ($rule instanceof Definition) {
             return new Implementation($rule, $arguments);
         }
+
+        return null;
     }
 
     /**
      * @param mixed $rule
      *
-     * @return Parser
+     * @return Parser|null
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private static function parserRuleToParser(&$rule)
+    private static function parserRuleToParser($rule)
     {
         if ($rule instanceof Parser) {
             return clone $rule;
         }
+
+        return null;
     }
 
     /**
      * @param mixed $rule
      * @param array $arguments
      *
-     * @return Parser
+     * @return Parser|null
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private static function callableRuleToParser(&$rule, $arguments)
+    private static function callableRuleToParser($rule, $arguments)
     {
         if (is_callable($rule)) {
             return $rule(...$arguments);
         }
+
+        return null;
     }
 
     /**
      * @param mixed $rule
      * @param array $arguments
      *
-     * @return Parser
+     * @return Parser|null
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private static function classnameRuleToParser(&$rule, $arguments)
+    private static function classnameRuleToParser($rule, $arguments)
     {
         if (is_string($rule)
             && class_exists($rule)
             && is_subclass_of($rule, Parser::class)) {
             return new $rule(...$arguments);
         }
+
+        return null;
     }
 
     /**
      * @param mixed $rule
      *
-     * @return Parser
+     * @return Parser|null
      * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
      */
-    private static function argumentRuleToParser(&$rule)
+    private static function argumentRuleToParser($rule)
     {
         if (is_array($rule)
             || is_string($rule)
             || is_int($rule)) {
             return self::getArgument($rule);
         }
+
+        return null;
     }
 
     /**
@@ -105,5 +115,7 @@ trait RuleToParserTrait
                 return $instance;
             }
         }
+
+        return null;
     }
 }

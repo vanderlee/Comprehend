@@ -37,7 +37,7 @@ class Rfc3513 extends AbstractRuleset
     public function __construct($overwrites = [])
     {
         /*
-         * We'll use RFC3986 for the IPv6 definition for convenience sake.
+         * We'll use RFC3986 for the IPv6 definition for convenience' sake.
          * This may not be 100% accurate, but RFC 3513's definition is sloppy at best.
          */
         $rfc3986 = new Rfc3986();
@@ -47,8 +47,8 @@ class Rfc3513 extends AbstractRuleset
          */
         $rules = [
             // 2.3 Text Representation of Address Prefixes
-            'ipv6'          => [$this->ipv6_address, '/', $this->prefix_length],
-            'ipv6_address'  => $rfc3986->IPv6address,
+            'ipv6' => [$this->ipv6_address, '/', $this->prefix_length],
+            'ipv6_address' => $rfc3986->IPv6address,
             'prefix_length' => new Integer(0, 128),
 
             self::ROOT => $this->ipv6,

@@ -30,7 +30,7 @@ class SequenceTest extends ParserTestCase
      */
     public function testSequence(Sequence $parser, $input, $offset, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input, $offset), (string) $parser);
+        $this->assertResult($match, $length, $parser->match($input, $offset), (string)$parser);
     }
 
     public function sequenceData()

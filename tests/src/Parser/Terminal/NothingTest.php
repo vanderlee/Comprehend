@@ -24,18 +24,18 @@ class NothingTest extends ParserTestCase
     {
         $result = $parser->match($input, $offset);
 
-        $this->assertSame($match, $result->match, (string) $parser);
-        $this->assertSame($length, $result->length, (string) $parser);
+        $this->assertSame($match, $result->match, (string)$parser);
+        $this->assertSame($length, $result->length, (string)$parser);
     }
 
     public function nothingData()
     {
         return [
-            'Empty, start'  => [new Nothing(), '', 0, true, 0],
+            'Empty, start' => [new Nothing(), '', 0, true, 0],
             'Empty, beyond' => [new Nothing(), '', 1, false, 0],
-            'Char, start'   => [new Nothing(), 'a', 0, true, 0],
-            'Char, end'     => [new Nothing(), 'a', 1, true, 0],
-            'Char, beyond'  => [new Nothing(), 'a', 2, false, 0],
+            'Char, start' => [new Nothing(), 'a', 0, true, 0],
+            'Char, end' => [new Nothing(), 'a', 1, true, 0],
+            'Char, beyond' => [new Nothing(), 'a', 2, false, 0],
         ];
     }
 }

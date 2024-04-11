@@ -14,7 +14,7 @@ Build object oriented [LR(1)](https://en.wikipedia.org/wiki/Canonical_LR_parser)
 [![Maintainability](https://api.codeclimate.com/v1/badges/3bd38eba7f4912bf2f66/maintainability)](https://codeclimate.com/github/vanderlee/Comprehend/maintainability)
 
 
-Copyright &copy; 2011-2018 Martijn W. van der Lee [Toyls.com](https://toyls.com), MIT license applies.
+Copyright &copy; 2011-2024 Martijn W. van der Lee [Toyls.com](https://toyls.com), MIT license applies.
 
 Features
 --------

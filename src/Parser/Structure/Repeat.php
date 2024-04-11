@@ -2,6 +2,7 @@
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -17,9 +18,9 @@ class Repeat extends Parser
 
     //use GreedyTrait;
 
-    private $parser = null;
-    private $min = null;
-    private $max = null;
+    private $parser;
+    private $min;
+    private $max;
 
     public function __construct($parser, $min = 0, $max = null)
     {
@@ -28,7 +29,7 @@ class Repeat extends Parser
         $this->max = $max;
 
         if ($this->max !== null && $this->max < $this->min) {
-            throw new \InvalidArgumentException('Invalid repeat range specified');
+            throw new InvalidArgumentException('Invalid repeat range specified');
         }
     }
 
@@ -98,6 +99,6 @@ class Repeat extends Parser
 
         return ($min === $max
                 ? $min
-                : ($min.'*'.$max)).$this->parser;
+                : ($min . '*' . $max)) . $this->parser;
     }
 }

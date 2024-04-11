@@ -2,6 +2,7 @@
 
 namespace Tests\Src\Builder;
 
+use Exception;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
@@ -27,9 +28,9 @@ class DefinitionTest extends ParserTestCase
     /**
      * @param string $enclosures
      *
-     * @throws \Exception
-     *
      * @return Choice|Sequence
+     * @throws Exception
+     *
      */
     public static function makeQuotedStringParser($enclosures = '"')
     {

@@ -30,29 +30,29 @@ class TokenTest extends ParserTestCase
         $this->assertResult(true, 6, $match);
 
         $this->assertEquals([
-            'group'    => 'test',
-            'name'     => 'FoobarToken',
-            'text'     => 'foobar',
-            'offset'   => 0,
-            'length'   => 6,
-            'class'    => Sequence::class,
+            'group' => 'test',
+            'name' => 'FoobarToken',
+            'text' => 'foobar',
+            'offset' => 0,
+            'length' => 6,
+            'class' => Sequence::class,
             'children' => [
                 [
-                    'group'    => null,
-                    'name'     => 'FooToken',
-                    'text'     => 'foo',
-                    'offset'   => 0,
-                    'length'   => 3,
-                    'class'    => Text::class,
+                    'group' => null,
+                    'name' => 'FooToken',
+                    'text' => 'foo',
+                    'offset' => 0,
+                    'length' => 3,
+                    'class' => Text::class,
                     'children' => [],
                 ],
                 [
-                    'group'    => null,
-                    'name'     => '',
-                    'text'     => 'bar',
-                    'offset'   => 3,
-                    'length'   => 3,
-                    'class'    => Text::class,
+                    'group' => null,
+                    'name' => '',
+                    'text' => 'bar',
+                    'offset' => 3,
+                    'length' => 3,
+                    'class' => Text::class,
                     'children' => [],
                 ],
             ],
@@ -67,12 +67,12 @@ class TokenTest extends ParserTestCase
         $this->assertResult(true, 3, $match);
 
         $this->assertEquals([
-            'group'    => null,
-            'name'     => 'FooToken',
-            'text'     => 'foo',
-            'offset'   => 0,
-            'length'   => 3,
-            'class'    => Sequence::class,
+            'group' => null,
+            'name' => 'FooToken',
+            'text' => 'foo',
+            'offset' => 0,
+            'length' => 3,
+            'class' => Sequence::class,
             'children' => [],
         ], $match->token->toArray());
     }
@@ -95,7 +95,7 @@ class TokenTest extends ParserTestCase
                         'Rfc2234::ALPHA' => [
                             Set::class => [],
                         ],
-                        Repeat::class    => [
+                        Repeat::class => [
                             Choice::class => [
                                 'Rfc2234::ALPHA' => [
                                     Set::class => [],
@@ -104,7 +104,7 @@ class TokenTest extends ParserTestCase
                         ],
                     ],
                 ],
-                Text::class       => [],
+                Text::class => [],
             ],
         ], $signatures);
     }
@@ -128,10 +128,10 @@ class TokenTest extends ParserTestCase
         $match = $foo->match('foobar');
         $this->assertResult(true, 6, $match);
 
-        $this->assertEquals('Word (`foobar`)'.PHP_EOL
-            .'  Vanderlee\Comprehend\Parser\Terminal\Char (`f`)'.PHP_EOL
-            .'  Ooh! (`oo`)'.PHP_EOL
-            .'  group::Bar (`bar`)', (string) $match->token);
+        $this->assertEquals('Word (`foobar`)' . PHP_EOL
+            . '  Vanderlee\Comprehend\Parser\Terminal\Char (`f`)' . PHP_EOL
+            . '  Ooh! (`oo`)' . PHP_EOL
+            . '  group::Bar (`bar`)', (string)$match->token);
     }
 
     public function testJsonEncode()
@@ -142,12 +142,12 @@ class TokenTest extends ParserTestCase
         $this->assertResult(true, 3, $match);
 
         $this->assertEquals('{"group":null,"name":"Word","text":"foo","offset":0,"length":3'
-            .',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Structure\\\\Sequence","children":['
-            .'{"group":null,"name":null,"text":"f","offset":0,"length":1'
-            .',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Char","children":[]},'
-            .'{"group":null,"name":"Ooh!","text":"oo","offset":1,"length":2'
-            .',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Text","children":[]}'
-            .']}', json_encode($match->token));
+            . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Structure\\\\Sequence","children":['
+            . '{"group":null,"name":null,"text":"f","offset":0,"length":1'
+            . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Char","children":[]},'
+            . '{"group":null,"name":"Ooh!","text":"oo","offset":1,"length":2'
+            . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Text","children":[]}'
+            . ']}', json_encode($match->token));
     }
 
     public function testToXml()
@@ -158,19 +158,19 @@ class TokenTest extends ParserTestCase
         $this->assertResult(true, 3, $match);
 
         /* @noinspection HtmlUnknownTag */
-        $this->assertEquals('<?xml version="1.0"?>'."\n"
-            .'<Word xmlns:Snap="Snap">'
-            .'<Vanderlee_Comprehend_Parser_Terminal_Char>f</Vanderlee_Comprehend_Parser_Terminal_Char>'
-            .'<Snap:Ooh_ xmlns:Snap="Snap">oo</Snap:Ooh_>'
-            .'</Word>'."\n", $match->token->toXml()->saveXML());
+        $this->assertEquals('<?xml version="1.0"?>' . "\n"
+            . '<Word xmlns:Snap="Snap">'
+            . '<Vanderlee_Comprehend_Parser_Terminal_Char>f</Vanderlee_Comprehend_Parser_Terminal_Char>'
+            . '<Snap:Ooh_ xmlns:Snap="Snap">oo</Snap:Ooh_>'
+            . '</Word>' . "\n", $match->token->toXml()->saveXML());
     }
 
     protected function extractTokenSignatures(Token $token)
     {
         $signature = ($token->group
-                ? $token->group.'::'
+                ? $token->group . '::'
                 : '')
-            .($token->name
+            . ($token->name
                 ? $token->name
                 : $token->class);
 

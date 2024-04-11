@@ -2,6 +2,8 @@
 
 namespace Vanderlee\Comprehend\Match;
 
+use Exception;
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Token;
 
 /**
@@ -9,24 +11,24 @@ use Vanderlee\Comprehend\Core\Token;
  *
  * @author Martijn
  *
- * @property-read bool              $match   Success or failure?
- * @property-read int               $length  Length of the match
- * @property-read array             $results List of output results
+ * @property-read bool $match   Success or failure?
+ * @property-read int $length  Length of the match
+ * @property-read array $results List of output results
  * @property-read string|array|null $result  Default output result
- * @property-read Token|null        $token
+ * @property-read Token|null $token
  */
-abstract class Match
+abstract class AbstractMatch
 {
-    private $length;
+    protected $length;
 
     /**
      * @param string $name
      *
-     * @throws \Exception
-     *
      * @return mixed
+     * @throws Exception
+     *
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'length':
@@ -34,12 +36,11 @@ abstract class Match
             case 'results':
                 return [];
             case 'result':
-                return;
             case 'token':
-                return;
+                return null;
         }
 
-        throw new \InvalidArgumentException("Property name `{$name}` not recognized");
+        throw new InvalidArgumentException('Property name `' . $name . '` not recognized');
     }
 
     /**
@@ -47,18 +48,18 @@ abstract class Match
      *
      * @param int $length
      */
-    public function __construct($length = 0)
+    public function __construct(int $length = 0)
     {
         $this->length = $length;
     }
 
     /**
-     * Resolve any match stuff (should only ever be called from AbstractParser!
+     * Resolve any match stuff (should only ever be called from AbstractParser).
      * Not for human consumption.
      *
      * @return $this
      */
-    public function resolve()
+    public function resolve(): AbstractMatch
     {
         return $this;
     }
@@ -67,11 +68,11 @@ abstract class Match
      * Return the result for the name specified or the default value if not set.
      *
      * @param string|null $name
-     * @param mixed       $default
+     * @param mixed $default
      *
      * @return mixed
      */
-    public function getResult($name = null, $default = null)
+    public function getResult(string $name = null, $default = null)
     {
         return $default;
     }
@@ -83,7 +84,7 @@ abstract class Match
      *
      * @return bool
      */
-    public function hasResult($name = null)
+    public function hasResult(string $name = null): bool
     {
         return false;
     }

@@ -18,8 +18,8 @@ class Except extends Parser
 {
     use ArgumentsTrait;
 
-    private $parserMatch = null;
-    private $parserNot = null;
+    private $parserMatch;
+    private $parserNot;
 
     /**
      * @param Parser|string $match
@@ -45,6 +45,6 @@ class Except extends Parser
 
     public function __toString()
     {
-        return '( '.$this->parserMatch.' - '.$this->parserNot.' )';
+        return '( ' . $this->parserMatch . ' - ' . $this->parserNot . ' )';
     }
 }
