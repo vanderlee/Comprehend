@@ -37,7 +37,7 @@ class MathRulesetTest extends ParserTestCase
      */
     private static $math;
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         self::$math = new Ruleset([
             's' => Sequence::class,
