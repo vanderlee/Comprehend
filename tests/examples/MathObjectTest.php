@@ -33,7 +33,7 @@ class MathObjectTest extends ParserTestCase
      */
     private static $math;
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         $term = new Stub();
         $expression = new Stub();
