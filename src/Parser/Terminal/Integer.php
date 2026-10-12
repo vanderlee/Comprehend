@@ -113,14 +113,16 @@ class Integer extends Parser
     {
         $this->pushCaseSensitivityToContext($context);
 
-        // Build pattern
-        $set0 = substr(self::$set, 0, $this->base);
-        $set1 = substr(self::$set, 1, $this->base - 1);
-        $pattern = '/(?:0|-?[' . $set1 . '][' . $set0 . ']*)/A' . ($context->isCaseSensitive()
-                ? ''
-                : 'i');
-
-        $this->popCaseSensitivityFromContext($context);
+        try {
+            // Build pattern
+            $set0 = substr(self::$set, 0, $this->base);
+            $set1 = substr(self::$set, 1, $this->base - 1);
+            $pattern = '/(?:0|-?[' . $set1 . '][' . $set0 . ']*)/A' . ($context->isCaseSensitive()
+                    ? ''
+                    : 'i');
+        } finally {
+            $this->popCaseSensitivityFromContext($context);
+        }
 
         if (preg_match($pattern, $input, $match, 0, $offset) === 1) {
             do {

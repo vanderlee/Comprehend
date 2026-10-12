@@ -47,11 +47,13 @@ class Range extends Parser
 
         $this->pushCaseSensitivityToContext($context);
 
-        $first = ord($context->handleCase($this->first));
-        $last = ord($context->handleCase($this->last));
-        $ord = ord($context->handleCase($input[$offset]));
-
-        $this->popCaseSensitivityFromContext($context);
+        try {
+            $first = ord($context->handleCase($this->first));
+            $last = ord($context->handleCase($this->last));
+            $ord = ord($context->handleCase($input[$offset]));
+        } finally {
+            $this->popCaseSensitivityFromContext($context);
+        }
 
         if ($first <= $ord
             && ($this->last === null

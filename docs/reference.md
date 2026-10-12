@@ -17,6 +17,13 @@ Matches any single character.
 ### Start
 ### Text
 
+## Scoped directives and parser options
+
+Spacing, case sensitivity, and choice preference overrides apply only within
+their parser or directive. The previous context is restored after success,
+failure, or an exception, including nested overrides. Exceptions propagate to
+the caller after restoration.
+
 ## Structure parsers
 
 ### Repeat

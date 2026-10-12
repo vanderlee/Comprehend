@@ -68,34 +68,35 @@ class Repeat extends Parser
 
         $this->pushSpacer($context);
 
-        $length = 0;
-        $matched = true;
-        while (
-            $matched
-            && ($this->max === null || count($childMatches) < $this->max)
-        ) {
-            // No skipping at very start
-            $skip = $length > 0
-                ? $context->skipSpacing($input, $offset + $length)
-                : 0;
+        try {
+            $length = 0;
+            $matched = true;
+            while (
+                $matched
+                && ($this->max === null || count($childMatches) < $this->max)
+            ) {
+                // No skipping at very start
+                $skip = $length > 0
+                    ? $context->skipSpacing($input, $offset + $length)
+                    : 0;
 
-            $match = $skip !== false
-                ? $this->parser->parse($input, $offset + $length + $skip, $context)
-                : null;
+                $match = $skip !== false
+                    ? $this->parser->parse($input, $offset + $length + $skip, $context)
+                    : null;
 
-            $matched = $match instanceof Success;
-            if ($matched) {
-                if ($match->length === 0) {
-                    $this->popSpacer($context);
-                    throw new LogicException('Repeat child matched successfully without consuming input');
+                $matched = $match instanceof Success;
+                if ($matched) {
+                    if ($match->length === 0) {
+                        throw new LogicException('Repeat child matched successfully without consuming input');
+                    }
+
+                    $length += $skip + $match->length;
+                    $childMatches[] = $match;
                 }
-
-                $length += $skip + $match->length;
-                $childMatches[] = $match;
             }
+        } finally {
+            $this->popSpacer($context);
         }
-
-        $this->popSpacer($context);
 
         return count($childMatches) >= $this->min
             ? $this->success($input, $offset, $length, $childMatches)

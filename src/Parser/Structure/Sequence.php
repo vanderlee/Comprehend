@@ -31,29 +31,30 @@ class Sequence extends IterableParser
 
         $this->pushSpacer($context);
 
-        $total = 0;
-        /** @var Parser $parser */
-        foreach ($this->parsers as $parser) {
-            if ($total > 0) {
-                $skip = $context->skipSpacing($input, $offset + $total);
-                if ($skip === false) {
+        try {
+            $total = 0;
+            /** @var Parser $parser */
+            foreach ($this->parsers as $parser) {
+                if ($total > 0) {
+                    $skip = $context->skipSpacing($input, $offset + $total);
+                    if ($skip === false) {
+                        return $this->failure($input, $offset, $total);
+                    }
+                    $total += $skip;
+                }
+                $match = $parser->parse($input, $offset + $total, $context);
+                $total += $match->length;
+
+                if (!($match instanceof Success)) {  // must match
+
                     return $this->failure($input, $offset, $total);
                 }
-                $total += $skip;
+
+                $childMatches[] = $match;
             }
-            $match = $parser->parse($input, $offset + $total, $context);
-            $total += $match->length;
-
-            if (!($match instanceof Success)) {  // must match
-                $this->popSpacer($context);
-
-                return $this->failure($input, $offset, $total);
-            }
-
-            $childMatches[] = $match;
+        } finally {
+            $this->popSpacer($context);
         }
-
-        $this->popSpacer($context);
 
         return $this->success($input, $offset, $total, $childMatches);
     }

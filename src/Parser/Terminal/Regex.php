@@ -36,10 +36,14 @@ class Regex extends Parser
     protected function parse(&$input, $offset, Context $context)
     {
         $this->pushCaseSensitivityToContext($context);
-        $pattern = $this->pattern . ($context->isCaseSensitive()
-                ? ''
-                : 'i');
-        $this->popCaseSensitivityFromContext($context);
+
+        try {
+            $pattern = $this->pattern . ($context->isCaseSensitive()
+                    ? ''
+                    : 'i');
+        } finally {
+            $this->popCaseSensitivityFromContext($context);
+        }
 
         if ((preg_match($pattern, $input, $match, 0, $offset) !== false)
             && count($match) > 0

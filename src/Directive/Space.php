@@ -42,8 +42,12 @@ class Space extends Parser
     protected function parse(&$input, $offset, Context $context)
     {
         $context->pushSpacer($this->spacer);
-        $match = $this->parser->parse($input, $offset, $context);
-        $context->popSpacer();
+
+        try {
+            $match = $this->parser->parse($input, $offset, $context);
+        } finally {
+            $context->popSpacer();
+        }
 
         return $match;
     }

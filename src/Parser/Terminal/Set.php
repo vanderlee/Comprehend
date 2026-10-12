@@ -51,13 +51,13 @@ class Set extends Parser
 
         $this->pushCaseSensitivityToContext($context);
 
-        if (strstr($context->handleCase($this->set), $context->handleCase($input[$offset])) !== false) {
+        try {
+            if (strstr($context->handleCase($this->set), $context->handleCase($input[$offset])) !== false) {
+                return $this->makeMatch($this->include, $input, $offset, 1);
+            }
+        } finally {
             $this->popCaseSensitivityFromContext($context);
-
-            return $this->makeMatch($this->include, $input, $offset, 1);
         }
-
-        $this->popCaseSensitivityFromContext($context);
 
         return $this->makeMatch(!$this->include, $input, $offset, 1);
     }

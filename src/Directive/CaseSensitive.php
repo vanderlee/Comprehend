@@ -38,8 +38,12 @@ class CaseSensitive extends Parser
     protected function parse(&$input, $offset, Context $context)
     {
         $context->pushCaseSensitivity($this->sensitivity);
-        $match = $this->parser->parse($input, $offset, $context);
-        $context->popCaseSensitivity();
+
+        try {
+            $match = $this->parser->parse($input, $offset, $context);
+        } finally {
+            $context->popCaseSensitivity();
+        }
 
         return $match;
     }

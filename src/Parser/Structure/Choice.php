@@ -191,22 +191,24 @@ class Choice extends IterableParser
     {
         $this->pushPreferenceToContext($context);
 
-        switch ($context->getPreference()) {
-            default:
-            case Prefer::FIRST:
-                $match = $this->parseFirst($input, $offset, $context);
-                break;
+        try {
+            switch ($context->getPreference()) {
+                default:
+                case Prefer::FIRST:
+                    $match = $this->parseFirst($input, $offset, $context);
+                    break;
 
-            case Prefer::LONGEST:
-                $match = $this->parseLongest($input, $offset, $context);
-                break;
+                case Prefer::LONGEST:
+                    $match = $this->parseLongest($input, $offset, $context);
+                    break;
 
-            case Prefer::SHORTEST:
-                $match = $this->parseShortest($input, $offset, $context);
-                break;
+                case Prefer::SHORTEST:
+                    $match = $this->parseShortest($input, $offset, $context);
+                    break;
+            }
+        } finally {
+            $this->popPreferenceFromContext($context);
         }
-
-        $this->popPreferenceFromContext($context);
 
         return $match;
     }

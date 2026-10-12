@@ -37,13 +37,13 @@ class Char extends Parser
 
         $this->pushCaseSensitivityToContext($context);
 
-        if ($context->handleCase($input[$offset]) === $context->handleCase($this->character)) {
+        try {
+            if ($context->handleCase($input[$offset]) === $context->handleCase($this->character)) {
+                return $this->makeMatch($this->include, $input, $offset, 1);
+            }
+        } finally {
             $this->popCaseSensitivityFromContext($context);
-
-            return $this->makeMatch($this->include, $input, $offset, 1);
         }
-
-        $this->popCaseSensitivityFromContext($context);
 
         return $this->makeMatch(!$this->include, $input, $offset, 1);
     }

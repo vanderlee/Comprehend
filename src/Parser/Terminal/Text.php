@@ -32,16 +32,16 @@ class Text extends Parser
     {
         $this->pushCaseSensitivityToContext($context);
 
-        $text = $context->handleCase($this->text);
-        for ($c = 0; $c < $this->length; $c++) {
-            if ($offset + $c >= mb_strlen($input) || $text[$c] != $context->handleCase($input[$offset + $c])) {
-                $this->popCaseSensitivityFromContext($context);
-
-                return $this->failure($input, $offset, $c);
+        try {
+            $text = $context->handleCase($this->text);
+            for ($c = 0; $c < $this->length; $c++) {
+                if ($offset + $c >= mb_strlen($input) || $text[$c] != $context->handleCase($input[$offset + $c])) {
+                    return $this->failure($input, $offset, $c);
+                }
             }
+        } finally {
+            $this->popCaseSensitivityFromContext($context);
         }
-
-        $this->popCaseSensitivityFromContext($context);
 
         return $this->success($input, $offset, $this->length);
     }
