@@ -11,15 +11,10 @@ TODO: Instructions on how to make custom parser libraries.
 TODO: Where to find issue tracking, downloads, etc.
 
 ## Unittesting
-Install development dependencies with `composer install`, then run
+Use PHP 8.0 or newer. Install development dependencies with `composer install`, then run
 `php vendor/phpunit/phpunit/phpunit --do-not-cache-result` with PHPUnit 9.6.
 The default `phpunit.xml` runs the suite in `tests` and limits coverage to `src`.
 If a coverage driver is enabled, Clover output is written to `build/logs/clover.xml`.
-
-For PHPUnit 6 (used by the PHP 7.2 CI job), run
-`php vendor/phpunit/phpunit/phpunit --configuration phpunit6.xml`.
-Keep the suite, source coverage paths, and report destination aligned in both
-configurations. CI selects the configuration appropriate for its runner.
 
 Token XML tests compare element order, local names, namespace URIs, and text.
 Token groups become namespace URIs, sanitized groups become prefixes, and

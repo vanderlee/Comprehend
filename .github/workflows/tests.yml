@@ -19,12 +19,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php: '7.2'
-            composer: '2.2'
-            phpunit-config: 'phpunit6.xml'
+          - php: '8.0'
+            composer: 'v2'
           - php: '8.6'
             composer: 'v2'
-            phpunit-config: 'phpunit.xml'
 
     name: PHP ${{ matrix.php }}
 
@@ -47,4 +45,4 @@ jobs:
         run: composer install --no-interaction --prefer-dist
 
       - name: Run tests
-        run: vendor/bin/phpunit --configuration ${{ matrix.phpunit-config }}
+        run: vendor/bin/phpunit
