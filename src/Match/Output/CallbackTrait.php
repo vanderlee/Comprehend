@@ -2,6 +2,8 @@
 
 namespace Vanderlee\Comprehend\Match\Output;
 
+use Vanderlee\Comprehend\Match\Success;
+
 trait CallbackTrait
 {
     /**
@@ -10,6 +12,20 @@ trait CallbackTrait
      * @var callable[]
      */
     private $customCallbacks = [];
+
+    /** @var Success[] */
+    private $precedingMatches = [];
+
+    /**
+     * Retain accepted effects before this match's callbacks, without adding
+     * token children or named results. Used for spacing and processed rules.
+     *
+     * @internal
+     */
+    public function addPrecedingMatch(Success $match)
+    {
+        $this->precedingMatches[] = $match;
+    }
 
     /**
      * Add a callback to this match, to be called after parsing is finished and
@@ -32,6 +48,10 @@ trait CallbackTrait
      */
     private function processCustomCallbacks()
     {
+        foreach ($this->precedingMatches as $match) {
+            $match->processCustomCallbacks();
+        }
+
         /** @var self $success */
         foreach ($this->successes as $success) {
             $success->processCustomCallbacks();

@@ -76,8 +76,9 @@ class Repeat extends Parser
                 && ($this->max === null || count($childMatches) < $this->max)
             ) {
                 // No skipping at very start
+                $spacingMatch = null;
                 $skip = $length > 0
-                    ? $context->skipSpacing($input, $offset + $length)
+                    ? $context->skipSpacing($input, $offset + $length, $spacingMatch)
                     : 0;
 
                 $match = $skip !== false
@@ -90,6 +91,9 @@ class Repeat extends Parser
                         throw new LogicException('Repeat child matched successfully without consuming input');
                     }
 
+                    if ($spacingMatch !== null) {
+                        $match->addPrecedingMatch($spacingMatch);
+                    }
                     $length += $skip + $match->length;
                     $childMatches[] = $match;
                 }

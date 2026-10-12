@@ -146,7 +146,13 @@ class Implementation extends Parser
                 ? $match
                 : [];
 
-            return $this->addProcessors($this->success($input, $offset, $match->length, $successes), $results);
+            $success = $this->success($input, $offset, $match->length, $successes);
+            if (!empty($this->definition->processors)) {
+                // Processed results hide child outputs, but not selected effects.
+                $success->addPrecedingMatch($match);
+            }
+
+            return $this->addProcessors($success, $results);
         }
 
         return $this->failure($input, $offset, $match->length);

@@ -35,8 +35,9 @@ class Sequence extends IterableParser
             $total = 0;
             /** @var Parser $parser */
             foreach ($this->parsers as $parser) {
+                $spacingMatch = null;
                 if ($total > 0) {
-                    $skip = $context->skipSpacing($input, $offset + $total);
+                    $skip = $context->skipSpacing($input, $offset + $total, $spacingMatch);
                     if ($skip === false) {
                         return $this->failure($input, $offset, $total);
                     }
@@ -46,10 +47,12 @@ class Sequence extends IterableParser
                 $total += $match->length;
 
                 if (!($match instanceof Success)) {  // must match
-
                     return $this->failure($input, $offset, $total);
                 }
 
+                if ($spacingMatch !== null) {
+                    $match->addPrecedingMatch($spacingMatch);
+                }
                 $childMatches[] = $match;
             }
         } finally {

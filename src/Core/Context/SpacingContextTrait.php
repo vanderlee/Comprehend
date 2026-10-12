@@ -32,8 +32,15 @@ trait SpacingContextTrait
         array_pop($this->spacers);
     }
 
-    public function skipSpacing($in, $offset)
+    /**
+     * Return skipped length (or false) without resolving effects. The caller
+     * must retain the optional successful match only on its accepted path.
+     *
+     * @param Success|null $match Unresolved spacing match, if any.
+     */
+    public function skipSpacing($in, $offset, &$match = null)
     {
+        $match = null;
         $spacer = end($this->spacers);
 
         // If `true`; use top-most Parser instance in stack.
@@ -44,9 +51,10 @@ trait SpacingContextTrait
         }
 
         if ($spacer instanceof Parser) {
-            $match = $spacer->match($in, $offset);
+            $attempt = $spacer->matchUnresolved($in, $offset);
+            $match = $attempt instanceof Success ? $attempt : null;
 
-            return ($match instanceof Success)
+            return $match !== null
                 ? $match->length
                 : false;
         }

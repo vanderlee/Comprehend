@@ -24,6 +24,19 @@ their parser or directive. The previous context is restored after success,
 failure, or an exception, including nested overrides. Exceptions propagate to
 the caller after restoration.
 
+Spacing recognition defers callbacks and `assignTo()` until the enclosing
+successful root resolves them through `match()`, like ordinary child callbacks.
+Accepted spacer callbacks run before the following child's callbacks. Failed
+alternatives, failing parents, and spacing before a failed repeat iteration
+produce no spacing effects. Successful zero-length spacers still run their
+callbacks when accepted; spacers retain their independent default context.
+
+Spacing stays out of token children and named result collection. Processed
+rules retain selected child callbacks even when their processors replace child
+outputs. `Context::skipSpacing()` no longer resolves effects itself; custom
+parsers using it must capture its optional third argument and attach that match
+with `Success::addPrecedingMatch()` to the following accepted child.
+
 ## Structure parsers
 
 ### Repeat

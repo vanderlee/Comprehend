@@ -56,11 +56,23 @@ abstract class Parser
      */
     public function match($input, $offset = 0)
     {
+        return $this->matchUnresolved($input, $offset)->resolve();
+    }
+
+    /**
+     * Recognize in an independent context without resolving callbacks.
+     * Used for speculative spacing; the owning match defers its effects.
+     *
+     * @internal
+     * @return AbstractMatch
+     */
+    public function matchUnresolved($input, $offset = 0)
+    {
         if ($offset < 0) {
             throw new InvalidArgumentException('Negative offset');
         }
 
-        return $this->parse($input, $offset, new Context())->resolve();
+        return $this->parse($input, $offset, new Context());
     }
 
     public function __invoke($input, $offset = 0)
