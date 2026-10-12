@@ -87,6 +87,12 @@ class Token implements JsonSerializable
     }
 
     /**
+     * Serialize the token tree. Groups are namespace URIs; sanitized groups
+     * supply prefixes, and sanitized names (or parser classes) supply local names.
+     * Namespace declaration placement is determined by DOM/libxml and is not
+     * part of the contract. Consumers should compare namespace URIs and local
+     * names rather than the exact serialized XML string.
+     *
      * @return DOMDocument
      * @throws DOMException
      */

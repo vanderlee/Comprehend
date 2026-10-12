@@ -4,6 +4,7 @@
 
 namespace Tests\Src\Core;
 
+use DOMDocument;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Core\Token;
 use Vanderlee\Comprehend\Library\Rfc3986;
@@ -121,17 +122,21 @@ class TokenTest extends ParserTestCase
 
     public function testToString()
     {
-        $foo = (new Sequence('f', (new Text('oo'))->token('Ooh!'),
+        $foo = (new Sequence(
+            'f', (new Text('oo'))->token('Ooh!'),
             (new Text('bar'))->token('Bar', 'group')
         ))->token('Word');
 
         $match = $foo->match('foobar');
         $this->assertResult(true, 6, $match);
 
-        $this->assertEquals('Word (`foobar`)' . PHP_EOL
+        $this->assertEquals(
+            'Word (`foobar`)' . PHP_EOL
             . '  Vanderlee\Comprehend\Parser\Terminal\Char (`f`)' . PHP_EOL
             . '  Ooh! (`oo`)' . PHP_EOL
-            . '  group::Bar (`bar`)', (string)$match->token);
+            . '  group::Bar (`bar`)',
+            (string)$match->token
+        );
     }
 
     public function testJsonEncode()
@@ -141,13 +146,16 @@ class TokenTest extends ParserTestCase
         $match = $foo->match('foo');
         $this->assertResult(true, 3, $match);
 
-        $this->assertEquals('{"group":null,"name":"Word","text":"foo","offset":0,"length":3'
+        $this->assertEquals(
+            '{"group":null,"name":"Word","text":"foo","offset":0,"length":3'
             . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Structure\\\\Sequence","children":['
             . '{"group":null,"name":null,"text":"f","offset":0,"length":1'
             . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Char","children":[]},'
             . '{"group":null,"name":"Ooh!","text":"oo","offset":1,"length":2'
             . ',"class":"Vanderlee\\\\Comprehend\\\\Parser\\\\Terminal\\\\Text","children":[]}'
-            . ']}', json_encode($match->token));
+            . ']}',
+            json_encode($match->token)
+        );
     }
 
     public function testToXml()
@@ -157,12 +165,24 @@ class TokenTest extends ParserTestCase
         $match = $foo->match('foo');
         $this->assertResult(true, 3, $match);
 
-        /* @noinspection HtmlUnknownTag */
-        $this->assertEquals('<?xml version="1.0"?>' . "\n"
-            . '<Word xmlns:Snap="Snap">'
-            . '<Vanderlee_Comprehend_Parser_Terminal_Char>f</Vanderlee_Comprehend_Parser_Terminal_Char>'
-            . '<Snap:Ooh_ xmlns:Snap="Snap">oo</Snap:Ooh_>'
-            . '</Word>' . "\n", $match->token->toXml()->saveXML());
+        // Check serialized XML semantics, not libxml's declaration placement.
+        $document = new DOMDocument();
+        $this->assertTrue($document->loadXML($match->token->toXml()->saveXML()));
+        $root = $document->documentElement;
+        $this->assertSame('Word', $root->localName);
+        $this->assertNull($root->namespaceURI);
+        $this->assertSame(2, $root->childNodes->length);
+
+        $first = $root->childNodes->item(0);
+        $this->assertSame('Vanderlee_Comprehend_Parser_Terminal_Char', $first->localName);
+        $this->assertNull($first->namespaceURI);
+        $this->assertSame('f', $first->textContent);
+
+        $second = $root->childNodes->item(1);
+        $this->assertSame('Ooh_', $second->localName);
+        $this->assertSame('Snap', $second->namespaceURI);
+        $this->assertSame('Snap', $second->prefix);
+        $this->assertSame('oo', $second->textContent);
     }
 
     protected function extractTokenSignatures(Token $token)

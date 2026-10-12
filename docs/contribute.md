@@ -11,7 +11,21 @@ TODO: Instructions on how to make custom parser libraries.
 TODO: Where to find issue tracking, downloads, etc.
 
 ## Unittesting
-TODO: Information on how the unittest is structured and what and how to test.
+Install development dependencies with `composer install`, then run
+`php vendor/phpunit/phpunit/phpunit --do-not-cache-result` with PHPUnit 9.6.
+The default `phpunit.xml` runs the suite in `tests` and limits coverage to `src`.
+If a coverage driver is enabled, Clover output is written to `build/logs/clover.xml`.
+
+For PHPUnit 6 (used by the PHP 7.2 CI job), run
+`php vendor/phpunit/phpunit/phpunit --configuration phpunit6.xml`.
+Keep the suite, source coverage paths, and report destination aligned in both
+configurations. CI selects the configuration appropriate for its runner.
+
+Token XML tests compare element order, local names, namespace URIs, and text.
+Token groups become namespace URIs, sanitized groups become prefixes, and
+sanitized token names (or parser class names) become local names. DOM/libxml may
+place namespace declarations on different ancestors across versions; declaration
+placement and redundant declarations are not part of the serialization contract.
 
 ## Integration
 TODO: Integrating with Laravel/Symfony/Dingo/etc.
