@@ -4,6 +4,10 @@ See [Execution behavior and limitations](execution.md) for prefix matching,
 complete ASCII input checks, choice selection, greedy repetition, recursion,
 and the current Unicode limitation.
 
+The phase 1.1 [source coordinate and extension contract](source-and-extension-contract.md)
+specifies future byte spans, encoding modes and compatibility policies. These
+are design contracts; Source and adapter APIs are not yet implemented.
+
 ## Arguments
 There are 
 

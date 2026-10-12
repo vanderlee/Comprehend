@@ -2,7 +2,16 @@
 Want to contribute to Comprehend? Here's some important things you need to know!
 
 ## Parsers
-TODO: Instructions on the architecture of parsers.
+Custom parsers extend `Parser` and implement protected
+`parse(&$input, $offset, Context $context)` plus `__toString()`. Recognition
+returns a match through the inherited factories; keep callbacks deferred and
+restore scoped Context overrides on every exit path.
+
+Before changing protected signatures or input units, read the phase 1.1
+[source coordinate and extension contract](source-and-extension-contract.md).
+It inventories current subclasses, records adapter policies and explains the
+limits of legacy multibyte offsets. The current runtime still has the
+[documented Unicode limitation](execution.md#current-unicode-limitation).
 
 ## Libraries
 TODO: Instructions on how to make custom parser libraries.
