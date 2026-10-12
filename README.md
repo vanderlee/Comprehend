@@ -3,6 +3,10 @@ Comprehend - a PHP *BNF parser framework
 Build parsers and token trees in PHP using interpreted parser combinators and
 BNF-inspired grammar composition.
 
+A scannerless parser combinator framework for PHP, using recursive descent with
+ordered choice and greedy repetition. Grammars are constructed programmatically
+using BNF-inspired composition.
+
 [![Packagist](https://img.shields.io/packagist/v/vanderlee/comprehend.svg)](https://packagist.org/packages/vanderlee/comprehend)
 [![PHP from Packagist](https://img.shields.io/packagist/php-v/vanderlee/comprehend.svg)](http://php.net/supported-versions.php)
 [![Packagist](https://img.shields.io/packagist/l/vanderlee/comprehend.svg)](http://www.opensource.org/licenses/mit-license.php)
