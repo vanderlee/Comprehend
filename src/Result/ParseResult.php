@@ -19,6 +19,7 @@ final class ParseResult
     public readonly int $consumedByteLength;
     public readonly ?int $farthestFailure;
     public readonly ?Diagnostic $diagnostic;
+    public readonly ?\Vanderlee\Comprehend\Tree\ConcreteNode $node;
 
     public function __construct(private readonly AbstractMatch $match)
     {
@@ -33,6 +34,7 @@ final class ParseResult
         $this->consumedByteLength = $span->byteLength();
         $this->farthestFailure = $match->farthestFailure;
         $this->diagnostic = $match->diagnostic;
+        $this->node = $match->node;
     }
 
     public function rawText(): string

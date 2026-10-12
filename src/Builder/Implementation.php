@@ -150,6 +150,7 @@ class Implementation extends Parser
                 : [];
 
             $success = $this->success($input, $offset, $match->length, $successes);
+            $success->setConcreteMatches([$match]);
             if (!empty($this->definition->processors)) {
                 // Processed results hide child outputs, but not selected effects.
                 $success->addPrecedingMatch($match);

@@ -20,6 +20,7 @@ use Vanderlee\Comprehend\Source\Span;
  * @property-read Span|null $span Canonical byte span, if source-bound
  * @property-read int|null $farthestFailure Canonical byte position, if recorded
  * @property-read \Vanderlee\Comprehend\Result\Diagnostic|null $diagnostic Structured source failure details
+ * @property-read \Vanderlee\Comprehend\Tree\ConcreteNode|null $node Immutable source recognition tree
  */
 abstract class AbstractMatch
 {
@@ -27,6 +28,16 @@ abstract class AbstractMatch
     private $sourceSpan;
     private $farthestFailure;
     private $diagnostic;
+    private $node;
+
+    /** @internal Preserve the canonical tree on compatibility projections. */
+    public function setConcreteNode(\Vanderlee\Comprehend\Tree\ConcreteNode $node): void
+    {
+        if (!$this->match || $this->sourceSpan === null || $node->span !== $this->sourceSpan) {
+            throw new InvalidArgumentException('Concrete root must use the successful match span');
+        }
+        $this->node = $node;
+    }
 
     /** @internal Attach canonical coordinates without changing legacy length. */
     public function setSourceMetadata(Span $span, ?int $farthestFailure, ?\Vanderlee\Comprehend\Result\Diagnostic $diagnostic = null): void
@@ -52,6 +63,8 @@ abstract class AbstractMatch
     public function __get(string $name)
     {
         switch ($name) {
+            case 'node':
+                return $this->node;
             case 'diagnostic':
                 return $this->diagnostic;
             case 'span':

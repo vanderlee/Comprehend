@@ -33,15 +33,19 @@ class All extends Parser
     protected function parse(&$input, $offset, Context $context)
     {
         $length = PHP_INT_MAX;
+        $matches = [];
         foreach ($this->parsers as $parser) {
             $match = $parser->parseInContext($input, $offset, $context);
             $length = min($length, $match->length);
             if (!($match instanceof Success)) {
                 return $this->failure($input, $offset, $length);
             }
+            $matches[] = $match;
         }
 
-        return $this->success($input, $offset, $length);
+        $success = $this->success($input, $offset, $length);
+        $success->setConcreteMatches($matches);
+        return $success;
     }
 
     public function __toString()

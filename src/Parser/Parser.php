@@ -141,6 +141,10 @@ abstract class Parser
         $match->setSourceMetadata($source->span($offset, $match->match ? $offset + $match->length : $offset),
             $context->farthestFailure(), $context->diagnostic());
 
+        if ($match instanceof Success) {
+            $match->buildConcreteNode(static::class);
+        }
+
         return $match;
     }
 

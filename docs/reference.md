@@ -15,6 +15,9 @@ See [Prefix and full-input entry points](consumption.md) for `matchPrefix()`,
 
 See [Structured diagnostics](diagnostics.md) for expected symbols, rule paths, source excerpts and lazy locations.
 
+See [Immutable concrete trees](concrete-trees.md) for source-bound nodes, children
+and raw text independent of token names and semantic transformations.
+
 ## Arguments
 There are 
 

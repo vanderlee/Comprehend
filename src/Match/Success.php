@@ -31,6 +31,29 @@ class Success extends AbstractMatch
      */
     private $successes;
     private $coordinates;
+    private $concreteMatches;
+
+    /** @internal Recognition children can differ from semantic output children. */
+    public function setConcreteMatches(array $matches): void
+    {
+        $this->concreteMatches = $matches;
+    }
+
+    /** @internal Build without evaluating any lazy semantic or token callbacks. */
+    public function buildConcreteNode(string $kind): void
+    {
+        // Directives and stubs can return their child's match object unchanged.
+        $children = $this->node !== null ? [$this->node] : [];
+        if ($this->node === null) {
+            foreach ($this->concreteMatches as $match) {
+                if ($match->node === null) {
+                    throw new \LogicException('Concrete children require source-bound recognition');
+                }
+                $children[] = $match->node;
+            }
+        }
+        $this->setConcreteNode(new \Vanderlee\Comprehend\Tree\ConcreteNode($kind, $this->span, $children));
+    }
 
     /** @internal Convert callback coordinates on the selected effect tree only. */
     public function useCoordinates(\Vanderlee\Comprehend\Compatibility\Coordinates $coordinates): void
@@ -63,6 +86,7 @@ class Success extends AbstractMatch
         parent::__construct($length);
 
         $this->successes = $successes;
+        $this->concreteMatches = $successes;
     }
 
     public function __get(string $name)
