@@ -77,7 +77,8 @@ for the current matching contract; declaring mbstring does not fix this defect.
 The explicit `matchSource(new Utf8Source($input))` path now recognizes UTF-8 with
 byte offsets and complete code-point reads. Use `ByteSource` for octet grammars.
 See [Source matching](docs/source-matching.md) for mode rules and custom parser
-compatibility. Legacy coordinate adapters remain planned in phase 1.4.
+compatibility. Phase 1.4 adds [canonical results and explicit legacy coordinate
+adapters](docs/parse-results.md), preserving the existing string entry points.
 
 See [Execution behavior and limitations](docs/execution.md) for checked examples,
 grammar factoring, and recursion guidance. Run the examples with

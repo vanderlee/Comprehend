@@ -5,8 +5,9 @@ runtime and its compatibility adapters. Phase 1.2 implements the independent
 [in-memory sources and spans](sources.md), and phase 1.3 adds an explicit
 [source recognition path](source-matching.md). Legacy `match()` remains isolated.
 The [current Unicode limitation](execution.md#current-unicode-limitation) still
-applies to legacy matching. Result adapters begin in 1.4. Planned
-session/adapter contracts below are not yet available APIs.
+applies to legacy matching. Phase 1.4 implements
+[canonical results and coordinate adapters](parse-results.md). Planned session
+and diagnostic contracts below are not yet available APIs.
 
 ## Canonical coordinates
 
@@ -160,8 +161,8 @@ inputs with a declared policy rather than converting old results. Code-point
 conversion must fail explicitly if a diagnostic byte position has no valid
 text boundary.
 
-These are future adapter rules. Phase 1.1 does not change `match()` or add an
-ASCII-only restriction to the existing runtime. Keep legacy execution isolated
+These policies are implemented by the phase 1.4 adapter. Existing `match()` does
+not gain an ASCII-only restriction. Keep legacy execution isolated
 while adding sources in 1.2; do not silently activate a new offset policy during
 terminal migration. Switch a grammar's recognition and extraction together or
 keep it on the old path until its components are compatible.

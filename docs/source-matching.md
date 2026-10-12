@@ -7,8 +7,8 @@ token coordinates, and callback coordinates are **bytes**. `End` requires EOF.
 
 This is an explicit new execution path. `match($string, $offset)` and
 `__invoke()` keep legacy recognition and its documented multibyte limitation;
-they do not infer a source mode or convert character offsets. ParseResult and
-coordinate adapters are still phase 1.4 work. See the
+they do not infer a source mode or convert character offsets. Phase 1.4 adds
+[canonical results and explicit legacy coordinate adapters](parse-results.md). See the
 [coordinate contract](source-and-extension-contract.md) and
 [independent source API](sources.md).
 
@@ -126,7 +126,8 @@ check downstream name/signature collisions when adopting this API.
 ordinary callers use `matchSource()` to resolve the selected root.
 
 Recognition currently supports in-memory ByteSource and Utf8Source. File sources,
-ParseSession, canonical result spans and coordinate adapters remain separate
-increments. Existing RFC fixture acceptance/lengths are exercised in both modes
+ParseSession and file input remain separate increments. Source-bound matches
+now carry canonical spans and failure positions; `parseSource()` and coordinate
+adapters are documented separately. Existing RFC fixtures are exercised in both modes
 where their ASCII paths are compatible; OCTET requires byte mode. This does not
 certify every bundled RFC rule.

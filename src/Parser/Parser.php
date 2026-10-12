@@ -99,22 +99,48 @@ abstract class Parser
         if ($source === null) {
             return $this->parse($input, $offset, $context);
         }
-        if (!$this->supportsSource()) {
+
+        if (!$this->supportsSource() && !$context->allowsLegacyAscii()) {
             throw new LogicException('Custom parser must declare source compatibility: ' . static::class);
         }
+
         $source->span($offset, $offset);
         if ($source instanceof Utf8Source && !$source->isCodePointBoundary($offset)) {
             throw new InvalidArgumentException('Parser position is inside a UTF-8 code point');
         }
+
         $match = $this->parse($input, $offset, $context);
         if ($input !== $source->sliceBytes(0, $source->byteLength())) {
             throw new LogicException('Source-compatible parsers must not mutate input');
         }
+
         $source->span($offset, $offset + $match->length);
         if ($source instanceof Utf8Source && !$source->isCodePointBoundary($offset + $match->length)) {
             throw new LogicException('Parser returned a partial UTF-8 code point');
         }
+
+        if (!$match->match) {
+            $context->recordFailure($offset + $match->length);
+        }
+
+        $match->setSourceMetadata($source->span($offset, $match->match ? $offset + $match->length : $offset),
+            $context->farthestFailure());
+
         return $match;
+    }
+
+    /** Canonical prefix result; selected callbacks resolve before returning. */
+    public function parseSource(Source $source, int $byteOffset = 0): \Vanderlee\Comprehend\Result\ParseResult
+    {
+        return new \Vanderlee\Comprehend\Result\ParseResult($this->matchSource($source, $byteOffset));
+    }
+
+    /** @internal ASCII-only bridge for unmigrated parser subclasses. */
+    public function matchAsciiUnresolved(Source $source, int $byteOffset = 0): AbstractMatch
+    {
+        $input = $source->sliceBytes(0, $source->byteLength());
+
+        return $this->parseInContext($input, $byteOffset, new Context(null, true, Prefer::FIRST, $source, true));
     }
 
     /** Recognize a prefix with explicit source mode and canonical byte coordinates. */
@@ -127,6 +153,7 @@ abstract class Parser
     public function matchSourceUnresolved(Source $source, int $byteOffset = 0): AbstractMatch
     {
         $input = $source->sliceBytes(0, $source->byteLength());
+
         return $this->parseInContext(
             $input,
             $byteOffset,
@@ -242,13 +269,14 @@ abstract class Parser
 
         // AssignTrait
         $callbacks = $this->callbacks;
-        $success->addCustomCallback(function () use ($input, $offset, $length, $callbacks, $span) {
+        $success->addCustomCallback(function () use ($input, $offset, $length, $callbacks, $span, $success) {
             $text = $span->rawText();
 
             $this->resolveAssignCallbacks($text);
 
             foreach ($callbacks as $callback) {
-                $callback($text, $input, $offset, $length);
+                [$callbackOffset, $callbackLength] = $success->callbackCoordinates($offset, $length);
+                $callback($text, $input, $callbackOffset, $callbackLength);
             }
         });
 

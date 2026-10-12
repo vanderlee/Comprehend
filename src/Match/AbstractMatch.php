@@ -5,6 +5,7 @@ namespace Vanderlee\Comprehend\Match;
 use Exception;
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Token;
+use Vanderlee\Comprehend\Source\Span;
 
 /**
  * Description of ParserToken.
@@ -16,10 +17,27 @@ use Vanderlee\Comprehend\Core\Token;
  * @property-read array $results List of output results
  * @property-read string|array|null $result  Default output result
  * @property-read Token|null $token
+ * @property-read Span|null $span Canonical byte span, if source-bound
+ * @property-read int|null $farthestFailure Canonical byte position, if recorded
  */
 abstract class AbstractMatch
 {
     protected $length;
+    private $sourceSpan;
+    private $farthestFailure;
+
+    /** @internal Attach canonical coordinates without changing legacy length. */
+    public function setSourceMetadata(Span $span, ?int $farthestFailure): void
+    {
+        if (!$this->match && $span->byteLength() !== 0) {
+            throw new InvalidArgumentException('Failed matches must have zero-width spans');
+        }
+        if ($farthestFailure !== null) {
+            $span->source->span($farthestFailure, $farthestFailure);
+        }
+        $this->sourceSpan = $span;
+        $this->farthestFailure = $farthestFailure;
+    }
 
     /**
      * @param string $name
@@ -31,6 +49,10 @@ abstract class AbstractMatch
     public function __get(string $name)
     {
         switch ($name) {
+            case 'span':
+                return $this->sourceSpan;
+            case 'farthestFailure':
+                return $this->farthestFailure;
             case 'length':
                 return $this->length;
             case 'results':

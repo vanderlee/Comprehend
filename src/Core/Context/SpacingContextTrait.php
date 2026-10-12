@@ -51,10 +51,14 @@ trait SpacingContextTrait
         }
 
         if ($spacer instanceof Parser) {
-            $attempt = $this->source() !== null
-                ? $spacer->matchSourceUnresolved($this->source(), $offset)
-                : $spacer->matchUnresolved($in, $offset);
+            $attempt = $this->source() === null ? $spacer->matchUnresolved($in, $offset)
+                : ($this->allowsLegacyAscii()
+                    ? $spacer->matchAsciiUnresolved($this->source(), $offset)
+                    : $spacer->matchSourceUnresolved($this->source(), $offset));
             $match = $attempt instanceof Success ? $attempt : null;
+            if ($attempt->farthestFailure !== null) {
+                $this->recordFailure($attempt->farthestFailure);
+            }
 
             return $match !== null
                 ? $match->length

@@ -10,6 +10,8 @@ use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Compatibility\CoordinatePolicy;
+use Vanderlee\Comprehend\Compatibility\LegacyParserAdapter;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -58,6 +60,19 @@ foreach ($sourceExamples as [$label, $parser, $source, $accepted, $length, $offs
     }
     echo $label . ': ' . ($result->match ? 'success' : 'failure') . ', bytes ' . $result->length . PHP_EOL;
 }
+
+$canonical = (new Text("\u{00E9}a"))->parseSource(new Utf8Source("z\u{00E9}b"), 1);
+if ($canonical->success || $canonical->start !== 1 || $canonical->end !== 1
+    || $canonical->consumedByteLength !== 0 || $canonical->farthestFailure !== 3) {
+    throw new RuntimeException('Canonical failure contract changed');
+}
+$adapted = (new LegacyParserAdapter((new Text('a'))->token('letter'), CoordinatePolicy::CODE_POINTS))
+    ->match("\u{00E9}a", 1);
+if (!$adapted->match || $adapted->length !== 1 || $adapted->token->offset !== 1
+    || $adapted->token->text !== 'a' || $adapted->span->start !== 2) {
+    throw new RuntimeException('Explicit coordinate adapter contract changed');
+}
+echo 'Canonical result and code-point adapter examples passed.' . PHP_EOL;
 
 // Report legacy match() defects without preserving them as expectations.
 $encoding = mb_internal_encoding();

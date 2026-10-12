@@ -30,6 +30,27 @@ class Success extends AbstractMatch
      * @var Success[]
      */
     private $successes;
+    private $coordinates;
+
+    /** @internal Convert callback coordinates on the selected effect tree only. */
+    public function useCoordinates(\Vanderlee\Comprehend\Compatibility\Coordinates $coordinates): void
+    {
+        if ($this->span === null || $this->span->source !== $coordinates->source) {
+            throw new \InvalidArgumentException('Cannot convert an unbound or foreign-source match');
+        }
+        $coordinates->length($this->span->start, $this->span->end);
+        foreach (array_merge($this->successes, $this->precedingMatches) as $child) {
+            $child->useCoordinates($coordinates);
+        }
+        $this->coordinates = $coordinates;
+    }
+
+    /** @internal Raw text remains byte-based; only exposed numeric units change. */
+    public function callbackCoordinates(int $offset, int $length): array
+    {
+        return $this->coordinates === null ? [$offset, $length]
+            : [$this->coordinates->position($offset), $this->coordinates->length($offset, $offset + $length)];
+    }
 
     /**
      * Create a new match.
