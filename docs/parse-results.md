@@ -2,8 +2,8 @@
 
 Phase 1.4 introduces `Parser::parseSource(Source $source, int $byteOffset = 0)`.
 It recognizes a prefix through the [source path](source-matching.md), resolves
-selected callbacks, and returns a `Result\ParseResult`. Complete-input entry
-points are phase 1.5 work; append `End` to a root sequence for now.
+selected callbacks, and returns a `Result\ParseResult`. Phase 1.5 adds explicit
+[`matchPrefix()` and `parseAll()`](consumption.md); `parseSource()` remains a prefix alias.
 
 ## Canonical result contract
 

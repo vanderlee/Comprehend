@@ -32,8 +32,9 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 `End` tests the end at the current position. A root ending in `End` requires
 complete input from the supplied offset under the current ASCII contract.
 Spacing remains governed by the root's spacing policy; `End` does not introduce
-a new trailing-whitespace policy. `parseAll()` and `matchPrefix()` are planned
-APIs, not current public methods.
+a new trailing-whitespace policy. The Source-based
+[`matchPrefix()` and `parseAll()` APIs](consumption.md) now provide explicit
+prefix/full-input contracts with canonical results. Legacy `match()` stays prefix-based.
 
 ## Choice selects locally
 

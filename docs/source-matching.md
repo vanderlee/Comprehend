@@ -12,6 +12,10 @@ they do not infer a source mode or convert character offsets. Phase 1.4 adds
 [coordinate contract](source-and-extension-contract.md) and
 [independent source API](sources.md).
 
+For canonical prefix/full-input results, use
+[`matchPrefix()` and `parseAll()`](consumption.md). The full-input check does not
+automatically consume trailing trivia.
+
 Run `php docs/examples/execution.php` to check the source examples alongside the
 legacy ASCII examples. The script reports legacy Unicode defects separately;
 it checks that explicit UTF-8 recognition and extraction are correct.

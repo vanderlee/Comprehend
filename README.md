@@ -59,8 +59,10 @@ are not compiled into generated PHP source.
 
 Execution behavior
 ------------------
-`match()` recognizes a prefix at the supplied offset. For complete ASCII input,
-append `End` to the root sequence. Choice selects the first successful alternative
+`match()` recognizes a prefix at the supplied offset. Source-based `matchPrefix()`
+and `parseAll()` return canonical prefix/full-input results; full-input parsing
+requires explicit trailing trivia in the grammar. Legacy grammars can append
+`End` for complete ASCII input. Choice selects the first successful alternative
 by default; explicit first, longest, and shortest policies are available.
 Repetition is greedy. A later sequence failure does not retry an earlier
 successful choice or shorten a repeat.
@@ -83,6 +85,7 @@ adapters](docs/parse-results.md), preserving the existing string entry points.
 See [Execution behavior and limitations](docs/execution.md) for checked examples,
 grammar factoring, and recursion guidance. Run the examples with
 `php docs/examples/execution.php` after installing dependencies.
+See [Prefix and full-input entry points](docs/consumption.md) for paired examples.
 
 Features
 --------

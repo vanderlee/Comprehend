@@ -42,6 +42,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Result\ParseResult;
 
 abstract class Parser
 {
@@ -130,9 +131,36 @@ abstract class Parser
     }
 
     /** Canonical prefix result; selected callbacks resolve before returning. */
-    public function parseSource(Source $source, int $byteOffset = 0): \Vanderlee\Comprehend\Result\ParseResult
+    public function parseSource(Source $source, int $byteOffset = 0): ParseResult
     {
-        return new \Vanderlee\Comprehend\Result\ParseResult($this->matchSource($source, $byteOffset));
+        return $this->matchPrefix($source, $byteOffset);
+    }
+
+    /** Recognize a prefix; remaining input is allowed. */
+    public function matchPrefix(Source $source, int $byteOffset = 0): ParseResult
+    {
+        return new ParseResult($this->matchSource($source, $byteOffset));
+    }
+
+    /** Consume the entire remainder, including trivia explicitly present in the grammar. */
+    public function parseAll(Source $source, int $byteOffset = 0): ParseResult
+    {
+        return new ParseResult($this->matchAllSourceUnresolved($source, $byteOffset)->resolve());
+    }
+
+    /** @internal Check EOF before resolving any selected callbacks. */
+    public function matchAllSourceUnresolved(Source $source, int $byteOffset = 0, bool $legacyAscii = false): AbstractMatch
+    {
+        $match = $legacyAscii ? $this->matchAsciiUnresolved($source, $byteOffset)
+            : $this->matchSourceUnresolved($source, $byteOffset);
+        if (!$match->match || $match->span->end === $source->byteLength()) {
+            return $match;
+        }
+
+        $failure = new Failure($match->length);
+        $failure->setSourceMetadata($source->span($byteOffset, $byteOffset),
+            max($match->farthestFailure ?? $match->span->end, $match->span->end));
+        return $failure;
     }
 
     /** @internal ASCII-only bridge for unmigrated parser subclasses. */

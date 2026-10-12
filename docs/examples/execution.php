@@ -8,6 +8,7 @@ use Vanderlee\Comprehend\Parser\Terminal\End;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
+use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
 use Vanderlee\Comprehend\Compatibility\CoordinatePolicy;
@@ -73,6 +74,26 @@ if (!$adapted->match || $adapted->length !== 1 || $adapted->token->offset !== 1
     throw new RuntimeException('Explicit coordinate adapter contract changed');
 }
 echo 'Canonical result and code-point adapter examples passed.' . PHP_EOL;
+
+$consumptionExamples = [
+    [new Text('a'), 'ab', true, false],
+    [new Text('a'), 'a', true, true],
+    [new Text('a'), 'a ', true, false],
+    [new Text('a'), '', false, false],
+    [new Nothing(), '', true, true],
+    [new Nothing(), 'a', true, false],
+    [new Sequence('a', Repeat::star(' ')), 'a  ', true, true],
+];
+foreach ($consumptionExamples as [$parser, $input, $prefixAccepted, $allAccepted]) {
+    $source = new Utf8Source($input);
+    $prefix = $parser->matchPrefix($source);
+    $full = $parser->parseAll($source);
+    if ($prefix->success !== $prefixAccepted || $full->success !== $allAccepted
+        || $full->consumedByteLength !== ($allAccepted ? strlen($input) : 0)) {
+        throw new RuntimeException('Prefix/full-input contract changed');
+    }
+}
+echo 'Prefix/full-input, empty-input and trailing-trivia examples passed.' . PHP_EOL;
 
 // Report legacy match() defects without preserving them as expectations.
 $encoding = mb_internal_encoding();

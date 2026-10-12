@@ -21,14 +21,30 @@ final readonly class LegacyParserAdapter
 
     public function match(Source|string $input, int $offset = 0): AbstractMatch
     {
+        return $this->matchPrefix($input, $offset);
+    }
+
+    public function matchPrefix(Source|string $input, int $offset = 0): AbstractMatch
+    {
+        return $this->recognize($input, $offset, false);
+    }
+
+    public function parseAll(Source|string $input, int $offset = 0): AbstractMatch
+    {
+        return $this->recognize($input, $offset, true);
+    }
+
+    private function recognize(Source|string $input, int $offset, bool $complete): AbstractMatch
+    {
         $source = is_string($input)
             ? ($this->policy === CoordinatePolicy::CODE_POINTS ? new Utf8Source($input) : new ByteSource($input))
             : $input;
         $coordinates = new Coordinates($source, $this->policy);
         $start = $coordinates->toByteOffset($offset);
-        $match = $this->policy === CoordinatePolicy::ASCII
-            ? $this->parser->matchAsciiUnresolved($source, $start)
-            : $this->parser->matchSourceUnresolved($source, $start);
+        $match = $complete ? $this->parser->matchAllSourceUnresolved($source, $start, $this->policy === CoordinatePolicy::ASCII)
+            : ($this->policy === CoordinatePolicy::ASCII
+                ? $this->parser->matchAsciiUnresolved($source, $start)
+                : $this->parser->matchSourceUnresolved($source, $start));
         if (!($match instanceof Success) && !($match instanceof Failure)) {
             throw new LogicException('Legacy projection requires a Success or Failure match');
         }

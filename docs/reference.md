@@ -10,6 +10,9 @@ specifies byte spans, encoding modes and compatibility policies. Independent
 [source-based matching](source-matching.md) are available, together with
 [canonical results and legacy coordinate adapters](parse-results.md).
 
+See [Prefix and full-input entry points](consumption.md) for `matchPrefix()`,
+`parseAll()`, empty input and explicit trailing-trivia policies.
+
 ## Arguments
 There are 
 
