@@ -41,10 +41,12 @@ class Regex extends Parser
                 : 'i');
         $this->popCaseSensitivityFromContext($context);
 
-        if (preg_match($pattern, $input, $match, 0, $offset) !== false) {
-            if (count($match) > 0 && mb_strlen($match[0]) > 0 && strpos($input, $match[0], $offset) === $offset) {
-                return $this->success($input, $offset, mb_strlen($match[0]));
-            }
+        if ((preg_match($pattern, $input, $match, 0, $offset) !== false)
+            && count($match) > 0
+            && mb_strlen($match[0]) > 0
+            && strpos($input, $match[0], $offset) === $offset
+        ) {
+            return $this->success($input, $offset, mb_strlen($match[0]));
         }
 
         return $this->failure($input, $offset);

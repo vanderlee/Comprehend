@@ -20,7 +20,7 @@ Project status
 --------------
 Comprehend is beta software. Its parser primitives and test suite are mature,
 but parts of the documentation and higher-level tooling are still incomplete.
-The minimum supported PHP version is 8.0; the former `Match` base class was
+The minimum supported PHP version is 8.2; the former `Match` base class was
 renamed to `AbstractMatch` because `match` became a reserved keyword in PHP 8.
 
 Grammars are currently constructed programmatically from parser objects or a

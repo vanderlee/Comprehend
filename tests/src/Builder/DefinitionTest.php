@@ -17,8 +17,8 @@ use Vanderlee\Comprehend\Parser\Terminal\Set;
  */
 class DefinitionTest extends ParserTestCase
 {
-    const CSV_RECORD = [__CLASS__, 'makeCsvRecordParser'];
-    const QUOTED_STRING = [__CLASS__, 'makeQuotedStringParser'];
+    private const CSV_RECORD = [__CLASS__, 'makeCsvRecordParser'];
+    private const QUOTED_STRING = [__CLASS__, 'makeQuotedStringParser'];
 
     public static function makeCsvRecordParser($item, $delimiter = ',')
     {

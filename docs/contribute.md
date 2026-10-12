@@ -11,7 +11,7 @@ TODO: Instructions on how to make custom parser libraries.
 TODO: Where to find issue tracking, downloads, etc.
 
 ## Unittesting
-Use PHP 8.0 or newer. Install development dependencies with `composer install`, then run
+Use PHP 8.2 or newer. Install development dependencies with `composer install`, then run
 `php vendor/phpunit/phpunit/phpunit --do-not-cache-result` with PHPUnit 9.6.
 The default `phpunit.xml` runs the suite in `tests` and limits coverage to `src`.
 If a coverage driver is enabled, Clover output is written to `build/logs/clover.xml`.

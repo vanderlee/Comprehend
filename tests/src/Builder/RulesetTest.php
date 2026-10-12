@@ -22,7 +22,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
  */
 class RulesetTest extends ParserTestCase
 {
-    const CSV_RECORD = [__CLASS__, 'makeCsvRecordParser'];
+    private const CSV_RECORD = [__CLASS__, 'makeCsvRecordParser'];
 
     public static function makeCsvRecordParser($item, $delimiter = ',')
     {

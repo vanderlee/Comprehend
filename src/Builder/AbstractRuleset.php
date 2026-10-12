@@ -21,7 +21,7 @@ abstract class AbstractRuleset extends Parser
     /**
      * Constant to specify default parser for this ruleset, which is called when Ruleset is used as a Parser.
      */
-    const ROOT = 'ROOT';
+    public const ROOT = 'ROOT';
 
     /**
      * List of reserved parser names. These are used as methods instead.

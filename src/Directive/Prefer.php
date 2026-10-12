@@ -14,9 +14,9 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Prefer extends Parser
 {
-    const FIRST = 'first';
-    const LONGEST = 'longest';
-    const SHORTEST = 'shortest';
+    public const FIRST = 'first';
+    public const LONGEST = 'longest';
+    public const SHORTEST = 'shortest';
 
     use ArgumentsTrait;
 
