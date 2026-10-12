@@ -22,6 +22,8 @@ Comprehend is beta software. Its parser primitives and test suite are mature,
 but parts of the documentation and higher-level tooling are still incomplete.
 The minimum supported PHP version is 8.2; the former `Match` base class was
 renamed to `AbstractMatch` because `match` became a reserved keyword in PHP 8.
+Runtime extensions required: DOM, JSON, and mbstring. CI covers PHP 8.2 through
+8.5 with PHPUnit 9.6; PHP 8.6 is an experimental, non-blocking job.
 
 Grammars are currently constructed programmatically from parser objects or a
 `Ruleset`. Comprehend does not read BNF or EBNF grammar files directly.

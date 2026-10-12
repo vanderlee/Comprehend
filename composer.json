@@ -12,7 +12,8 @@
   "require": {
     "php": ">=8.2.0",
     "ext-dom": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "ext-mbstring": "*"
   },
   "require-dev": {
     "codacy/coverage": "dev-master",

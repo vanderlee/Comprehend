@@ -21,6 +21,12 @@ jobs:
         include:
           - php: '8.2'
             composer: 'v2'
+          - php: '8.3'
+            composer: 'v2'
+          - php: '8.4'
+            composer: 'v2'
+          - php: '8.5'
+            composer: 'v2'
           - php: '8.6'
             composer: 'v2'
 
@@ -43,6 +49,9 @@ jobs:
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
+
+      - name: Check platform requirements
+        run: composer check-platform-reqs
 
       - name: Run tests
         run: vendor/bin/phpunit
