@@ -3,9 +3,13 @@
 namespace Tests\Src\Parser\Structure;
 
 use InvalidArgumentException;
+use LogicException;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Parser\Structure\Choice;
+use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /**
@@ -88,6 +92,63 @@ class RepeatTest extends ParserTestCase
         $c = Repeat::exact('a', 0);
         $this->assertResult(true, 0, $c->match(''));
         $this->assertResult(true, 0, $c->match('a'));
+    }
+
+    /**
+     * @dataProvider zeroLengthChildData
+     */
+    public function testZeroLengthChildThrows(Repeat $parser, $input)
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Repeat child matched successfully without consuming input');
+        $parser->match($input);
+    }
+
+    public function zeroLengthChildData()
+    {
+        $cases = [];
+        foreach ([1, 3, null] as $max) {
+            $label = $max === null ? 'unbounded' : 'maximum ' . $max;
+            $cases[$label . ' Nothing'] = [new Repeat(new Nothing(), 0, $max), 'a'];
+            $cases[$label . ' lookahead'] = [new Repeat(new Not('b'), 0, $max), 'a'];
+            $cases[$label . ' nullable optional'] = [new Repeat(Repeat::optional('b'), 0, $max), 'a'];
+        }
+
+        $cases['positive minimum'] = [new Repeat(new Not('b'), 1), 'a'];
+        $cases['nullable after consuming child'] = [
+            new Repeat(new Choice('a', new Not('b'))), 'a',
+        ];
+        $cases['spacing cannot supply child progress'] = [
+            (new Repeat(new Choice('a', new Not('b')), 0, 2))->spacing(' '), 'a c',
+        ];
+        $cases['custom nullable parser'] = [new Repeat(new class('a') extends Text {
+            protected function parse(&$input, $offset, Context $context)
+            {
+                return $this->success($input, $offset);
+            }
+        }), 'a'];
+
+        return $cases;
+    }
+
+    public function testZeroMaximumAllowsNullableChild()
+    {
+        $this->assertResult(true, 0, (new Repeat(new Nothing(), 0, 0))->match('a'));
+    }
+
+    public function testZeroLengthChildCallbackIsNotResolved()
+    {
+        $calls = 0;
+        $child = (new Not('b'))->callback(function () use (&$calls) {
+            $calls++;
+        });
+
+        try {
+            (new Repeat($child, 0, 1))->match('a');
+            $this->fail('Expected zero-length repetition to throw');
+        } catch (LogicException $exception) {
+            $this->assertSame(0, $calls);
+        }
     }
 
     /**

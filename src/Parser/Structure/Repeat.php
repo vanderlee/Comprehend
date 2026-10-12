@@ -3,6 +3,7 @@
 namespace Vanderlee\Comprehend\Parser\Structure;
 
 use InvalidArgumentException;
+use LogicException;
 use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -84,6 +85,11 @@ class Repeat extends Parser
 
             $matched = $match instanceof Success;
             if ($matched) {
+                if ($match->length === 0) {
+                    $this->popSpacer($context);
+                    throw new LogicException('Repeat child matched successfully without consuming input');
+                }
+
                 $length += $skip + $match->length;
                 $childMatches[] = $match;
             }
