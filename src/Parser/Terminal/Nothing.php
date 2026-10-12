@@ -16,6 +16,9 @@ class Nothing extends Parser
 {
     protected function parse(&$input, $offset, Context $context)
     {
+        if ($context->source() !== null) {
+            return $this->success($input, $offset);
+        }
         return $this->makeMatch($offset <= mb_strlen($input), $input, 0);
     }
 

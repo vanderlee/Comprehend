@@ -57,7 +57,7 @@ class Prefer extends Parser
         $context->pushPreference($this->preference);
 
         try {
-            $match = $this->parser->parse($input, $offset, $context);
+            $match = $this->parser->parseInContext($input, $offset, $context);
         } finally {
             $context->popPreference();
         }

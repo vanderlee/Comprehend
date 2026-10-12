@@ -14,6 +14,12 @@ class Any extends Parser
 {
     protected function parse(&$input, $offset, Context $context)
     {
+        if ($context->source() !== null) {
+            $unit = $context->readSourceUnit($offset);
+            return $unit !== null
+                ? $this->success($input, $offset, $unit->byteLength())
+                : $this->failure($input, $offset);
+        }
         if ($offset < mb_strlen($input)) {
             return $this->success($input, $offset, 1);
         }

@@ -13,6 +13,11 @@ It inventories current subclasses, records adapter policies and explains the
 limits of legacy multibyte offsets. The current runtime still has the
 [documented Unicode limitation](execution.md#current-unicode-limitation).
 
+For phase 1.3 source matching, custom subclasses explicitly override
+`supportsSource(): bool` and return true only after migrating to byte coordinates.
+Use `parseInContext()` when delegating to children so their source compatibility
+and returned boundaries are checked. See [Source matching](source-matching.md).
+
 ## Libraries
 TODO: Instructions on how to make custom parser libraries.
 

@@ -124,12 +124,19 @@ class Integer extends Parser
             $this->popCaseSensitivityFromContext($context);
         }
 
-        if (preg_match($pattern, $input, $match, 0, $offset) === 1) {
+        $subject = $context->source() !== null
+            ? $context->source()->sliceBytes(0, $context->source()->byteLength()) : $input;
+        $status = preg_match($pattern, $subject, $match, 0, $offset);
+        if ($context->source() !== null && $status === false) {
+            throw new \RuntimeException('Integer recognition failed: ' . preg_last_error_msg());
+        }
+        if ($status === 1) {
             do {
                 $integer = intval($match[0], $this->base);
                 if ($this->isInRange($integer)
                     && $match[0] !== '-') {
-                    return $this->success($input, $offset, mb_strlen($match[0]));
+                    return $this->success($input, $offset,
+                        $context->source() !== null ? strlen($match[0]) : mb_strlen($match[0]));
                 }
 
                 $match[0] = substr($match[0], 0, -1); // strip off last char

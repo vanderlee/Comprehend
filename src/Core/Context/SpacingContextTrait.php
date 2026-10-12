@@ -51,7 +51,9 @@ trait SpacingContextTrait
         }
 
         if ($spacer instanceof Parser) {
-            $attempt = $spacer->matchUnresolved($in, $offset);
+            $attempt = $this->source() !== null
+                ? $spacer->matchSourceUnresolved($this->source(), $offset)
+                : $spacer->matchUnresolved($in, $offset);
             $match = $attempt instanceof Success ? $attempt : null;
 
             return $match !== null

@@ -75,7 +75,7 @@ class Choice extends IterableParser
         $max = 0;
         /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
-            $match = $parser->parse($input, $offset, $context);
+            $match = $parser->parseInContext($input, $offset, $context);
             if ($match instanceof Success) {
                 return $this->success($input, $offset, $match->length, $match);
             }
@@ -123,7 +123,7 @@ class Choice extends IterableParser
 
         /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
-            $match = self::determineLongestOf($parser->parse($input, $offset, $context), $match);
+            $match = self::determineLongestOf($parser->parseInContext($input, $offset, $context), $match);
         }
 
         return ($match instanceof Success)
@@ -172,7 +172,7 @@ class Choice extends IterableParser
 
         /** @var Parser $parser */
         foreach ($this->parsers as $parser) {
-            $match = self::determineShortestOf($parser->parse($input, $offset, $context), $match);
+            $match = self::determineShortestOf($parser->parseInContext($input, $offset, $context), $match);
         }
 
         return ($match instanceof Success)

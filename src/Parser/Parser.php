@@ -3,13 +3,45 @@
 namespace Vanderlee\Comprehend\Parser;
 
 use InvalidArgumentException;
+use LogicException;
+use Vanderlee\Comprehend\Builder\Implementation;
+use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Core\Context;
-use Vanderlee\Comprehend\Match\Failure;
+use Vanderlee\Comprehend\Directive\CaseSensitive;
+use Vanderlee\Comprehend\Directive\Prefer;
+use Vanderlee\Comprehend\Directive\Space;
+use Vanderlee\Comprehend\Library\Rfc2234;
+use Vanderlee\Comprehend\Library\Rfc3513;
+use Vanderlee\Comprehend\Library\Rfc3986;
+use Vanderlee\Comprehend\Library\Rfc4234;
+use Vanderlee\Comprehend\Library\Rfc4408;
+use Vanderlee\Comprehend\Library\Rfc5234;
+use Vanderlee\Comprehend\Library\Rfc7405;
 use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Output\AssignTrait;
 use Vanderlee\Comprehend\Parser\Output\ResultTrait;
 use Vanderlee\Comprehend\Parser\Output\TokenTrait;
+use Vanderlee\Comprehend\Parser\Structure\All;
+use Vanderlee\Comprehend\Parser\Structure\Choice;
+use Vanderlee\Comprehend\Parser\Structure\Except;
+use Vanderlee\Comprehend\Parser\Structure\Not;
+use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Terminal\Any;
+use Vanderlee\Comprehend\Parser\Terminal\Char;
+use Vanderlee\Comprehend\Parser\Terminal\End;
+use Vanderlee\Comprehend\Parser\Terminal\Integer;
+use Vanderlee\Comprehend\Parser\Terminal\Nothing;
+use Vanderlee\Comprehend\Parser\Terminal\Range;
+use Vanderlee\Comprehend\Parser\Terminal\Regex;
+use Vanderlee\Comprehend\Parser\Terminal\Set;
+use Vanderlee\Comprehend\Parser\Terminal\Start;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Source\Utf8Source;
 
 abstract class Parser
 {
@@ -22,6 +54,89 @@ abstract class Parser
      */
     private $callbacks = [];
 
+    private const SOURCE_PARSERS = [
+        Ruleset::class,
+        Implementation::class,
+        CaseSensitive::class,
+        Prefer::class,
+        Space::class,
+        Stub::class,
+        All::class,
+        Choice::class,
+        Except::class,
+        Not::class,
+        Repeat::class,
+        Sequence::class,
+        Any::class,
+        Char::class,
+        End::class,
+        Integer::class,
+        Nothing::class,
+        Range::class,
+        Regex::class,
+        Set::class,
+        Start::class,
+        Text::class,
+        Rfc2234::class,
+        Rfc3513::class,
+        Rfc3986::class,
+        Rfc4234::class,
+        Rfc4408::class,
+        Rfc5234::class,
+        Rfc7405::class,
+    ];
+
+    /** Custom subclasses must explicitly opt in to canonical byte coordinates. */
+    protected function supportsSource(): bool
+    {
+        return in_array(static::class, self::SOURCE_PARSERS, true);
+    }
+
+    /** Delegate recognition without resolving effects, preserving legacy overrides. */
+    protected function parseInContext(&$input, $offset, Context $context)
+    {
+        $source = $context->source();
+        if ($source === null) {
+            return $this->parse($input, $offset, $context);
+        }
+        if (!$this->supportsSource()) {
+            throw new LogicException('Custom parser must declare source compatibility: ' . static::class);
+        }
+        $source->span($offset, $offset);
+        if ($source instanceof Utf8Source && !$source->isCodePointBoundary($offset)) {
+            throw new InvalidArgumentException('Parser position is inside a UTF-8 code point');
+        }
+        $match = $this->parse($input, $offset, $context);
+        if ($input !== $source->sliceBytes(0, $source->byteLength())) {
+            throw new LogicException('Source-compatible parsers must not mutate input');
+        }
+        $source->span($offset, $offset + $match->length);
+        if ($source instanceof Utf8Source && !$source->isCodePointBoundary($offset + $match->length)) {
+            throw new LogicException('Parser returned a partial UTF-8 code point');
+        }
+        return $match;
+    }
+
+    /** Recognize a prefix with explicit source mode and canonical byte coordinates. */
+    public function matchSource(Source $source, int $byteOffset = 0): AbstractMatch
+    {
+        return $this->matchSourceUnresolved($source, $byteOffset)->resolve();
+    }
+
+    /** @internal Independent source context, with effects left unresolved. */
+    public function matchSourceUnresolved(Source $source, int $byteOffset = 0): AbstractMatch
+    {
+        $input = $source->sliceBytes(0, $source->byteLength());
+        return $this->parseInContext(
+            $input,
+            $byteOffset,
+            new Context(
+                null, true,
+                Prefer::FIRST, $source
+            )
+        );
+    }
+
     protected static function parseCharacter($character)
     {
         if ($character === '' || $character === null) {
@@ -30,7 +145,8 @@ abstract class Parser
 
         if (is_int($character)) {
             return chr($character);
-        } elseif (mb_strlen($character) > 1) {
+        } elseif (mb_check_encoding($character, 'UTF-8')
+            ? mb_strlen($character, 'UTF-8') > 1 : strlen($character) > 1) {
             throw new InvalidArgumentException('Non-character argument');
         }
 
@@ -63,8 +179,8 @@ abstract class Parser
      * Recognize in an independent context without resolving callbacks.
      * Used for speculative spacing; the owning match defers its effects.
      *
-     * @internal
      * @return AbstractMatch
+     * @internal
      */
     public function matchUnresolved($input, $offset = 0)
     {
@@ -115,18 +231,19 @@ abstract class Parser
             : [$successes];
 
         $success = new Success($length, $successes);
+        $span = (new ByteSource($input))->span($offset, $offset + $length);
 
         // ResultTrait
-        $success->addResultCallback(function (&$results) use ($input, $offset, $length) {
-            $text = substr($input, $offset, $length);
+        $success->addResultCallback(function (&$results) use ($span) {
+            $text = $span->rawText();
 
             $this->resolveResultCallbacks($results, $text);
         });
 
         // AssignTrait
         $callbacks = $this->callbacks;
-        $success->addCustomCallback(function () use ($input, $offset, $length, $callbacks) {
-            $text = substr($input, $offset, $length);
+        $success->addCustomCallback(function () use ($input, $offset, $length, $callbacks, $span) {
+            $text = $span->rawText();
 
             $this->resolveAssignCallbacks($text);
 

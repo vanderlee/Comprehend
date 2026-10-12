@@ -82,7 +82,7 @@ class Repeat extends Parser
                     : 0;
 
                 $match = $skip !== false
-                    ? $this->parser->parse($input, $offset + $length + $skip, $context)
+                    ? $this->parser->parseInContext($input, $offset + $length + $skip, $context)
                     : null;
 
                 $matched = $match instanceof Success;

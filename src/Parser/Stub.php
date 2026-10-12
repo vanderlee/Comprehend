@@ -48,7 +48,7 @@ class Stub extends Parser
             throw new UnexpectedValueException('Missing parser');
         }
 
-        $match = $this->parser->parse($input, $offset, $context);
+        $match = $this->parser->parseInContext($input, $offset, $context);
         if ($match instanceof Success) {
             return $this->success($input, $offset, $match->length, $match);
         }

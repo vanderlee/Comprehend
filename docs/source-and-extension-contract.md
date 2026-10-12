@@ -2,10 +2,11 @@
 
 Phase 1.1 design contract, recorded 12 October 2026. This specifies the new
 runtime and its compatibility adapters. Phase 1.2 implements the independent
-[in-memory sources and spans](sources.md); the current parser remains unchanged.
+[in-memory sources and spans](sources.md), and phase 1.3 adds an explicit
+[source recognition path](source-matching.md). Legacy `match()` remains isolated.
 The [current Unicode limitation](execution.md#current-unicode-limitation) still
-applies. Terminal migration begins in 1.3 and result adapters in 1.4. Planned
-parser/session/adapter contracts below are not yet available APIs.
+applies to legacy matching. Result adapters begin in 1.4. Planned
+session/adapter contracts below are not yet available APIs.
 
 ## Canonical coordinates
 

@@ -99,7 +99,7 @@ abstract class AbstractRuleset extends Parser
      */
     protected function parse(&$input, $offset, Context $context)
     {
-        $match = $this->getRootParser()->parse($input, $offset, $context);
+        $match = $this->getRootParser()->parseInContext($input, $offset, $context);
         if ($match instanceof Success) {
             return $this->success($input, $offset, $match->length, $match);
         }

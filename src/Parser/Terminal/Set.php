@@ -2,6 +2,8 @@
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
+use Vanderlee\Comprehend\Source\Utf8Source;
+
 use Exception;
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Core\Context;
@@ -17,6 +19,7 @@ class Set extends Parser
     use CaseSensitiveTrait;
 
     private $set = null;
+    private $sourceSet;
 
     /**
      * Match only characters inside the set (`true`) or outside (`false`).
@@ -40,11 +43,33 @@ class Set extends Parser
         }
 
         $this->set = count_chars($set, 3);
+        $this->sourceSet = $set;
         $this->include = $include;
     }
 
     protected function parse(&$input, $offset, Context $context)
     {
+        if ($context->source() !== null) {
+            $characters = $context->source() instanceof Utf8Source
+                ? mb_str_split((new Utf8Source($this->sourceSet))
+                    ->sliceBytes(0, strlen($this->sourceSet)), 1, 'UTF-8')
+                : str_split($this->sourceSet);
+            $unit = $context->readSourceUnit($offset);
+            if ($unit === null) {
+                return $this->failure($input, $offset);
+            }
+            $this->pushCaseSensitivityToContext($context);
+            try {
+                $value = $context->handleCase($unit->rawText());
+                $inside = false;
+                foreach ($characters as $character) {
+                    $inside = $inside || $context->handleCase($character) === $value;
+                }
+                return $this->makeMatch($inside === $this->include, $input, $offset, $unit->byteLength());
+            } finally {
+                $this->popCaseSensitivityFromContext($context);
+            }
+        }
         if ($offset >= mb_strlen($input)) {
             return $this->failure($input, $offset);
         }

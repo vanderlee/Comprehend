@@ -43,7 +43,7 @@ class Sequence extends IterableParser
                     }
                     $total += $skip;
                 }
-                $match = $parser->parse($input, $offset + $total, $context);
+                $match = $parser->parseInContext($input, $offset + $total, $context);
                 $total += $match->length;
 
                 if (!($match instanceof Success)) {  // must match

@@ -40,7 +40,7 @@ class CaseSensitive extends Parser
         $context->pushCaseSensitivity($this->sensitivity);
 
         try {
-            $match = $this->parser->parse($input, $offset, $context);
+            $match = $this->parser->parseInContext($input, $offset, $context);
         } finally {
             $context->popCaseSensitivity();
         }

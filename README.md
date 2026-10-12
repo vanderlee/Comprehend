@@ -70,11 +70,14 @@ references support grammars that consume input before recurring; direct and
 indirect left recursion are unsupported. There is no memoization or guaranteed
 linear parse time.
 
-Current Unicode limitation: matching mixes byte indexing and multibyte lengths,
+Legacy `match()` Unicode limitation: matching mixes byte indexing and multibyte lengths,
 while token/result slicing uses bytes. Multibyte input can be accepted incorrectly
 or produce truncated UTF-8 output, including when `End` is used. Use ASCII input
 for the current matching contract; declaring mbstring does not fix this defect.
-Source and coordinate consistency are planned in phase 1.
+The explicit `matchSource(new Utf8Source($input))` path now recognizes UTF-8 with
+byte offsets and complete code-point reads. Use `ByteSource` for octet grammars.
+See [Source matching](docs/source-matching.md) for mode rules and custom parser
+compatibility. Legacy coordinate adapters remain planned in phase 1.4.
 
 See [Execution behavior and limitations](docs/execution.md) for checked examples,
 grammar factoring, and recursion guidance. Run the examples with

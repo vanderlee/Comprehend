@@ -134,9 +134,12 @@ class Implementation extends Parser
     {
         $this->build();
 
-        $match = $this->parser->parse($input, $offset, $context);
+        $match = $this->parser->parseInContext($input, $offset, $context);
 
-        $results = $this->validateResults($match, substr($input, $offset, $match->length));
+        $text = $context->source() !== null
+            ? $context->source()->sliceBytes($offset, $offset + $match->length)
+            : substr($input, $offset, $match->length);
+        $results = $this->validateResults($match, $text);
         if ($results === false) {
             return $this->failure($input, $offset, $match->length);
         }

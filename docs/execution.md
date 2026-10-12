@@ -124,6 +124,10 @@ no linear-time or constant-memory guarantee applies.
 
 ## Current Unicode limitation
 
+This limitation applies to legacy `match()`/`__invoke()`. For validated UTF-8
+with canonical byte coordinates, use the phase 1.3
+[source matching API](source-matching.md), `matchSource(new Utf8Source($input))`.
+
 Terminals and end checks use multibyte lengths alongside byte indexing, while
 tokens and results slice with `substr()`. The current implementation therefore
 has no consistent multibyte coordinate contract. Declaring `ext-mbstring` makes
@@ -137,5 +141,6 @@ remain. Setting an encoding or appending `End` is not a workaround.
 
 Use ASCII input for the documented current matching and offset behavior. Do not
 treat this runtime as a reliable validator for arbitrary multibyte text or octet
-streams. Phase 1 will unify source access, offsets, extraction, regex coordinates,
-and end checks before defining a Unicode and byte-source contract.
+streams through legacy `match()`. The explicit source path now unifies source
+access, offsets, extraction, regex coordinates and end checks. Phase 1.4 will add
+structured results and legacy coordinate adapters without guessing old offsets.

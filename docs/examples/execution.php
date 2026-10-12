@@ -6,6 +6,10 @@ use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\End;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Parser\Terminal\Any;
+use Vanderlee\Comprehend\Parser\Terminal\Char;
+use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Source\Utf8Source;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -38,15 +42,32 @@ foreach ($examples as [$label, $parser, $input, $accepted, $length, $offset]) {
     echo $label . ': ' . ($result->match ? 'success' : 'failure') . ', length ' . $result->length . PHP_EOL;
 }
 
-// Report the current Unicode defects without preserving them as expectations.
+$sourceExamples = [
+    ['UTF-8 wrong suffix', new Sequence(new Text("\u{00E9}a"), new End()), new Utf8Source("\u{00E9}b"), false, 2, 0],
+    ['UTF-8 complete input', new Sequence(new Text("\u{00E9}a"), new End()), new Utf8Source("\u{00E9}a"), true, 3, 0],
+    ['UTF-8 complete code point', new Char("\u{00E9}"), new Utf8Source("\u{00E9}"), true, 2, 0],
+    ['UTF-8 supplementary code point', new Any(), new Utf8Source("\u{1F600}"), true, 4, 0],
+    ['UTF-8 byte offset', new Char('a'), new Utf8Source("\u{00E9}a"), true, 1, 2],
+    ['arbitrary byte', new Char(0xFF), new ByteSource("\xFF"), true, 1, 0],
+];
+foreach ($sourceExamples as [$label, $parser, $source, $accepted, $length, $offset]) {
+    $result = $parser->matchSource($source, $offset);
+    if ($result->match !== $accepted || $result->length !== $length
+        || ($accepted && $result->token->text !== $source->sliceBytes($offset, $offset + $length))) {
+        throw new RuntimeException('Documented source behavior changed: ' . $label);
+    }
+    echo $label . ': ' . ($result->match ? 'success' : 'failure') . ', bytes ' . $result->length . PHP_EOL;
+}
+
+// Report legacy match() defects without preserving them as expectations.
 $encoding = mb_internal_encoding();
 try {
     mb_internal_encoding('UTF-8');
     $result = (new Sequence(new Text('éa'), new End()))->match('éb');
-    echo 'Unicode limitation probe (must reject after fix): '
+    echo 'Legacy match() Unicode limitation probe: '
         . ($result->match ? 'accepted' : 'rejected') . PHP_EOL;
     $result = (new Text('é'))->token('letter')->match('é');
-    echo 'Unicode token bytes (must be c3a9 after fix): ' . bin2hex($result->token->text) . PHP_EOL;
+    echo 'Legacy match() Unicode token bytes: ' . bin2hex($result->token->text) . PHP_EOL;
 } finally {
     mb_internal_encoding($encoding);
 }

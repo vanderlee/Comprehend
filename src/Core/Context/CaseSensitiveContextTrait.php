@@ -2,6 +2,8 @@
 
 namespace Vanderlee\Comprehend\Core\Context;
 
+use Vanderlee\Comprehend\Source\Utf8Source;
+
 trait CaseSensitiveContextTrait
 {
     private $caseSensitivity = [];
@@ -24,8 +26,12 @@ trait CaseSensitiveContextTrait
     // Helper
     public function handleCase($text)
     {
-        return $this->isCaseSensitive()
-            ? $text
-            : mb_strtolower($text);
+        if ($this->isCaseSensitive()) {
+            return $text;
+        }
+        if ($this->source() instanceof Utf8Source) {
+            return mb_strtolower($text, 'UTF-8');
+        }
+        return $this->source() !== null ? strtolower($text) : mb_strtolower($text);
     }
 }

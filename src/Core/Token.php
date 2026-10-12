@@ -7,6 +7,7 @@ use DOMElement;
 use DOMException;
 use Exception;
 use JsonSerializable;
+use Vanderlee\Comprehend\Source\ByteSource;
 
 /**
  * Class Token.
@@ -53,7 +54,8 @@ class Token implements JsonSerializable
     {
         switch ($name) {
             case 'text':
-                return substr($this->input, $this->offset, $this->length);
+                return (new ByteSource($this->input))
+                    ->sliceBytes($this->offset, $this->offset + $this->length);
 
             default:
                 if (property_exists($this, $name)) {
@@ -119,8 +121,12 @@ class Token implements JsonSerializable
         $value = $this->children
             ? null
             : $this->text;
-        $name = preg_replace('/[^-_a-zA-Z0-9]/', '_', $this->name
-            ?: $this->class);
+        $name = preg_replace(
+            '/[^-_a-zA-Z0-9]/',
+            '_',
+            $this->name
+                ?: $this->class
+        );
         $group = preg_replace('/[^-_a-zA-Z0-9]/', '_', $this->group);
 
         $element = $this->group

@@ -44,7 +44,7 @@ class Space extends Parser
         $context->pushSpacer($this->spacer);
 
         try {
-            $match = $this->parser->parse($input, $offset, $context);
+            $match = $this->parser->parseInContext($input, $offset, $context);
         } finally {
             $context->popSpacer();
         }

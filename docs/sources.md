@@ -1,7 +1,8 @@
 # In-memory sources and spans
 
-The phase 1.2 source API is independent of legacy parsers. It does not yet fix
-`Parser::match()` or change token/result offsets. The
+The phase 1.2 source API remains independent of legacy `Parser::match()`.
+Phase 1.3 adds explicit [source-based recognition](source-matching.md) using
+`matchSource()`; legacy string recognition is unchanged. The
 [source and extension contract](source-and-extension-contract.md) defines the
 coordinate rules; [execution limitations](execution.md#current-unicode-limitation)
 still apply to legacy recognition.
@@ -66,5 +67,5 @@ stable for the lifetime of their referencing spans.
 In-memory sources retain their original string. UTF-8 construction validates
 and counts the complete input; position conversions scan the relevant prefix
 using explicit encoding and do not cache a position map. No file input,
-streaming, line/column index, parser bridge, or legacy coordinate adapter is
-provided by this increment.
+streaming, line/column index, or legacy coordinate adapter is provided by the
+source layer itself.

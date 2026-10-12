@@ -6,8 +6,9 @@ and the current Unicode limitation.
 
 The phase 1.1 [source coordinate and extension contract](source-and-extension-contract.md)
 specifies byte spans, encoding modes and compatibility policies. Independent
-[in-memory sources and spans](sources.md) are available; parser integration and
-legacy adapters are still planned.
+[in-memory sources and spans](sources.md) and explicit
+[source-based matching](source-matching.md) are available; legacy coordinate
+adapters are still planned.
 
 ## Arguments
 There are 
