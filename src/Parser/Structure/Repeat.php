@@ -28,7 +28,15 @@ class Repeat extends Parser
         $this->min = $min;
         $this->max = $max;
 
-        if ($this->max !== null && $this->max < $this->min) {
+        if (
+            $this->min < 0
+            || ($this->max !== null
+                && (
+                    $this->max < 0
+                    || $this->max < $this->min
+                )
+            )
+        ) {
             throw new InvalidArgumentException('Invalid repeat range specified');
         }
     }
@@ -60,24 +68,26 @@ class Repeat extends Parser
         $this->pushSpacer($context);
 
         $length = 0;
-        do {
+        $matched = true;
+        while (
+            $matched
+            && ($this->max === null || count($childMatches) < $this->max)
+        ) {
             // No skipping at very start
             $skip = $length > 0
                 ? $context->skipSpacing($input, $offset + $length)
                 : 0;
 
-            if ($skip === false) {
-                break;
-            }
+            $match = $skip !== false
+                ? $this->parser->parse($input, $offset + $length + $skip, $context)
+                : null;
 
-            $match = $this->parser->parse($input, $offset + $length + $skip, $context);
-            if ($match instanceof Success) {
+            $matched = $match instanceof Success;
+            if ($matched) {
                 $length += $skip + $match->length;
                 $childMatches[] = $match;
             }
-        } while (($match instanceof Success)
-        && ($this->max === null
-            || count($childMatches) < $this->max));
+        }
 
         $this->popSpacer($context);
 

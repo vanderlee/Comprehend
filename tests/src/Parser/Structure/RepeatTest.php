@@ -2,8 +2,11 @@
 
 namespace Tests\Src\Parser\Structure;
 
+use InvalidArgumentException;
 use Tests\ParserTestCase;
+use Vanderlee\Comprehend\Core\Context;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /**
  * @group structure
@@ -16,10 +19,47 @@ class RepeatTest extends ParserTestCase
         $this->assertInstanceOf(Repeat::class, new Repeat('a'));
     }
 
-    public function testEmpty()
+    /**
+     * @dataProvider invalidBoundsData
+     */
+    public function testInvalidBounds($min, $max)
     {
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid repeat range specified');
-        new Repeat('a', 2, 1);
+        new Repeat('a', $min, $max);
+    }
+
+    public function invalidBoundsData()
+    {
+        return [
+            'minimum exceeds maximum' => [2, 1],
+            'negative unbounded minimum' => [-1, null],
+            'negative bounded minimum' => [-1, 2],
+            'negative maximum' => [0, -1],
+            'both negative in ascending order' => [-2, -1],
+        ];
+    }
+
+    public function testNegativeExactCount()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        Repeat::exact('a', -1);
+    }
+
+    public function testZeroMaximumDoesNotInvokeChild()
+    {
+        $child = new class('a') extends Text {
+            protected function parse(&$input, $offset, Context $context)
+            {
+                throw new \LogicException('Child must not be invoked');
+            }
+        };
+
+        $result = (new Repeat($child, 0, 0))->match('ba', 1);
+        $this->assertResult(true, 0, $result);
+        $this->assertSame(1, $result->token->offset);
+        $this->assertSame('', $result->token->text);
+        $this->assertSame([], $result->token->children);
     }
 
     public function testStaticConstructors()
@@ -44,6 +84,10 @@ class RepeatTest extends ParserTestCase
         $this->assertResult(false, 1, $c->match('a'));
         $this->assertResult(true, 2, $c->match('aa'));
         $this->assertResult(true, 2, $c->match('aaa'));
+
+        $c = Repeat::exact('a', 0);
+        $this->assertResult(true, 0, $c->match(''));
+        $this->assertResult(true, 0, $c->match('a'));
     }
 
     /**
@@ -66,6 +110,10 @@ class RepeatTest extends ParserTestCase
     public function repeatData()
     {
         return [
+            [new Repeat('a', 0, 0), '', 0, true, 0],
+            [new Repeat('a', 0, 0), 'a', 0, true, 0],
+            [new Repeat('a', 0, 0), 'b', 0, true, 0],
+            [new Repeat('a', 0, 0), 'ba', 1, true, 0],
             [new Repeat('a', 2, 4), 'b', 0, false, 0],
 
             [new Repeat('a', 2, 4), '', 0, false, 0],
