@@ -1,11 +1,11 @@
 # Source coordinates and extension compatibility
 
 Phase 1.1 design contract, recorded 12 October 2026. This specifies the new
-runtime and its compatibility adapters; it does not change the current parser.
+runtime and its compatibility adapters. Phase 1.2 implements the independent
+[in-memory sources and spans](sources.md); the current parser remains unchanged.
 The [current Unicode limitation](execution.md#current-unicode-limitation) still
-applies. Source/span implementations begin in 1.2, terminal migration in 1.3,
-and result adapters in 1.4. Names used below describe contracts, not APIs already
-available for callers.
+applies. Terminal migration begins in 1.3 and result adapters in 1.4. Planned
+parser/session/adapter contracts below are not yet available APIs.
 
 ## Canonical coordinates
 
