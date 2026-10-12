@@ -19,15 +19,17 @@ use Vanderlee\Comprehend\Source\Span;
  * @property-read Token|null $token
  * @property-read Span|null $span Canonical byte span, if source-bound
  * @property-read int|null $farthestFailure Canonical byte position, if recorded
+ * @property-read \Vanderlee\Comprehend\Result\Diagnostic|null $diagnostic Structured source failure details
  */
 abstract class AbstractMatch
 {
     protected $length;
     private $sourceSpan;
     private $farthestFailure;
+    private $diagnostic;
 
     /** @internal Attach canonical coordinates without changing legacy length. */
-    public function setSourceMetadata(Span $span, ?int $farthestFailure): void
+    public function setSourceMetadata(Span $span, ?int $farthestFailure, ?\Vanderlee\Comprehend\Result\Diagnostic $diagnostic = null): void
     {
         if (!$this->match && $span->byteLength() !== 0) {
             throw new InvalidArgumentException('Failed matches must have zero-width spans');
@@ -37,6 +39,7 @@ abstract class AbstractMatch
         }
         $this->sourceSpan = $span;
         $this->farthestFailure = $farthestFailure;
+        $this->diagnostic = $diagnostic;
     }
 
     /**
@@ -49,6 +52,8 @@ abstract class AbstractMatch
     public function __get(string $name)
     {
         switch ($name) {
+            case 'diagnostic':
+                return $this->diagnostic;
             case 'span':
                 return $this->sourceSpan;
             case 'farthestFailure':

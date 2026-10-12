@@ -56,8 +56,11 @@ trait SpacingContextTrait
                     ? $spacer->matchAsciiUnresolved($this->source(), $offset)
                     : $spacer->matchSourceUnresolved($this->source(), $offset));
             $match = $attempt instanceof Success ? $attempt : null;
-            if ($attempt->farthestFailure !== null) {
-                $this->recordFailure($attempt->farthestFailure);
+            if (!$attempt->match && $attempt->diagnostic !== null) {
+                foreach ($attempt->diagnostic->expected as $expected) {
+                    $paths = array_map(fn ($path) => array_merge($this->path, $path), $attempt->diagnostic->rulePaths);
+                    $this->recordFailure($attempt->farthestFailure, $expected, $paths);
+                }
             }
 
             return $match !== null

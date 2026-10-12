@@ -75,6 +75,7 @@ class Repeat extends Parser
                 $matched
                 && ($this->max === null || count($childMatches) < $this->max)
             ) {
+                $diagnostics = $context->diagnosticState();
                 // No skipping at very start
                 $spacingMatch = null;
                 $skip = $length > 0
@@ -86,6 +87,9 @@ class Repeat extends Parser
                     : null;
 
                 $matched = $match instanceof Success;
+                if (!$matched && count($childMatches) >= $this->min) {
+                    $context->restoreDiagnostics($diagnostics);
+                }
                 if ($matched) {
                     if ($match->length === 0) {
                         throw new LogicException('Repeat child matched successfully without consuming input');

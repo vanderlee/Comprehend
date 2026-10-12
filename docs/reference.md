@@ -13,6 +13,8 @@ specifies byte spans, encoding modes and compatibility policies. Independent
 See [Prefix and full-input entry points](consumption.md) for `matchPrefix()`,
 `parseAll()`, empty input and explicit trailing-trivia policies.
 
+See [Structured diagnostics](diagnostics.md) for expected symbols, rule paths, source excerpts and lazy locations.
+
 ## Arguments
 There are 
 

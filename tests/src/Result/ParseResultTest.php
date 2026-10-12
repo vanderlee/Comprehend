@@ -76,7 +76,7 @@ class ParseResultTest extends ParserTestCase
         $result = (new Repeat('a'))->parseSource(new Utf8Source('aa'));
         $this->assertTrue($result->success);
         $this->assertSame(2, $result->consumedByteLength);
-        $this->assertSame(2, $result->farthestFailure);
+        $this->assertNull($result->farthestFailure);
     }
 
     public function testEmptyResultsKeepTheirActualPosition()

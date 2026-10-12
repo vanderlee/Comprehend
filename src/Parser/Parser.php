@@ -54,6 +54,14 @@ abstract class Parser
      * @var callable[]
      */
     private $callbacks = [];
+    private ?string $diagnosticRule = null;
+
+    /** Assign a readable rule name for recognition paths. */
+    public function diagnosticRule(string $name): self
+    {
+        $this->diagnosticRule = $name;
+        return $this;
+    }
 
     private const SOURCE_PARSERS = [
         Ruleset::class,
@@ -110,7 +118,17 @@ abstract class Parser
             throw new InvalidArgumentException('Parser position is inside a UTF-8 code point');
         }
 
-        $match = $this->parse($input, $offset, $context);
+        $revision = $context->failureRevision();
+        $context->pushRule($this->diagnosticName());
+        try {
+            $match = $this->parse($input, $offset, $context);
+            if (!$match->match && $revision === $context->failureRevision()) {
+                $context->recordFailure($this instanceof Not || $this instanceof Except
+                    ? $offset : $offset + $match->length, $this->diagnosticExpectation());
+            }
+        } finally {
+            $context->popRule();
+        }
         if ($input !== $source->sliceBytes(0, $source->byteLength())) {
             throw new LogicException('Source-compatible parsers must not mutate input');
         }
@@ -120,14 +138,22 @@ abstract class Parser
             throw new LogicException('Parser returned a partial UTF-8 code point');
         }
 
-        if (!$match->match) {
-            $context->recordFailure($offset + $match->length);
-        }
-
         $match->setSourceMetadata($source->span($offset, $match->match ? $offset + $match->length : $offset),
-            $context->farthestFailure());
+            $context->farthestFailure(), $context->diagnostic());
 
         return $match;
+    }
+
+    /** Label custom rules without stringifying potentially recursive grammars. */
+    protected function diagnosticName(): string
+    {
+        return $this->diagnosticRule ?? substr(strrchr(static::class, '\\'), 1);
+    }
+
+    protected function diagnosticExpectation(): string
+    {
+        return str_contains(static::class, '\\Terminal\\')
+            ? (string) $this : $this->diagnosticName();
     }
 
     /** Canonical prefix result; selected callbacks resolve before returning. */
@@ -158,8 +184,15 @@ abstract class Parser
         }
 
         $failure = new Failure($match->length);
-        $failure->setSourceMetadata($source->span($byteOffset, $byteOffset),
-            max($match->farthestFailure ?? $match->span->end, $match->span->end));
+        $position = max($match->farthestFailure ?? $match->span->end, $match->span->end);
+        $previous = $match->diagnostic;
+        $expected = $position === $match->span->end ? ['end'] : [];
+        if ($previous !== null && $previous->byteOffset === $position) {
+            $expected = array_values(array_unique(array_merge($previous->expected, $expected)));
+        }
+        $diagnostic = new \Vanderlee\Comprehend\Result\Diagnostic($source, $position, $expected,
+            $previous !== null && $previous->byteOffset === $position ? $previous->rulePaths : []);
+        $failure->setSourceMetadata($source->span($byteOffset, $byteOffset), $position, $diagnostic);
         return $failure;
     }
 

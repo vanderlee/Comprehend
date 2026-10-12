@@ -18,6 +18,7 @@ final class ParseResult
     public readonly int $end;
     public readonly int $consumedByteLength;
     public readonly ?int $farthestFailure;
+    public readonly ?Diagnostic $diagnostic;
 
     public function __construct(private readonly AbstractMatch $match)
     {
@@ -31,6 +32,7 @@ final class ParseResult
         $this->end = $span->end;
         $this->consumedByteLength = $span->byteLength();
         $this->farthestFailure = $match->farthestFailure;
+        $this->diagnostic = $match->diagnostic;
     }
 
     public function rawText(): string

@@ -53,14 +53,14 @@ final readonly class LegacyParserAdapter
         }
         if ($match instanceof Failure) {
             $failure = new Failure($coordinates->length($start, $match->farthestFailure ?? $start));
-            $failure->setSourceMetadata($match->span, $match->farthestFailure);
+            $failure->setSourceMetadata($match->span, $match->farthestFailure, $match->diagnostic);
             return $failure;
         }
 
         // Validate all selected effect positions before executing any callback.
         $match->useCoordinates($coordinates);
         $success = new Success($coordinates->length($start, $match->span->end));
-        $success->setSourceMetadata($match->span, $match->farthestFailure);
+        $success->setSourceMetadata($match->span, $match->farthestFailure, $match->diagnostic);
         $success->addCustomCallback(fn () => $match->resolve());
         $success->addResultCallback(function (&$results) use ($match) { $results = $match->getResults(); });
         $success->setTokenCallback(fn () => $coordinates->token($match->token));

@@ -13,7 +13,8 @@ selected callbacks, and returns a `Result\ParseResult`. Phase 1.5 adds explicit
 | `span` | Immutable byte span retaining the original source object |
 | `start`, `end` | Absolute byte boundaries of that span |
 | `consumedByteLength` | `end - start`, always zero on failure |
-| `farthestFailure` | Separate absolute byte position, or null if no failure was observed |
+| `farthestFailure` | Separate absolute byte position, or null if no relevant failure remains |
+| `diagnostic` | Structured failure facts and lazy location/excerpt access, or null |
 | `rawText()` | Original span bytes, independent of semantic transformations |
 | `token()` | Existing token projection, or null on failure |
 | `results()` / `result($name = null, $default = null)` | Existing cached named/default result projections |
@@ -43,12 +44,7 @@ canonical bytes. On Failure, `length` is progress, not consumption. Legacy
 `match()` remains unchanged and has null source metadata. Constructing a
 ParseResult from an old unbound match throws: reparse instead of guessing units.
 
-Farthest failure currently means the maximum observed failure position,
-including unsuccessful alternatives, repeat termination, optional probes, and
-spacing's independent recognition. It may exist on a successful result, and may
-be beyond its successful span. Expected-symbol sets, rule traces, line/column
-positions and diagnostic suppression are phase 1.6 work. Existing custom match
-factories that discard progress cannot yield information they never recorded.
+Farthest failure is the farthest retained relevant failure. [Structured diagnostics](diagnostics.md) provide expected symbols, rule paths, lazy locations and source excerpts. Optional probes, negative lookahead children and normal repetition termination are suppressed. Failed choice alternatives can still contribute diagnostics beyond a successful span. Custom match factories that discard progress cannot yield information they never recorded.
 
 ## Explicit legacy coordinate policies
 

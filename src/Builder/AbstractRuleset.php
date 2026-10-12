@@ -187,6 +187,7 @@ abstract class AbstractRuleset extends Parser
 
     private static function applyToken($key, Parser $parser)
     {
+        $parser->diagnosticRule($key);
         if (!$parser->hasToken()) {
             $parser->token($key, static::$name);
         }

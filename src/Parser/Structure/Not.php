@@ -25,7 +25,12 @@ class Not extends Parser
 
     protected function parse(&$input, $offset, Context $context)
     {
-        $match = $this->parser->parseInContext($input, $offset, $context);
+        $diagnostics = $context->diagnosticState();
+        try {
+            $match = $this->parser->parseInContext($input, $offset, $context);
+        } finally {
+            $context->restoreDiagnostics($diagnostics);
+        }
 
         return ($match instanceof Success)
             ? $this->failure($input, $offset, $match->length)

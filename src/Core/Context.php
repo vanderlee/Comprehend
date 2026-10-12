@@ -27,6 +27,31 @@ class Context
     private $source;
     private $farthestFailure;
     private $legacyAscii;
+    private array $expectations = [];
+    private array $rulePaths = [];
+    private array $path = [];
+    private int $failureRevision = 0;
+
+    public function pushRule(string $rule): void { $this->path[] = $rule; }
+    public function popRule(): void { array_pop($this->path); }
+    public function failureRevision(): int { return $this->failureRevision; }
+
+    public function diagnosticState(): array
+    {
+        return [$this->farthestFailure, $this->expectations, $this->rulePaths, $this->failureRevision];
+    }
+
+    public function restoreDiagnostics(array $state): void
+    {
+        [$this->farthestFailure, $this->expectations, $this->rulePaths, $this->failureRevision] = $state;
+    }
+
+    public function diagnostic(): ?\Vanderlee\Comprehend\Result\Diagnostic
+    {
+        return $this->farthestFailure === null ? null
+            : new \Vanderlee\Comprehend\Result\Diagnostic($this->source, $this->farthestFailure,
+                $this->expectations, $this->rulePaths);
+    }
 
     public function __construct(
         $skipper = null,
@@ -61,11 +86,23 @@ class Context
         return $this->legacyAscii;
     }
 
-    public function recordFailure(int $byteOffset): void
+    public function recordFailure(int $byteOffset, ?string $expected = null, ?array $paths = null): void
     {
         if ($this->source !== null) {
             $this->source->span($byteOffset, $byteOffset);
-            $this->farthestFailure = max($this->farthestFailure ?? $byteOffset, $byteOffset);
+            ++$this->failureRevision;
+            if ($this->farthestFailure === null || $byteOffset > $this->farthestFailure) {
+                $this->farthestFailure = $byteOffset;
+                $this->expectations = [];
+                $this->rulePaths = [];
+            }
+            if ($byteOffset !== $this->farthestFailure) { return; }
+            if ($expected !== null && !in_array($expected, $this->expectations, true)) {
+                $this->expectations[] = $expected;
+            }
+            foreach ($paths ?? [$this->path] as $path) {
+                if (!in_array($path, $this->rulePaths, true)) { $this->rulePaths[] = $path; }
+            }
         }
     }
 

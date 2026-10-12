@@ -55,7 +55,7 @@ assignments resolve. A successful prefix rejected by the EOF check therefore
 produces no committed Parser callbacks or assignments. It yields a failed,
 zero-width result at the starting position. The EOF failure occurs at the first
 unconsumed byte; `farthestFailure` is the maximum of that position and any farther
-observed speculative failure. Lazy projections from the rejected root are not
+retained relevant failure. Lazy projections from the rejected root are not
 exposed. Definition validation/result transforms retain their existing
 speculative timing; pure semantic guards remain phase 2 work.
 
@@ -74,5 +74,4 @@ metadata remains byte-based. Its full-input check also precedes callback
 resolution, including on the ASCII bridge for unmigrated subclasses.
 
 Run `php docs/examples/execution.php` for checked prefix/full-input pairs, empty
-input, and explicit trailing-trivia examples. Diagnostic expected symbols and
-probe suppression remain phase 1.6 work.
+input, and explicit trailing-trivia examples. See [Structured diagnostics](diagnostics.md) for expectations, locations and probe suppression.

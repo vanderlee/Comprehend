@@ -34,10 +34,19 @@ class Except extends Parser
     protected function parse(&$input, $offset, Context $context)
     {
         $match = $this->parserMatch->parseInContext($input, $offset, $context);
-        $not = $this->parserNot->parseInContext($input, $offset, $context);
+        $diagnostics = $context->diagnosticState();
+        try {
+            $not = $this->parserNot->parseInContext($input, $offset, $context);
+        } finally {
+            $context->restoreDiagnostics($diagnostics);
+        }
 
         if (($match instanceof Success) && ($not instanceof Failure)) {
             return $this->success($input, $offset, $match->length, $match);
+        }
+
+        if ($match instanceof Success) {
+            $context->recordFailure($offset, 'Except');
         }
 
         return $this->failure($input, $offset, min($match->length, $not->length));
