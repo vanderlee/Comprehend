@@ -1,6 +1,6 @@
 {
   "name": "vanderlee/comprehend",
-  "description": "Framework for building BNF LR(1) parsers",
+  "description": "Interpreted parser-combinator framework with BNF-inspired grammar composition",
   "type": "library",
   "keywords": ["parser", "bnf", "abnf", "lexer", "tokenizer", "ast"],
   "homepage": "https://github.com/vanderlee/Comprehend",

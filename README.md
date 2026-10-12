@@ -1,6 +1,7 @@
 Comprehend - a PHP *BNF parser framework
 ========================================
-Build object oriented [LR(1)](https://en.wikipedia.org/wiki/Canonical_LR_parser) lexer, tokenizers and parsers in PHP using BNF-based syntax.
+Build parsers and token trees in PHP using interpreted parser combinators and
+BNF-inspired grammar composition.
 
 [![Packagist](https://img.shields.io/packagist/v/vanderlee/comprehend.svg)](https://packagist.org/packages/vanderlee/comprehend)
 [![PHP from Packagist](https://img.shields.io/packagist/php-v/vanderlee/comprehend.svg)](http://php.net/supported-versions.php)
@@ -52,6 +53,29 @@ parsers recognize input; assigning token names to parser rules makes the result
 usable as a token stream or syntax tree. Parsers are interpreted at runtime and
 are not compiled into generated PHP source.
 
+Execution behavior
+------------------
+`match()` recognizes a prefix at the supplied offset. For complete ASCII input,
+append `End` to the root sequence. Choice selects the first successful alternative
+by default; explicit first, longest, and shortest policies are available.
+Repetition is greedy. A later sequence failure does not retry an earlier
+successful choice or shorten a repeat.
+
+The runtime has no LR item sets, parse tables, or shift/reduce engine. Recursive
+references support grammars that consume input before recurring; direct and
+indirect left recursion are unsupported. There is no memoization or guaranteed
+linear parse time.
+
+Current Unicode limitation: matching mixes byte indexing and multibyte lengths,
+while token/result slicing uses bytes. Multibyte input can be accepted incorrectly
+or produce truncated UTF-8 output, including when `End` is used. Use ASCII input
+for the current matching contract; declaring mbstring does not fix this defect.
+Source and coordinate consistency are planned in phase 1.
+
+See [Execution behavior and limitations](docs/execution.md) for checked examples,
+grammar factoring, and recursion guidance. Run the examples with
+`php docs/examples/execution.php` after installing dependencies.
+
 Features
 --------
  -	Closely follows BNF syntax using objects as operands.
@@ -74,7 +98,7 @@ Example
     use function Vanderlee\Comprehend\Library\s;
     use function Vanderlee\Comprehend\Library\star;
 
-### ABNF
+### Grammar sketch (BNF-inspired pseudocode)
     word	= [A-Za-z]+
     list	= word *[ ',' word ]    
 ### Comprehend, using objects:

@@ -55,3 +55,6 @@ jobs:
 
       - name: Run tests
         run: vendor/bin/phpunit
+
+      - name: Verify execution examples
+        run: php docs/examples/execution.php

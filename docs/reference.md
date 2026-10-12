@@ -1,5 +1,9 @@
 # Reference
 
+See [Execution behavior and limitations](execution.md) for prefix matching,
+complete ASCII input checks, choice selection, greedy repetition, recursion,
+and the current Unicode limitation.
+
 ## Arguments
 There are 
 
