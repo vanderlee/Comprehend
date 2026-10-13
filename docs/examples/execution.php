@@ -159,3 +159,20 @@ if ($valueCalls !== 0 || $numberResult->value() !== 42 || $numberResult->value()
     throw new RuntimeException('Typed value and CST token serialization example failed');
 }
 echo "Typed value cache and CST token serialization examples passed.\n";
+
+$lifecycleAssigned = null;
+$lifecycleEffects = 0;
+$lifecycleParser = (new Text('42'))
+    ->guard(fn (\Vanderlee\Comprehend\Tree\ConcreteNode $node): bool => $node->rawText() !== '00')
+    ->mapValue(fn (\Vanderlee\Comprehend\Result\ParseResult $result): int => (int) $result->rawText())
+    ->validateSemantic(fn (\Vanderlee\Comprehend\Result\ParseResult $result) => $result->value() < 100 ? true : 'Number too large')
+    ->assignTo($lifecycleAssigned)
+    ->callback(function () use (&$lifecycleEffects) { ++$lifecycleEffects; });
+$lifecycleResult = $lifecycleParser->parseAll(new Utf8Source('42'));
+if (!$lifecycleResult->success || $lifecycleAssigned !== null || $lifecycleEffects !== 0
+    || !$lifecycleResult->validate()->valid || !$lifecycleResult->commit()
+    || !$lifecycleResult->commit() || !$lifecycleResult->isCommitted()
+    || $lifecycleAssigned !== '42' || $lifecycleEffects !== 1) {
+    throw new RuntimeException('Explicit validation and commit example failed');
+}
+echo "Recognition, validation and idempotent commit examples passed.\n";

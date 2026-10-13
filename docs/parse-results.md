@@ -1,8 +1,8 @@
 # Canonical results and legacy coordinate adapters
 
 Phase 1.4 introduces `Parser::parseSource(Source $source, int $byteOffset = 0)`.
-It recognizes a prefix through the [source path](source-matching.md), resolves
-selected callbacks, and returns a `Result\ParseResult`. Phase 1.5 adds explicit
+It recognizes a prefix through the [source path](source-matching.md) and returns
+a `Result\ParseResult` with deferred effects. Phase 1.5 adds explicit
 [`matchPrefix()` and `parseAll()`](consumption.md); `parseSource()` remains a prefix alias.
 
 ## Canonical result contract
@@ -18,14 +18,18 @@ selected callbacks, and returns a `Result\ParseResult`. Phase 1.5 adds explicit
 | `node` | Immutable concrete recognition tree on success, or null |
 | `ast()` | Cached named AST projection with a full-span synthetic unnamed root, or null on failure |
 | `value()` | Cached typed mapping, original text when unmapped, or null on failure |
+| `validate()` | Cached semantic validation report after syntactic acceptance |
+| `commit()` / `isCommitted()` | Validate and execute accepted effects once; inspect completion |
 | `rawText()` | Original span bytes, independent of semantic transformations |
 | `token()` | Existing token projection, or null on failure |
 | `results()` / `result($name = null, $default = null)` | Existing cached named/default result projections |
 
 A failed result has span `[start, start)` even when recognition reached a later
 position. Empty successes keep their actual position, including EOF. Coordinate
-fields are read-only. Lazy token/value projections retain existing grammar and
-match behavior; immutable CST and semantic lifetime changes remain phase 2 work.
+fields are read-only. Immutable CST and naming snapshots retain original source;
+semantic mappings and collections have recognition-owned lifetimes. See
+[Recognition, validation and effect commit](lifecycle.md) for guards, validation
+and the explicit canonical lifecycle.
 
 ```php
 use Vanderlee\Comprehend\Parser\Terminal\Text;
@@ -103,8 +107,9 @@ requires a Success or Failure match; use the normal match factories for custom
 parsers. Mode checks remain active, so an ASCII input policy does not make an
 incompatible grammar/source mode valid.
 
-Results and adapters do not freeze mutable grammars, introduce an explicit effect
-commit API, or promise new streaming/performance behavior. Use the supported
+Results and adapters do not freeze mutable grammars or promise new
+streaming/performance behavior. Canonical results now expose explicit commit;
+legacy adapters retain automatic callback timing. Use the supported
 match factories and source delegation hooks for custom extensions. Arbitrary
 numeric values embedded in manually registered callbacks are not rewritten;
 coordinate conversion covers the documented Parser callback arguments.

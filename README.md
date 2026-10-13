@@ -86,6 +86,9 @@ See [Execution behavior and limitations](docs/execution.md) for checked examples
 grammar factoring, and recursion guidance. Run the examples with
 `php docs/examples/execution.php` after installing dependencies.
 See [Prefix and full-input entry points](docs/consumption.md) for paired examples.
+Canonical source results defer callbacks and assignments until `commit()`.
+See [Recognition, validation and effect commit](docs/lifecycle.md) for the
+validation workflow and compatibility timing.
 
 Features
 --------

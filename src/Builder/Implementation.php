@@ -139,7 +139,8 @@ class Implementation extends Parser
         $text = $context->source() !== null
             ? $context->source()->sliceBytes($offset, $offset + $match->length)
             : substr($input, $offset, $match->length);
-        $results = $this->validateResults($match, $text);
+        $legacy = $context->source() === null || $context->usesLegacySemantics();
+        $results = $legacy ? $this->validateResults($match, $text) : [];
         if ($results === false) {
             return $this->failure($input, $offset, $match->length);
         }
@@ -151,12 +152,24 @@ class Implementation extends Parser
 
             $success = $this->success($input, $offset, $match->length, $successes);
             $success->setConcreteMatches([$match]);
+            if (!$legacy) {
+                $validators = array_map(fn ($validator) => fn () => $validator($text, $match->results), $this->definition->validators);
+                $success->addSemanticValidators($validators);
+            }
             if (!empty($this->definition->processors)) {
                 // Processed results hide child outputs, but not selected effects.
                 $success->addPrecedingMatch($match);
             }
 
-            return $this->addProcessors($success, $results);
+            if ($legacy) { return $this->addProcessors($success, $results); }
+            $processors = $this->definition->processors;
+            if ($processors !== []) {
+                $success->addResultCallback(function (&$output) use ($processors, $match) {
+                    $localResults = $match->results;
+                    foreach ($processors as $key => $processor) { $output[$key] = $processor($localResults, $output); }
+                });
+            }
+            return $success;
         }
 
         return $this->failure($input, $offset, $match->length);

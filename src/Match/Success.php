@@ -32,6 +32,58 @@ class Success extends AbstractMatch
     private $successes;
     private $coordinates;
     private $concreteMatches;
+    private array $semanticValidators = [];
+    private ?\Vanderlee\Comprehend\Result\ValidationResult $validation = null;
+    private bool $validating = false;
+    private ?\Throwable $validationError = null;
+    private ?\Throwable $commitError = null;
+    private bool $committing = false;
+
+    public function addSemanticValidators(array $validators): void
+    {
+        $this->semanticValidators = array_merge($this->semanticValidators, $validators);
+    }
+
+    public function validateSemantic(): \Vanderlee\Comprehend\Result\ValidationResult
+    {
+        if ($this->validationError !== null) { throw $this->validationError; }
+        if ($this->validation !== null) { return $this->validation; }
+        if ($this->validating) { throw new \LogicException('Recursive semantic validation'); }
+        $this->validating = true;
+        try {
+            $errors = [];
+            $seen = [];
+            foreach (array_merge($this->concreteMatches, $this->precedingMatches) as $child) {
+                $id = spl_object_id($child);
+                if (isset($seen[$id])) { continue; }
+                $seen[$id] = true;
+                $errors = array_merge($errors, $child->validateSemantic()->errors);
+            }
+            $result = new \Vanderlee\Comprehend\Result\ParseResult($this);
+            foreach ($this->semanticValidators as $validator) {
+                $accepted = $validator($result);
+                if ($accepted === false) { $errors[] = 'Semantic validation failed'; }
+                elseif (is_string($accepted)) { $errors[] = $accepted; }
+                elseif ($accepted !== true) { throw new \UnexpectedValueException('Semantic validators must return true, false or an error string'); }
+            }
+            return $this->validation = new \Vanderlee\Comprehend\Result\ValidationResult($errors === [], $errors);
+        } catch (\Throwable $error) {
+            $this->validationError = $error;
+            throw $error;
+        } finally {
+            $this->validating = false;
+        }
+    }
+
+    /** Explicit commits are idempotent; a failed effect sequence is never retried. */
+    public function commit(): void
+    {
+        if ($this->committing) { throw new \LogicException('Recursive effect commit'); }
+        if ($this->commitError !== null) { throw $this->commitError; }
+        if (!$this->resolved) { $this->resolve(); }
+    }
+
+    public function isCommitted(): bool { return $this->resolved && !$this->committing && $this->commitError === null; }
     private ?\Vanderlee\Comprehend\Result\SemanticProjection $semanticProjection = null;
 
     /** @internal Bind mapping and cache lifetime to this recognition, not the grammar. */
@@ -149,8 +201,16 @@ class Success extends AbstractMatch
             throw new ErrorException('Match already resolved');
         }
         $this->resolved = true;
+        $this->committing = true;
 
-        $this->getCallback();
+        try {
+            $this->getCallback();
+        } catch (\Throwable $error) {
+            $this->commitError = $error;
+            throw $error;
+        } finally {
+            $this->committing = false;
+        }
 
         return $this;
     }

@@ -15,6 +15,8 @@ trait CallbackTrait
 
     /** @var Success[] */
     private $precedingMatches = [];
+    private bool $effectsProcessed = false;
+    private ?\Throwable $effectError = null;
 
     /**
      * Retain accepted effects before this match's callbacks, without adding
@@ -48,17 +50,25 @@ trait CallbackTrait
      */
     private function processCustomCallbacks()
     {
-        foreach ($this->precedingMatches as $match) {
-            $match->processCustomCallbacks();
-        }
+        if ($this->effectError !== null) { throw $this->effectError; }
+        if ($this->effectsProcessed) { return; }
+        $this->effectsProcessed = true;
+        try {
+            foreach ($this->precedingMatches as $match) {
+                $match->processCustomCallbacks();
+            }
 
-        /** @var self $success */
-        foreach ($this->successes as $success) {
-            $success->processCustomCallbacks();
-        }
+            /** @var self $success */
+            foreach ($this->successes as $success) {
+                $success->processCustomCallbacks();
+            }
 
-        foreach ($this->customCallbacks as $callback) {
-            $callback();
+            foreach ($this->customCallbacks as $callback) {
+                $callback();
+            }
+        } catch (\Throwable $error) {
+            $this->effectError = $error;
+            throw $error;
         }
     }
 

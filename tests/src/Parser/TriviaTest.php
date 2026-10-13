@@ -90,6 +90,7 @@ class TriviaTest extends ParserTestCase
         $this->assertSame('a a', $result->node->rawText());
         $this->assertCount(3, $result->node->children);
         $this->assertTrue($result->node->children[1]->isTrivia);
+        $this->assertTrue($result->commit());
         $this->assertSame(1, $calls);
         $calls = 0;
         $this->assertFalse($parser->parseAll(new Utf8Source('a a '))->success);

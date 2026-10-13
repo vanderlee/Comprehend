@@ -70,6 +70,8 @@ class ConsumptionTest extends ParserTestCase
         $this->assertSame([], $failed->results());
         $this->assertSame(0, $maps);
         $success = $parser->parseAll(new Utf8Source('a'));
+        $this->assertSame([], $events);
+        $this->assertTrue($success->commit());
         $this->assertSame(['accepted'], $events);
         $this->assertSame('a', $assigned);
         $this->assertSame(0, $maps);
@@ -85,7 +87,9 @@ class ConsumptionTest extends ParserTestCase
             ->callback(function () use (&$events) { $events[] = 'body'; });
         $this->assertFalse($body->parseAll(new Utf8Source('a b '))->success);
         $this->assertSame([], $events);
-        $this->assertTrue($body->parseAll(new Utf8Source('a b'))->success);
+        $accepted = $body->parseAll(new Utf8Source('a b'));
+        $this->assertTrue($accepted->success);
+        $this->assertTrue($accepted->commit());
         $this->assertSame(['space', 'body'], $events);
         $events = [];
         $grammar = new Sequence($body, Repeat::star(' '));
@@ -93,6 +97,7 @@ class ConsumptionTest extends ParserTestCase
         $this->assertTrue($full->success);
         $this->assertSame('a b  ', $full->rawText());
         $this->assertSame(5, $full->consumedByteLength);
+        $this->assertTrue($full->commit());
         $this->assertSame(['space', 'body'], $events);
     }
 

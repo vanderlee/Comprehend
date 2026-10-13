@@ -32,6 +32,8 @@ class ParseResultTest extends ParserTestCase
         $this->assertSame([1, 4, 3], [$result->start, $result->end, $result->consumedByteLength]);
         $this->assertNull($result->farthestFailure);
         $this->assertSame("\u{00E9}a", $result->rawText());
+        $this->assertSame(0, $calls);
+        $this->assertTrue($result->commit());
         $this->assertSame(1, $calls);
         $this->assertSame(0, $maps);
         $this->assertSame(['word' => "\u{00E9}a"], $result->results());

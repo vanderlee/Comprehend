@@ -27,6 +27,9 @@ class Context
     private $source;
     private $farthestFailure;
     private $legacyAscii;
+    private bool $legacySemantics;
+
+    public function usesLegacySemantics(): bool { return $this->legacySemantics; }
     private array $expectations = [];
     private array $rulePaths = [];
     private array $path = [];
@@ -63,7 +66,8 @@ class Context
         $caseSensitive = true,
         $preference = Prefer::FIRST,
         ?Source $source = null,
-        bool $legacyAscii = false
+        bool $legacyAscii = false,
+        bool $legacySemantics = true
     ) {
         if ($source !== null && !($source instanceof ByteSource) && !($source instanceof Utf8Source)) {
             throw new InvalidArgumentException('Recognition currently supports ByteSource and Utf8Source');
@@ -74,6 +78,7 @@ class Context
             throw new InvalidArgumentException('Legacy subclass compatibility requires an ASCII source');
         }
         $this->legacyAscii = $legacyAscii;
+        $this->legacySemantics = $legacySemantics;
         self::assertPreference($preference);
 
         $this->pushSpacer($skipper);

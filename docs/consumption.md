@@ -53,14 +53,16 @@ and effect rules.
 Both can be inspected as marked CST nodes. See [Trivia retention and literal
 spacing](trivia.md) for `trivia()`, boundary composition and `lexeme()`.
 
-Completion is checked after the root recognizes, before ordinary callbacks and
-assignments resolve. A successful prefix rejected by the EOF check therefore
+Completion is checked after the root recognizes. Canonical callbacks and
+assignments require explicit `commit()`. A prefix rejected by the EOF check therefore
 produces no committed Parser callbacks or assignments. It yields a failed,
 zero-width result at the starting position. The EOF failure occurs at the first
 unconsumed byte; `farthestFailure` is the maximum of that position and any farther
 retained relevant failure. Lazy projections from the rejected root are not
-exposed. Definition validation/result transforms retain their existing
-speculative timing; pure semantic guards remain phase 2 work.
+exposed. Canonical Definition validation is deferred until selected semantic
+validation, and result transforms/processors remain lazy. Legacy adapters retain
+their existing speculative validation timing. See [Recognition, validation and
+effect commit](lifecycle.md) for `guard()`, `validate()` and `commit()`.
 
 The EOF check does not retry a successful choice or shrink a greedy repeat.
 First choice between `a` and `ab` still selects `a` on `ab`, so `parseAll()` fails;

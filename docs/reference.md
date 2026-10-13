@@ -28,6 +28,9 @@ See [Legacy tokens over the concrete tree](token-projection.md) for token/JSON/X
 compatibility and [Cached typed semantic values](semantic-values.md) for
 `mapValue()`, `value()` and recognition-owned cache lifetimes.
 
+See [Recognition, validation and effect commit](lifecycle.md) for pure guards,
+selected semantic validation, explicit commits and legacy callback timing.
+
 ## Arguments
 There are 
 

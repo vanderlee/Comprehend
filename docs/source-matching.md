@@ -86,8 +86,10 @@ then attaches only accepted effects before the next child. Failed branches and
 failed repeat iterations discard speculative spacing effects. Callback text,
 assignments, named result text and token text slice original byte spans; changing
 case policy does not change raw output. Processed rules preserve their existing
-output projection and selected effects. Definition validation may still evaluate
-semantic result transforms speculatively; pure guards are phase 2 work.
+output projection and selected effects. Canonical prefix/full-input results defer
+callbacks and assignments until `commit()`; Definition validation and processors
+are deferred too. Legacy `matchSource()` and adapters retain automatic callback
+timing and speculative Definition validation. See the [lifecycle contract](lifecycle.md).
 
 Entry positions and returned progress must stay inside the source and, in text
 mode, on code-point boundaries. Invalid entries throw `InvalidArgumentException`.

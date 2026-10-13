@@ -16,8 +16,8 @@ final class LegacySpacing
     {
         $source = $context->source();
         $match = $source === null ? $spacer->matchUnresolved($input, $offset)
-            : ($context->allowsLegacyAscii() ? $spacer->matchAsciiUnresolved($source, $offset)
-                : $spacer->matchSourceUnresolved($source, $offset));
+            : ($context->allowsLegacyAscii() ? $spacer->matchAsciiUnresolved($source, $offset, $context->usesLegacySemantics())
+                : $spacer->matchSourceUnresolved($source, $offset, $context->usesLegacySemantics()));
         if ($match->node !== null) {
             $node = $match->node;
             $match->setConcreteNode(new ConcreteNode($node->kind, $node->span, $node->children, true,

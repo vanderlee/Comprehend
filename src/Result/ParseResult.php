@@ -54,6 +54,25 @@ final class ParseResult
         return $this->success ? $this->match->getValue() : null;
     }
 
+    public function validate(): ValidationResult
+    {
+        return $this->success ? $this->match->validateSemantic()
+            : new ValidationResult(false, ['Syntax was not accepted']);
+    }
+
+    /** False means syntax or semantic validation rejected commit. */
+    public function commit(): bool
+    {
+        if (!$this->validate()->valid) { return false; }
+        $this->match->commit();
+        return true;
+    }
+
+    public function isCommitted(): bool
+    {
+        return $this->success && $this->match->isCommitted();
+    }
+
     public function token(): ?Token
     {
         return $this->match->token;

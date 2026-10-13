@@ -50,6 +50,6 @@ then `ParseResult` without losing its mapping/cache. Legacy string `match()` doe
 not expose the source-based typed value API.
 
 `mapValue()` follows the existing mutable parser authoring style; recognition
-snapshots isolate its lifetime. This is separate from explicit effect commit and
-pure guard work in phase 2.6. Prefer pure mappings; arbitrary external side
+snapshots isolate its lifetime. See [Recognition, validation and effect commit](lifecycle.md)
+for pure guards and selected semantic validation. Prefer pure mappings; external side
 effects are not rolled back by the cache.

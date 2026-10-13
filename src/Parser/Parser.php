@@ -55,6 +55,22 @@ abstract class Parser
      */
     private $callbacks = [];
     private $valueMapper = null;
+    private array $guards = [];
+    private array $semanticValidators = [];
+
+    /** Pure recognition predicate over the CST; may run on speculative attempts. */
+    public function guard(callable $predicate): self
+    {
+        $this->guards[] = $predicate;
+        return $this;
+    }
+
+    /** Selected-scope validation, evaluated only after syntactic acceptance. */
+    public function validateSemantic(callable $validator): self
+    {
+        $this->semanticValidators[] = $validator;
+        return $this;
+    }
 
     /** Map the accepted source result lazily; the callable is captured per recognition. */
     public function mapValue(callable $mapper): self
@@ -167,6 +183,20 @@ abstract class Parser
             if ($this->valueMapper !== null || !$match->node->tokenTransparent) {
                 $match->setValueMapper($this->valueMapper);
             }
+            $match->addSemanticValidators($this->semanticValidators);
+            foreach ($this->guards as $guard) {
+                if (!$guard($match->node)) {
+                    $context->pushRule($this->diagnosticName());
+                    try {
+                        $context->recordFailure($offset + $match->length, 'guard(' . $this->diagnosticName() . ')');
+                    } finally {
+                        $context->popRule();
+                    }
+                    $failure = new Failure($match->length);
+                    $failure->setSourceMetadata($source->span($offset, $offset), $context->farthestFailure(), $context->diagnostic());
+                    return $failure;
+                }
+            }
         }
 
         return $match;
@@ -184,7 +214,7 @@ abstract class Parser
             ? (string) $this : $this->diagnosticName();
     }
 
-    /** Canonical prefix result; selected callbacks resolve before returning. */
+    /** Canonical prefix result; effects require explicit commit. */
     public function parseSource(Source $source, int $byteOffset = 0): ParseResult
     {
         return $this->matchPrefix($source, $byteOffset);
@@ -193,20 +223,20 @@ abstract class Parser
     /** Recognize a prefix; remaining input is allowed. */
     public function matchPrefix(Source $source, int $byteOffset = 0): ParseResult
     {
-        return new ParseResult($this->matchSource($source, $byteOffset));
+        return new ParseResult($this->matchSourceUnresolved($source, $byteOffset, false));
     }
 
     /** Consume the entire remainder, including trivia explicitly present in the grammar. */
     public function parseAll(Source $source, int $byteOffset = 0): ParseResult
     {
-        return new ParseResult($this->matchAllSourceUnresolved($source, $byteOffset)->resolve());
+        return new ParseResult($this->matchAllSourceUnresolved($source, $byteOffset, false, false));
     }
 
     /** @internal Check EOF before resolving any selected callbacks. */
-    public function matchAllSourceUnresolved(Source $source, int $byteOffset = 0, bool $legacyAscii = false): AbstractMatch
+    public function matchAllSourceUnresolved(Source $source, int $byteOffset = 0, bool $legacyAscii = false, bool $legacySemantics = true): AbstractMatch
     {
-        $match = $legacyAscii ? $this->matchAsciiUnresolved($source, $byteOffset)
-            : $this->matchSourceUnresolved($source, $byteOffset);
+        $match = $legacyAscii ? $this->matchAsciiUnresolved($source, $byteOffset, $legacySemantics)
+            : $this->matchSourceUnresolved($source, $byteOffset, $legacySemantics);
         if (!$match->match || $match->span->end === $source->byteLength()) {
             return $match;
         }
@@ -225,11 +255,11 @@ abstract class Parser
     }
 
     /** @internal ASCII-only bridge for unmigrated parser subclasses. */
-    public function matchAsciiUnresolved(Source $source, int $byteOffset = 0): AbstractMatch
+    public function matchAsciiUnresolved(Source $source, int $byteOffset = 0, bool $legacySemantics = true): AbstractMatch
     {
         $input = $source->sliceBytes(0, $source->byteLength());
 
-        return $this->parseInContext($input, $byteOffset, new Context(null, true, Prefer::FIRST, $source, true));
+        return $this->parseInContext($input, $byteOffset, new Context(null, true, Prefer::FIRST, $source, true, $legacySemantics));
     }
 
     /** Recognize a prefix with explicit source mode and canonical byte coordinates. */
@@ -239,7 +269,7 @@ abstract class Parser
     }
 
     /** @internal Independent source context, with effects left unresolved. */
-    public function matchSourceUnresolved(Source $source, int $byteOffset = 0): AbstractMatch
+    public function matchSourceUnresolved(Source $source, int $byteOffset = 0, bool $legacySemantics = true): AbstractMatch
     {
         $input = $source->sliceBytes(0, $source->byteLength());
 
@@ -248,7 +278,7 @@ abstract class Parser
             $byteOffset,
             new Context(
                 null, true,
-                Prefer::FIRST, $source
+                Prefer::FIRST, $source, false, $legacySemantics
             )
         );
     }
@@ -361,10 +391,11 @@ abstract class Parser
 
         // AssignTrait
         $callbacks = $this->callbacks;
-        $success->addCustomCallback(function () use ($input, $offset, $length, $callbacks, $span, $success) {
+        $assignCallbacks = $this->assignCallbacks;
+        $success->addCustomCallback(function () use ($input, $offset, $length, $callbacks, $assignCallbacks, $span, $success) {
             $text = $span->rawText();
 
-            $this->resolveAssignCallbacks($text);
+            foreach ($assignCallbacks as $callback) { $callback($text); }
 
             foreach ($callbacks as $callback) {
                 [$callbackOffset, $callbackLength] = $success->callbackCoordinates($offset, $length);
