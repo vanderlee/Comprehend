@@ -20,6 +20,12 @@ final class ParseResult
     public readonly ?int $farthestFailure;
     public readonly ?Diagnostic $diagnostic;
     public readonly ?\Vanderlee\Comprehend\Tree\ConcreteNode $node;
+    private ?\Vanderlee\Comprehend\Tree\AstNode $ast = null;
+
+    public function ast(): ?\Vanderlee\Comprehend\Tree\AstNode
+    {
+        return $this->node === null ? null : ($this->ast ??= $this->node->ast());
+    }
 
     public function __construct(private readonly AbstractMatch $match)
     {

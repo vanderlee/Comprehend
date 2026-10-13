@@ -21,6 +21,9 @@ and raw text independent of token names and semantic transformations.
 See [Trivia retention and literal spacing](trivia.md) for leading/intervening/trailing
 trivia, CST markers, `trivia()` and `lexeme()`.
 
+See [Named AST projection](ast.md) for named branches, synthetic unnamed roots,
+span preservation and source access independent of semantic output.
+
 ## Arguments
 There are 
 

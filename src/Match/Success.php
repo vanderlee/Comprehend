@@ -40,7 +40,7 @@ class Success extends AbstractMatch
     }
 
     /** @internal Build without evaluating any lazy semantic or token callbacks. */
-    public function buildConcreteNode(string $kind): void
+    public function buildConcreteNode(string $kind, string|int|null $name = null, ?string $group = null, bool $isTerminal = false): void
     {
         // Directives and stubs can return their child's match object unchanged.
         $children = $this->node !== null ? [$this->node] : [];
@@ -53,7 +53,7 @@ class Success extends AbstractMatch
             }
         }
         $this->setConcreteNode(new \Vanderlee\Comprehend\Tree\ConcreteNode($kind, $this->span, $children,
-            $kind === \Vanderlee\Comprehend\Directive\Trivia::class));
+            $kind === \Vanderlee\Comprehend\Directive\Trivia::class, $name, $group, $isTerminal));
     }
 
     /** @internal Convert callback coordinates on the selected effect tree only. */

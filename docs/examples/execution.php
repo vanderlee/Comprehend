@@ -129,3 +129,16 @@ if (!$literalGrammar->parseAll(new Utf8Source('ab c'))->success
     throw new RuntimeException('Lexeme scope example failed');
 }
 echo "Trivia round-trip and lexeme examples passed.\n";
+
+$astPair = (new Sequence((new Text('é'))->token('letter'), ',', (new Text('a'))->token('letter')))->token('pair');
+$astResult = (new Sequence('(', $astPair, ')'))->parseAll(new Utf8Source('(é,a)'));
+$ast = $astResult->ast();
+if (!$astResult->success || $ast->name !== null || $ast->rawText() !== '(é,a)'
+    || count($ast->children) !== 1 || $ast->children[0]->name !== 'pair'
+    || count($ast->children[0]->children) !== 2
+    || $ast->children[0]->children[0]->span->start !== 1
+    || $ast->children[0]->children[0]->span->end !== 3
+    || $astResult->ast() !== $ast) {
+    throw new RuntimeException('Named AST shape and span example failed');
+}
+echo "Named AST shape, source and span examples passed.\n";

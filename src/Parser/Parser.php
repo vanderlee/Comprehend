@@ -154,7 +154,7 @@ abstract class Parser
             $context->farthestFailure(), $context->diagnostic());
 
         if ($match instanceof Success) {
-            $match->buildConcreteNode(static::class);
+            $match->buildConcreteNode(static::class, $this->tokenName, $this->tokenGroup, $this->tokenIsTerminal);
         }
 
         return $match;

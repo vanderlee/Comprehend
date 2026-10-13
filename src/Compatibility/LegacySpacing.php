@@ -20,7 +20,8 @@ final class LegacySpacing
                 : $spacer->matchSourceUnresolved($source, $offset));
         if ($match->node !== null) {
             $node = $match->node;
-            $match->setConcreteNode(new ConcreteNode($node->kind, $node->span, $node->children, true));
+            $match->setConcreteNode(new ConcreteNode($node->kind, $node->span, $node->children, true,
+                $node->name, $node->group, $node->isTerminal));
         }
         return $match;
     }

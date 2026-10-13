@@ -28,7 +28,11 @@ $result->node->children[1]->span->end;   // 2
 | `span` | Original source and half-open canonical byte interval |
 | `children` | Immutable list of concrete child nodes |
 | `isTrivia` | Marks explicit trivia and accepted automatic spacing |
+| `name`, `group`, `isTerminal` | Snapshotted token declarations for named projection |
 | `rawText()` | Exact original bytes covered by the span |
+
+See [Named AST projection](ast.md) for `ConcreteNode::ast()` and the cached
+`ParseResult::ast()` view over named structure.
 
 Nodes retain their source independently of mutable parser objects and lazy
 semantic projections. Names, terminal-token flags, result transformations,
