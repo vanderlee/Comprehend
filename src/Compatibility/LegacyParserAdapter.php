@@ -62,9 +62,9 @@ final readonly class LegacyParserAdapter
         $success = new Success($coordinates->length($start, $match->span->end));
         $success->setSourceMetadata($match->span, $match->farthestFailure, $match->diagnostic);
         $success->setConcreteNode($match->node);
+        $success->useCoordinates($coordinates);
         $success->addCustomCallback(fn () => $match->resolve());
         $success->addResultCallback(function (&$results) use ($match) { $results = $match->getResults(); });
-        $success->setTokenCallback(fn () => $coordinates->token($match->token));
         return $success->resolve();
     }
 

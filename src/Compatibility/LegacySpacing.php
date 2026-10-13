@@ -21,7 +21,7 @@ final class LegacySpacing
         if ($match->node !== null) {
             $node = $match->node;
             $match->setConcreteNode(new ConcreteNode($node->kind, $node->span, $node->children, true,
-                $node->name, $node->group, $node->isTerminal));
+                $node->name, $node->group, $node->isTerminal, $node->tokenTransparent, $node->tokenChildIndexes));
         }
         return $match;
     }

@@ -53,6 +53,10 @@ trait TokenTrait
      */
     public function getToken()
     {
+        if ($this->node !== null) {
+            $token = \Vanderlee\Comprehend\Compatibility\TokenProjection::project($this->node);
+            return $this->coordinates === null ? $token : $this->coordinates->token($token);
+        }
         return $this->processTokenCallback();
     }
 }

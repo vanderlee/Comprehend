@@ -18,7 +18,9 @@ final readonly class ConcreteNode
         public bool $isTrivia = false,
         public string|int|null $name = null,
         public ?string $group = null,
-        public bool $isTerminal = false
+        public bool $isTerminal = false,
+        public bool $tokenTransparent = false,
+        public ?array $tokenChildIndexes = null
     )
     {
         if (!array_is_list($children)) {
@@ -27,6 +29,16 @@ final readonly class ConcreteNode
         foreach ($children as $child) {
             if (!$child instanceof self || $child->span->source !== $span->source) {
                 throw new InvalidArgumentException('Concrete children must be nodes from the same source');
+            }
+        }
+        if ($tokenChildIndexes !== null) {
+            if (!array_is_list($tokenChildIndexes)) {
+                throw new InvalidArgumentException('Token child indexes must be a list');
+            }
+            foreach ($tokenChildIndexes as $index) {
+                if (!is_int($index) || !isset($children[$index])) {
+                    throw new InvalidArgumentException('Token child index must identify a concrete child');
+                }
             }
         }
     }

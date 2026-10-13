@@ -44,6 +44,8 @@ class Success extends AbstractMatch
     {
         // Directives and stubs can return their child's match object unchanged.
         $children = $this->node !== null ? [$this->node] : [];
+        $transparent = $this->node !== null;
+        $tokenIndexes = $transparent ? [0] : [];
         if ($this->node === null) {
             foreach ($this->concreteMatches as $match) {
                 if ($match->node === null) {
@@ -51,9 +53,18 @@ class Success extends AbstractMatch
                 }
                 $children[] = $match->node;
             }
+            foreach ($this->successes as $match) {
+                $index = array_search($match, $this->concreteMatches, true);
+                if ($index === false) {
+                    throw new \LogicException('Token children must belong to the concrete recognition tree');
+                }
+                $tokenIndexes[] = $index;
+            }
         }
         $this->setConcreteNode(new \Vanderlee\Comprehend\Tree\ConcreteNode($kind, $this->span, $children,
-            $kind === \Vanderlee\Comprehend\Directive\Trivia::class, $name, $group, $isTerminal));
+            $kind === \Vanderlee\Comprehend\Directive\Trivia::class, $name, $group, $isTerminal,
+            $transparent, $tokenIndexes));
+        $this->tokenCallback = null;
     }
 
     /** @internal Convert callback coordinates on the selected effect tree only. */
