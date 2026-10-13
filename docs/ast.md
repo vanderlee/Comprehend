@@ -56,7 +56,8 @@ All node positions remain canonical bytes on legacy coordinate adapters too.
 Raw source is separate from semantic content. AST projection never executes
 token/result transformations or assignments, and processors do not remove its
 recognition structure. Use `result()` and `results()` for current semantic
-outputs; typed semantic projection is phase 2.5 work. Use root `rawText()` for
+outputs, or [cached typed semantic values](semantic-values.md) for `value()`.
+Use root `rawText()` for
 source reconstruction, rather than concatenating AST leaves: punctuation,
 unnamed text and trivia may be absent from the named structure. Intersection
 (`All`) children can overlap and extend beyond their parent's consumed span,

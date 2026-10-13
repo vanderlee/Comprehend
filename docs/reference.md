@@ -24,6 +24,10 @@ trivia, CST markers, `trivia()` and `lexeme()`.
 See [Named AST projection](ast.md) for named branches, synthetic unnamed roots,
 span preservation and source access independent of semantic output.
 
+See [Legacy tokens over the concrete tree](token-projection.md) for token/JSON/XML
+compatibility and [Cached typed semantic values](semantic-values.md) for
+`mapValue()`, `value()` and recognition-owned cache lifetimes.
+
 ## Arguments
 There are 
 

@@ -14,13 +14,6 @@ trait ResultTrait
      */
     private $resultCallbacks = [];
 
-    private function resolveResultCallbacks(&$results, $text)
-    {
-        foreach ($this->resultCallbacks as $callback) {
-            $callback($results, $text);
-        }
-    }
-
     /**
      * After parsing, assign the matched input of this parser to the named result.
      * Only assign if successfully matched entire parent up to root.

@@ -142,3 +142,20 @@ if (!$astResult->success || $ast->name !== null || $ast->rawText() !== '(é,a)'
     throw new RuntimeException('Named AST shape and span example failed');
 }
 echo "Named AST shape, source and span examples passed.\n";
+
+$valueCalls = 0;
+$numberParser = (new Text('42'))->token('number')->setResult('digits')->mapValue(
+    function (\Vanderlee\Comprehend\Result\ParseResult $result) use (&$valueCalls): int {
+        ++$valueCalls;
+        return (int) $result->result('digits');
+    }
+);
+$numberResult = $numberParser->parseAll(new Utf8Source('42'));
+if ($valueCalls !== 0 || $numberResult->value() !== 42 || $numberResult->value() !== 42
+    || $valueCalls !== 1 || $numberResult->results() !== ['digits' => '42']
+    || $numberResult->rawText() !== '42' || $numberResult->ast()->span->end !== 2
+    || json_decode(json_encode($numberResult->token()), true)['text'] !== '42'
+    || $numberResult->token()->toXml()->documentElement->textContent !== '42') {
+    throw new RuntimeException('Typed value and CST token serialization example failed');
+}
+echo "Typed value cache and CST token serialization examples passed.\n";

@@ -54,6 +54,14 @@ abstract class Parser
      * @var callable[]
      */
     private $callbacks = [];
+    private $valueMapper = null;
+
+    /** Map the accepted source result lazily; the callable is captured per recognition. */
+    public function mapValue(callable $mapper): self
+    {
+        $this->valueMapper = $mapper;
+        return $this;
+    }
     private ?string $diagnosticRule = null;
 
     /** Assign a readable rule name for recognition paths. */
@@ -155,6 +163,10 @@ abstract class Parser
 
         if ($match instanceof Success) {
             $match->buildConcreteNode(static::class, $this->tokenName, $this->tokenGroup, $this->tokenIsTerminal);
+            // Transparent wrappers inherit their child's mapping unless explicitly mapped.
+            if ($this->valueMapper !== null || !$match->node->tokenTransparent) {
+                $match->setValueMapper($this->valueMapper);
+            }
         }
 
         return $match;
@@ -338,10 +350,13 @@ abstract class Parser
         $span = (new ByteSource($input))->span($offset, $offset + $length);
 
         // ResultTrait
-        $success->addResultCallback(function (&$results) use ($span) {
+        $resultCallbacks = $this->resultCallbacks;
+        $success->addResultCallback(function (&$results) use ($span, $resultCallbacks) {
             $text = $span->rawText();
 
-            $this->resolveResultCallbacks($results, $text);
+            foreach ($resultCallbacks as $callback) {
+                $callback($results, $text);
+            }
         });
 
         // AssignTrait

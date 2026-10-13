@@ -17,6 +17,7 @@ selected callbacks, and returns a `Result\ParseResult`. Phase 1.5 adds explicit
 | `diagnostic` | Structured failure facts and lazy location/excerpt access, or null |
 | `node` | Immutable concrete recognition tree on success, or null |
 | `ast()` | Cached named AST projection with a full-span synthetic unnamed root, or null on failure |
+| `value()` | Cached typed mapping, original text when unmapped, or null on failure |
 | `rawText()` | Original span bytes, independent of semantic transformations |
 | `token()` | Existing token projection, or null on failure |
 | `results()` / `result($name = null, $default = null)` | Existing cached named/default result projections |

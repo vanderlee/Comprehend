@@ -63,6 +63,7 @@ final readonly class LegacyParserAdapter
         $success->setSourceMetadata($match->span, $match->farthestFailure, $match->diagnostic);
         $success->setConcreteNode($match->node);
         $success->useCoordinates($coordinates);
+        $success->setValueMapper(fn () => $match->getValue());
         $success->addCustomCallback(fn () => $match->resolve());
         $success->addResultCallback(function (&$results) use ($match) { $results = $match->getResults(); });
         return $success->resolve();

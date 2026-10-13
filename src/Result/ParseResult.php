@@ -48,6 +48,12 @@ final class ParseResult
         return $this->span->rawText();
     }
 
+    /** Failed results have no value; successful unmapped results yield original text. */
+    public function value(): mixed
+    {
+        return $this->success ? $this->match->getValue() : null;
+    }
+
     public function token(): ?Token
     {
         return $this->match->token;

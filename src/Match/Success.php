@@ -32,6 +32,19 @@ class Success extends AbstractMatch
     private $successes;
     private $coordinates;
     private $concreteMatches;
+    private ?\Vanderlee\Comprehend\Result\SemanticProjection $semanticProjection = null;
+
+    /** @internal Bind mapping and cache lifetime to this recognition, not the grammar. */
+    public function setValueMapper(?callable $mapper): void
+    {
+        $this->semanticProjection = new \Vanderlee\Comprehend\Result\SemanticProjection($mapper);
+    }
+
+    public function getValue(): mixed
+    {
+        $this->semanticProjection ??= new \Vanderlee\Comprehend\Result\SemanticProjection(null);
+        return $this->semanticProjection->value(new \Vanderlee\Comprehend\Result\ParseResult($this));
+    }
 
     /** @internal Recognition children can differ from semantic output children. */
     public function setConcreteMatches(array $matches): void
