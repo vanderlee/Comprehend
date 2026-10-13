@@ -27,6 +27,7 @@ $result->node->children[1]->span->end;   // 2
 | `kind` | Fully qualified recognizing parser class |
 | `span` | Original source and half-open canonical byte interval |
 | `children` | Immutable list of concrete child nodes |
+| `isTrivia` | Marks explicit trivia and accepted automatic spacing |
 | `rawText()` | Exact original bytes covered by the span |
 
 Nodes retain their source independently of mutable parser objects and lazy
@@ -49,8 +50,9 @@ Accordingly, children must share source identity but need not partition or fit
 inside the parent span. Do not reconstruct raw text by concatenating child text;
 always use `rawText()` on the desired node.
 
-Legacy spacing is included in enclosing raw spans but has no dedicated concrete
-child yet. Explicit trivia retention and consumption policy are phase 2.2 work.
+Accepted legacy spacing now appears as marked trivia children in Sequence and
+Repeat. See [Trivia retention and literal spacing](trivia.md) for explicit
+boundary trivia and `lexeme()` scopes.
 Trees on legacy coordinate adapters retain canonical byte spans even when token
 and callback coordinates are converted to code points.
 

@@ -50,6 +50,9 @@ and `rawText()`. An explicit trivia child retains its ordinary token/result
 projection, while automatically skipped spacing retains its existing output
 and effect rules.
 
+Both can be inspected as marked CST nodes. See [Trivia retention and literal
+spacing](trivia.md) for `trivia()`, boundary composition and `lexeme()`.
+
 Completion is checked after the root recognizes, before ordinary callbacks and
 assignments resolve. A successful prefix rejected by the EOF check therefore
 produces no committed Parser callbacks or assignments. It yields a failed,

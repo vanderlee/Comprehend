@@ -28,6 +28,7 @@ class Sequence extends IterableParser
     protected function parse(&$input, $offset, Context $context)
     {
         $childMatches = [];
+        $concreteMatches = [];
 
         $this->pushSpacer($context);
 
@@ -52,14 +53,18 @@ class Sequence extends IterableParser
 
                 if ($spacingMatch !== null) {
                     $match->addPrecedingMatch($spacingMatch);
+                    $concreteMatches[] = $spacingMatch;
                 }
                 $childMatches[] = $match;
+                $concreteMatches[] = $match;
             }
         } finally {
             $this->popSpacer($context);
         }
 
-        return $this->success($input, $offset, $total, $childMatches);
+        $success = $this->success($input, $offset, $total, $childMatches);
+        $success->setConcreteMatches($concreteMatches);
+        return $success;
     }
 
     /**

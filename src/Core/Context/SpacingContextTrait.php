@@ -41,6 +41,9 @@ trait SpacingContextTrait
     public function skipSpacing($in, $offset, &$match = null)
     {
         $match = null;
+        if ($this->isLexeme()) {
+            return 0;
+        }
         $spacer = end($this->spacers);
 
         // If `true`; use top-most Parser instance in stack.
@@ -51,10 +54,7 @@ trait SpacingContextTrait
         }
 
         if ($spacer instanceof Parser) {
-            $attempt = $this->source() === null ? $spacer->matchUnresolved($in, $offset)
-                : ($this->allowsLegacyAscii()
-                    ? $spacer->matchAsciiUnresolved($this->source(), $offset)
-                    : $spacer->matchSourceUnresolved($this->source(), $offset));
+            $attempt = \Vanderlee\Comprehend\Compatibility\LegacySpacing::recognize($spacer, $in, $offset, $this);
             $match = $attempt instanceof Success ? $attempt : null;
             if (!$attempt->match && $attempt->diagnostic !== null) {
                 foreach ($attempt->diagnostic->expected as $expected) {

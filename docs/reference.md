@@ -18,6 +18,9 @@ See [Structured diagnostics](diagnostics.md) for expected symbols, rule paths, s
 See [Immutable concrete trees](concrete-trees.md) for source-bound nodes, children
 and raw text independent of token names and semantic transformations.
 
+See [Trivia retention and literal spacing](trivia.md) for leading/intervening/trailing
+trivia, CST markers, `trivia()` and `lexeme()`.
+
 ## Arguments
 There are 
 

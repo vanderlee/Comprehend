@@ -65,6 +65,7 @@ class Repeat extends Parser
     protected function parse(&$input, $offset, Context $context)
     {
         $childMatches = [];
+        $concreteMatches = [];
 
         $this->pushSpacer($context);
 
@@ -97,18 +98,23 @@ class Repeat extends Parser
 
                     if ($spacingMatch !== null) {
                         $match->addPrecedingMatch($spacingMatch);
+                        $concreteMatches[] = $spacingMatch;
                     }
                     $length += $skip + $match->length;
                     $childMatches[] = $match;
+                    $concreteMatches[] = $match;
                 }
             }
         } finally {
             $this->popSpacer($context);
         }
 
-        return count($childMatches) >= $this->min
-            ? $this->success($input, $offset, $length, $childMatches)
-            : $this->failure($input, $offset, $length);
+        if (count($childMatches) < $this->min) {
+            return $this->failure($input, $offset, $length);
+        }
+        $success = $this->success($input, $offset, $length, $childMatches);
+        $success->setConcreteMatches($concreteMatches);
+        return $success;
     }
 
     public function __toString()

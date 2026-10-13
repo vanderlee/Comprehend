@@ -11,7 +11,7 @@ use Vanderlee\Comprehend\Source\Span;
 final readonly class ConcreteNode
 {
     /** @param list<ConcreteNode> $children */
-    public function __construct(public string $kind, public Span $span, public array $children = [])
+    public function __construct(public string $kind, public Span $span, public array $children = [], public bool $isTrivia = false)
     {
         if (!array_is_list($children)) {
             throw new InvalidArgumentException('Concrete children must be a list');

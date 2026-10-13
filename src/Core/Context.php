@@ -31,6 +31,11 @@ class Context
     private array $rulePaths = [];
     private array $path = [];
     private int $failureRevision = 0;
+    private int $lexemeDepth = 0;
+
+    public function pushLexeme(): void { ++$this->lexemeDepth; }
+    public function popLexeme(): void { --$this->lexemeDepth; }
+    public function isLexeme(): bool { return $this->lexemeDepth > 0; }
 
     public function pushRule(string $rule): void { $this->path[] = $rule; }
     public function popRule(): void { array_pop($this->path); }

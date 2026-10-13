@@ -9,6 +9,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
+use Vanderlee\Comprehend\Parser\Terminal\Regex;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
 use Vanderlee\Comprehend\Compatibility\CoordinatePolicy;
@@ -107,3 +108,24 @@ try {
 } finally {
     mb_internal_encoding($encoding);
 }
+
+// Explicit boundary trivia, automatic intervening trivia and literal spacing.
+$trivia = (new Regex('~(?:\s|/\*[^*]*\*/)*~'))->lexeme()->trivia();
+$body = (new Sequence('a', 'b'))->spacing($trivia);
+$document = (new Sequence($trivia, $body, $trivia))->spacing(null);
+$documentText = ' /*lead*/ a /*between*/ b /*tail*/ ';
+$documentResult = $document->parseAll(new Utf8Source($documentText));
+if (!$documentResult->success || $documentResult->node->rawText() !== $documentText
+    || !$documentResult->node->children[0]->isTrivia
+    || !$documentResult->node->children[1]->children[1]->isTrivia
+    || !$documentResult->node->children[2]->isTrivia) {
+    throw new RuntimeException('Explicit trivia round-trip example failed');
+}
+$literal = (new Sequence('a', 'b'))->spacing(' ');
+$literalGrammar = (new Sequence($literal->lexeme(), 'c'))->spacing(' ');
+if (!$literalGrammar->parseAll(new Utf8Source('ab c'))->success
+    || $literalGrammar->parseAll(new Utf8Source('a b c'))->success
+    || !$literal->parseAll(new Utf8Source('a b'))->success) {
+    throw new RuntimeException('Lexeme scope example failed');
+}
+echo "Trivia round-trip and lexeme examples passed.\n";

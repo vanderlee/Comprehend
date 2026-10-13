@@ -123,8 +123,9 @@ class ConcreteNodeTest extends ParserTestCase
         $this->assertSame(Space::class, $result->node->kind);
         $this->assertSame(Sequence::class, $result->node->children[0]->kind);
         $this->assertSame('a b', $result->node->rawText());
-        $this->assertCount(2, $result->node->children[0]->children);
-        $this->assertSame(2, $result->node->children[0]->children[1]->span->start);
+        $this->assertCount(3, $result->node->children[0]->children);
+        $this->assertTrue($result->node->children[0]->children[1]->isTrivia);
+        $this->assertSame(2, $result->node->children[0]->children[2]->span->start);
     }
 
     public function testFailuresAndLegacyUnboundMatchesHaveNoNode()

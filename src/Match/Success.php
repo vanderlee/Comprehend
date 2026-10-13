@@ -52,7 +52,8 @@ class Success extends AbstractMatch
                 $children[] = $match->node;
             }
         }
-        $this->setConcreteNode(new \Vanderlee\Comprehend\Tree\ConcreteNode($kind, $this->span, $children));
+        $this->setConcreteNode(new \Vanderlee\Comprehend\Tree\ConcreteNode($kind, $this->span, $children,
+            $kind === \Vanderlee\Comprehend\Directive\Trivia::class));
     }
 
     /** @internal Convert callback coordinates on the selected effect tree only. */

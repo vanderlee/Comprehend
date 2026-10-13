@@ -69,6 +69,8 @@ abstract class Parser
         CaseSensitive::class,
         Prefer::class,
         Space::class,
+        \Vanderlee\Comprehend\Directive\Lexeme::class,
+        \Vanderlee\Comprehend\Directive\Trivia::class,
         Stub::class,
         All::class,
         Choice::class,
@@ -94,6 +96,16 @@ abstract class Parser
         Rfc5234::class,
         Rfc7405::class,
     ];
+
+    public function lexeme(): \Vanderlee\Comprehend\Directive\Lexeme
+    {
+        return new \Vanderlee\Comprehend\Directive\Lexeme($this);
+    }
+
+    public function trivia(): \Vanderlee\Comprehend\Directive\Trivia
+    {
+        return new \Vanderlee\Comprehend\Directive\Trivia($this);
+    }
 
     /** Custom subclasses must explicitly opt in to canonical byte coordinates. */
     protected function supportsSource(): bool
