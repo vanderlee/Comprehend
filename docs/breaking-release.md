@@ -17,6 +17,7 @@ The changelog remains marked Unreleased until publication is ready.
 | Implementation-returning `Definition::build()` | Immutable facade-returning `build()`; generators and factories accept/return facades, while `implementation()` is the internal low-level boundary |
 | String/array arguments implicitly becoming parsers | Explicit Parser constructors; immutable Comprehend facade accepts literal strings in composition, but no array grammar coercion |
 | Declared facade factories | Shared static/fluent names now use authoring-only magic dispatch with typed factories; instance terminal calls append syntax instead of constructing standalone terminals |
+| Facade `thenText()` and other terminal helpers; static repetition `someOf/manyOf/maybeOf/repeatOf()` | Fluent `text/char/set/range/...()` and static `some/many/maybe/repeat()`; metadata and directive operations dispatch directly to typed catalog callbacks |
 | Integer character arguments | `chr()` for octets or explicit Unicode strings |
 | Token naming/output tree | `name()`, immutable CST, optional named AST and direct serialization |
 | Automatic callbacks and multi-argument callback coordinates | `onCommit(callable(ParseResult))` and explicit `commit()` |

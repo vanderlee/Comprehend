@@ -6,7 +6,7 @@ Recursive references require consuming progress; left recursion is unsupported.
 
 Choice uses first success by default, or explicit longest/shortest preference.
 A sequence never retries a previously successful choice after a later item fails.
-For example `(firstOf('a','ab'), 'c')` fails on `abc`; selecting the longest choice
+For example `(first('a','ab'), 'c')` fails on `abc`; selecting the longest choice
 or factoring the shared prefix changes that grammar. Repetition is greedy and
 does not shrink for a later item. Bounds must be nonnegative and ordered; zero
 maximum does not invoke the child; nullable successful repetition throws.

@@ -17,7 +17,7 @@ class TerminalChainingTest extends TestCase
     public function testTerminalChainsPreserveTheirPrefixAndNamedGroups(): void
     {
         $base = C::text('a')->named('prefix');
-        $grammar = $base->thenSet('01')->thenText('!')->thenEnd();
+        $grammar = $base->set('01')->text('!')->end();
         $result = $grammar->parse('a1!');
         $this->assertTrue($result->success);
         $this->assertSame('a1!', $result->rawText());
@@ -32,66 +32,66 @@ class TerminalChainingTest extends TestCase
 
     public function testTerminalOptionsAndUnicodeRemainScopedToTheAppendedTerminal(): void
     {
-        $grammar = C::text('(')->thenChar('é')->thenRange('a', 'z')->thenRegex('/[0-9]+/')
-            ->thenLiteralWindow(')');
+        $grammar = C::text('(')->char('é')->range('a', 'z')->regex('/[0-9]+/')
+            ->literalWindow(')');
         $this->assertTrue($grammar->parse('(éa12)')->success);
         $this->assertFalse($grammar->parse('(éA12)')->success);
-        $this->assertTrue(C::text('a')->thenChar('x', false)->thenSet('z', false)->thenRange('a', 'z', false)->parse('aby1')->success);
-        $this->assertFalse(C::text('a')->thenChar('x', false)->parse('ax')->success);
-        $this->assertTrue(C::text('a')->thenChar("\xff")->parse(new ByteSource("a\xff"))->success);
+        $this->assertTrue(C::text('a')->char('x', false)->set('z', false)->range('a', 'z', false)->parse('aby1')->success);
+        $this->assertFalse(C::text('a')->char('x', false)->parse('ax')->success);
+        $this->assertTrue(C::text('a')->char("\xff")->parse(new ByteSource("a\xff"))->success);
     }
 
     public function testBoundaryAndEmptyTerminalsDoNotReplaceThePrefix(): void
     {
-        $grammar = C::nothing()->thenStart()->thenAny()->thenNothing()->thenEnd();
+        $grammar = C::nothing()->start()->any()->nothing()->end();
         $this->assertTrue($grammar->parse('é')->success);
         $this->assertFalse($grammar->parse('')->success);
         $this->assertFalse($grammar->parse('éa')->success);
-        $this->assertFalse(C::text('a')->thenStart()->parse('a')->success);
+        $this->assertFalse(C::text('a')->start()->parse('a')->success);
     }
 
     public function testNumericChainsForwardBasesRangesAlphabetsAndLeadingZeros(): void
     {
-        $grammar = C::text('n:')->thenBinary(5, 5, true)->thenText('/')
-            ->thenOctal(7, 7, true)->thenText('/')
-            ->thenHexadecimal(15, 15, true)->thenText('/')
-            ->thenOctet(true)->thenText('/')
-            ->thenInteger(2, 2, 2, true, 'αβ');
+        $grammar = C::text('n:')->binary(5, 5, true)->text('/')
+            ->octal(7, 7, true)->text('/')
+            ->hexadecimal(15, 15, true)->text('/')
+            ->octet(true)->text('/')
+            ->integer(2, 2, 2, true, 'αβ');
         $this->assertTrue($grammar->parse('n:00101/007/00f/0255/αβα')->success);
         $this->assertFalse($grammar->parse('n:00101/007/00f/0256/αβα')->success);
         $this->assertFalse($grammar->parse('00101/007/00f/0255/αβα')->success);
-        $this->assertFalse(C::text('n:')->thenInteger()->parse('n:01')->success);
+        $this->assertFalse(C::text('n:')->integer()->parse('n:01')->success);
     }
 
     public function testStaticRepetitionFactoriesAcceptLiteralsAndRetainBounds(): void
     {
-        $this->assertTrue(C::someOf('a')->parse('aa')->success);
-        $this->assertFalse(C::someOf('a')->parse('')->success);
-        $this->assertTrue(C::manyOf('a')->parse('')->success);
-        $this->assertTrue(C::manyOf('a')->parse('aaa')->success);
-        $this->assertTrue(C::maybeOf('a')->parse('')->success);
-        $this->assertTrue(C::maybeOf('a')->parse('a')->success);
-        $this->assertFalse(C::maybeOf('a')->parse('aa')->success);
-        $this->assertTrue(C::repeatOf('a', 2, 3)->parse('aaa')->success);
-        $this->assertFalse(C::repeatOf('a', 2, 3)->parse('a')->success);
-        $this->assertFalse(C::repeatOf('a', 2, 3)->parse('aaaa')->success);
-        $this->assertTrue(C::repeatOf(C::nothing(), 0, 0)->parse('')->success);
+        $this->assertTrue(C::some('a')->parse('aa')->success);
+        $this->assertFalse(C::some('a')->parse('')->success);
+        $this->assertTrue(C::many('a')->parse('')->success);
+        $this->assertTrue(C::many('a')->parse('aaa')->success);
+        $this->assertTrue(C::maybe('a')->parse('')->success);
+        $this->assertTrue(C::maybe('a')->parse('a')->success);
+        $this->assertFalse(C::maybe('a')->parse('aa')->success);
+        $this->assertTrue(C::repeat('a', 2, 3)->parse('aaa')->success);
+        $this->assertFalse(C::repeat('a', 2, 3)->parse('a')->success);
+        $this->assertFalse(C::repeat('a', 2, 3)->parse('aaaa')->success);
+        $this->assertTrue(C::repeat(C::nothing(), 0, 0)->parse('')->success);
     }
 
     public function testStaticRepetitionDetachesParsersAndKeepsReferencesDeferred(): void
     {
         $parser = (new Sequence(new Text('a')))->name('original');
-        $grammar = C::someOf($parser);
+        $grammar = C::some($parser);
         $parser->add(new Text('b'))->name('changed');
         $this->assertTrue($grammar->parse('aa')->success);
         $this->assertSame('original', $grammar->parse('a')->ast()->firstChild()->name);
         $rules = new Ruleset();
-        $letters = C::someOf($rules->rule('letter'));
+        $letters = C::some($rules->rule('letter'));
         $rules->define('letter', C::text('x'));
         $this->assertTrue($letters->parse('xx')->success);
         $this->assertFalse($letters->parse('xy')->success);
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Nullable repetition');
-        C::manyOf(C::nothing())->freeze();
+        C::many(C::nothing())->freeze();
     }
 }

@@ -109,9 +109,6 @@ class ComprehendErgonomicsTest extends TestCase
         $a = C::text('a');
         $ab = C::text('ab');
         $source = new Utf8Source('ab');
-        $this->assertSame('a', C::firstOf($a, $ab)->freeze()->matchPrefix($source)->rawText());
-        $this->assertSame('ab', C::longestOf($a, $ab)->freeze()->matchPrefix($source)->rawText());
-        $this->assertSame('a', C::shortestOf($ab, $a)->freeze()->matchPrefix($source)->rawText());
         $this->assertSame('a', C::first($a, $ab)->freeze()->matchPrefix($source)->rawText());
         $this->assertSame('ab', C::longest($a, $ab)->freeze()->matchPrefix($source)->rawText());
         $this->assertSame('a', C::shortest($ab, $a)->freeze()->matchPrefix($source)->rawText());

@@ -11,9 +11,8 @@
 | Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Integer, Start, End, Nothing |
 | Structures | Sequence(Parser...), Choice(Parser...), All(Parser...), Except(Parser, Parser), Not(Parser), Repeat(Parser, int = 0, ?int = null) |
 | Repetition | `Comprehend::of(Parser)->repeat(min, max)`; object factories `Repeat::plus/star/optional/exact` |
-| Static facade repetition | `someOf(item)`, `manyOf(item)`, `maybeOf(item)`, `repeatOf(item, min, max)` |
 | Shared repetition names | Static `some/many/maybe(item)`, `repeat(item, min, max)`; fluent `some/many/maybe()`, `repeat(min, max)` |
-| Terminal chaining | `thenText/Char/Set/Range/Regex/LiteralWindow/Any/Nothing/Start/End/Integer/Binary/Octal/Hexadecimal/Octet(...)` |
+| Terminal chaining | `->text/char/set/range/regex/literalWindow/any/nothing/start/end/integer/binary/octal/hexadecimal/octet(...)` |
 | Choice policy | `first/longest/shortest(Parser...)`, scoped Prefer |
 | Scoped policy | CaseSensitive(bool, Parser), Space(?Parser, Parser), `spacing(?Parser)`, `lexeme()`, `trivia()` |
 | Grammar | Ruleset, Definition, Implementation, RuleReference, explicit Stub setter |

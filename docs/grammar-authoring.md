@@ -120,16 +120,16 @@ The bundled RFC grammars import the facade as `C` with
 | `literalWindow(literal)` | Regex matching with a proven finite literal read window |
 | `ref(Ruleset, name, ...args)` | Deferred supported named reference |
 | `sequence(...items)`, `then(...items)` | Sequence composition |
-| `thenText()`, `thenChar()`, `thenSet()`, `thenRange()`, `thenRegex()`, `thenLiteralWindow()` | Append a terminal with the same arguments/defaults as its static factory |
-| `thenAny()`, `thenNothing()`, `thenStart()`, `thenEnd()` | Append unit, empty or boundary terminals |
-| `thenInteger()`, `thenBinary()`, `thenOctal()`, `thenHexadecimal()`, `thenOctet()` | Append numeric terminals with the same options as their factories |
+| `->text()`, `->char()`, `->set()`, `->range()`, `->regex()`, `->literalWindow()` | Append a terminal with the same arguments/defaults as its static factory |
+| `->any()`, `->nothing()`, `->start()`, `->end()` | Append unit, empty or boundary terminals |
+| `->integer()`, `->binary()`, `->octal()`, `->hexadecimal()`, `->octet()` | Append numeric terminals with the same options as their factories |
 | `choice(...items)`, `or(...items)` | Choice composition inheriting the scoped ranking policy (first by default) |
-| `first(...items)` / `firstOf(...items)` | Explicit local first-success choice |
-| `longest(...items)` / `longestOf(...items)`, `shortest(...items)` / `shortestOf(...items)` | Explicit local choice ranking |
+| `first(...items)` | Explicit local first-success choice |
+| `longest(...items)`, `shortest(...items)` | Explicit local choice ranking |
 | `all(...items)`, `except(match, not)`, `not(item)` | Intersection (shortest accepted span), exclusion, negative lookahead |
 | `repeat(min, max)` | Repeat with existing bounds/progress semantics |
 | `some()` / `plus()`, `many()` / `star()` / `kleene()`, `maybe()` / `optional()` | One or more, zero or more, zero or one |
-| `someOf(item)`, `manyOf(item)`, `maybeOf(item)`, `repeatOf(item, min, max)` | Static repetition factories accepting a facade, Parser or literal string |
+| `some(item)`, `many(item)`, `maybe(item)`, `repeat(item, min, max)` | Static repetition factories accepting a facade, Parser or literal string |
 | `named(string\|int\|callable)`, `tag(...tags)`, `mapValue()` | Fixed or pure dynamic names, tags and semantic mappings on a detached graph |
 | `guard()`, `validateSemantic()`, `onCommit()`, `assignTo()` | Pure recognition predicate, selected semantic validation, explicit committed effects and assignments |
 | `setResult()`, `concatResult()`, `pushResult()` | Cached named result collections, independent of source text |
@@ -188,9 +188,10 @@ boundary. Static calls construct syntax; fluent factory calls append it.
 Fluent `or()` extends alternatives instead of sequencing, while static `or()` is
 a choice factory. Static `repeat(item, min, max)` and fluent `repeat(min, max)`
 retain distinct signatures. Static some/many/maybe require an item; their fluent
-forms take no arguments and repeat the current expression. Typed private factories
-validate arguments and preserve named arguments. Explicit `thenSet()` and other
-terminal aliases, plus `someOf()`/`manyOf()`/`maybeOf()`/`repeatOf()`, remain available.
+forms take no arguments and repeat the current expression. Typed catalog callbacks
+validate arguments and preserve named arguments. Terminal chains use these shared
+short names; redundant `thenText()`-style helpers and static repetition `*Of()`
+helpers have been removed.
 All repetition bounds, nullable-child checks and deferred references are unchanged.
 
 ### Scoped expandable syntax
@@ -232,17 +233,20 @@ Freezing retains the constructed parser graph and performs no syntax dispatch.
 
 Built-in static calls such as `Comprehend::text()` resolve directly from a fixed
 catalog without allocating or caching a default registry. That catalog coordinates
-start/continuation methods, aliases, name discovery and reserved names. Scoped
+typed start/continuation callbacks, aliases, name discovery and reserved names. Scoped
 Syntax vocabularies share one immutable catalog between their start and continuation
-registries. Each registry caches custom callable resolution on its own instance;
+registries. Each registry caches built-in and custom callable resolution on its own instance;
 factories still run for every authoring call and parser expressions are never cached.
 Extending a vocabulary creates a new catalog and fresh registries, leaving existing
 expressions and their caches unchanged. No mutable static registry is used.
+Parser construction, repetition, composition, directives and fluent metadata are
+implemented by catalog callbacks, dispatched directly through magic calls;
+parsing, freezing, graph export and reference-based `assignTo()` remain declared on the facade.
 
 Built-in `@method` annotations provide completion and return types. Repetition
 annotations describe overloaded dispatch broadly; runtime signatures remain
 strict. Custom names require consumer annotations or the explicit `call()` API
-for tooling. Native reflection sees dispatch hooks and typed internal factories,
+for tooling. Native reflection sees dispatch hooks and declared lifecycle operations,
 not declared public methods for every syntax name. Reference parameters in custom
 factories are unsupported by magic forwarding; use explicit facade lifecycle APIs
 such as `assignTo()` for referenced assignments.

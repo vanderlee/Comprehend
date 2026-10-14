@@ -6,7 +6,7 @@ namespace Vanderlee\Comprehend\Syntax;
 
 use Closure;
 
-/** Instance-local cache of custom continuation resolution, never parser results. */
+/** Instance-local cache of continuation callbacks, never parser results. */
 final class ContinuationRegistry
 {
     private array $cache = [];

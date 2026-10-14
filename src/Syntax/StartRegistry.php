@@ -6,7 +6,7 @@ namespace Vanderlee\Comprehend\Syntax;
 
 use Closure;
 
-/** Instance-local cache of custom start resolution, never parser results. */
+/** Instance-local cache of start callbacks, never parser results. */
 final class StartRegistry
 {
     private array $cache = [];

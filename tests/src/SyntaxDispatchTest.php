@@ -119,6 +119,20 @@ class SyntaxDispatchTest extends TestCase
         $this->assertTrue($syntax->PLUS('a')->parse('aa')->success);
     }
 
+    public function testCallbackCompositionPreservesNoOpIdentityAndScopedDirectives(): void
+    {
+        $syntax = C::syntax()->define('suffix', static fn(): C => C::text('!'));
+        $base = $syntax->text('a')->caseSensitive(sensitivity: false)->named(leaf: false, name: 'letter');
+        $this->assertSame($base, $base->then());
+        $this->assertSame($base, $base->or());
+        $grammar = $base->suffix();
+        $result = $grammar->parse('A!');
+        $this->assertTrue($result->success);
+        $this->assertSame('A', $result->ast()->firstNamed('letter')->rawText());
+        $this->assertFalse($grammar->parse('B!')->success);
+        $this->assertTrue($base->parse('A')->success);
+    }
+
     /** @dataProvider invalidCalls */
     public function testInvalidCallsAreRejectedExplicitly(callable $call, string $exception): void
     {
@@ -136,6 +150,8 @@ class SyntaxDispatchTest extends TestCase
             [static fn() => C::text('a')->some('b'), ArgumentCountError::class],
             [static fn() => C::misspelled(), BadMethodCallException::class],
             [static fn() => C::text('a')->misspelled(), BadMethodCallException::class],
+            [static fn() => C::text('a')->thenText('b'), BadMethodCallException::class],
+            [static fn() => C::someOf('a'), BadMethodCallException::class],
             [static fn() => C::syntax()->define('text', static fn() => C::text('a')), InvalidArgumentException::class],
             [static fn() => C::syntax()->define('parse', static fn() => C::text('a')), InvalidArgumentException::class],
             [static fn() => C::syntax()->define('not-a-method', static fn() => C::text('a')), InvalidArgumentException::class],
