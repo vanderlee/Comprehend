@@ -21,7 +21,8 @@ use Vanderlee\Comprehend\Source\Source;
 /** Source-based recognition; semantic reads and committed effects are separate. */
 abstract class Parser
 {
-    use Output\ResultTrait, Output\AssignTrait;
+    use Output\ResultTrait;
+    use Output\AssignTrait;
 
     private array $effects = [];
     private $valueMapper = null;
@@ -116,10 +117,10 @@ abstract class Parser
     final public function matchPrefix(
         Source $source,
         int $byteOffset = 0,
-        ?ParseLimits $limits = null
+        ?ParseLimits $limits = null,
     ): ParseResult {
         return new ParseResult(
-            $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits))
+            $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits)),
         );
     }
 
@@ -170,7 +171,9 @@ abstract class Parser
             $match = $this->recognize($source, $offset, $session);
             if (!$match->accepted && $failureRevision === $session->failureRevision()) {
                 $session->recordFailure(
-                    $this instanceof Structure\Not || $this instanceof Structure\Except ? $offset : $offset + $match->length,
+                    $this instanceof Structure\Not || $this instanceof Structure\Except
+                        ? $offset
+                        : $offset + $match->length,
                     $this->diagnosticExpectation(),
                 );
             }
@@ -184,7 +187,7 @@ abstract class Parser
 
     protected function diagnosticExpectation(): string
     {
-        return str_contains(static::class, '\Terminal\\') ? (string)$this : $this->diagnosticName();
+        return str_contains(static::class, '\Terminal\\') ? (string) $this : $this->diagnosticName();
     }
 
     private function assertReturnedMatch(Source $source, int $offset, AbstractMatch $match): void
@@ -219,7 +222,7 @@ abstract class Parser
         $success->setSourceMetadata($span, null);
         $resultCallbacks = array_map(static fn($factory) => $factory($span), $this->resultCallbacks);
         $success->addResultCallback(
-            static function (&$results) use ($span, $resultCallbacks) {
+            static function (&$results) use ($resultCallbacks) {
                 foreach ($resultCallbacks as $callback) {
                     $callback($results);
                 }
@@ -245,7 +248,7 @@ abstract class Parser
         Source $source,
         int $offset,
         ParseSession $session,
-        Success $match
+        Success $match,
     ): AbstractMatch {
         $match->buildConcreteNode(static::class, $this->nodeName, $this->nodeGroup, $this->semanticLeaf);
         $match->setValueMapper($this->valueMapper);
@@ -271,7 +274,7 @@ abstract class Parser
         $failure->setSourceMetadata(
             $source->span($offset, $offset),
             $session->farthestFailure(),
-            $session->diagnostic()
+            $session->diagnostic(),
         );
         return $failure;
     }
@@ -279,7 +282,7 @@ abstract class Parser
     final public function parseAll(
         Source $source,
         int $byteOffset = 0,
-        ?ParseLimits $limits = null
+        ?ParseLimits $limits = null,
     ): ParseResult {
         $match = $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits));
         if (!$match->accepted || $match->span->end === $source->byteLength()) {
@@ -317,7 +320,7 @@ abstract class Parser
         Source $source,
         int $offset,
         int $length = 0,
-        array|Success $children = []
+        array|Success $children = [],
     ): AbstractMatch {
         return $accepted ? $this->success($source, $offset, $length, $children) : $this->failure($source, $offset);
     }

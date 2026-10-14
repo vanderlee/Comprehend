@@ -37,6 +37,25 @@ work is documented in [File input](file-input.md) and [Performance measurements]
 The [ABNF subset](abnf.md) generates that same runtime graph. Release verification
 uses the existing test workflow through workflow_call; publishing requires the
 reviewed 2.0.0 tag, a dated changelog and a passing required matrix. See
-[Breaking-release preparation](breaking-release.md). Formatting tools are not
-bundled; check new/changed PHP manually against PHP-FIG PER Coding Style when
-no configured formatter is available, without rewriting unrelated code.
+[Breaking-release preparation](breaking-release.md).
+
+## Quality tools
+
+Install development tools with `make install` (or `composer install`). GNU Make
+and PHP must be on your PATH. Use `make test` for PHPUnit and `make phpstan` for
+static analysis, initially configured at level 1 for `src` in `phpstan.neon`.
+CI runs both on pull requests and pushes to `master`; the release workflow also
+reuses these checks.
+
+Use `make cs` for PHP_CodeSniffer's PSR-12 checks and `make cs-check` for a
+PHP-CS-Fixer dry run against PHP-FIG PER Coding Style. PSR-12 is a partial style
+check; the fixer uses its current `@PER-CS` preset. Both tools cover `src`,
+`tests`, `tools`, `docs/examples` and the fixer configuration, excluding vendor
+code and the supplied  snapshot. `make cs-fix` applies formatting; review
+its diff before committing. Existing style violations are left for a separate
+formatting cleanup, so style checks are local targets rather than CI gates.
+`make qa` runs tests, PHPStan and both style checks.
+
+On systems without Make, run the commands from the corresponding Makefile
+recipes directly. Override the executables with
+`make PHP=/path/to/php COMPOSER=/path/to/composer qa` when necessary.
