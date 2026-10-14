@@ -4,7 +4,7 @@
     "pcre": "10.40 2022-04-14",
     "size": 2048,
     "recognition_includes_cst": true,
-    "file_fixture_included_in_source_time": true,
+    "file_fixture_included_in_source_time": false,
     "command": "php tools\/benchmark.php --source=memory --iterations=3 --size=2048",
     "results": [
         {

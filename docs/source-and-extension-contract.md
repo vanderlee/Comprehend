@@ -50,6 +50,10 @@ Custom Source implementations supply byte slices/spans, recognition-unit reads
 and boundary checks directly. UTF-8 mode must guarantee validated complete code
 points and byte mode must preserve every octet. Spans must bind the same source
 object, including custom forwarding implementations. Mutable/file resource
-lifetime policies require their own explicit contract; file implementations are
-Phase 4 work. The runnable [execution examples](examples/execution.php) include a
+lifetime policies follow the [file-input contract](file-input.md) for built-in
+seekable snapshots. The runnable [execution examples](examples/execution.php) include a
 custom parser implementing this contract.
+
+Custom recognizers with long loops should use session `readSourceUnit()` or
+`consumeWork()` to cooperate with optional ParseLimits. Parser entry/depth checks
+are automatic; arbitrary user PHP work cannot be preempted.

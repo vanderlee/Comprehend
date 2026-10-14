@@ -1,0 +1,67 @@
+{
+    "php": "8.2.10",
+    "os": "Windows",
+    "pcre": "10.40 2022-04-14",
+    "size": 65536,
+    "recognition_includes_cst": true,
+    "file_fixture_included_in_source_time": true,
+    "command": "php tools\/benchmark.php --source=file-utf8 --iterations=3 --size=65536 --case=regex",
+    "results": [
+        {
+            "case": "regex",
+            "mode": "recognition",
+            "source": "file-utf8",
+            "input_bytes": 65536,
+            "accepted": true,
+            "iterations": 3,
+            "median_ms": 63.4711,
+            "min_ms": 60.1958,
+            "max_ms": 69.8432,
+            "source_median_ms": 28.0438,
+            "process_peak_bytes": 6291456,
+            "profile": null
+        },
+        {
+            "case": "regex",
+            "mode": "cst",
+            "source": "file-utf8",
+            "input_bytes": 65536,
+            "accepted": true,
+            "iterations": 3,
+            "median_ms": 67.5598,
+            "min_ms": 59.8833,
+            "max_ms": 91.0098,
+            "source_median_ms": 19.9184,
+            "process_peak_bytes": 6291456,
+            "profile": null
+        },
+        {
+            "case": "regex",
+            "mode": "ast",
+            "source": "file-utf8",
+            "input_bytes": 65536,
+            "accepted": true,
+            "iterations": 3,
+            "median_ms": 63.9267,
+            "min_ms": 63.0334,
+            "max_ms": 80.5683,
+            "source_median_ms": 25.0219,
+            "process_peak_bytes": 6291456,
+            "profile": null
+        },
+        {
+            "case": "regex",
+            "mode": "semantic",
+            "source": "file-utf8",
+            "input_bytes": 65536,
+            "accepted": true,
+            "iterations": 3,
+            "median_ms": 62.815,
+            "min_ms": 62.7108,
+            "max_ms": 76.2747,
+            "source_median_ms": 26.2067,
+            "process_peak_bytes": 6291456,
+            "profile": null
+        }
+    ]
+}

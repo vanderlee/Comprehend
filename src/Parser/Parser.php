@@ -91,14 +91,14 @@ abstract class Parser
         return new Trivia($this);
     }
 
-    final public function matchPrefix(Source $source, int $byteOffset = 0): ParseResult
+    final public function matchPrefix(Source $source, int $byteOffset = 0, ?\Vanderlee\Comprehend\Runtime\ParseLimits $limits = null): ParseResult
     {
-        return new ParseResult($this->recognizeInSession($source, $byteOffset, new ParseSession($source)));
+        return new ParseResult($this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits)));
     }
 
-    final public function parseAll(Source $source, int $byteOffset = 0): ParseResult
+    final public function parseAll(Source $source, int $byteOffset = 0, ?\Vanderlee\Comprehend\Runtime\ParseLimits $limits = null): ParseResult
     {
-        $match = $this->recognizeInSession($source, $byteOffset, new ParseSession($source));
+        $match = $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits));
         if (!$match->accepted || $match->span->end === $source->byteLength()) {
             return new ParseResult($match);
         }

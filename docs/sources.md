@@ -11,6 +11,10 @@ Source: `mode()`, `byteLength()`, `sliceBytes(start, end)`, `span(start, end)`,
 reading it returns null. Out-of-range positions throw. Source contents must stay
 stable for the lifetime of referencing results and spans.
 
+Seekable [ByteFileSource and Utf8FileSource](file-input.md) provide owned disk
+snapshots, bounded read pages and incremental UTF-8 validation. They share the
+same byte/span contract, with explicit close and retained-result lifetime.
+
 ```php
 $source = new \Vanderlee\Comprehend\Source\Utf8Source('éa');
 $source->byteLength();                       // 3

@@ -64,3 +64,9 @@ jobs:
 
       - name: Verify authoring equivalence
         run: php docs/examples/authoring.php
+
+      - name: Verify file source and limits
+        run: php docs/examples/file-input.php
+
+      - name: Verify benchmark harness
+        run: php tools/benchmark.php --worker=text --mode=recognition --source=memory --iterations=1 --size=64

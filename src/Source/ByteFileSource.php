@@ -1,0 +1,121 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Vanderlee\Comprehend\Source;
+
+use InvalidArgumentException;
+use LogicException;
+use RuntimeException;
+
+/** Owns an immutable disk snapshot, with one bounded read page. */
+class ByteFileSource implements Source
+{
+    private $handle;
+    private int $length = 0;
+    private int $cacheStart = -1;
+    private string $cache = '';
+    private function __clone() {}
+
+    /** A path is opened/closed here; a borrowed seekable stream keeps its position and ownership. */
+    public function __construct(mixed $input, private readonly int $pageSize = 8192)
+    {
+        if ($pageSize < 4) { throw new InvalidArgumentException('File page size must be at least 4 bytes'); }
+        $owned = is_string($input);
+        $stream = $owned ? @fopen($input, 'rb') : $input;
+        if (!is_resource($stream) || get_resource_type($stream) !== 'stream') {
+            throw new InvalidArgumentException('File source requires a readable path or seekable stream');
+        }
+        $position = ftell($stream);
+        $snapshot = null;
+        try {
+            $metadata = stream_get_meta_data($stream);
+            if (!$metadata['seekable'] || strpbrk($metadata['mode'], 'r+') === false || $position === false || fseek($stream, 0) !== 0) {
+                throw new InvalidArgumentException('File source requires a seekable stream');
+            }
+            $snapshot = tmpfile();
+            if ($snapshot === false) { throw new RuntimeException('Cannot create file source snapshot'); }
+            while (!feof($stream)) {
+                $chunk = fread($stream, $pageSize);
+                if ($chunk === false || ($chunk === '' && !feof($stream))) {
+                    throw new RuntimeException('Cannot read file source');
+                }
+                $written = 0;
+                while ($written < strlen($chunk)) {
+                    $count = fwrite($snapshot, substr($chunk, $written));
+                    if ($count === false || $count === 0) { throw new RuntimeException('Cannot write file source snapshot'); }
+                    $written += $count;
+                }
+                $this->length += strlen($chunk);
+            }
+            $this->handle = $snapshot;
+            $this->validateContent();
+        } catch (\Throwable $error) {
+            if (is_resource($snapshot)) { fclose($snapshot); }
+            throw $error;
+        } finally {
+            if ($owned) { fclose($stream); }
+            elseif ($position !== false) { fseek($stream, $position); }
+        }
+    }
+
+    protected function validateContent(): void {}
+    public function mode(): SourceMode { return SourceMode::BYTES; }
+    public function byteLength(): int { return $this->length; }
+    public function span(int $start, int $end): Span { return new Span($this, $start, $end); }
+
+    public function close(): void
+    {
+        if (is_resource($this->handle)) { fclose($this->handle); }
+        $this->cache = '';
+        $this->cacheStart = -1;
+    }
+
+    public function isClosed(): bool { return !is_resource($this->handle); }
+    public function __destruct() { $this->close(); }
+
+    protected function assertReadableOffset(int $offset): void
+    {
+        if ($this->isClosed()) { throw new LogicException('File source is closed'); }
+        if ($offset < 0 || $offset > $this->length) { throw new InvalidArgumentException('Byte offset is outside the source'); }
+    }
+
+    public function sliceBytes(int $start, int $end): string
+    {
+        $this->assertReadableOffset($start);
+        $this->assertReadableOffset($end);
+        if ($end < $start) { throw new InvalidArgumentException('Span end must not precede its start'); }
+        $output = '';
+        while ($start < $end) {
+            $page = intdiv($start, $this->pageSize) * $this->pageSize;
+            if ($page !== $this->cacheStart) {
+                if (fseek($this->handle, $page) !== 0) { throw new RuntimeException('Cannot seek file source'); }
+                $expected = min($this->pageSize, $this->length - $page);
+                $bytes = '';
+                while (strlen($bytes) < $expected) {
+                    $part = fread($this->handle, $expected - strlen($bytes));
+                    if ($part === false || $part === '') { throw new RuntimeException('Cannot read file source snapshot'); }
+                    $bytes .= $part;
+                }
+                $this->cache = $bytes;
+                $this->cacheStart = $page;
+            }
+            $count = min($end - $start, strlen($this->cache) - ($start - $page));
+            $output .= substr($this->cache, $start - $page, $count);
+            $start += $count;
+        }
+        return $output;
+    }
+
+    public function isUnitBoundary(int $byteOffset): bool
+    {
+        $this->assertReadableOffset($byteOffset);
+        return true;
+    }
+
+    public function readUnit(int $byteOffset): ?Span
+    {
+        $this->assertReadableOffset($byteOffset);
+        return $byteOffset === $this->length ? null : $this->span($byteOffset, $byteOffset + 1);
+    }
+}

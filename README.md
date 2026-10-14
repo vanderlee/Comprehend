@@ -70,13 +70,19 @@ changes affect future snapshots, while frozen grammars remain independent.
 
 ## Execution limits
 
+Seekable file sources retain stable disk snapshots with bounded read pages and
+incremental UTF-8 validation. Optional `ParseLimits` bound cooperative depth and
+work. See [File input](docs/file-input.md) and [measured performance](docs/performance.md)
+for regex limits, source lifetime and tree-retention costs.
+
 Choice selects the first success by default; explicit first/longest/shortest
 policies are available. Repetition is greedy. A later failure does not retry an
 earlier successful choice or shrink a repeat. Nullable repetitions throw rather
 than loop. Left recursion is unsupported; no memoization or linear-time guarantee
 is provided. Parsers are interpreted combinators, not an LR parse-table engine.
-BNF/ABNF files are not currently compiled into grammars. Sources are in memory;
-regexes and diagnostic line indexing may access the entire source.
+BNF/ABNF files are not currently compiled into grammars. Sources may be in memory
+or seekable disk snapshots. General regexes allocate full subjects; diagnostic
+line indexing scans the source in chunks and retains line offsets.
 
 ## Documentation and verification
 

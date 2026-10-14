@@ -2,9 +2,11 @@
 
 | Concern | API |
 |---|---|
-| Input | Source, ByteSource, Utf8Source, SourceMode, immutable Span |
+| Input | Source, ByteSource, Utf8Source, ByteFileSource, Utf8FileSource, SourceMode, immutable Span |
 | Runtime | ParseSession; checked `recognizeInSession(Source, int, ParseSession)` delegation |
-| Entry points | `matchPrefix(Source, int = 0)`, `parseAll(Source, int = 0)` |
+| Entry points | `matchPrefix(Source, int = 0, ?ParseLimits = null)`, `parseAll(Source, int = 0, ?ParseLimits = null)` |
+| Limits/profile | ParseLimits(maxDepth, maxWork), ParseLimitException, optional bounded ParseMetrics |
+| Bounded regex | `Regex::literalWindow(string)` for quoted literals; general Regex keeps full-subject semantics |
 | Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Integer, Start, End, Nothing |
 | Structures | Sequence(Parser...), Choice(Parser...), All(Parser...), Except(Parser, Parser), Not(Parser), Repeat(Parser, int = 0, ?int = null) |
 | Repetition helpers | `plus(Parser)`, `star(Parser)`, `optional(Parser)`, `exact(Parser, int)` |

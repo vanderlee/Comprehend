@@ -10,6 +10,7 @@ php vendor/phpunit/phpunit/phpunit --do-not-cache-result
 php tools/check-canonical.php
 php docs/examples/execution.php
 php docs/examples/authoring.php
+php docs/examples/file-input.php
 ```
 
 The PHPUnit configuration covers `src`; a coverage driver optionally writes
@@ -28,4 +29,4 @@ Source code from the supplied  snapshot is not copied. Its architectural
 ideas are implemented independently; the review identifies defects to avoid.
 Named graph authoring, freezing, safety checks and immutable facade composition
 are documented in [Grammar authoring](grammar-authoring.md). File/performance
-work remains Phase 4.
+work is documented in [File input](file-input.md) and [Performance measurements](performance.md).

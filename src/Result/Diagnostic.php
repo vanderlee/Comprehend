@@ -18,15 +18,21 @@ final class Diagnostic
     {
         if ($this->lineStarts === null) {
             $this->lineStarts = [0];
-            preg_match_all(
-                '/\r\n|\r|\n/',
-                $this->source->sliceBytes(0, $this->source->byteLength()),
-                $matches,
-                PREG_OFFSET_CAPTURE,
-            );
-            foreach ($matches[0] as [$newline, $offset]) {
-                $this->lineStarts[] = $offset + strlen($newline);
+            $pendingCr = false;
+            for ($start = 0; $start < $this->source->byteLength(); $start += 8192) {
+                $chunk = $this->source->sliceBytes($start, min($start + 8192, $this->source->byteLength()));
+                for ($index = 0; $index < strlen($chunk); ++$index) {
+                    $byte = $chunk[$index];
+                    if ($pendingCr) {
+                        $this->lineStarts[] = $start + $index + ($byte === "\n" ? 1 : 0);
+                        $pendingCr = false;
+                        if ($byte === "\n") { continue; }
+                    }
+                    if ($byte === "\r") { $pendingCr = true; }
+                    elseif ($byte === "\n") { $this->lineStarts[] = $start + $index + 1; }
+                }
             }
+            if ($pendingCr) { $this->lineStarts[] = $this->source->byteLength(); }
         }
         $low = 0;
         $high = count($this->lineStarts);

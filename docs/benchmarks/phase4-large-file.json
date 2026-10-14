@@ -1,0 +1,67 @@
+{
+    "php": "8.2.10",
+    "os": "Windows",
+    "pcre": "10.40 2022-04-14",
+    "size": 65536,
+    "recognition_includes_cst": true,
+    "file_fixture_included_in_source_time": true,
+    "command": "php tools\/benchmark.php --source=file-utf8 --iterations=3 --size=65536 --case=large",
+    "results": [
+        {
+            "case": "large",
+            "mode": "recognition",
+            "source": "file-utf8",
+            "input_bytes": 65536,
+            "accepted": true,
+            "iterations": 3,
+            "median_ms": 236.6667,
+            "min_ms": 228.0855,
+            "max_ms": 240.4319,
+            "source_median_ms": 36.9861,
+            "process_peak_bytes": 6291456,
+            "profile": null
+        },
+        {
+            "case": "large",
+            "mode": "cst",
+            "source": "file-utf8",
+            "input_bytes": 65536,
+            "accepted": true,
+            "iterations": 3,
+            "median_ms": 245.9697,
+            "min_ms": 239.6437,
+            "max_ms": 294.6927,
+            "source_median_ms": 28.1759,
+            "process_peak_bytes": 6291456,
+            "profile": null
+        },
+        {
+            "case": "large",
+            "mode": "ast",
+            "source": "file-utf8",
+            "input_bytes": 65536,
+            "accepted": true,
+            "iterations": 3,
+            "median_ms": 228.3465,
+            "min_ms": 227.9149,
+            "max_ms": 240.5643,
+            "source_median_ms": 28.3569,
+            "process_peak_bytes": 6291456,
+            "profile": null
+        },
+        {
+            "case": "large",
+            "mode": "semantic",
+            "source": "file-utf8",
+            "input_bytes": 65536,
+            "accepted": true,
+            "iterations": 3,
+            "median_ms": 241.6081,
+            "min_ms": 222.8561,
+            "max_ms": 243.4555,
+            "source_median_ms": 25.6464,
+            "process_peak_bytes": 6291456,
+            "profile": null
+        }
+    ]
+}

@@ -87,6 +87,7 @@ class Integer extends Parser
         } finally {
             $this->popCaseSensitivityFromContext($context);
         }
+        $context->consumeWork(max(1, $input->byteLength()), $offset);
         $subject = $input->sliceBytes(0, $input->byteLength());
         $status = preg_match($pattern, $subject, $match, 0, $offset);
         if ($status === false) {
@@ -94,6 +95,7 @@ class Integer extends Parser
         }
         if ($status === 1) {
             do {
+                $context->consumeWork(1, $offset);
                 $integer = intval($match[0], $this->base);
                 if ($this->isInRange($integer) && $match[0] !== '-') {
                     return $this->success($input, $offset, strlen($match[0]));

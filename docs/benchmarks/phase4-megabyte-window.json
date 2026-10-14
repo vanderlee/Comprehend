@@ -1,0 +1,25 @@
+{
+    "php": "8.2.10",
+    "os": "Windows",
+    "pcre": "10.40 2022-04-14",
+    "size": 1048576,
+    "recognition_includes_cst": true,
+    "file_fixture_included_in_source_time": true,
+    "command": "php tools\/benchmark.php --source=file-utf8 --iterations=3 --size=1048576 --case=regex-window --mode=recognition",
+    "results": [
+        {
+            "case": "regex-window",
+            "mode": "recognition",
+            "source": "file-utf8",
+            "input_bytes": 1048576,
+            "accepted": true,
+            "iterations": 3,
+            "median_ms": 406.7544,
+            "min_ms": 369.726,
+            "max_ms": 414.394,
+            "source_median_ms": 128.7954,
+            "process_peak_bytes": 54525952,
+            "profile": null
+        }
+    ]
+}

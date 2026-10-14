@@ -1,0 +1,87 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Vanderlee\Comprehend\Source;
+
+use InvalidArgumentException;
+
+/** Incrementally validated UTF-8 over a seekable owned snapshot. */
+final class Utf8FileSource extends ByteFileSource
+{
+    private int $codePoints = 0;
+
+    protected function validateContent(): void
+    {
+        $remaining = 0;
+        $minimum = 0x80;
+        $maximum = 0xbf;
+        for ($offset = 0; $offset < $this->byteLength(); $offset += 8192) {
+            $chunk = $this->sliceBytes($offset, min($offset + 8192, $this->byteLength()));
+            for ($index = 0; $index < strlen($chunk); ++$index) {
+                $byte = ord($chunk[$index]);
+                if ($remaining > 0) {
+                    if ($byte < $minimum || $byte > $maximum) { $this->invalidUtf8($offset + $index); }
+                    --$remaining;
+                    $minimum = 0x80; $maximum = 0xbf;
+                    if ($remaining === 0) { ++$this->codePoints; }
+                } elseif ($byte < 0x80) { ++$this->codePoints; }
+                elseif ($byte >= 0xc2 && $byte <= 0xdf) { $remaining = 1; }
+                elseif ($byte >= 0xe0 && $byte <= 0xef) {
+                    $remaining = 2;
+                    $minimum = $byte === 0xe0 ? 0xa0 : 0x80;
+                    $maximum = $byte === 0xed ? 0x9f : 0xbf;
+                } elseif ($byte >= 0xf0 && $byte <= 0xf4) {
+                    $remaining = 3;
+                    $minimum = $byte === 0xf0 ? 0x90 : 0x80;
+                    $maximum = $byte === 0xf4 ? 0x8f : 0xbf;
+                } else { $this->invalidUtf8($offset + $index); }
+            }
+        }
+        if ($remaining !== 0) { $this->invalidUtf8($this->byteLength()); }
+    }
+
+    private function invalidUtf8(int $offset): never
+    {
+        throw new InvalidArgumentException('File source must contain valid UTF-8; invalid sequence at byte ' . $offset);
+    }
+
+    public function mode(): SourceMode { return SourceMode::UTF8; }
+    public function codePointLength(): int { return $this->codePoints; }
+
+    public function isUnitBoundary(int $byteOffset): bool
+    {
+        $this->assertReadableOffset($byteOffset);
+        return $byteOffset === $this->byteLength() || (ord($this->sliceBytes($byteOffset, $byteOffset + 1)) & 0xc0) !== 0x80;
+    }
+
+    public function isCodePointBoundary(int $byteOffset): bool { return $this->isUnitBoundary($byteOffset); }
+
+    public function readUnit(int $byteOffset): ?Span
+    {
+        if (!$this->isUnitBoundary($byteOffset)) { throw new InvalidArgumentException('Byte offset is inside a UTF-8 code point'); }
+        if ($byteOffset === $this->byteLength()) { return null; }
+        $lead = ord($this->sliceBytes($byteOffset, $byteOffset + 1));
+        $length = $lead < 0x80 ? 1 : ($lead < 0xe0 ? 2 : ($lead < 0xf0 ? 3 : 4));
+        return $this->span($byteOffset, $byteOffset + $length);
+    }
+
+    public function readCodePoint(int $byteOffset): ?Span { return $this->readUnit($byteOffset); }
+
+    public function byteOffsetForCodePointPosition(int $position): int
+    {
+        $this->assertReadableOffset(0);
+        if ($position < 0 || $position > $this->codePoints) { throw new InvalidArgumentException('Code-point position is outside the source'); }
+        $offset = 0;
+        for ($index = 0; $index < $position; ++$index) { $offset = $this->readUnit($offset)->end; }
+        return $offset;
+    }
+
+    public function codePointPositionForByteOffset(int $byteOffset): int
+    {
+        if (!$this->isUnitBoundary($byteOffset)) { throw new InvalidArgumentException('Byte offset is inside a UTF-8 code point'); }
+        $position = 0;
+        for ($offset = 0; $offset < $byteOffset; $offset = $this->readUnit($offset)->end) { ++$position; }
+        return $position;
+    }
+}

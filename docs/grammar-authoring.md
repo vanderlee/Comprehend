@@ -124,7 +124,8 @@ nullable or leading behavior, nor prove cycles through unknown prefixes safe.
 Runtime checks still reject a parser re-entering at the same byte position and
 a repeated successful child consuming zero bytes. Session state restores on
 exceptions. This is not left-recursion support, memoization, or a general depth
-or work limit; bounded execution remains phase 4 work.
+or work limit by itself. [ParseLimits](file-input.md) adds optional per-session
+depth and work budgets; it does not add memoization or wall-clock deadlines.
 
 ## Checked authoring examples
 

@@ -23,6 +23,16 @@ class Regex extends Parser
      * @var string|null
      */
     private $pattern = null;
+    private ?string $windowLiteral = null;
+
+    /** Only quoted literals have a proven context-free, finite read window. */
+    public static function literalWindow(string $literal): self
+    {
+        if ($literal === '') { throw new InvalidArgumentException('Empty window literal'); }
+        $parser = new self('/\A' . preg_quote($literal, '/') . '/');
+        $parser->windowLiteral = $literal;
+        return $parser;
+    }
     public function __construct(string $pattern)
     {
         if (empty($pattern)) {
@@ -52,12 +62,24 @@ class Regex extends Parser
             throw new InvalidArgumentException('Text regex cannot use the byte escape \C');
         }
         $pattern .= $textMode ? 'u' : '';
-        $subject = $context->source()->sliceBytes(0, $context->source()->byteLength());
-        $status = @preg_match($pattern, $subject, $match, PREG_OFFSET_CAPTURE, $offset);
+        $subjectOffset = $offset;
+        if ($this->windowLiteral === null) {
+            $context->consumeWork(max(1, $input->byteLength()), $offset);
+            $subject = $input->sliceBytes(0, $input->byteLength());
+        } else {
+            if ($textMode) { new Utf8Source($this->windowLiteral); }
+            $window = $textMode ? 4 * mb_strlen($this->windowLiteral, 'UTF-8') : strlen($this->windowLiteral);
+            $end = min($input->byteLength(), $offset + $window);
+            while (!$input->isUnitBoundary($end)) { --$end; }
+            $context->consumeWork(max(1, $end - $offset), $offset);
+            $subject = $input->sliceBytes($offset, $end);
+            $subjectOffset = 0;
+        }
+        $status = @preg_match($pattern, $subject, $match, PREG_OFFSET_CAPTURE, $subjectOffset);
         if ($status === false) {
             throw new RuntimeException('Regex recognition failed: ' . preg_last_error_msg());
         }
-        if ($status !== 1 || $match[0][1] !== $offset || $match[0][0] === '') {
+        if ($status !== 1 || $match[0][1] !== $subjectOffset || $match[0][0] === '') {
             return $this->failure($input, $offset);
         }
         $length = strlen($match[0][0]);

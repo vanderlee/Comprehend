@@ -1,0 +1,31 @@
+{
+    "php": "8.2.10",
+    "os": "Windows",
+    "pcre": "10.40 2022-04-14",
+    "size": 2048,
+    "recognition_includes_cst": true,
+    "file_fixture_included_in_source_time": false,
+    "command": "php tools\/benchmark.php --source=memory --iterations=3 --size=2048 --case=shared-prefix --mode=recognition --profile",
+    "results": [
+        {
+            "case": "shared-prefix",
+            "mode": "recognition",
+            "source": "memory",
+            "input_bytes": 2049,
+            "accepted": true,
+            "iterations": 3,
+            "median_ms": 6.1338,
+            "min_ms": 6.052,
+            "max_ms": 10.7733,
+            "source_median_ms": 0.0123,
+            "process_peak_bytes": 2097152,
+            "profile": {
+                "parser_entries": 7,
+                "repeated_positions": 1,
+                "tracked_positions": 6,
+                "capacity": 4096,
+                "work_units": 4105
+            }
+        }
+    ]
+}

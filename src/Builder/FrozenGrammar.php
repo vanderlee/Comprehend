@@ -20,13 +20,13 @@ final readonly class FrozenGrammar
         return new self($root, $warnings);
     }
 
-    public function matchPrefix(Source $source, int $byteOffset = 0): ParseResult
+    public function matchPrefix(Source $source, int $byteOffset = 0, ?\Vanderlee\Comprehend\Runtime\ParseLimits $limits = null): ParseResult
     {
-        return $this->root->matchPrefix($source, $byteOffset);
+        return $this->root->matchPrefix($source, $byteOffset, $limits);
     }
 
-    public function parseAll(Source $source, int $byteOffset = 0): ParseResult
+    public function parseAll(Source $source, int $byteOffset = 0, ?\Vanderlee\Comprehend\Runtime\ParseLimits $limits = null): ParseResult
     {
-        return $this->root->parseAll($source, $byteOffset);
+        return $this->root->parseAll($source, $byteOffset, $limits);
     }
 }

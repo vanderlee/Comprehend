@@ -29,6 +29,20 @@ final class ParseSession
     private int $failureRevision = 0;
     private int $lexemeDepth = 0;
     private array $activeParsers = [];
+    private int $work = 0;
+    private int $depth = 0;
+    private readonly ParseLimits $limits;
+
+    public function consumeWork(int $amount = 1, int $byteOffset = 0): void
+    {
+        if ($amount < 0) { throw new \InvalidArgumentException('Work increment must not be negative'); }
+        if ($this->limits->maxWork !== null && $amount > $this->limits->maxWork - $this->work) {
+            throw new ParseLimitException('work', $byteOffset, $this->path, $this->limits->maxWork);
+        }
+        $this->work += $amount;
+    }
+
+    public function workUsed(): int { return $this->work; }
 
     public function enterParser(Parser $parser, int $offset): void
     {
@@ -37,12 +51,19 @@ final class ParseSession
             throw new \LogicException('Left recursion at byte ' . $offset . ': ' . implode(' -> ', $this->path)
                 . ' -> ' . $parser->graphLabel());
         }
+        if ($this->limits->maxDepth !== null && $this->depth >= $this->limits->maxDepth) {
+            throw new ParseLimitException('depth', $offset, [...$this->path, $parser->graphLabel()], $this->limits->maxDepth);
+        }
+        $this->consumeWork(1, $offset);
+        $this->metrics?->record($parser, $offset);
+        ++$this->depth;
         $this->activeParsers[$key] = true;
     }
 
     public function leaveParser(Parser $parser, int $offset): void
     {
         unset($this->activeParsers[spl_object_id($parser) . ':' . $offset]);
+        --$this->depth;
     }
     public function pushLexeme(): void
     {
@@ -80,9 +101,11 @@ final class ParseSession
     {
         return $this->farthestFailure === null ? null : new Diagnostic($this->source, $this->farthestFailure, $this->expectations, $this->rulePaths);
     }
-    public function __construct(Source $source, ?Parser $trivia = null, bool $caseSensitive = true, string $preference = Prefer::FIRST)
+    public function __construct(Source $source, ?Parser $trivia = null, bool $caseSensitive = true, string $preference = Prefer::FIRST,
+        ?ParseLimits $limits = null, private readonly ?ParseMetrics $metrics = null)
     {
         $this->source = $source;
+        $this->limits = $limits ?? new ParseLimits();
         self::assertPreference($preference);
         $this->pushSpacer($trivia);
         $this->pushCaseSensitivity($caseSensitive);
@@ -119,6 +142,7 @@ final class ParseSession
     }
     public function readSourceUnit(int $byteOffset): ?Span
     {
+        $this->consumeWork(1, $byteOffset);
         return $this->source->readUnit($byteOffset);
     }
 }
