@@ -1,0 +1,79 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Vanderlee\Comprehend\Builder;
+
+use ReflectionObject;
+use SplObjectStorage;
+use Vanderlee\Comprehend\Parser\Parser;
+
+/** Resolve factories and detach owned state while preserving sharing and cycles. */
+final class GraphSnapshot
+{
+    private SplObjectStorage $copies;
+    private array $references = [];
+
+    public function __construct(private readonly bool $resolveReferences = true) { $this->copies = new SplObjectStorage(); }
+
+    public function copy(Parser $parser): Parser
+    {
+        return $this->copyObject($parser);
+    }
+
+    private function copyObject(Parser|Definition $object): Parser|Definition
+    {
+        if (isset($this->copies[$object])) { return $this->copies[$object]; }
+        if ($object instanceof RuleReference) {
+            $copy = clone $object;
+            $this->copies[$object] = $copy;
+            if (!$this->resolveReferences) { return $copy; }
+            $key = $this->parameterKey($object->graphKey());
+            if (isset($this->references[$key])) { return $this->copies[$object] = $this->references[$key]; }
+            $this->references[$key] = $copy;
+            $copy->bindSnapshotTarget($this->copy($object->graphTarget(true)));
+            return $copy;
+        }
+        if ($object instanceof AbstractRuleset && $this->resolveReferences) {
+            $copy = clone $object;
+            $this->copies[$object] = $copy;
+            $copy->bindSnapshotRoot($this->copy($object->resolveRule(AbstractRuleset::ROOT, [], true)));
+            return $copy;
+        }
+        $copy = (new ReflectionObject($object))->newInstanceWithoutConstructor();
+        $this->copies[$object] = $copy;
+        $this->copies[$copy] = $copy;
+        foreach (GraphState::properties($object) as $property) {
+            if ($object instanceof Implementation && $this->resolveReferences
+                && $property->getDeclaringClass()->getName() === Implementation::class && $property->getName() === 'parser') {
+                $property->setValue($copy, null);
+                continue;
+            }
+            $property->setValue($copy, $this->copyValue($property->getValue($object)));
+        }
+        if ($copy instanceof Implementation && $this->resolveReferences) {
+            $copy->bindSnapshotTarget($this->copy($copy->graphTarget()));
+        }
+        return $copy;
+    }
+
+    private function copyValue(mixed $value): mixed
+    {
+        if ($value instanceof Parser || $value instanceof Definition) { return $this->copyObject($value); }
+        if (is_array($value)) { return array_map(fn ($item) => $this->copyValue($item), $value); }
+        // Closures, external services and value objects are caller-owned dependencies.
+        return $value;
+    }
+
+    private function parameterKey(mixed $value): string
+    {
+        if (is_object($value)) { return 'object:' . spl_object_id($value); }
+        if (is_resource($value)) { return 'resource:' . get_resource_id($value); }
+        if (is_array($value)) {
+            $parts = [];
+            foreach ($value as $key => $item) { $parts[] = [$this->parameterKey($key), $this->parameterKey($item)]; }
+            return serialize($parts);
+        }
+        return serialize($value);
+    }
+}

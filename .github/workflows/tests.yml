@@ -61,3 +61,6 @@ jobs:
 
       - name: Verify execution examples
         run: php docs/examples/execution.php
+
+      - name: Verify authoring equivalence
+        run: php docs/examples/authoring.php

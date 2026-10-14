@@ -27,6 +27,16 @@ abstract class Parser
     private bool $semanticLeaf = false;
     private ?string $ruleName = null;
 
+    public function freeze(): \Vanderlee\Comprehend\Builder\FrozenGrammar
+    {
+        return \Vanderlee\Comprehend\Builder\FrozenGrammar::from($this);
+    }
+
+    public function graphLabel(): string
+    {
+        return $this->diagnosticName();
+    }
+
     public function name(string|int $name, ?string $group = null, bool $leaf = false): static
     {
         $this->nodeName = $name;
@@ -119,6 +129,16 @@ abstract class Parser
 
     /** @internal The only delegation path; custom parsers implement recognize(). */
     final public function recognizeInSession(Source $source, int $offset, ParseSession $session): AbstractMatch
+    {
+        $session->enterParser($this, $offset);
+        try {
+            return $this->recognizeChecked($source, $offset, $session);
+        } finally {
+            $session->leaveParser($this, $offset);
+        }
+    }
+
+    private function recognizeChecked(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
         $this->assertRecognitionPosition($source, $offset, $session);
         $match = $this->recognizeWithDiagnostics($source, $offset, $session);

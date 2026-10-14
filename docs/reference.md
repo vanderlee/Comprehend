@@ -11,6 +11,9 @@
 | Choice policy | `first/longest/shortest(Parser...)`, scoped Prefer |
 | Scoped policy | CaseSensitive(bool, Parser), Space(?Parser, Parser), `spacing(?Parser)`, `lexeme()`, `trivia()` |
 | Grammar | Ruleset, Definition, Implementation, RuleReference, explicit Stub setter |
+| Named operations | `define(string, Parser\|Definition\|callable)`, `ref(string, ...args)`, `root(string\|Parser)` |
+| Frozen graphs | `freeze()` returning FrozenGrammar with syntax checks and analysisWarnings |
+| Immutable facade | Grammar text/regex/ref, sequence/choice, then/or/repeat, naming and scoped policy |
 | Naming | `name(string|int, ?string = null, bool $leaf = false)` |
 | Meaning | `mapValue(callable)`, named set/concat/push collection operations |
 | Lifecycle | `guard(callable)`, `validateSemantic(callable)`, `onCommit(callable)`, assignments |
@@ -20,6 +23,9 @@
 Typed helpers in `Vanderlee\Comprehend\Library` are autoloaded by Composer:
 `text`, `char`, `set`, `range`, `regex`, `s`, `c`, `plus`, `star`, `opt`, `repeat`.
 They construct the same objects and require explicit Parser arguments.
+
+See [Grammar authoring](grammar-authoring.md) for frozen factory lifetimes,
+immutable composition, safety limits and checked arithmetic/RFC examples.
 Integer recognizes bounded base-2–36 integers; its bounds must be integers/null.
 Use explicit `chr()` for octet literals, not integer-to-character coercion.
 

@@ -9,6 +9,7 @@ composer check-platform-reqs
 php vendor/phpunit/phpunit/phpunit --do-not-cache-result
 php tools/check-canonical.php
 php docs/examples/execution.php
+php docs/examples/authoring.php
 ```
 
 The PHPUnit configuration covers `src`; a coverage driver optionally writes
@@ -25,4 +26,6 @@ inventory and CI gate make this a breaking canonical API.
 
 Source code from the supplied  snapshot is not copied. Its architectural
 ideas are implemented independently; the review identifies defects to avoid.
-New graph authoring/freezing work is Phase 3; file/performance work is Phase 4.
+Named graph authoring, freezing, safety checks and immutable facade composition
+are documented in [Grammar authoring](grammar-authoring.md). File/performance
+work remains Phase 4.

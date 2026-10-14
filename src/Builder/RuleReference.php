@@ -7,17 +7,37 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Match\AbstractMatch;
-/** Explicit deferred lookup; graph-wide resolution/freezing is Phase 3 work. */
+/** Explicit deferred lookup, bound to a detached target when frozen. */
 final class RuleReference extends Parser
 {
-    public function __construct(private readonly AbstractRuleset $rules, private readonly string $rule, private readonly array $arguments = [])
+    private ?Parser $target = null;
+    private readonly object $scopeIdentity;
+    public function __construct(private ?AbstractRuleset $rules, private readonly string $rule, private readonly array $arguments = [])
     {
+        $this->scopeIdentity = $rules->graphIdentity();
         $this->name($rule, $rules->groupName());
         $this->diagnosticRule($rule);
     }
+    /** @internal Resolve factories once for each parameterized reference in a snapshot. */
+    public function graphTarget(bool $fresh = false): Parser
+    {
+        return $this->target ?? $this->rules->resolveRule($this->rule, $this->arguments, $fresh);
+    }
+
+    /** @internal Parameter identities avoid serializing user objects. */
+    public function graphKey(): array
+    {
+        return [$this->scopeIdentity, $this->rule, $this->arguments];
+    }
+
+    public function bindSnapshotTarget(Parser $target): void
+    {
+        $this->target = $target;
+        $this->rules = null;
+    }
     protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
-        return $this->rules->resolveRule($this->rule, $this->arguments)->recognizeInSession($source, $offset, $session);
+        return $this->graphTarget()->recognizeInSession($source, $offset, $session);
     }
     public function __toString(): string
     {

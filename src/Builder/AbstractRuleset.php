@@ -18,6 +18,12 @@ abstract class AbstractRuleset extends Parser
     /** @var array<string, Definition|Parser|callable> */
     protected array $instanceRules = [];
     private array $implementations = [];
+    private ?object $graphIdentity = null;
+
+    public function graphIdentity(): object
+    {
+        return $this->graphIdentity ??= new \stdClass();
+    }
     public function __construct(array $rules = [], ?string $name = null)
     {
         $this->groupName = $name ?? static::$name;
@@ -45,6 +51,22 @@ abstract class AbstractRuleset extends Parser
     {
         return isset($this->instanceRules[$name]);
     }
+    public function ref(string $name, mixed ...$arguments): RuleReference
+    {
+        return new RuleReference($this, $name, $arguments);
+    }
+
+    public function root(string|Parser $rule): static
+    {
+        return $this->define(self::ROOT, is_string($rule) ? $this->ref($rule) : $rule);
+    }
+
+    /** @internal A snapshot retains only its reachable, resolved root. */
+    public function bindSnapshotRoot(Parser $root): void
+    {
+        $this->instanceRules = [self::ROOT => $root];
+        $this->implementations = [self::ROOT => $root];
+    }
     public function undefine(string $name): void
     {
         unset($this->instanceRules[$name]);
@@ -53,17 +75,17 @@ abstract class AbstractRuleset extends Parser
     /** Explicit deferred rule lookup permits construction in any order. */
     public function rule(string $name, mixed ...$arguments): Parser
     {
-        return new RuleReference($this, $name, $arguments);
+        return $this->ref($name, ...$arguments);
     }
     /** @internal Resolve on recognition, never guess a literal or class name. */
-    public function resolveRule(string $name, array $arguments = []): Parser
+    public function resolveRule(string $name, array $arguments = [], bool $fresh = false): Parser
     {
         if (!isset($this->instanceRules[$name])) {
             throw new LogicException('Undefined grammar rule: ' . $name);
         }
         // Factory arguments can contain arbitrary objects; avoid serialization
         // or shared caches for parameterized implementations.
-        if ($arguments === [] && isset($this->implementations[$name])) {
+        if (!$fresh && $arguments === [] && isset($this->implementations[$name])) {
             return $this->implementations[$name];
         }
         $definition = $this->instanceRules[$name];
@@ -75,7 +97,7 @@ abstract class AbstractRuleset extends Parser
             throw new LogicException('Rule factory must return Parser: ' . $name);
         }
         $parser->diagnosticRule($name);
-        if ($arguments === []) {
+        if (!$fresh && $arguments === []) {
             $this->implementations[$name] = $parser;
         }
         return $parser;
@@ -83,7 +105,10 @@ abstract class AbstractRuleset extends Parser
     protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
         $match = $this->resolveRule(self::ROOT)->recognizeInSession($source, $offset, $session);
-        return $match instanceof Success ? $this->success($source, $offset, $match->length, $match) : $this->failure($source, $offset, $match->length);
+        if (!$match instanceof Success) { return $this->failure($source, $offset, $match->length); }
+        $success = $this->success($source, $offset, $match->length, $match);
+        $success->inheritValueFrom($match);
+        return $success;
     }
     public function __toString(): string
     {

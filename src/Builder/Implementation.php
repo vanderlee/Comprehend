@@ -28,6 +28,14 @@ final class Implementation extends Parser
         }
         return $this->parser;
     }
+
+    /** @internal Materialize this parameterized definition before snapshotting. */
+    public function graphTarget(): Parser
+    {
+        return $this->parser();
+    }
+
+    public function bindSnapshotTarget(Parser $parser): void { $this->parser = $parser; }
     protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
         $match = $this->parser()->recognizeInSession($source, $offset, $session);

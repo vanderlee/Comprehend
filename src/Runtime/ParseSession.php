@@ -28,6 +28,22 @@ final class ParseSession
     private array $path = [];
     private int $failureRevision = 0;
     private int $lexemeDepth = 0;
+    private array $activeParsers = [];
+
+    public function enterParser(Parser $parser, int $offset): void
+    {
+        $key = spl_object_id($parser) . ':' . $offset;
+        if (isset($this->activeParsers[$key])) {
+            throw new \LogicException('Left recursion at byte ' . $offset . ': ' . implode(' -> ', $this->path)
+                . ' -> ' . $parser->graphLabel());
+        }
+        $this->activeParsers[$key] = true;
+    }
+
+    public function leaveParser(Parser $parser, int $offset): void
+    {
+        unset($this->activeParsers[spl_object_id($parser) . ':' . $offset]);
+    }
     public function pushLexeme(): void
     {
         ++$this->lexemeDepth;
