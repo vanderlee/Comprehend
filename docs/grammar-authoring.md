@@ -35,7 +35,8 @@ $digits->freeze()->parseAll(new Utf8Source('123'))->success; // true
 ```
 
 Use `ref()` in Parser-only object constructors and factories. Facade references
-are recognized through `freeze()->parseAll()` or `freeze()->matchPrefix()`;
+are recognized through `parse()`, `parseAll()` or `matchPrefix()` (which freeze
+automatically), or through an explicitly retained frozen grammar;
 they retain forward/recursive lookup, factory arguments and named rule groups.
 References never guess a literal or class name. Missing names and invalid factory
 returns are grammar errors. Named references preserve their Ruleset group in
@@ -108,7 +109,9 @@ The bundled RFC grammars import the facade as `C` with
 | Operation | Underlying behavior |
 | --- | --- |
 | `text()`, `char()`, `set()`, `range()`, `regex()`, `of(Parser)` | Wrap a detached object parser |
-| `any()`, `nothing()`, `start()`, `end()`, `integer(minimum, maximum, base)` | Remaining terminals; integer defaults match the object parser (minimum 0, no maximum, base 10) |
+| `any()`, `nothing()`, `start()`, `end()` | Remaining terminals |
+| `integer(minimum, maximum, base, allowLeadingZeros, digits)` | Bounded numeric text; defaults are minimum 0, no maximum, base 10, no leading zeros and the standard digit alphabet |
+| `binary()`, `octal()`, `hexadecimal()`, `octet()` | Base-2/8/16 factories and decimal range 0–255; optional leading zeros |
 | `literalWindow(literal)` | Regex matching with a proven finite literal read window |
 | `ref(Ruleset, name, ...args)` | Deferred supported named reference |
 | `sequence(...items)`, `then(...items)` | Sequence composition |
@@ -126,6 +129,7 @@ The bundled RFC grammars import the facade as `C` with
 | `spacing()`, `lexeme()`, `trivia()` | Existing scoped directives |
 | `parser()` | Detached object graph for Parser-only factories/constructors |
 | `freeze()` | Resolved, analyzed reusable snapshot |
+| `parse(input)`, `parseAll(input)`, `matchPrefix(input)` | Freeze automatically and recognize a Source or validated UTF-8 string; parse/parseAll require complete input |
 
 Reference-bearing facade expressions deliberately resolve names at freeze,
 after definitions are complete. Each fluent composition protects reused parser
@@ -135,17 +139,20 @@ Mutable object builders remain available: migrate shared `add()`/array edits to
 facade `then()`/`or()`, or freeze a graph before changing its builders. Composition
 retains nested container structure rather than silently flattening named groups.
 
-`then()` and `or()` accept any number of facade values or Parser objects. With no
+`then()` and `or()` accept any number of facade values, Parser objects or strings. With no
 arguments they return the unchanged facade; supplied object parsers are detached.
-Strings are still explicit `Comprehend::text(...)` calls. One variadic call groups
+String arguments become Text literals in sequence, choice, chaining, intersection,
+exclusion and negative lookahead. Empty strings retain Text's rejection; use
+`nothing()` for a zero-width match. Object constructors remain Parser-only, and
+rule lookup still requires explicit names. One variadic call groups
 its supplied children together; successive calls retain the preceding expression
 as a nested child, preserving names and scoped directives.
 
 ```php
 $digits = Comprehend::range('0', '9')->some()->named('digits');
-$bracketed = Comprehend::text('[')->then($digits, Comprehend::text(']'));
-$grammar = $bracketed->or(Comprehend::text('none'), Comprehend::text('empty'));
-$grammar->freeze()->parseAll(new Utf8Source('[123]'))->success; // true
+$bracketed = Comprehend::sequence('[', $digits, ']');
+$grammar = $bracketed->or('none', 'empty');
+$grammar->parse('[123]')->success; // true
 ```
 
 Repetition shortcuts retain the same nullable-child rejection as `repeat()`,
@@ -154,6 +161,32 @@ including optional repetition. Lifecycle operations retain their distinct timing
 and `onCommit()` receive ParseResult. Reading values does not commit effects.
 See [Lifecycle](lifecycle.md) for validation and commit behavior. Nested case or
 preference directives use the innermost applicable override.
+
+### Direct parsing and numeric factories
+
+`parse()` is a complete-input alias for `parseAll()`. Facade entry points freeze
+the current graph on each call, so deferred definitions and factories are resolved
+using their current state. Retain `freeze()` once for repeated parsing with stable
+definitions. Strings always mean validated UTF-8, never automatic encoding detection;
+pass ByteSource for arbitrary bytes. Offsets and limits keep their canonical contracts.
+
+```php
+$hex = Comprehend::hexadecimal(0, 255, allowLeadingZeros: true)->caseSensitive(false);
+$hex->parse('00FF')->success; // true
+$hex->parse('100')->success;  // false: outside the range
+$hex->matchPrefix('100')->rawText(); // '10': longest in-range prefix
+Comprehend::integer(2, 2, base: 2, digits: 'αβ')->parse('βα')->success; // true
+```
+
+Numeric factories preserve raw text as their default value; use `mapValue()` for
+typed application values. The digit alphabet is valid UTF-8 with unique code-point
+symbols in numeric order, beginning with zero. Minus is reserved for the sign.
+The base selects the initial symbols and must be at least two and no larger than
+the alphabet. Case-insensitive matching rejects alphabets with colliding folded
+symbols. Leading zeros, including signed zero, are opt-in. Out-of-range and
+overflowing candidates are trimmed to whole-digit prefixes; full-input parsing
+rejects an unconsumed suffix. PHP_INT_MIN and PHP_INT_MAX are matched exactly.
+Base factories recognize digits without prefixes such as `0x` or `0b`.
 
 ### Replacing the Library functions
 

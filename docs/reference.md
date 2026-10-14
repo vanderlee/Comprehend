@@ -5,6 +5,7 @@
 | Input | Source, ByteSource, Utf8Source, ByteFileSource, Utf8FileSource, SourceMode, immutable Span |
 | Runtime | ParseSession; checked `recognizeInSession(Source, int, ParseSession)` delegation |
 | Entry points | `matchPrefix(Source, int = 0, ?ParseLimits = null)`, `parseAll(Source, int = 0, ?ParseLimits = null)` |
+| Convenience entry points | Facade `parse/parseAll/matchPrefix(Source\|string, int = 0, ?ParseLimits = null)`; frozen `parseAll/matchPrefix` also accept validated UTF-8 strings |
 | Limits/profile | ParseLimits(maxDepth, maxWork), ParseLimitException, optional bounded ParseMetrics |
 | Bounded regex | `Regex::literalWindow(string)` for quoted literals; general Regex keeps full-subject semantics |
 | Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Integer, Start, End, Nothing |
@@ -34,7 +35,11 @@ immutable composition, safety limits and checked arithmetic/RFC examples.
 
 See [ABNF](abnf.md) for the supported text subset and [breaking release](breaking-release.md)
 for caller changes, supported runtimes and publication gates.
-Integer recognizes bounded base-2–36 integers; its bounds must be integers/null.
+Integer recognizes bounded integers; its bounds must be integers/null. The default
+alphabet supports bases 2–36. Custom UTF-8 alphabets and opt-in leading zeros are
+supported by Integer and the facade's `integer()`; `binary()`, `octal()`,
+`hexadecimal()` and `octet()` provide common factories. Overflow is rejected or
+trimmed to an in-range prefix, never saturated. See [Grammar authoring](grammar-authoring.md).
 Use explicit `chr()` for octet literals, not integer-to-character coercion.
 
 See [custom extensions](source-and-extension-contract.md), [builders](builder.md),

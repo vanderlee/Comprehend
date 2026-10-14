@@ -64,7 +64,8 @@ Parser and FrozenGrammar `matchPrefix()`/`parseAll()` accept an optional third
 positive integers or null; null disables that limit. Each public parse creates
 fresh counters. Depth counts simultaneously active parser recognitions. Work
 counts parser entries, source-unit requests through ParseSession, regex subject
-bytes and Integer range-trimming attempts. Failed/speculative attempts count;
+bytes and each digit inspected during Integer conversion and range trimming.
+Failed/speculative attempts count;
 diagnostic suppression never refunds work. Full-subject regex work is charged
 before reading the subject, so a small budget can reject a large allocation.
 

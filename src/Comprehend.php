@@ -27,6 +27,9 @@ use Vanderlee\Comprehend\Parser\Terminal\Regex;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Start;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Runtime\ParseLimits;
+use Vanderlee\Comprehend\Source\Source;
 
 /** Immutable authoring facade over the existing object parser types. */
 final readonly class Comprehend
@@ -83,9 +86,34 @@ final readonly class Comprehend
         return self::of(new End());
     }
 
-    public static function integer(?int $minimum = 0, ?int $maximum = null, int $base = 10): self
+    public static function integer(
+        ?int $minimum = 0,
+        ?int $maximum = null,
+        int $base = 10,
+        bool $allowLeadingZeros = false,
+        string $digits = Integer::DIGITS,
+    ): self {
+        return self::of(new Integer($minimum, $maximum, $base, $allowLeadingZeros, $digits));
+    }
+
+    public static function binary(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
     {
-        return self::of(new Integer($minimum, $maximum, $base));
+        return self::integer($minimum, $maximum, 2, $allowLeadingZeros);
+    }
+
+    public static function octal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
+    {
+        return self::integer($minimum, $maximum, 8, $allowLeadingZeros);
+    }
+
+    public static function hexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
+    {
+        return self::integer($minimum, $maximum, 16, $allowLeadingZeros);
+    }
+
+    public static function octet(bool $allowLeadingZeros = false): self
+    {
+        return self::integer(0, 255, 10, $allowLeadingZeros);
     }
 
     public static function literalWindow(string $literal): self
@@ -93,57 +121,57 @@ final readonly class Comprehend
         return self::of(Regex::literalWindow($literal));
     }
 
-    public static function sequence(self|Parser ...$parsers): self
+    public static function sequence(self|Parser|string ...$parsers): self
     {
         return new self(new Sequence(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function choice(self|Parser ...$parsers): self
+    public static function choice(self|Parser|string ...$parsers): self
     {
         return new self(new Choice(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function firstOf(self|Parser ...$parsers): self
+    public static function firstOf(self|Parser|string ...$parsers): self
     {
         return new self(Choice::first(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function first(self|Parser ...$parsers): self
+    public static function first(self|Parser|string ...$parsers): self
     {
         return self::firstOf(...$parsers);
     }
 
-    public static function longestOf(self|Parser ...$parsers): self
+    public static function longestOf(self|Parser|string ...$parsers): self
     {
         return new self(Choice::longest(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function longest(self|Parser ...$parsers): self
+    public static function longest(self|Parser|string ...$parsers): self
     {
         return self::longestOf(...$parsers);
     }
 
-    public static function shortestOf(self|Parser ...$parsers): self
+    public static function shortestOf(self|Parser|string ...$parsers): self
     {
         return new self(Choice::shortest(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function shortest(self|Parser ...$parsers): self
+    public static function shortest(self|Parser|string ...$parsers): self
     {
         return self::shortestOf(...$parsers);
     }
 
-    public static function all(self|Parser ...$parsers): self
+    public static function all(self|Parser|string ...$parsers): self
     {
         return new self(new All(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function except(self|Parser $match, self|Parser $not): self
+    public static function except(self|Parser|string $match, self|Parser|string $not): self
     {
         return new self(new Except(self::unwrap($match), self::unwrap($not)));
     }
 
-    public static function not(self|Parser $parser): self
+    public static function not(self|Parser|string $parser): self
     {
         return new self(new Not(self::unwrap($parser)));
     }
@@ -153,7 +181,7 @@ final readonly class Comprehend
         return new self($rules->ref($name, ...$arguments));
     }
 
-    public function then(self|Parser ...$next): self
+    public function then(self|Parser|string ...$next): self
     {
         if ($next === []) {
             return $this;
@@ -162,7 +190,7 @@ final readonly class Comprehend
         return new self(new Sequence($this->parser, ...array_map(self::unwrap(...), $next)));
     }
 
-    public function or(self|Parser ...$next): self
+    public function or(self|Parser|string ...$next): self
     {
         if ($next === []) {
             return $this;
@@ -292,8 +320,28 @@ final readonly class Comprehend
         return $this->parser->freeze();
     }
 
-    private static function unwrap(self|Parser $parser): Parser
+    /** Complete-input parsing; strings are validated UTF-8. Freeze explicitly for reuse. */
+    public function parse(string|Source $source, int $byteOffset = 0, ?ParseLimits $limits = null): ParseResult
     {
+        return $this->parseAll($source, $byteOffset, $limits);
+    }
+
+    public function parseAll(string|Source $source, int $byteOffset = 0, ?ParseLimits $limits = null): ParseResult
+    {
+        return $this->freeze()->parseAll($source, $byteOffset, $limits);
+    }
+
+    public function matchPrefix(string|Source $source, int $byteOffset = 0, ?ParseLimits $limits = null): ParseResult
+    {
+        return $this->freeze()->matchPrefix($source, $byteOffset, $limits);
+    }
+
+    private static function unwrap(self|Parser|string $parser): Parser
+    {
+        if (is_string($parser)) {
+            return new Text($parser);
+        }
+
         return $parser instanceof self ? $parser->parser : (new GraphSnapshot(false))->copy($parser);
     }
 }

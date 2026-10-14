@@ -59,36 +59,36 @@ class Rfc2234 extends AbstractRuleset
              * Definition of ABNF syntax (in reverse order for performance)
              */
             'prose_val' => C::sequence(
-                C::text('<'),
+                '<',
                 C::choice(C::range(chr(0x20), chr(0x3d)), C::range(chr(0x3f), chr(0x7e)))->many(),
-                C::text('>'),
+                '>',
             ),
             'hex_val' => C::sequence(
-                C::text('x'),
+                'x',
                 $hexdigs,
                 C::choice(
-                    C::sequence(C::text('.'), $hexdigs)->some(),
-                    C::sequence(C::text('-'), $hexdigs),
+                    C::sequence('.', $hexdigs)->some(),
+                    C::sequence('-', $hexdigs),
                 )->maybe(),
             ),
             'dec_val' => C::sequence(
-                C::text('d'),
+                'd',
                 $digits,
                 C::choice(
-                    C::sequence(C::text('.'), $digits)->some(),
-                    C::sequence(C::text('-'), $digits),
+                    C::sequence('.', $digits)->some(),
+                    C::sequence('-', $digits),
                 )->maybe(),
             ),
             'bin_val' => C::sequence(
-                C::text('b'),
+                'b',
                 $bits,
                 C::choice(
-                    C::sequence(C::text('.'), $bits)->some(),
-                    C::sequence(C::text('-'), $bits),
+                    C::sequence('.', $bits)->some(),
+                    C::sequence('-', $bits),
                 )->maybe(),
             ),
             'num_val' => C::sequence(
-                C::text('%'),
+                '%',
                 C::choice($this->rule('bin_val'), $this->rule('dec_val'), $this->rule('hex_val')),
             ),
             'char_val' => C::sequence(
@@ -97,18 +97,18 @@ class Rfc2234 extends AbstractRuleset
                 $this->rule('DQUOTE'),
             ),
             'option' => C::sequence(
-                C::text('['),
+                '[',
                 $c_wsps,
                 $this->rule('alternation'),
                 $c_wsps,
-                C::text(']'),
+                ']',
             ),
             'group' => C::sequence(
-                C::text('('),
+                '(',
                 $c_wsps,
                 $this->rule('alternation'),
                 $c_wsps,
-                C::text(')'),
+                ')',
             ),
             'element' => C::choice(
                 $this->rule('rulename'),
@@ -122,7 +122,7 @@ class Rfc2234 extends AbstractRuleset
                 $digits,
                 C::sequence(
                     $this->rule('DIGIT')->many(),
-                    C::text('*'),
+                    '*',
                     $this->rule('DIGIT')->many(),
                 ),
             ),
@@ -136,10 +136,10 @@ class Rfc2234 extends AbstractRuleset
             ),
             'alternation' => C::sequence(
                 $this->rule('concatenation'),
-                C::sequence($c_wsps, C::text('/'), $c_wsps, $this->rule('concatenation'))->many(),
+                C::sequence($c_wsps, '/', $c_wsps, $this->rule('concatenation'))->many(),
             ),
             'comment' => C::sequence(
-                C::text(';'),
+                ';',
                 C::choice($this->rule('WSP'), $this->rule('VCHAR'))->many(),
                 $this->rule('CRLF'),
             ),
@@ -151,12 +151,12 @@ class Rfc2234 extends AbstractRuleset
             'elements' => C::sequence($this->rule('alternation'), $c_wsps),
             'defined_as' => C::sequence(
                 $c_wsps,
-                C::choice(C::text('='), C::text('=/')),
+                C::choice('=', '=/'),
                 $c_wsps,
             ),
             'rulename' => C::sequence(
                 $this->rule('ALPHA'),
-                C::choice($this->rule('ALPHA'), $this->rule('DIGIT'), C::text('-'))->many(),
+                C::choice($this->rule('ALPHA'), $this->rule('DIGIT'), '-')->many(),
             ),
             'rule' => C::sequence(
                 $this->rule('rulename'),

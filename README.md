@@ -9,12 +9,10 @@ MIT licensed. Requires DOM, JSON and mbstring.
 ```php
 require 'vendor/autoload.php';
 
-use Vanderlee\Comprehend\Parser\Structure\Sequence;
-use Vanderlee\Comprehend\Parser\Terminal\Text;
-use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Comprehend as C;
 
-$grammar = new Sequence(new Text('hello'), new Text(' world'));
-$result = $grammar->parseAll(new Utf8Source('hello world'));
+$grammar = C::sequence('hello', ' world');
+$result = $grammar->parse('hello world');
 if ($result->success) {
     echo $result->rawText();
     echo $result->node->toJson();
@@ -25,8 +23,11 @@ if ($result->success) {
 `parseAll(Source, int $byteOffset = 0)` requires the entire remainder to match.
 Both return `ParseResult`; every public offset and span uses bytes. Choose
 `Utf8Source` for validated Unicode code-point recognition or `ByteSource` for
-arbitrary octets. Constructors take explicit parser objects; strings and nested
-arrays are not implicitly converted to grammar structures.
+arbitrary octets. The facade's `parse()` requires complete input; `parseAll()`
+and `matchPrefix()` also accept strings as validated UTF-8 and freeze the current
+grammar automatically. Freeze once for repeated parsing; FrozenGrammar accepts
+strings too. Facade composition treats string arguments as Text literals.
+Object constructors still take explicit parsers; arrays are not grammar syntax.
 
 ## Source, syntax and meaning
 
@@ -38,7 +39,9 @@ are lazy and cached per recognition. `onCommit()` effects receive ParseResult an
 run only after explicit `commit()` and successful semantic validation.
 
 ```php
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Source\Utf8Source;
 
 $number = (new Text('42'))
     ->name('number')

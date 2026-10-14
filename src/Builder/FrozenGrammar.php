@@ -8,13 +8,12 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Source\Utf8Source;
 
 /** A reusable resolved snapshot; no mutable parser graph is exposed. */
 final readonly class FrozenGrammar
 {
-    private function __construct(private Parser $root, public array $analysisWarnings)
-    {
-    }
+    private function __construct(private Parser $root, public array $analysisWarnings) {}
 
     public static function from(Parser $parser): self
     {
@@ -24,18 +23,18 @@ final readonly class FrozenGrammar
     }
 
     public function matchPrefix(
-        Source $source,
+        Source|string $source,
         int $byteOffset = 0,
-        ?ParseLimits $limits = null
+        ?ParseLimits $limits = null,
     ): ParseResult {
-        return $this->root->matchPrefix($source, $byteOffset, $limits);
+        return $this->root->matchPrefix(is_string($source) ? new Utf8Source($source) : $source, $byteOffset, $limits);
     }
 
     public function parseAll(
-        Source $source,
+        Source|string $source,
         int $byteOffset = 0,
-        ?ParseLimits $limits = null
+        ?ParseLimits $limits = null,
     ): ParseResult {
-        return $this->root->parseAll($source, $byteOffset, $limits);
+        return $this->root->parseAll(is_string($source) ? new Utf8Source($source) : $source, $byteOffset, $limits);
     }
 }

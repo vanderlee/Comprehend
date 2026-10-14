@@ -69,7 +69,7 @@ function facadeArithmetic(): FrozenGrammar
     // Inherited spacing belongs between tokens, never between a number's digits.
     $rules->define('number', C::range('0', '9')->plus()->lexeme());
     $factor = C::ref($rules, 'number')->or(
-        C::text('(')->then(C::ref($rules, 'expr'), C::text(')')),
+        C::sequence('(', $rules->rule('expr'), ')'),
     );
     $rules->define('term', $factor->then(C::text('*')->then($factor)->star()));
     $rules->define('expr', C::ref($rules, 'term')
@@ -120,7 +120,7 @@ $addresses = [
     (new Sequence((clone $address)->name('address')))->freeze(),
     $rules->freeze(),
     C::sequence(C::ref($rfc, 'scheme')
-        ->then(C::text('://'), C::ref($rfc, 'host'))->named('address'))->freeze(),
+        ->then('://', $rfc->rule('host'))->named('address'))->freeze(),
 ];
 foreach (['https://example.com' => true, 'http://127.0.0.1' => true, '1bad://host' => false, 'http://host/path' => false] as $text => $accepted) {
     $shape = null;

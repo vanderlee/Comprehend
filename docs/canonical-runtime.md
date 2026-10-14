@@ -31,7 +31,7 @@ typed objects / Ruleset factories / RFC imports
 | Automatic callbacks and four-argument string callback signatures | `onCommit(callable(ParseResult))`, semantic validation and idempotent commit | Lifecycle tests, discarded attempts and retained errors |
 | TokenProjection, Core Token and parser/match token callbacks | Direct immutable CST/AST array, JSON and XML schemas | TreeSerializationTest, AST and concrete-node tests |
 | Token transparency, token child indexes and compatibility-only serialization layouts | Complete CST children, named AST projection and semantic-leaf markers | Punctuation, unnamed input, trivia and empty-span tests |
-| ArgumentsTrait and string/int/array/class-name rule coercion | Explicit typed Parser arguments and factory returns | Constructor rejection and factory-contract tests |
+| ArgumentsTrait and string/int/array/class-name rule coercion | Explicit typed Parser arguments and factory returns; facade composition independently accepts literal strings as Text | Constructor rejection, facade literal and factory-contract tests |
 | Magic instance/static Ruleset dispatch and shared rule registry | `define()`, facade-returning `rule()`, Parser-returning `ref()`, `defined()`, `undefine()` on each instance; facade definitions detach on registration | Rule isolation, forward references and missing-name tests |
 | Magic Stub/Implementation properties and Definition invocation | `Stub::setParser()/getParser()`, `Definition::build()` | Recursive examples and canonical API gate |
 | Definition's speculative validation and parent-dependent processors | ParseResult semantic validators and cached processors over local collections | Selected validation, caching and abandoned-definition tests |

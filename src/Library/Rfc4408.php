@@ -15,7 +15,6 @@ namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Parser\Terminal\Integer;
 
 /**
  * Class Rfc4408.
@@ -136,7 +135,7 @@ class Rfc4408 extends AbstractRuleset
                 C::text('.'),
                 $this->rule('qnum'),
             ),
-            'qnum' => new Integer(0, 255),
+            'qnum' => C::octet(),
             'ip6_network' => $ipv6->rule('ipv6_address'),
             // 5.7. "exists"
             'exists' => C::sequence(

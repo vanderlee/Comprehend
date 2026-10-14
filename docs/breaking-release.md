@@ -14,12 +14,17 @@ The changelog remains marked Unreleased until publication is ready.
 | Mutable string `parse(&$input, ...)` extension | Typed `recognize(Source, int, ParseSession): AbstractMatch` |
 | Magic Ruleset lookup and string/class fallback | `define()`, `ref()`, `root()` and frozen graph snapshots |
 | Parser-returning `rule()` | Fluent facade-returning `rule()`; use `ref()` for Parser-only callers or direct recognition, and `rule()->freeze()` for facade recognition |
-| String/array arguments implicitly becoming parsers | Explicit Parser constructors or immutable Comprehend facade |
+| String/array arguments implicitly becoming parsers | Explicit Parser constructors; immutable Comprehend facade accepts literal strings in composition, but no array grammar coercion |
 | Integer character arguments | `chr()` for octets or explicit Unicode strings |
 | Token naming/output tree | `name()`, immutable CST, optional named AST and direct serialization |
 | Automatic callbacks and multi-argument callback coordinates | `onCommit(callable(ParseResult))` and explicit `commit()` |
 | Validation used to reject speculative alternatives | Pure CST `guard()`; selected-scope `validateSemantic()` for meaning |
 | Parent-dependent processors and mutable projection lifetime | Cached typed `mapValue()` and supported named collections |
+
+Integer candidates exceeding PHP's integer range now trim to representable,
+in-range prefixes rather than saturating during conversion. `parseAll()` rejects
+the remaining suffix. Numeric leading zeros and custom digit alphabets are opt-in;
+default range, sign and prefix-selection behavior otherwise remains unchanged.
 
 For UTF-8 `éa`, positions are bytes 0, 2 and 3. A failed result consumes zero
 bytes, with a separate farthest-failure diagnostic. Successful prefixes may

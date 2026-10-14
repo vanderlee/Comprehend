@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
 use Exception;
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Source\SourceMode;
 
 /**
  * Matches an integer within the specified range.
@@ -26,7 +28,10 @@ class Integer extends Parser
      *
      * @var string
      */
-    private static $set = '0123456789abcdefghijklmnopqrstuvwxyz';
+    public const DIGITS = '0123456789abcdefghijklmnopqrstuvwxyz';
+    /** @var list<string> Symbols in increasing numeric order. */
+    private array $digitSymbols;
+    private bool $allowLeadingZeros;
     /**
      * @var int|null
      */
@@ -47,17 +52,31 @@ class Integer extends Parser
      *
      * @throws Exception
      */
-    public function __construct(?int $minimum = 0, ?int $maximum = null, int $base = 10)
-    {
+    public function __construct(
+        ?int $minimum = 0,
+        ?int $maximum = null,
+        int $base = 10,
+        bool $allowLeadingZeros = false,
+        string $digits = self::DIGITS,
+    ) {
         if ($minimum !== null && $maximum !== null && $minimum > $maximum) {
             throw new Exception('Maximum must be greater than minimum');
         }
         $this->minimum = $minimum;
         $this->maximum = $maximum;
         $this->base = $base;
-        if ($base < 2 || $base > strlen(self::$set)) {
+        if (!mb_check_encoding($digits, 'UTF-8')) {
+            throw new InvalidArgumentException('Digit alphabet must be valid UTF-8');
+        }
+        $symbols = mb_str_split($digits, 1, 'UTF-8');
+        if (count(array_unique($symbols)) !== count($symbols) || in_array('-', $symbols, true)) {
+            throw new InvalidArgumentException('Digit symbols must be unique and exclude the minus sign');
+        }
+        if ($base < 2 || $base > count($symbols)) {
             throw new Exception('Unsupported base');
         }
+        $this->digitSymbols = array_slice($symbols, 0, $base);
+        $this->allowLeadingZeros = $allowLeadingZeros;
     }
 
     public function __toString(): string
@@ -76,9 +95,16 @@ class Integer extends Parser
     {
         $this->pushCaseSensitivityToContext($context);
         try {
-            $set0 = substr(self::$set, 0, $this->base);
-            $set1 = substr(self::$set, 1, $this->base - 1);
-            $pattern = '/(?:0|-?[' . $set1 . '][' . $set0 . ']*)/A' . ($context->isCaseSensitive() ? '' : 'i');
+            $caseSensitive = $context->isCaseSensitive();
+            $values = $this->digitValues($caseSensitive);
+            $all = self::digitPattern($this->digitSymbols);
+            $nonzero = self::digitPattern(array_slice($this->digitSymbols, 1));
+            $zero = preg_quote($this->digitSymbols[0], '/');
+            $pattern = $this->allowLeadingZeros
+                ? '/-?' . $all . '+/A'
+                : '/(?:' . $zero . '|-?' . $nonzero . $all . '*)/A';
+            $pattern .= $caseSensitive ? '' : 'i';
+            $pattern .= $input->mode() === SourceMode::UTF8 ? 'u' : '';
         } finally {
             $this->popCaseSensitivityFromContext($context);
         }
@@ -93,14 +119,68 @@ class Integer extends Parser
         }
 
         // Try shorter prefixes when the full integer lies outside the bounds.
-        for ($digits = $match[0]; $digits !== ''; $digits = substr($digits, 0, -1)) {
-            $context->consumeWork(1, $offset);
-            $integer = intval($digits, $this->base);
-            if ($this->isInRange($integer) && $digits !== '-') {
-                return $this->success($input, $offset, strlen($digits));
+        $negative = str_starts_with($match[0], '-');
+        $symbols = mb_str_split($negative ? substr($match[0], 1) : $match[0], 1, 'UTF-8');
+        $length = strlen($match[0]);
+        while ($symbols !== []) {
+            $integer = $this->integerValue($symbols, $values, $negative, $caseSensitive, $context, $offset);
+            if ($integer !== null && $this->isInRange($integer)) {
+                return $this->success($input, $offset, $length);
             }
+            $length -= strlen(array_pop($symbols));
         }
         return $this->failure($input, $offset);
+    }
+
+    private function digitValues(bool $caseSensitive): array
+    {
+        $values = [];
+        foreach ($this->digitSymbols as $value => $symbol) {
+            $key = $caseSensitive ? $symbol : mb_convert_case($symbol, MB_CASE_FOLD, 'UTF-8');
+            if (array_key_exists($key, $values)) {
+                throw new InvalidArgumentException('Digit alphabet is ambiguous under case-insensitive matching');
+            }
+            $values[$key] = $value;
+        }
+        return $values;
+    }
+
+    /** Alternatives keep multibyte symbols intact, including on byte sources. */
+    private static function digitPattern(array $symbols): string
+    {
+        $text = implode('', $symbols);
+        if (strlen($text) === count($symbols)) {
+            return '[' . preg_quote($text, '/') . ']';
+        }
+
+        $quoted = array_map(static fn(string $symbol): string => preg_quote($symbol, '/'), $symbols);
+        return '(?:' . implode('|', $quoted) . ')';
+    }
+
+    /** Accumulate negatively so PHP_INT_MIN remains representable; reject overflow. */
+    private function integerValue(
+        array $symbols,
+        array $values,
+        bool $negative,
+        bool $caseSensitive,
+        ParseSession $context,
+        int $offset,
+    ): ?int {
+        $integer = 0;
+        $limit = $negative ? PHP_INT_MIN : -PHP_INT_MAX;
+        foreach ($symbols as $symbol) {
+            $context->consumeWork(1, $offset);
+            $key = $caseSensitive ? $symbol : mb_convert_case($symbol, MB_CASE_FOLD, 'UTF-8');
+            if (!array_key_exists($key, $values)) {
+                return null;
+            }
+            $digit = $values[$key];
+            if ($integer < intdiv($limit + $digit, $this->base)) {
+                return null;
+            }
+            $integer = $integer * $this->base - $digit;
+        }
+        return $negative ? $integer : -$integer;
     }
 
     private function isInRange(int $integer): bool
