@@ -21,7 +21,6 @@
     "phpmd/phpmd": "2.6.0"
   },
   "autoload": {
-    "files": ["src/Library/functions.php"],
     "psr-4": {
       "Vanderlee\\Comprehend\\": "src"
     }

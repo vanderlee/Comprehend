@@ -12,11 +12,14 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Terminal\Char;
+use Vanderlee\Comprehend\Parser\Terminal\Range;
 use Vanderlee\Comprehend\Parser\Terminal\Regex;
+use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /** Immutable authoring facade over the existing object parser types. */
-final readonly class Grammar
+final readonly class Comprehend
 {
     private function __construct(private Parser $parser)
     {
@@ -35,6 +38,21 @@ final readonly class Grammar
     public static function regex(string $pattern): self
     {
         return self::of(new Regex($pattern));
+    }
+
+    public static function char(string $character, bool $include = true): self
+    {
+        return self::of(new Char($character, $include));
+    }
+
+    public static function set(string $characters, bool $include = true): self
+    {
+        return self::of(new Set($characters, $include));
+    }
+
+    public static function range(?string $first, ?string $last, bool $in = true): self
+    {
+        return self::of(new Range($first, $last, $in));
     }
 
     public static function sequence(self|Parser ...$parsers): self

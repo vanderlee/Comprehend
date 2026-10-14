@@ -8,7 +8,7 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\Ruleset;
-use Vanderlee\Comprehend\Grammar;
+use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Library\Rfc3986;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Stub;
@@ -17,10 +17,141 @@ use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
-class GrammarTest extends TestCase
+class ComprehendTest extends TestCase
 {
+    /** @dataProvider terminalGrammars */
+    public function testTerminalFactories(Comprehend $grammar, Source $source, bool $accepted): void
+    {
+        $result = $grammar->named('terminal')->freeze()->parseAll($source);
+        $this->assertSame($accepted, $result->success);
+        $this->assertSame($accepted ? $source->byteLength() : 0, $result->consumedByteLength);
+        if ($accepted) {
+            $this->assertSame('terminal', $result->ast()->name);
+            $this->assertSame($source->sliceBytes(0, $source->byteLength()), $result->rawText());
+        }
+    }
+
+    public function terminalGrammars(): array
+    {
+        return [
+            'Unicode character' => [Comprehend::char('é'), new Utf8Source('é'), true],
+            'binary character' => [Comprehend::char("\xff"), new ByteSource("\xff"), true],
+            'character mismatch' => [Comprehend::char('a'), new ByteSource('b'), false],
+            'excluded character' => [Comprehend::char('a', false), new ByteSource('b'), true],
+            'excluded character rejects itself' => [Comprehend::char('a', false), new ByteSource('a'), false],
+            'Unicode set' => [Comprehend::set('é🙂'), new Utf8Source('🙂'), true],
+            'binary set' => [Comprehend::set("\0\xff"), new ByteSource("\xff"), true],
+            'set mismatch' => [Comprehend::set('ab'), new ByteSource('c'), false],
+            'excluded set' => [Comprehend::set('ab', false), new ByteSource('c'), true],
+            'excluded set rejects members' => [Comprehend::set('ab', false), new ByteSource('a'), false],
+            'Unicode range' => [Comprehend::range('α', 'ω'), new Utf8Source('β'), true],
+            'binary range' => [Comprehend::range("\x80", "\xff"), new ByteSource("\xfe"), true],
+            'range mismatch' => [Comprehend::range('a', 'z'), new ByteSource('0'), false],
+            'open lower bound' => [Comprehend::range(null, '9'), new ByteSource('0'), true],
+            'open upper bound' => [Comprehend::range('a', null), new ByteSource('z'), true],
+            'excluded range' => [Comprehend::range('a', 'z', false), new ByteSource('0'), true],
+            'excluded range rejects members' => [Comprehend::range('a', 'z', false), new ByteSource('b'), false],
+        ];
+    }
+
+    public function testComposedFactoriesAndRepetitionRegisterWithRulesets(): void
+    {
+        $item = Comprehend::choice(Comprehend::char('a'), Comprehend::range('0', '9'), Comprehend::set('!?'));
+        $rules = new Ruleset();
+        $rules->define('item', $item);
+        $rules->root(Comprehend::sequence(
+            Comprehend::text('['),
+            Comprehend::ref($rules, 'item')->repeat(1, 3),
+            Comprehend::text(']')->repeat(0, 1),
+        ));
+        $grammar = $rules->freeze();
+
+        $this->assertTrue($grammar->parseAll(new ByteSource('[a1!'))->success);
+        $this->assertTrue($grammar->parseAll(new ByteSource('[a1!]'))->success);
+        $this->assertFalse($grammar->parseAll(new ByteSource('[]'))->success);
+        $this->assertFalse($grammar->parseAll(new ByteSource('[aaaa]'))->success);
+        $this->assertFalse($grammar->parseAll(new ByteSource('[x]'))->success);
+        $this->assertTrue($item->repeat()->freeze()->parseAll(new ByteSource(''))->success);
+        $this->assertTrue($item->repeat(2, 2)->freeze()->parseAll(new ByteSource('a?'))->success);
+        $this->assertFalse($item->repeat(2, 2)->freeze()->parseAll(new ByteSource('a'))->success);
+    }
+
+    public function testConstructorMixesFacadeAndObjectDefinitions(): void
+    {
+        $rules = new Ruleset([
+            'facade' => Comprehend::text('a'),
+            'parser' => new Text('b'),
+            'definition' => new Definition(new Text('c')),
+            'factory' => static fn (): Parser => new Text('d'),
+        ]);
+        $rules->root(Comprehend::sequence(
+            Comprehend::ref($rules, 'facade'),
+            Comprehend::ref($rules, 'parser'),
+            Comprehend::ref($rules, 'definition'),
+            Comprehend::ref($rules, 'factory'),
+        ));
+        $grammar = $rules->freeze();
+
+        $this->assertTrue($grammar->parseAll(new ByteSource('abcd'))->success);
+        $this->assertFalse($grammar->parseAll(new ByteSource('abce'))->success);
+    }
+
+    public function testRegisteredFacadesKeepDeferredAndRecursiveReferences(): void
+    {
+        $calls = 0;
+        $rules = new Ruleset();
+        $rules->root(Comprehend::ref($rules, 'nested'));
+        $rules->define('nested', Comprehend::choice(
+            Comprehend::ref($rules, 'leaf'),
+            Comprehend::sequence(
+                Comprehend::text('('),
+                Comprehend::ref($rules, 'nested'),
+                Comprehend::text(')'),
+            ),
+        ));
+        $rules->define('leaf', static function () use (&$calls): Parser {
+            ++$calls;
+            return new Text('x');
+        });
+
+        $this->assertSame(0, $calls);
+        $grammar = $rules->freeze();
+        $this->assertSame(1, $calls);
+        $this->assertTrue($grammar->parseAll(new ByteSource('((x))'))->success);
+        $this->assertFalse($grammar->parseAll(new ByteSource('((y))'))->success);
+        $this->assertSame(1, $calls);
+    }
+
+    public function testRegistrationDetachesFacadeStateBetweenRulesets(): void
+    {
+        $facade = Comprehend::sequence(Comprehend::text('a')->named('original'));
+        $first = new Ruleset(['word' => $facade]);
+        $second = new Ruleset(['word' => $facade]);
+        $first->root('word');
+        $second->root('word');
+        $retained = $first->freeze();
+        $first->resolveRule('word')[0]->name('changed');
+
+        $source = new ByteSource('a');
+        $this->assertSame('changed', $first->freeze()->parseAll($source)->ast()->children[0]->children[0]->name);
+        $this->assertSame('original', $retained->parseAll($source)->ast()->children[0]->children[0]->name);
+        $this->assertSame('original', $second->freeze()->parseAll($source)->ast()->children[0]->children[0]->name);
+        $this->assertSame('original', $facade->freeze()->parseAll($source)->ast()->children[0]->name);
+    }
+
+    public function testFacadeDefinitionsRejectFactoryArguments(): void
+    {
+        $rules = new Ruleset(['word' => Comprehend::text('a')]);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Only rule factories accept arguments: word');
+        $rules->rule('word', 'argument')->parseAll(new ByteSource('a'));
+    }
+
     public function testForwardReferencesAndExplicitRoot()
     {
         $rules = new Ruleset();
@@ -102,10 +233,10 @@ class GrammarTest extends TestCase
     public function testFacadeExtensionsAndExportsDoNotMutateOriginal()
     {
         $parser = new Sequence(new Text('a'));
-        $base = Grammar::of($parser);
-        $long = $base->then(Grammar::text('b'));
-        $choice = Grammar::text('a');
-        $extra = $choice->or(Grammar::text('b'));
+        $base = Comprehend::of($parser);
+        $long = $base->then(Comprehend::text('b'));
+        $choice = Comprehend::text('a');
+        $extra = $choice->or(Comprehend::text('b'));
         $parser->add(new Text('x'));
         $exported = $base->parser();
         $exported->add(new Text('z'));
@@ -168,7 +299,7 @@ class GrammarTest extends TestCase
         $second = new Ruleset();
         $first->define('word', new Text('a'));
         $second->define('word', new Text('b'));
-        $facade = Grammar::ref($first, 'word')->then(Grammar::ref($second, 'word'));
+        $facade = Comprehend::ref($first, 'word')->then(Comprehend::ref($second, 'word'));
         $this->assertTrue($facade->freeze()->parseAll(new Utf8Source('ab'))->success);
         $this->assertTrue($facade->parser()->freeze()->parseAll(new Utf8Source('ab'))->success);
     }

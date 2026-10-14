@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend\Builder;
 
 use InvalidArgumentException;
 use LogicException;
+use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -23,6 +24,7 @@ abstract class AbstractRuleset extends Parser
     private ?object $graphIdentity = null;
     private ?string $groupName = null;
 
+    /** @param array<string, Comprehend|Parser|Definition|callable> $rules */
     public function __construct(array $rules = [], ?string $name = null)
     {
         $this->groupName = $name ?? static::$name;
@@ -31,12 +33,13 @@ abstract class AbstractRuleset extends Parser
         }
     }
 
-    public function define(string $name, Parser|Definition|callable $definition): static
+    /** Facade values become detached parser graphs when registered. */
+    public function define(string $name, Comprehend|Parser|Definition|callable $definition): static
     {
         if ($name === '') {
             throw new InvalidArgumentException('Rule name cannot be empty');
         }
-        $this->instanceRules[$name] = $definition;
+        $this->instanceRules[$name] = $definition instanceof Comprehend ? $definition->parser() : $definition;
         // Explicit redefinition affects future recognitions; existing results
         // retain their own nodes, values, validators and effects.
         $this->implementations = [];
@@ -58,7 +61,7 @@ abstract class AbstractRuleset extends Parser
         return isset($this->instanceRules[$name]);
     }
 
-    public function root(string|Parser $rule): static
+    public function root(string|Comprehend|Parser $rule): static
     {
         return $this->define(self::ROOT, is_string($rule) ? $this->ref($rule) : $rule);
     }

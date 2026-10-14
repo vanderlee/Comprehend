@@ -20,14 +20,19 @@ $grammar = $rules->freeze();
 $grammar->parseAll(new Utf8Source('ab'))->success; // true
 ```
 
-`define(string, Parser|Definition|callable)` registers a typed parser or factory.
+`define(string, Comprehend|Parser|Definition|callable)` registers a facade, typed parser or factory.
 `ref(string, ...$arguments)` creates a deferred named reference; definitions can
-be written in any order. `root(string|Parser)` chooses the start rule by name or
-supplies its parser directly. `rule()` is a direct convenience call to `ref()`.
+be written in any order. `root(string|Comprehend|Parser)` chooses the start rule by name or
+supplies its facade or parser directly. `rule()` is a direct convenience call to `ref()`.
 References never guess a literal or class name. Missing names and invalid factory
 returns are grammar errors. Named references preserve their Ruleset group in
 AST/diagnostic output. Ruleset roots inherit the selected root's typed value
 unless the Ruleset has its own mapping.
+
+Ruleset constructor entries, `define()` and `root()` accept Comprehend values
+directly. Registration exports a detached parser graph internally, preserving
+facade isolation without explicit `parser()` calls. Deferred references still
+consult their owning builder until freezing. Factories continue to return Parser.
 
 ## Resolved graph snapshots
 
@@ -70,30 +75,33 @@ Dynamic child construction remains opaque to static analysis.
 
 ## Immutable fluent composition
 
-The `Grammar` facade returns a new value for every composition or metadata
+The `Comprehend` facade returns a new value for every composition or metadata
 operation. It uses Sequence, Choice, Repeat and the existing directives:
 
 ```php
-use Vanderlee\Comprehend\Grammar;
+use Vanderlee\Comprehend\Comprehend;
 
-$base = Grammar::text('a');
-$longer = $base->then(Grammar::text('b'));
-$alternative = $base->or(Grammar::text('c'));
+$base = Comprehend::text('a');
+$longer = $base->then(Comprehend::text('b'));
+$alternative = $base->or(Comprehend::text('c'));
 $base->freeze()->parseAll(new Utf8Source('a'))->success; // true
 $longer->freeze()->parseAll(new Utf8Source('ab'))->success; // true
 $alternative->freeze()->parseAll(new Utf8Source('c'))->success; // true
 ```
 
+The bundled RFC grammars import the facade as `C` with
+`use Vanderlee\Comprehend\Comprehend as C;` to keep composition concise.
+
 | Operation | Underlying behavior |
 | --- | --- |
-| `text()`, `regex()`, `of(Parser)` | Wrap a detached object parser |
+| `text()`, `char()`, `set()`, `range()`, `regex()`, `of(Parser)` | Wrap a detached object parser |
 | `ref(Ruleset, name, ...args)` | Deferred supported named reference |
 | `sequence(...items)`, `then(item)` | Sequence composition |
 | `choice(...items)`, `or(item)` | First-choice composition |
 | `repeat(min, max)` | Repeat with existing bounds/progress semantics |
 | `named()`, `mapValue()` | Metadata on a detached graph |
 | `spacing()`, `lexeme()`, `trivia()` | Existing scoped directives |
-| `parser()` | Detached object graph for factories/constructors |
+| `parser()` | Detached object graph for Parser-only factories/constructors |
 | `freeze()` | Resolved, analyzed reusable snapshot |
 
 Reference-bearing facade expressions deliberately resolve names at freeze,
@@ -103,6 +111,35 @@ Exporting via `parser()` does not expose the facade's internal containers.
 Mutable object builders remain available: migrate shared `add()`/array edits to
 facade `then()`/`or()`, or freeze a graph before changing its builders. Composition
 retains nested container structure rather than silently flattening named groups.
+
+### Replacing the Library functions
+
+The free functions in `Vanderlee\Comprehend\Library` have been removed. Import
+`Vanderlee\Comprehend\Comprehend` and compose facade values instead:
+
+| Former call | Comprehend replacement |
+| --- | --- |
+| `text($text)`, `char($char)`, `set($set)`, `range($first, $last)`, `regex($pattern)` | Corresponding `Comprehend::text/char/set/range/regex(...)` factory |
+| `s(...$items)` | `Comprehend::sequence(...$items)` |
+| `c(...$items)` | `Comprehend::choice(...$items)` |
+| `star($parser)` | `Comprehend::of($parser)->repeat()` |
+| `plus($parser)` | `Comprehend::of($parser)->repeat(1)` |
+| `opt($parser)` | `Comprehend::of($parser)->repeat(0, 1)` |
+| `repeat($min, $max, $parser)` | `Comprehend::of($parser)->repeat($min, $max)` |
+
+Call `repeat()` directly on an existing Comprehend value. `char()` and `set()`
+accept an optional `include` flag; `range()` accepts an optional `in` flag.
+These retain the underlying terminal's byte/Unicode and exclusion semantics.
+Supply facade values directly to Ruleset definitions or roots. Export through
+`parser()` for factories or object constructors that require Parser; use
+`freeze()` to resolve and recognize a complete grammar:
+
+```php
+$rules = new Ruleset();
+$rules->define('digits', Comprehend::range('0', '9')->repeat(1));
+$grammar = Comprehend::sequence(Comprehend::text('['), Comprehend::ref($rules, 'digits'), Comprehend::text(']'));
+$grammar->freeze()->parseAll(new Utf8Source('[123]'))->success; // true
+```
 
 ## Static and runtime safety
 

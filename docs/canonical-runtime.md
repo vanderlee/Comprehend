@@ -32,10 +32,11 @@ typed objects / Ruleset factories / RFC imports
 | TokenProjection, Core Token and parser/match token callbacks | Direct immutable CST/AST array, JSON and XML schemas | TreeSerializationTest, AST and concrete-node tests |
 | Token transparency, token child indexes and compatibility-only serialization layouts | Complete CST children, named AST projection and semantic-leaf markers | Punctuation, unnamed input, trivia and empty-span tests |
 | ArgumentsTrait and string/int/array/class-name rule coercion | Explicit typed Parser arguments and factory returns | Constructor rejection and factory-contract tests |
-| Magic instance/static Ruleset dispatch and shared rule registry | `define()`, `rule()`, `defined()`, `undefine()` on each instance | Rule isolation, forward references and missing-name tests |
+| Magic instance/static Ruleset dispatch and shared rule registry | `define()`, `rule()`, `defined()`, `undefine()` on each instance; facade definitions detach on registration | Rule isolation, forward references and missing-name tests |
 | Magic Stub/Implementation properties and Definition invocation | `Stub::setParser()/getParser()`, `Definition::build()` | Recursive examples and canonical API gate |
 | Definition's speculative validation and parent-dependent processors | ParseResult semantic validators and cached processors over local collections | Selected validation, caching and abandoned-definition tests |
 | Compatibility-only fixtures and obsolete documentation | Canonical behavior fixtures, updated contracts and runnable examples | Full suite, PHP syntax/API gate and example execution |
+| Free Library functions (`s`, `c`, `star`, `plus`, `opt`, `repeat` and terminal factories) | Immutable `Comprehend` factories/composition, accepted directly by Ruleset; `parser()` exports for Parser-only boundaries | Grammar factory/RFC tests and canonical API gate |
 
 Internal `Match\AbstractMatch`, Success and Failure are selected execution records,
 not additional public result shapes. They retain lazy operations and observed
@@ -51,7 +52,7 @@ collections, `value()` for typed output and `node`/`ast()` for syntax. No coordi
 adapter or old output wrapper remains.
 
 Construct `new Sequence(new Text('a'), new Text('b'))`, not string/array shorthand.
-Call `rule('name', ...$arguments)` explicitly; supply Parser, Definition or a
+Call `rule('name', ...$arguments)` explicitly; supply Comprehend, Parser, Definition or a
 factory to `define()`. Strings are not rule aliases or class-name factories.
 Use `chr()` explicitly for octets passed to Char/Range. Replace `token()` naming
 with `name()`; serializers operate on CST/AST, with the schema in

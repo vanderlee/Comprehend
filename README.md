@@ -57,14 +57,16 @@ to array, JSON and XML. There is no separate Token output model.
 
 ## Named grammar authoring
 
-Use `Ruleset::define(string, Parser|Definition|callable)`, explicit
-`ref(string, ...$arguments)` lookup and `root(string|Parser)` selection. Deferred references permit forward and
+Use `Ruleset::define(string, Comprehend|Parser|Definition|callable)`, explicit
+`ref(string, ...$arguments)` lookup and `root(string|Comprehend|Parser)` selection. Deferred references permit forward and
 recursive definitions; an undefined name raises a grammar error. Factories must
 return Parser. Use `Stub::setParser(Parser)` for recursive object grammars.
 
 `freeze()` resolves and snapshots a graph, rejecting known left recursion and
-nullable repetition. The immutable `Grammar` facade composes the same object
-parsers without mutating reused containers. See [Grammar authoring](docs/grammar-authoring.md)
+nullable repetition. The immutable `Comprehend` facade composes the same object
+parsers without mutating reused containers. Ruleset constructor entries, definitions
+and roots accept facade values directly and detach them internally at registration.
+See [Grammar authoring](docs/grammar-authoring.md)
 and its checked arithmetic/RFC examples. Mutable builders remain available;
 changes affect future snapshots, while frozen grammars remain independent.
 

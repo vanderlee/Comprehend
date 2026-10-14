@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Builder\Ruleset;
-use Vanderlee\Comprehend\Grammar;
+use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
@@ -33,8 +33,8 @@ final class ReleaseOneUnit extends Parser
 
 $events = [];
 $rules = new Ruleset();
-$rules->define('number', Grammar::text('42')->named('number')
-    ->mapValue(fn (ParseResult $result): int => (int) $result->rawText())->parser());
+$rules->define('number', Comprehend::text('42')->named('number')
+    ->mapValue(fn (ParseResult $result): int => (int) $result->rawText()));
 $rules->root('number')->onCommit(function (ParseResult $result) use (&$events): void {
     $events[] = $result->value();
 });

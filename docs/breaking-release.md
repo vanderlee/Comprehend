@@ -13,7 +13,7 @@ The changelog remains marked Unreleased until publication is ready.
 | Mixed character/byte offsets and legacy `length` | Canonical byte `start`, `end`, `consumedByteLength`; explicit code-point conversion |
 | Mutable string `parse(&$input, ...)` extension | Typed `recognize(Source, int, ParseSession): AbstractMatch` |
 | Magic Ruleset lookup and string/class fallback | `define()`, `ref()`, `root()` and frozen graph snapshots |
-| String/array arguments implicitly becoming parsers | Explicit Parser constructors or immutable Grammar facade |
+| String/array arguments implicitly becoming parsers | Explicit Parser constructors or immutable Comprehend facade |
 | Integer character arguments | `chr()` for octets or explicit Unicode strings |
 | Token naming/output tree | `name()`, immutable CST, optional named AST and direct serialization |
 | Automatic callbacks and multi-argument callback coordinates | `onCommit(callable(ParseResult))` and explicit `commit()` |

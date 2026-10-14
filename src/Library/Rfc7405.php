@@ -1,6 +1,7 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
+
 /**
  * RFC 7405 - Case-Sensitive String Support in ABNF.
  *
@@ -11,7 +12,7 @@ declare (strict_types=1);
 
 namespace Vanderlee\Comprehend\Library;
 
-require_once 'functions.php';
+use Vanderlee\Comprehend\Comprehend as C;
 
 /**
  */
@@ -25,14 +26,20 @@ class Rfc7405 extends Rfc5234
             /*
              * 2.2 ABNF Definition of ABNF - char-val
              */
-            'quoted_string' => s(
+            'quoted_string' => C::sequence(
                 $this->rule('DQUOTE'),
-                star(c(range(chr(0x20), chr(0x21)), range(chr(0x23), chr(0x7e)))),
+                C::choice(C::range(chr(0x20), chr(0x21)), C::range(chr(0x23), chr(0x7e)))->repeat(),
                 $this->rule('DQUOTE'),
             ),
-            'case_sensitive_string' => s(text('%s'), $this->rule('quoted_string')),
-            'case_insensitive_string' => s(opt(text('%i')), $this->rule('quoted_string')),
-            'char_val' => c($this->rule('case_insensitive_string'), $this->rule('case_sensitive_string')),
+            'case_sensitive_string' => C::sequence(C::text('%s'), $this->rule('quoted_string')),
+            'case_insensitive_string' => C::sequence(
+                C::text('%i')->repeat(0, 1),
+                $this->rule('quoted_string'),
+            ),
+            'char_val' => C::choice(
+                $this->rule('case_insensitive_string'),
+                $this->rule('case_sensitive_string'),
+            ),
         ];
         parent::__construct(array_merge($rules, $overwrites));
     }

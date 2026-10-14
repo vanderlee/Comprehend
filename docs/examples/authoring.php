@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\Ruleset;
-use Vanderlee\Comprehend\Grammar;
+use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Library\Rfc3986;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Stub;
@@ -63,13 +63,13 @@ function rulesetArithmetic(): FrozenGrammar
 function facadeArithmetic(): FrozenGrammar
 {
     $rules = new Ruleset();
-    $rules->define('number', Grammar::regex('/[0-9]+/A')->parser());
-    $factor = Grammar::ref($rules, 'number')->or(Grammar::text('(')->then(Grammar::ref($rules, 'expr'))->then(Grammar::text(')')));
-    $rules->define('term', $factor->then(Grammar::text('*')->then($factor)->repeat())->parser());
-    $rules->define('expr', Grammar::ref($rules, 'term')
-        ->then(Grammar::text('+')->then(Grammar::ref($rules, 'term'))->repeat())
-        ->spacing(Grammar::of(Repeat::star(new Set(" \t\r\n"))))->parser());
-    $rules->root(arithmeticDocument(Grammar::ref($rules, 'expr')->parser()));
+    $rules->define('number', Comprehend::regex('/[0-9]+/A'));
+    $factor = Comprehend::ref($rules, 'number')->or(Comprehend::text('(')->then(Comprehend::ref($rules, 'expr'))->then(Comprehend::text(')')));
+    $rules->define('term', $factor->then(Comprehend::text('*')->then($factor)->repeat()));
+    $rules->define('expr', Comprehend::ref($rules, 'term')
+        ->then(Comprehend::text('+')->then(Comprehend::ref($rules, 'term'))->repeat())
+        ->spacing(Comprehend::of(Repeat::star(new Set(" \t\r\n")))));
+    $rules->root(arithmeticDocument(Comprehend::ref($rules, 'expr')->parser()));
     return $rules->freeze();
 }
 
@@ -106,8 +106,8 @@ $rules->define('address', $address)->root('address');
 $addresses = [
     (new Sequence((clone $address)->name('address')))->freeze(),
     $rules->freeze(),
-    Grammar::sequence(Grammar::ref($rfc, 'scheme')->then(Grammar::text('://'))
-        ->then(Grammar::ref($rfc, 'host'))->named('address'))->freeze(),
+    Comprehend::sequence(Comprehend::ref($rfc, 'scheme')->then(Comprehend::text('://'))
+        ->then(Comprehend::ref($rfc, 'host'))->named('address'))->freeze(),
 ];
 foreach (['https://example.com' => true, 'http://127.0.0.1' => true, '1bad://host' => false, 'http://host/path' => false] as $text => $accepted) {
     $shape = null;

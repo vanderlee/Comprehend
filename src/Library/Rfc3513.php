@@ -1,6 +1,7 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
+
 /**
  * RFC 3513 - Internet Protocol Version 6 (IPv6) Addressing Architecture.
  *
@@ -13,9 +14,8 @@ declare (strict_types=1);
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
+use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Terminal\Integer;
-
-require_once 'functions.php';
 
 /**
  * IPv6 address
@@ -42,7 +42,11 @@ class Rfc3513 extends AbstractRuleset
          */
         $rules = [
             // 2.3 Text Representation of Address Prefixes
-            'ipv6' => s($this->rule('ipv6_address'), text('/'), $this->rule('prefix_length')),
+            'ipv6' => C::sequence(
+                $this->rule('ipv6_address'),
+                C::text('/'),
+                $this->rule('prefix_length'),
+            ),
             'ipv6_address' => $rfc3986->rule('IPv6address'),
             'prefix_length' => new Integer(0, 128),
             self::ROOT => $this->rule('ipv6'),

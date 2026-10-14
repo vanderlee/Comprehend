@@ -7,6 +7,15 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 $root = dirname(__DIR__);
 $errors = [];
+if (is_file($root . '/src/Library/functions.php')) {
+    $errors[] = 'Removed Library helper file is present';
+}
+foreach (['s', 'c', 'star', 'plus', 'opt', 'repeat', 'text', 'char', 'set', 'range', 'regex'] as $function) {
+    if (function_exists('Vanderlee\\Comprehend\\Library\\' . $function)) {
+        $errors[] = 'Removed Library function: ' . $function;
+    }
+}
+
 foreach (['Compatibility', 'Core'] as $directory) {
     $path = $root . '/src/' . $directory;
     if (is_dir($path)) {

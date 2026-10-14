@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\Ruleset;
+use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Library\Rfc2234;
 use Vanderlee\Comprehend\Library\Rfc3986;
 use Vanderlee\Comprehend\Match\AbstractMatch;
@@ -19,8 +20,6 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Utf8Source;
-use function Vanderlee\Comprehend\Library\s;
-use function Vanderlee\Comprehend\Library\text;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -77,7 +76,7 @@ $rules = new Ruleset([], 'example');
 $rules->define('twice', static fn (Parser $item): Parser => Repeat::exact($item, 2));
 $rules->define(Ruleset::ROOT, $rules->rule('twice', new Text('x')));
 verify($rules->parseAll(new ByteSource('xx'))->success, 'parameterized named grammar');
-verify(s(text('a'), text('b'))->parseAll(new ByteSource('ab'))->success, 'autoloaded typed helpers');
+verify(Comprehend::sequence(Comprehend::text('a'), Comprehend::text('b'))->freeze()->parseAll(new ByteSource('ab'))->success, 'Comprehend composition');
 $uri = new Rfc3986();
 verify($uri->rule('IPv4address')->parseAll(new ByteSource('192.0.2.1'))->success, 'RFC IPv4');
 $abnf = new Rfc2234();

@@ -1,7 +1,7 @@
 # Named grammar builders
 
-Ruleset provides explicit `define(string, Parser|Definition|callable)`,
-`ref(string, ...$arguments)`, `root(string|Parser)`, `defined(string)` and
+Ruleset provides explicit `define(string, Comprehend|Parser|Definition|callable)`,
+`ref(string, ...$arguments)`, `root(string|Comprehend|Parser)`, `defined(string)` and
 `undefine(string)` operations. `rule()` delegates to `ref()`.
 Rule lookup is deferred so forward/recursive definitions can be constructed in
 any order. Undefined names raise LogicException on recognition; there is no
@@ -20,7 +20,11 @@ $grammar->root($grammar->ref('twice', new Text('x')));
 $result = $grammar->freeze()->parseAll(new \Vanderlee\Comprehend\Source\Utf8Source('xx'));
 ```
 
-Factories must return Parser. Concrete Parser rules take no factory arguments.
+Facade values supplied through constructor entries, `define()` or `root()` are
+converted to detached Parser graphs at registration. Reusing a facade in several
+Rulesets does not share mutable parser state with those builders.
+
+Factories must return Parser. Concrete Parser and facade rules take no factory arguments.
 Definition wraps a Parser or factory, with `build(...$arguments)` for explicit
 instantiation, selected ParseResult validators and cached collection processors.
 `Stub::setParser(Parser)` supplies explicit recursion for object grammars.
