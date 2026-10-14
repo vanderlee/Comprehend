@@ -87,7 +87,7 @@ class SyntaxDispatchTest extends TestCase
         $syntax->between('[', ']');
     }
 
-    public function testCachedResolutionStillInvokesFactoriesForEveryExpression(): void
+    public function testFactoriesRunForEveryExpressionAndNeverDuringParsing(): void
     {
         $calls = 0;
         $syntax = C::syntax()->define('token', static function () use (&$calls): C {

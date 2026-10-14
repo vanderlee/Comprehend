@@ -232,13 +232,11 @@ method name is data. `names()` lists built-in and registered factory names.
 Freezing retains the constructed parser graph and performs no syntax dispatch.
 
 Built-in static calls such as `Comprehend::text()` resolve directly from a fixed
-catalog without allocating or caching a default registry. That catalog coordinates
-typed start/continuation callbacks, aliases, name discovery and reserved names. Scoped
-Syntax vocabularies share one immutable catalog between their start and continuation
-registries. Each registry caches built-in and custom callable resolution on its own instance;
-factories still run for every authoring call and parser expressions are never cached.
-Extending a vocabulary creates a new catalog and fresh registries, leaving existing
-expressions and their caches unchanged. No mutable static registry is used.
+catalog. That catalog coordinates typed start/continuation callbacks, aliases,
+name discovery and reserved names. Scoped Syntax vocabularies resolve callbacks
+directly through their immutable catalog, without registries or resolution caches.
+Factories run for every authoring call and parser expressions are never cached.
+Extending a vocabulary creates a new catalog, leaving existing expressions unchanged.
 Parser construction, repetition, composition, directives and fluent metadata are
 implemented by catalog callbacks, dispatched directly through magic calls;
 parsing, freezing, graph export and reference-based `assignTo()` remain declared on the facade.

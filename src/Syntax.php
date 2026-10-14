@@ -6,27 +6,18 @@ namespace Vanderlee\Comprehend;
 
 use Closure;
 use Vanderlee\Comprehend\Syntax\Catalog;
-use Vanderlee\Comprehend\Syntax\ContinuationRegistry;
-use Vanderlee\Comprehend\Syntax\StartRegistry;
 
-/** An immutable vocabulary with instance-local callable resolution caches. */
+/** An immutable vocabulary of start and continuation callbacks. */
 final readonly class Syntax
 {
-    private StartRegistry $starts;
-    private ContinuationRegistry $continuations;
-
-    private function __construct(private Catalog $catalog)
-    {
-        $this->starts = new StartRegistry($catalog);
-        $this->continuations = new ContinuationRegistry($catalog);
-    }
+    private function __construct(private Catalog $catalog) {}
 
     public static function create(): self
     {
         return new self(new Catalog());
     }
 
-    /** Existing expressions retain their catalog and caches. */
+    /** Existing expressions retain their original catalog. */
     public function define(string $name, callable $factory): self
     {
         return new self($this->catalog->define($name, $factory));
@@ -56,12 +47,12 @@ final readonly class Syntax
     /** @internal Authoring dispatch only. */
     public function factory(string $name): ?Closure
     {
-        return $this->starts->factory($name);
+        return $this->catalog->start($name);
     }
 
     /** @internal Authoring dispatch only. */
     public function continuation(string $name): ?Closure
     {
-        return $this->continuations->factory($name);
+        return $this->catalog->continuation($name);
     }
 }
