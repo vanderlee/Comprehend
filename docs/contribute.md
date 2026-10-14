@@ -25,8 +25,10 @@ Keep recognition/guards pure, spans in bytes, scope restoration exception-safe,
 semantic projections cached and effects explicit. All authoring styles share the
 same runtime. Add meaningful acceptance, diagnostics, source-round-trip and
 lifecycle tests when changing those contracts. Do not reintroduce compatibility
-adapters, old entry points, magic dispatch or Token output layouts; the removal
+adapters, old entry points, magic Ruleset lookup or Token output layouts; the removal
 inventory and CI gate make this a breaking canonical API.
+Magic dispatch is intentionally limited to Comprehend/Syntax authoring; it must
+construct the existing typed parser graph and never enter the recognition runtime.
 
 Source code from the supplied  snapshot is not copied. Its architectural
 ideas are implemented independently; the review identifies defects to avoid.

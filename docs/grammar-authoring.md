@@ -120,12 +120,16 @@ The bundled RFC grammars import the facade as `C` with
 | `literalWindow(literal)` | Regex matching with a proven finite literal read window |
 | `ref(Ruleset, name, ...args)` | Deferred supported named reference |
 | `sequence(...items)`, `then(...items)` | Sequence composition |
+| `thenText()`, `thenChar()`, `thenSet()`, `thenRange()`, `thenRegex()`, `thenLiteralWindow()` | Append a terminal with the same arguments/defaults as its static factory |
+| `thenAny()`, `thenNothing()`, `thenStart()`, `thenEnd()` | Append unit, empty or boundary terminals |
+| `thenInteger()`, `thenBinary()`, `thenOctal()`, `thenHexadecimal()`, `thenOctet()` | Append numeric terminals with the same options as their factories |
 | `choice(...items)`, `or(...items)` | Choice composition inheriting the scoped ranking policy (first by default) |
 | `first(...items)` / `firstOf(...items)` | Explicit local first-success choice |
 | `longest(...items)` / `longestOf(...items)`, `shortest(...items)` / `shortestOf(...items)` | Explicit local choice ranking |
 | `all(...items)`, `except(match, not)`, `not(item)` | Intersection (shortest accepted span), exclusion, negative lookahead |
 | `repeat(min, max)` | Repeat with existing bounds/progress semantics |
 | `some()` / `plus()`, `many()` / `star()` / `kleene()`, `maybe()` / `optional()` | One or more, zero or more, zero or one |
+| `someOf(item)`, `manyOf(item)`, `maybeOf(item)`, `repeatOf(item, min, max)` | Static repetition factories accepting a facade, Parser or literal string |
 | `named(string\|int\|callable)`, `tag(...tags)`, `mapValue()` | Fixed or pure dynamic names, tags and semantic mappings on a detached graph |
 | `guard()`, `validateSemantic()`, `onCommit()`, `assignTo()` | Pure recognition predicate, selected semantic validation, explicit committed effects and assignments |
 | `setResult()`, `concatResult()`, `pushResult()` | Cached named result collections, independent of source text |
@@ -166,6 +170,73 @@ including optional repetition. Lifecycle operations retain their distinct timing
 and `onCommit()` receive ParseResult. Reading values does not commit effects.
 See [Lifecycle](lifecycle.md) for validation and commit behavior. Nested case or
 preference directives use the innermost applicable override.
+
+### Terminal chaining and static repetition
+
+```php
+$token = Comprehend::text('a')->set('01')->text('!');
+$token->parse('a1!')->success; // true
+$digits = Comprehend::some(Comprehend::range('0', '9'));
+$suffix = Comprehend::maybe('!');
+```
+
+Terminal chains sequence a new terminal after the existing expression, preserving
+named groups, scoped policies and immutable reuse. To name, tag or map only the
+appended terminal, compose it separately and pass it to `then()`.
+Shared names now use `__call()`/`__callStatic()` only at the facade authoring
+boundary. Static calls construct syntax; fluent factory calls append it.
+Fluent `or()` extends alternatives instead of sequencing, while static `or()` is
+a choice factory. Static `repeat(item, min, max)` and fluent `repeat(min, max)`
+retain distinct signatures. Static some/many/maybe require an item; their fluent
+forms take no arguments and repeat the current expression. Typed private factories
+validate arguments and preserve named arguments. Explicit `thenSet()` and other
+terminal aliases, plus `someOf()`/`manyOf()`/`maybeOf()`/`repeatOf()`, remain available.
+All repetition bounds, nullable-child checks and deferred references are unchanged.
+
+### Scoped expandable syntax
+
+```php
+$syntax = Comprehend::syntax()->define('word',
+    static fn(): Comprehend => Comprehend::range('a', 'z')->some()->lexeme()->named('word'));
+$grammar = $syntax->text('let ')->word()->text(';');
+$grammar->parse('let name;')->success; // true
+```
+
+`define(name, callable)` returns a new immutable Syntax vocabulary. Factories
+may return Comprehend, custom Parser or Definition; any other result throws.
+Factories run during authoring, and should only construct syntax. Named/default
+parameters and variadic arguments follow the factory's typed signature. There
+is no implicit conversion of invalid scalar arguments or fallback to rule names.
+Unknown syntax, surplus nonvariadic arguments and reserved names raise explicit errors.
+
+For transformations of the current expression, `defineContinuation(name, callable)`
+registers a callback receiving the current Comprehend as its first parameter,
+followed by user arguments. A continuation-only name cannot start syntax. A name
+may have separate start and continuation definitions in the same vocabulary.
+Without a custom continuation, calling a registered start fluently appends it.
+
+```php
+$syntax = $syntax->defineContinuation('between',
+    static fn(Comprehend $item, string $left, string $right): Comprehend =>
+        Comprehend::sequence($left, $item, $right));
+$grammar = $syntax->word()->between('(', ')');
+```
+
+Custom syntax works for starts and continuations within that vocabulary. Facade
+metadata/composition operations retain their scope; define a replacement in a
+new vocabulary without changing existing expressions. No global registration
+affects `Comprehend::word()` or other vocabularies. Build through `$syntax` to
+select the scope explicitly, or use `$syntax->call(name, ...arguments)` when the
+method name is data. `names()` lists built-in and registered factory names.
+Freezing retains the constructed parser graph and performs no syntax dispatch.
+
+Built-in `@method` annotations provide completion and return types. Repetition
+annotations describe overloaded dispatch broadly; runtime signatures remain
+strict. Custom names require consumer annotations or the explicit `call()` API
+for tooling. Native reflection sees dispatch hooks and typed internal factories,
+not declared public methods for every syntax name. Reference parameters in custom
+factories are unsupported by magic forwarding; use explicit facade lifecycle APIs
+such as `assignTo()` for referenced assignments.
 
 ### Direct parsing and numeric factories
 

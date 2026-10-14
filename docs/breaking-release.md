@@ -16,6 +16,7 @@ The changelog remains marked Unreleased until publication is ready.
 | Parser-returning `rule()` | Fluent facade-returning `rule()`; use `ref()` for Parser-only callers or direct recognition, and `rule()->freeze()` for facade recognition |
 | Implementation-returning `Definition::build()` | Immutable facade-returning `build()`; generators and factories accept/return facades, while `implementation()` is the internal low-level boundary |
 | String/array arguments implicitly becoming parsers | Explicit Parser constructors; immutable Comprehend facade accepts literal strings in composition, but no array grammar coercion |
+| Declared facade factories | Shared static/fluent names now use authoring-only magic dispatch with typed factories; instance terminal calls append syntax instead of constructing standalone terminals |
 | Integer character arguments | `chr()` for octets or explicit Unicode strings |
 | Token naming/output tree | `name()`, immutable CST, optional named AST and direct serialization |
 | Automatic callbacks and multi-argument callback coordinates | `onCommit(callable(ParseResult))` and explicit `commit()` |

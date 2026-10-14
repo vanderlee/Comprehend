@@ -32,12 +32,143 @@ use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Immutable authoring facade over the existing object parser types. */
+/**
+ * Immutable syntax authoring; magic calls only construct the existing parser graph.
+ * Factory methods append syntax when called fluently. Repetition dispatch has
+ * distinct static (item first) and fluent (current expression) signatures.
+ *
+ * @method static self text(string $text)
+ * @method static self char(string $character, bool $include = true)
+ * @method static self set(string $characters, bool $include = true)
+ * @method static self range(?string $first, ?string $last, bool $in = true)
+ * @method static self regex(string $pattern)
+ * @method static self literalWindow(string $literal)
+ * @method static self any()
+ * @method static self nothing()
+ * @method static self start()
+ * @method static self end()
+ * @method static self integer(?int $minimum = 0, ?int $maximum = null, int $base = 10, bool $allowLeadingZeros = false, string $digits = Integer::DIGITS)
+ * @method static self binary(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
+ * @method static self octal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
+ * @method static self hexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
+ * @method static self octet(bool $allowLeadingZeros = false)
+ * @method static self sequence(self|Parser|string ...$parsers)
+ * @method static self choice(self|Parser|string ...$parsers)
+ * @method static self first(self|Parser|string ...$parsers)
+ * @method static self firstOf(self|Parser|string ...$parsers)
+ * @method static self longest(self|Parser|string ...$parsers)
+ * @method static self longestOf(self|Parser|string ...$parsers)
+ * @method static self shortest(self|Parser|string ...$parsers)
+ * @method static self shortestOf(self|Parser|string ...$parsers)
+ * @method static self all(self|Parser|string ...$parsers)
+ * @method static self except(self|Parser|string $match, self|Parser|string $not)
+ * @method static self not(self|Parser|string $parser)
+ * @method static self ref(AbstractRuleset $rules, string $name, mixed ...$arguments)
+ * @method static self or(self|Parser|string ...$parsers)
+ * @method static self repeat(mixed ...$arguments)
+ * @method static self some(mixed ...$arguments)
+ * @method static self plus(mixed ...$arguments)
+ * @method static self many(mixed ...$arguments)
+ * @method static self star(mixed ...$arguments)
+ * @method static self kleene(mixed ...$arguments)
+ * @method static self maybe(mixed ...$arguments)
+ * @method static self optional(mixed ...$arguments)
+ */
 final readonly class Comprehend
 {
-    private function __construct(private Parser $parser) {}
+    private const FACTORIES = [
+        'text' => 'makeText', 'regex' => 'makeRegex', 'char' => 'makeChar',
+        'set' => 'makeSet', 'range' => 'makeRange', 'any' => 'makeAny',
+        'nothing' => 'makeNothing', 'start' => 'makeStart', 'end' => 'makeEnd',
+        'integer' => 'makeInteger', 'binary' => 'makeBinary', 'octal' => 'makeOctal',
+        'hexadecimal' => 'makeHexadecimal', 'octet' => 'makeOctet', 'literalwindow' => 'makeLiteralWindow',
+        'sequence' => 'makeSequence', 'choice' => 'makeChoice', 'or' => 'makeChoice',
+        'firstof' => 'makeFirstOf', 'first' => 'makeFirst', 'longestof' => 'makeLongestOf',
+        'longest' => 'makeLongest', 'shortestof' => 'makeShortestOf', 'shortest' => 'makeShortest',
+        'all' => 'makeAll', 'except' => 'makeExcept', 'not' => 'makeNot', 'ref' => 'makeRef',
+        'repeat' => 'repeatOf', 'some' => 'someOf', 'plus' => 'someOf',
+        'many' => 'manyOf', 'star' => 'manyOf', 'kleene' => 'manyOf',
+        'maybe' => 'maybeOf', 'optional' => 'maybeOf',
+    ];
 
-    public static function text(string $text): self
+    private function __construct(private Parser $parser, private ?Syntax $syntax = null) {}
+
+    public static function syntax(): Syntax
+    {
+        return Syntax::create();
+    }
+
+    /** Names reserved by built-in factory and fluent dispatch. */
+    public static function syntaxNames(): array
+    {
+        return array_keys(self::FACTORIES);
+    }
+
+    public static function __callStatic(string $name, array $arguments): self
+    {
+        return self::callSyntax($name, $arguments);
+    }
+
+    public function __call(string $name, array $arguments): self
+    {
+        $name = strtolower($name);
+        if ($name === 'or') {
+            return self::invoke($this->chooseExpression(...), $arguments);
+        }
+        if ($name === 'repeat') {
+            return self::invoke($this->repeatExpression(...), $arguments);
+        }
+        $repetitions = ['plus' => 'fluentPlus', 'some' => 'fluentSome',
+            'star' => 'fluentStar', 'many' => 'fluentMany', 'kleene' => 'fluentKleene',
+            'optional' => 'fluentOptional', 'maybe' => 'fluentMaybe'];
+        if (isset($repetitions[$name])) {
+            $method = $repetitions[$name];
+            return self::invoke($this->$method(...), $arguments);
+        }
+        $continuation = $this->syntax?->continuation($name);
+        if ($continuation !== null) {
+            return self::syntaxExpression(self::invoke($continuation, [$this, ...$arguments]), $name, $this->syntax);
+        }
+        return $this->then(self::callSyntax($name, $arguments, $this->syntax));
+    }
+
+    /** @internal Scoped vocabularies call this same typed dispatch boundary. */
+    public static function callSyntax(string $name, array $arguments, ?Syntax $syntax = null): self
+    {
+        $name = strtolower($name);
+        $method = self::FACTORIES[$name] ?? null;
+        $factory = $method === null ? $syntax?->factory($name) : self::$method(...);
+        if ($factory === null) {
+            throw new \BadMethodCallException('Unknown syntax: ' . $name);
+        }
+        $result = self::invoke($factory, $arguments);
+        return self::syntaxExpression($result, $name, $syntax);
+    }
+
+    private static function syntaxExpression(mixed $result, string $name, ?Syntax $syntax): self
+    {
+        if (!$result instanceof self && !$result instanceof Parser && !$result instanceof Definition) {
+            throw new \UnexpectedValueException('Syntax factories must return Comprehend, Parser or Definition: ' . $name);
+        }
+        $expression = self::of($result);
+        return new self($expression->parser, $syntax ?? $expression->syntax);
+    }
+
+    private static function invoke(\Closure $factory, array $arguments): mixed
+    {
+        $signature = new \ReflectionFunction($factory);
+        if (!$signature->isVariadic() && count($arguments) > $signature->getNumberOfParameters()) {
+            throw new \ArgumentCountError('Too many syntax arguments');
+        }
+        return $factory(...$arguments);
+    }
+
+    private function expression(Parser $parser): self
+    {
+        return new self($parser, $this->syntax);
+    }
+
+    private static function makeText(string $text): self
     {
         return self::of(new Text($text));
     }
@@ -54,47 +185,47 @@ final readonly class Comprehend
         return new self((new GraphSnapshot(false))->copy($parser));
     }
 
-    public static function regex(string $pattern): self
+    private static function makeRegex(string $pattern): self
     {
         return self::of(new Regex($pattern));
     }
 
-    public static function char(string $character, bool $include = true): self
+    private static function makeChar(string $character, bool $include = true): self
     {
         return self::of(new Char($character, $include));
     }
 
-    public static function set(string $characters, bool $include = true): self
+    private static function makeSet(string $characters, bool $include = true): self
     {
         return self::of(new Set($characters, $include));
     }
 
-    public static function range(?string $first, ?string $last, bool $in = true): self
+    private static function makeRange(?string $first, ?string $last, bool $in = true): self
     {
         return self::of(new Range($first, $last, $in));
     }
 
-    public static function any(): self
+    private static function makeAny(): self
     {
         return self::of(new Any());
     }
 
-    public static function nothing(): self
+    private static function makeNothing(): self
     {
         return self::of(new Nothing());
     }
 
-    public static function start(): self
+    private static function makeStart(): self
     {
         return self::of(new Start());
     }
 
-    public static function end(): self
+    private static function makeEnd(): self
     {
         return self::of(new End());
     }
 
-    public static function integer(
+    private static function makeInteger(
         ?int $minimum = 0,
         ?int $maximum = null,
         int $base = 10,
@@ -104,87 +235,87 @@ final readonly class Comprehend
         return self::of(new Integer($minimum, $maximum, $base, $allowLeadingZeros, $digits));
     }
 
-    public static function binary(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
+    private static function makeBinary(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
     {
-        return self::integer($minimum, $maximum, 2, $allowLeadingZeros);
+        return self::makeInteger($minimum, $maximum, 2, $allowLeadingZeros);
     }
 
-    public static function octal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
+    private static function makeOctal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
     {
-        return self::integer($minimum, $maximum, 8, $allowLeadingZeros);
+        return self::makeInteger($minimum, $maximum, 8, $allowLeadingZeros);
     }
 
-    public static function hexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
+    private static function makeHexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
     {
-        return self::integer($minimum, $maximum, 16, $allowLeadingZeros);
+        return self::makeInteger($minimum, $maximum, 16, $allowLeadingZeros);
     }
 
-    public static function octet(bool $allowLeadingZeros = false): self
+    private static function makeOctet(bool $allowLeadingZeros = false): self
     {
-        return self::integer(0, 255, 10, $allowLeadingZeros);
+        return self::makeInteger(0, 255, 10, $allowLeadingZeros);
     }
 
-    public static function literalWindow(string $literal): self
+    private static function makeLiteralWindow(string $literal): self
     {
         return self::of(Regex::literalWindow($literal));
     }
 
-    public static function sequence(self|Parser|string ...$parsers): self
+    private static function makeSequence(self|Parser|string ...$parsers): self
     {
         return new self(new Sequence(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function choice(self|Parser|string ...$parsers): self
+    private static function makeChoice(self|Parser|string ...$parsers): self
     {
         return new self(new Choice(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function firstOf(self|Parser|string ...$parsers): self
+    private static function makeFirstOf(self|Parser|string ...$parsers): self
     {
         return new self(Choice::first(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function first(self|Parser|string ...$parsers): self
+    private static function makeFirst(self|Parser|string ...$parsers): self
     {
-        return self::firstOf(...$parsers);
+        return self::makeFirstOf(...$parsers);
     }
 
-    public static function longestOf(self|Parser|string ...$parsers): self
+    private static function makeLongestOf(self|Parser|string ...$parsers): self
     {
         return new self(Choice::longest(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function longest(self|Parser|string ...$parsers): self
+    private static function makeLongest(self|Parser|string ...$parsers): self
     {
-        return self::longestOf(...$parsers);
+        return self::makeLongestOf(...$parsers);
     }
 
-    public static function shortestOf(self|Parser|string ...$parsers): self
+    private static function makeShortestOf(self|Parser|string ...$parsers): self
     {
         return new self(Choice::shortest(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function shortest(self|Parser|string ...$parsers): self
+    private static function makeShortest(self|Parser|string ...$parsers): self
     {
-        return self::shortestOf(...$parsers);
+        return self::makeShortestOf(...$parsers);
     }
 
-    public static function all(self|Parser|string ...$parsers): self
+    private static function makeAll(self|Parser|string ...$parsers): self
     {
         return new self(new All(...array_map(self::unwrap(...), $parsers)));
     }
 
-    public static function except(self|Parser|string $match, self|Parser|string $not): self
+    private static function makeExcept(self|Parser|string $match, self|Parser|string $not): self
     {
         return new self(new Except(self::unwrap($match), self::unwrap($not)));
     }
 
-    public static function not(self|Parser|string $parser): self
+    private static function makeNot(self|Parser|string $parser): self
     {
         return new self(new Not(self::unwrap($parser)));
     }
 
-    public static function ref(AbstractRuleset $rules, string $name, mixed ...$arguments): self
+    private static function makeRef(AbstractRuleset $rules, string $name, mixed ...$arguments): self
     {
         return new self($rules->ref($name, ...$arguments));
     }
@@ -195,66 +326,166 @@ final readonly class Comprehend
             return $this;
         }
 
-        return new self(new Sequence($this->parser, ...array_map(self::unwrap(...), $next)));
+        return $this->expression(new Sequence($this->parser, ...array_map(self::unwrap(...), $next)));
     }
 
-    public function or(self|Parser|string ...$next): self
+    public function thenText(string $text): self
+    {
+        return $this->then(self::makeText($text));
+    }
+
+    public function thenChar(string $character, bool $include = true): self
+    {
+        return $this->then(self::makeChar($character, $include));
+    }
+
+    public function thenSet(string $characters, bool $include = true): self
+    {
+        return $this->then(self::makeSet($characters, $include));
+    }
+
+    public function thenRange(?string $first, ?string $last, bool $in = true): self
+    {
+        return $this->then(self::makeRange($first, $last, $in));
+    }
+
+    public function thenRegex(string $pattern): self
+    {
+        return $this->then(self::makeRegex($pattern));
+    }
+
+    public function thenLiteralWindow(string $literal): self
+    {
+        return $this->then(self::makeLiteralWindow($literal));
+    }
+
+    public function thenAny(): self
+    {
+        return $this->then(self::makeAny());
+    }
+
+    public function thenNothing(): self
+    {
+        return $this->then(self::makeNothing());
+    }
+
+    public function thenStart(): self
+    {
+        return $this->then(self::makeStart());
+    }
+
+    public function thenEnd(): self
+    {
+        return $this->then(self::makeEnd());
+    }
+
+    public function thenInteger(
+        ?int $minimum = 0,
+        ?int $maximum = null,
+        int $base = 10,
+        bool $allowLeadingZeros = false,
+        string $digits = Integer::DIGITS,
+    ): self {
+        return $this->then(self::makeInteger($minimum, $maximum, $base, $allowLeadingZeros, $digits));
+    }
+
+    public function thenBinary(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
+    {
+        return $this->then(self::makeBinary($minimum, $maximum, $allowLeadingZeros));
+    }
+
+    public function thenOctal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
+    {
+        return $this->then(self::makeOctal($minimum, $maximum, $allowLeadingZeros));
+    }
+
+    public function thenHexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false): self
+    {
+        return $this->then(self::makeHexadecimal($minimum, $maximum, $allowLeadingZeros));
+    }
+
+    public function thenOctet(bool $allowLeadingZeros = false): self
+    {
+        return $this->then(self::makeOctet($allowLeadingZeros));
+    }
+
+    private function chooseExpression(self|Parser|string ...$next): self
     {
         if ($next === []) {
             return $this;
         }
 
-        return new self(new Choice($this->parser, ...array_map(self::unwrap(...), $next)));
+        return $this->expression(new Choice($this->parser, ...array_map(self::unwrap(...), $next)));
     }
 
-    public function repeat(int $min = 0, ?int $max = null): self
+    private function repeatExpression(int $min = 0, ?int $max = null): self
     {
-        return new self(new Repeat($this->parser, $min, $max));
+        return $this->expression(new Repeat($this->parser, $min, $max));
     }
 
-    public function plus(): self
+    public static function repeatOf(self|Parser|string $parser, int $min = 0, ?int $max = null): self
     {
-        return $this->repeat(1);
+        return new self(new Repeat(self::unwrap($parser), $min, $max), $parser instanceof self ? $parser->syntax : null);
     }
 
-    public function some(): self
+    public static function someOf(self|Parser|string $parser): self
     {
-        return $this->plus();
+        return self::repeatOf($parser, 1);
     }
 
-    public function star(): self
+    public static function manyOf(self|Parser|string $parser): self
     {
-        return $this->repeat();
+        return self::repeatOf($parser);
     }
 
-    public function many(): self
+    public static function maybeOf(self|Parser|string $parser): self
     {
-        return $this->star();
+        return self::repeatOf($parser, 0, 1);
     }
 
-    public function optional(): self
+    private function fluentPlus(): self
     {
-        return $this->repeat(0, 1);
+        return $this->repeatExpression(1);
     }
 
-    public function kleene(): self
+    private function fluentSome(): self
     {
-        return $this->star();
+        return $this->fluentPlus();
     }
 
-    public function maybe(): self
+    private function fluentStar(): self
     {
-        return $this->optional();
+        return $this->repeatExpression();
+    }
+
+    private function fluentMany(): self
+    {
+        return $this->fluentStar();
+    }
+
+    private function fluentOptional(): self
+    {
+        return $this->repeatExpression(0, 1);
+    }
+
+    private function fluentKleene(): self
+    {
+        return $this->fluentStar();
+    }
+
+    private function fluentMaybe(): self
+    {
+        return $this->fluentOptional();
     }
 
     public function named(string|int|callable $name, ?string $group = null, bool $leaf = false): self
     {
-        return new self($this->parser()->name($name, $group, $leaf));
+        return $this->expression($this->parser()->name($name, $group, $leaf));
     }
 
     public function tag(string ...$tags): self
     {
-        return new self($this->parser()->tag(...$tags));
+        return $this->expression($this->parser()->tag(...$tags));
     }
 
     /** Export a detached object graph for Ruleset factories and object constructors. */
@@ -265,72 +496,72 @@ final readonly class Comprehend
 
     public function mapValue(callable $mapper): self
     {
-        return new self($this->parser()->mapValue($mapper));
+        return $this->expression($this->parser()->mapValue($mapper));
     }
 
     public function guard(callable $predicate): self
     {
-        return new self($this->parser()->guard($predicate));
+        return $this->expression($this->parser()->guard($predicate));
     }
 
     public function validateSemantic(callable $validator): self
     {
-        return new self($this->parser()->validateSemantic($validator));
+        return $this->expression($this->parser()->validateSemantic($validator));
     }
 
     public function onCommit(callable $effect): self
     {
-        return new self($this->parser()->onCommit($effect));
+        return $this->expression($this->parser()->onCommit($effect));
     }
 
     public function assignTo(mixed &$variable): self
     {
-        return new self($this->parser()->assignTo($variable));
+        return $this->expression($this->parser()->assignTo($variable));
     }
 
     public function setResult(?string $key = null, mixed $value = null): self
     {
-        return new self($this->parser()->setResult($key, $value));
+        return $this->expression($this->parser()->setResult($key, $value));
     }
 
     public function concatResult(?string $key = null, mixed $value = null): self
     {
-        return new self($this->parser()->concatResult($key, $value));
+        return $this->expression($this->parser()->concatResult($key, $value));
     }
 
     public function pushResult(?string $key = null, mixed $value = null): self
     {
-        return new self($this->parser()->pushResult($key, $value));
+        return $this->expression($this->parser()->pushResult($key, $value));
     }
 
     public function diagnosticRule(string $name): self
     {
-        return new self($this->parser()->diagnosticRule($name));
+        return $this->expression($this->parser()->diagnosticRule($name));
     }
 
     public function caseSensitive(bool $sensitivity = true): self
     {
-        return new self(new CaseSensitive($sensitivity, $this->parser));
+        return $this->expression(new CaseSensitive($sensitivity, $this->parser));
     }
 
     public function prefer(string $preference): self
     {
-        return new self(new Prefer($preference, $this->parser));
+        return $this->expression(new Prefer($preference, $this->parser));
     }
 
     public function spacing(self|Parser|null $trivia): self
     {
-        return new self(new Space($trivia === null ? null : self::unwrap($trivia), $this->parser));
+        return $this->expression(new Space($trivia === null ? null : self::unwrap($trivia), $this->parser));
     }
 
     public function lexeme(): self
     {
-        return new self($this->parser->lexeme());
+        return $this->expression($this->parser->lexeme());
     }
 
     public function trivia(): self
     {
-        return new self($this->parser->trivia());
+        return $this->expression($this->parser->trivia());
     }
 
     public function freeze(): FrozenGrammar

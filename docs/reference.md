@@ -11,12 +11,16 @@
 | Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Integer, Start, End, Nothing |
 | Structures | Sequence(Parser...), Choice(Parser...), All(Parser...), Except(Parser, Parser), Not(Parser), Repeat(Parser, int = 0, ?int = null) |
 | Repetition | `Comprehend::of(Parser)->repeat(min, max)`; object factories `Repeat::plus/star/optional/exact` |
+| Static facade repetition | `someOf(item)`, `manyOf(item)`, `maybeOf(item)`, `repeatOf(item, min, max)` |
+| Shared repetition names | Static `some/many/maybe(item)`, `repeat(item, min, max)`; fluent `some/many/maybe()`, `repeat(min, max)` |
+| Terminal chaining | `thenText/Char/Set/Range/Regex/LiteralWindow/Any/Nothing/Start/End/Integer/Binary/Octal/Hexadecimal/Octet(...)` |
 | Choice policy | `first/longest/shortest(Parser...)`, scoped Prefer |
 | Scoped policy | CaseSensitive(bool, Parser), Space(?Parser, Parser), `spacing(?Parser)`, `lexeme()`, `trivia()` |
 | Grammar | Ruleset, Definition, Implementation, RuleReference, explicit Stub setter |
 | Named operations | `define(string, Comprehend\|Parser\|Definition\|callable)`, `ref(string, ...args)`, `root(string\|Comprehend\|Parser)` |
 | Frozen graphs | `freeze()` returning FrozenGrammar with syntax checks and analysisWarnings |
 | Immutable facade | Comprehend text/char/set/range/regex/ref, sequence/choice, then/or/repeat, naming and scoped policy |
+| Expandable syntax | `Comprehend::syntax()->define(name, factory)`; immutable scoped starts/continuations, `call()`, `names()` |
 | ABNF authoring | `Abnf\Compiler::compile(string, root, numericEncoding, choice)` returning FrozenGrammar |
 | Naming | `name(string|int, ?string = null, bool $leaf = false)` |
 | Meaning | `mapValue(callable)`, named set/concat/push collection operations |

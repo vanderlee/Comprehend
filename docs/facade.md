@@ -12,6 +12,10 @@ directly and export detached parsers internally when registering them.
 Both facade and frozen grammars expose `parse()`, `parseAll()` and `matchPrefix()`.
 Facade parsing freezes current definitions per call; frozen parsing reuses its
 fixed graph. Parsing and AST navigation never commit application effects.
+Shared factory/fluent names use authoring-only magic dispatch. Extend syntax in
+an immutable scope with `Comprehend::syntax()->define(name, factory)`; factories
+still produce the same graph, and unknown names raise errors. Ruleset lookup
+remains explicit. See [Grammar authoring](grammar-authoring.md#scoped-expandable-syntax).
 
 See [Grammar authoring](grammar-authoring.md) for signatures, cache/ownership
 contracts and complete object/Ruleset/facade examples. Use `Comprehend::text()`,
