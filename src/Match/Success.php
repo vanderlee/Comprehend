@@ -19,7 +19,8 @@ use Vanderlee\Comprehend\Tree\ConcreteNode;
  */
 class Success extends AbstractMatch
 {
-    use ResultTrait, CallbackTrait;
+    use ResultTrait;
+    use CallbackTrait;
 
     /**
      * Whether the selected effect sequence has started.
@@ -66,9 +67,10 @@ class Success extends AbstractMatch
     /** @internal Build without evaluating lazy semantic output or effects. */
     public function buildConcreteNode(
         string $kind,
-        string|int|null $name = null,
+        string|int|\Closure|null $name = null,
         ?string $group = null,
-        bool $leaf = false
+        bool $leaf = false,
+        array $tags = [],
     ): void {
         $children = [];
         foreach ($this->concreteMatches as $match) {
@@ -77,9 +79,13 @@ class Success extends AbstractMatch
             }
             $children[] = $match->node;
         }
-        $this->setConcreteNode(
-            new ConcreteNode($kind, $this->span, $children, $kind === Trivia::class, $name, $group, $leaf)
-        );
+        if ($name instanceof \Closure) {
+            $name = $name(new ConcreteNode($kind, $this->span, $children, $kind === Trivia::class, null, $group, $leaf, $tags));
+            if ($name !== null && !is_string($name) && !is_int($name)) {
+                throw new \UnexpectedValueException('Dynamic names must return string, int or null');
+            }
+        }
+        $this->setConcreteNode(new ConcreteNode($kind, $this->span, $children, $kind === Trivia::class, $name, $group, $leaf, $tags));
     }
 
     public function inheritValueFrom(self $child): void

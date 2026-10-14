@@ -2,7 +2,7 @@
 
 | Concern | API |
 |---|---|
-| Input | Source, ByteSource, Utf8Source, ByteFileSource, Utf8FileSource, SourceMode, immutable Span |
+| Input | Source, ByteSource, Utf8Source, ByteFileSource, Utf8FileSource, EncodedFileSource, SourceMode, immutable Span |
 | Runtime | ParseSession; checked `recognizeInSession(Source, int, ParseSession)` delegation |
 | Entry points | `matchPrefix(Source, int = 0, ?ParseLimits = null)`, `parseAll(Source, int = 0, ?ParseLimits = null)` |
 | Public entry points | Facade and frozen `parse/parseAll/matchPrefix(Source\|string, int = 0, ?ParseLimits = null)` |
@@ -23,6 +23,7 @@
 | Lifecycle | `guard(callable)`, `validateSemantic(callable)`, `onCommit(callable)`, assignments |
 | Results | ParseResult, Diagnostic, ValidationResult, immutable ConcreteNode and AstNode |
 | AST navigation | `child()`, `firstChild()`, `lastChild()`, `firstNamed()`, `allNamed()`, `firstInGroup()`, `allInGroup()`, `descendants()` |
+| Tree metadata | `tag()`, fixed or callable `named()`, `hasTag()`, `firstTagged()`, `allTagged()`, AST preamble/postamble spans and text helpers |
 | Serialization | CST/AST `toArray()`, `toJson()`, `toXml()`, JsonSerializable |
 
 Use `Comprehend` for concise authoring. It returns immutable facade values;

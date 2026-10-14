@@ -247,9 +247,14 @@ final readonly class Comprehend
         return $this->optional();
     }
 
-    public function named(string|int $name, ?string $group = null, bool $leaf = false): self
+    public function named(string|int|callable $name, ?string $group = null, bool $leaf = false): self
     {
         return new self($this->parser()->name($name, $group, $leaf));
+    }
+
+    public function tag(string ...$tags): self
+    {
+        return new self($this->parser()->tag(...$tags));
     }
 
     /** Export a detached object graph for Ruleset factories and object constructors. */

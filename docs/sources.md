@@ -1,8 +1,11 @@
 # Sources and spans
 
-All positions use original bytes. Immutable spans are half-open `[start, end)`
+All positions use source bytes. Immutable spans are half-open `[start, end)`
 intervals retaining their source. `rawText()` slices those bytes exactly; no
-normalization, BOM stripping or newline rewriting occurs.
+normalization, BOM stripping or newline rewriting occurs in ByteSource/Utf8Source
+or their byte/UTF-8 file counterparts.
+For explicitly transcoded EncodedFileSource, the source bytes are its normalized
+UTF-8 snapshot, not the original file encoding. See [File input](file-input.md).
 
 `ByteSource` accepts arbitrary octets. `Utf8Source` validates complete UTF-8 at
 construction and recognizes code points, not grapheme clusters. Both implement
@@ -32,6 +35,6 @@ position conversions. ByteSource exposes `readByte()`. Raw byte slicing/spans
 allow interior UTF-8 bytes; recognition positions and consumed endpoints do not.
 `Span::cover()` includes gaps and rejects spans from different source objects.
 
-Sources are currently in memory. UTF-8 validation/counting scans the input;
+Sources may be in memory or seekable disk snapshots. UTF-8 validation/counting scans the input;
 position conversions scan prefixes. Regex matching and diagnostic indexing may
 access the full input. No constant-memory streaming guarantee is made.

@@ -8,6 +8,8 @@ use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Source\Utf8FileSource;
+use Vanderlee\Comprehend\Source\EncodedFileSource;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 $stream = tmpfile();
 fwrite($stream, 'éabc');
@@ -40,3 +42,24 @@ try {
     }
 }
 echo "Seekable snapshot, UTF-8 window, limits and source lifetime examples passed.\n";
+
+$legacy = tmpfile();
+fwrite($legacy, mb_convert_encoding('(café)', 'Windows-1252', 'UTF-8'));
+try {
+    $encoded = new EncodedFileSource($legacy, 'Windows-1252', 4);
+} finally {
+    fclose($legacy);
+}
+try {
+    $word = C::range('a', 'z')->or(C::char('é'))->some()->lexeme()
+        ->named(static fn(ConcreteNode $node): string => $node->rawText())->tag('word');
+    $result = C::sequence('(', $word, ')')->parse($encoded);
+    $node = $result->ast()?->firstTagged('word');
+    if (!$result->success || $node?->name !== 'café' || $node->surroundedText() !== '(café)'
+        || $result->consumedByteLength !== 7 || $encoded->originalByteLength !== 6) {
+        throw new RuntimeException('Encoded source and tree metadata example failed');
+    }
+} finally {
+    $encoded->close();
+}
+echo "Explicit file encoding, dynamic names, tags and surrounding syntax examples passed.\n";

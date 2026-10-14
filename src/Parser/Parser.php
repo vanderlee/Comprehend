@@ -28,7 +28,8 @@ abstract class Parser
     private $valueMapper = null;
     private array $guards = [];
     private array $semanticValidators = [];
-    private string|int|null $nodeName = null;
+    private string|int|\Closure|null $nodeName = null;
+    private array $nodeTags = [];
     private ?string $nodeGroup = null;
     private bool $semanticLeaf = false;
     private ?string $ruleName = null;
@@ -60,11 +61,22 @@ abstract class Parser
         return $this->ruleName ?? ($separator === false ? static::class : substr(static::class, $separator + 1));
     }
 
-    public function name(string|int $name, ?string $group = null, bool $leaf = false): static
+    public function name(string|int|callable $name, ?string $group = null, bool $leaf = false): static
     {
-        $this->nodeName = $name;
+        $this->nodeName = is_string($name) || is_int($name) ? $name : \Closure::fromCallable($name);
         $this->nodeGroup = $group;
         $this->semanticLeaf = $leaf;
+        return $this;
+    }
+
+    public function tag(string ...$tags): static
+    {
+        foreach ($tags as $tag) {
+            if ($tag === '') {
+                throw new InvalidArgumentException('Tags cannot be empty');
+            }
+        }
+        $this->nodeTags = array_values(array_unique([...$this->nodeTags, ...$tags]));
         return $this;
     }
 
@@ -250,7 +262,7 @@ abstract class Parser
         ParseSession $session,
         Success $match,
     ): AbstractMatch {
-        $match->buildConcreteNode(static::class, $this->nodeName, $this->nodeGroup, $this->semanticLeaf);
+        $match->buildConcreteNode(static::class, $this->nodeName, $this->nodeGroup, $this->semanticLeaf, $this->nodeTags);
         $match->setValueMapper($this->valueMapper);
         $match->addSemanticValidators($this->semanticValidators);
 

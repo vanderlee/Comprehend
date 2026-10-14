@@ -1,6 +1,6 @@
 # Named AST projection
 
-`Parser::name(string|int $name, ?string $group = null, bool $leaf = false)` names
+`Comprehend::named(string|int|callable $name, ?string $group = null, bool $leaf = false)` names
 semantic structure. `ParseResult::ast()` caches an immutable projection of the
 CST. Named branches retain nesting, source spans and empty nodes. Unnamed
 containers promote their named descendants into a synthetic root spanning the
@@ -40,3 +40,40 @@ The `all` methods return lists in source order; no matches return an empty list.
 excluding the node itself. Direct-child helpers never search nested descendants.
 Navigation neither evaluates semantic values nor commits effects, and it preserves
 the original node identities, spans, raw text and serialized tree shape.
+
+## Tags and dynamic names
+
+`tag(string ...$tags)` adds unique nonempty tags on a new facade value. Concrete
+nodes retain local tags. During AST projection, tags on unnamed containers flow
+to their nearest named descendants; tags on a named node stay on that node.
+Trivia is excluded from this propagation. AST and CST expose `tags` and
+`hasTag()`. AST `firstTagged()` and `allTagged()` search immediate children.
+
+A name callback receives the immutable ConcreteNode before its own name is
+resolved, and returns string, integer or null (unnamed). It runs once per
+successful recognition attempt, before guards, and must be pure: speculative
+alternatives may invoke it. It cannot access semantic values or commit effects.
+The returned name is fixed on the tree; navigation/serialization never rerun it.
+
+```php
+use Vanderlee\Comprehend\Comprehend;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
+
+$token = Comprehend::range('a', 'z')->some()->lexeme()
+    ->named(fn (ConcreteNode $node): string => 'word_' . $node->rawText())
+    ->tag('word', 'token');
+```
+
+## Surrounding syntax
+
+AST `preamble` and `postamble` are lists of source-bound Span fragments, including
+unnamed punctuation and trivia around a named sibling. Within each named parent
+(or synthetic root), a gap leads the next sibling; the final gap trails the last
+sibling. Nested named parents own their inner gaps independently. These fragments
+do not change a node's own span or `rawText()`.
+
+Use `preambleText()`, `postambleText()` and `surroundedText()` to read the fragments.
+For nonoverlapping siblings, concatenating their surrounded text reconstructs
+their parent's input. Overlapping recognition branches do not form such a
+partition; the parent's source span remains authoritative. Unnamed-only roots
+retain their full raw text without manufacturing named children.

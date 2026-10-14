@@ -41,6 +41,36 @@ out-of-range code points and truncation. Reads crossing page/validation boundari
 preserve complete code points. UTF-8 position conversion scans units without a
 full code-point index, trading bounded auxiliary storage for linear scan time.
 
+## Other character encodings
+
+`EncodedFileSource(pathOrStream, encoding, pageSize = 8192)` validates an explicit
+mbstring character encoding and converts a stable copy into a UTF-8 disk snapshot.
+Aliases such as SJIS are accepted; unknown encodings and transfer encodings such
+as Base64 are rejected. Malformed encoded input throws rather than substituting
+replacement characters. There is no encoding detection. BOM interpretation
+follows the selected mbstring encoding; use explicit endian encodings as needed.
+
+All spans, byte offsets, diagnostics and `rawText()` refer to normalized UTF-8.
+`inputEncoding` reports the selected canonical encoding and `originalByteLength`
+reports the original file size. Original-file byte offsets are not mapped.
+Borrowed stream position/ownership, snapshot stability and close semantics match
+the other file sources. All source-bound spans retain the EncodedFileSource itself.
+
+Transcoding currently validates and allocates the complete original input plus
+the UTF-8 output in memory during construction, supporting stateful encodings
+without unsafe chunk boundaries. Subsequent reads use bounded pages. This is
+not constant-memory decoding; ParseLimits apply to parsing, not transcoding.
+
+```php
+use Vanderlee\Comprehend\Comprehend;
+use Vanderlee\Comprehend\Source\EncodedFileSource;
+
+$source = new EncodedFileSource('legacy.txt', 'Windows-1252');
+$result = Comprehend::text('café')->parse($source);
+// Keep the source open until all result, tree and diagnostic reads are finished.
+$source->close();
+```
+
 ## Regex boundaries
 
 General Regex uses the complete original subject, preserving offsets, `^`, `$`,

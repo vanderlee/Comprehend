@@ -126,7 +126,7 @@ The bundled RFC grammars import the facade as `C` with
 | `all(...items)`, `except(match, not)`, `not(item)` | Intersection (shortest accepted span), exclusion, negative lookahead |
 | `repeat(min, max)` | Repeat with existing bounds/progress semantics |
 | `some()` / `plus()`, `many()` / `star()` / `kleene()`, `maybe()` / `optional()` | One or more, zero or more, zero or one |
-| `named()`, `mapValue()` | Metadata on a detached graph |
+| `named(string\|int\|callable)`, `tag(...tags)`, `mapValue()` | Fixed or pure dynamic names, tags and semantic mappings on a detached graph |
 | `guard()`, `validateSemantic()`, `onCommit()`, `assignTo()` | Pure recognition predicate, selected semantic validation, explicit committed effects and assignments |
 | `setResult()`, `concatResult()`, `pushResult()` | Cached named result collections, independent of source text |
 | `diagnosticRule(name)` | A readable rule label for failures |
