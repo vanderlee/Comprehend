@@ -1,8 +1,8 @@
 {
   "name": "vanderlee/comprehend",
-  "description": "Interpreted parser-combinator framework with BNF-inspired grammar composition",
+  "description": "PHP parser combinators with ABNF authoring, immutable syntax trees and explicit effects",
   "type": "library",
-  "keywords": ["parser", "bnf", "abnf", "lexer", "tokenizer", "ast"],
+  "keywords": ["parser", "parser-combinator", "abnf", "unicode", "cst", "ast"],
   "homepage": "https://github.com/vanderlee/Comprehend",
   "license": "MIT",
   "support": {

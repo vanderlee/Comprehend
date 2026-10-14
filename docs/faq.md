@@ -1,7 +1,8 @@
 # Frequently asked questions
 
-**Does Comprehend read BNF files?** No. Grammars are currently object/Ruleset
-compositions. A frontend is optional later work.
+**Does Comprehend read grammar files?** A documented [ABNF subset](abnf.md)
+compiles into the existing object graph. Arbitrary BNF/EBNF, generated PHP and
+general ambiguity handling are unsupported.
 
 **Does parsing execute callbacks?** Recognition does not execute effects.
 Read semantic projections explicitly and call `commit()` for accepted effects.

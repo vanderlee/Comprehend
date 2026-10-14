@@ -11,6 +11,8 @@ effects. Configure [trivia](trivia.md) at boundaries and between items explicitl
 Use [Rulesets](builder.md) for named rules/factories and
 [RFC imports](libraries.md) for reusable protocol syntax.
 
-Run `php docs/examples/execution.php` for verified examples. Arithmetic object
-and Ruleset examples are also exercised in `tests/examples`. The dedicated
-facade, frozen graph and frontend remain later phases.
+Run `php docs/examples/execution.php` for verified runtime examples. The
+[grammar-authoring guide](grammar-authoring.md) covers the immutable facade and
+frozen graphs, with checked arithmetic/RFC equivalence examples. Use the
+[ABNF subset](abnf.md) to compile supported authoring text into that same runtime.
+See the [breaking-release guide](breaking-release.md) for complete caller changes.

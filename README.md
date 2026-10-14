@@ -80,11 +80,15 @@ policies are available. Repetition is greedy. A later failure does not retry an
 earlier successful choice or shrink a repeat. Nullable repetitions throw rather
 than loop. Left recursion is unsupported; no memoization or linear-time guarantee
 is provided. Parsers are interpreted combinators, not an LR parse-table engine.
-BNF/ABNF files are not currently compiled into grammars. Sources may be in memory
+The documented [ABNF subset](docs/abnf.md) compiles to the same graph; arbitrary
+BNF/EBNF and generalized ambiguity handling are unsupported. Sources may be in memory
 or seekable disk snapshots. General regexes allocate full subjects; diagnostic
 line indexing scans the source in chunks and retains line offsets.
 
 ## Documentation and verification
+
+The [2.0.0 breaking-release guide](docs/breaking-release.md) covers caller changes,
+supported PHP versions and the gated publication workflow.
 
 - [Tutorial](docs/tutorial.md), [builder](docs/builder.md), [reference](docs/reference.md)
 - [Sources](docs/sources.md) and [custom parser contract](docs/source-and-extension-contract.md)

@@ -6,6 +6,7 @@ on:
     branches:
       - master
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -70,3 +71,12 @@ jobs:
 
       - name: Verify benchmark harness
         run: php tools/benchmark.php --worker=text --mode=recognition --source=memory --iterations=1 --size=64
+
+      - name: Verify ABNF equivalence
+        run: php docs/examples/abnf.php
+
+      - name: Verify breaking-release examples
+        run: php docs/examples/release.php
+
+      - name: Verify release notes
+        run: php tools/release-notes.php 2.0.0
