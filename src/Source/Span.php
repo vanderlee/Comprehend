@@ -1,9 +1,11 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Source;
 
 use InvalidArgumentException;
+
 /** Immutable half-open byte span retaining its original source. */
 final readonly class Span
 {
@@ -13,14 +15,17 @@ final readonly class Span
             throw new InvalidArgumentException('Span must satisfy 0 <= start <= end <= source byte length');
         }
     }
+
     public function byteLength(): int
     {
         return $this->end - $this->start;
     }
+
     public function rawText(): string
     {
         return $this->source->sliceBytes($this->start, $this->end);
     }
+
     /** Smallest span covering both intervals, including any gap between them. */
     public function cover(self $other): self
     {

@@ -1,14 +1,16 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Structure;
 
 use Vanderlee\Comprehend\Match\AbstractMatch;
-use Vanderlee\Comprehend\Source\Source;
-use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+
 /**
  * Match the first parser but not the second.
  * Essentially the same as (A - B) = (A + !B).
@@ -19,6 +21,7 @@ class Except extends Parser
 {
     private $parserMatch;
     private $parserNot;
+
     /**
      * @param Parser $match
      * @param Parser $not
@@ -28,6 +31,12 @@ class Except extends Parser
         $this->parserMatch = $match;
         $this->parserNot = $not;
     }
+
+    public function __toString(): string
+    {
+        return '( ' . $this->parserMatch . ' - ' . $this->parserNot . ' )';
+    }
+
     protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $match = $this->parserMatch->recognizeInSession($input, $offset, $context);
@@ -44,9 +53,5 @@ class Except extends Parser
             $context->recordFailure($offset, 'Except');
         }
         return $this->failure($input, $offset, min($match->length, $not->length));
-    }
-    public function __toString(): string
-    {
-        return '( ' . $this->parserMatch . ' - ' . $this->parserNot . ' )';
     }
 }

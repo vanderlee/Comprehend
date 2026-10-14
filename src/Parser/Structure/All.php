@@ -1,14 +1,16 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Match\AbstractMatch;
-use Vanderlee\Comprehend\Source\Source;
 use InvalidArgumentException;
-use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+
 /**
  * Matches if and only if all parsers individually match. Returned length is the shortest length of all matches.
  *
@@ -20,6 +22,7 @@ class All extends Parser
      * @var Parser[]
      */
     private $parsers = [];
+
     public function __construct(Parser ...$arguments)
     {
         if (count($arguments) < 2) {
@@ -27,6 +30,12 @@ class All extends Parser
         }
         $this->parsers = $arguments;
     }
+
+    public function __toString(): string
+    {
+        return '( ' . implode(' + ', $this->parsers) . ' )';
+    }
+
     protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $length = PHP_INT_MAX;
@@ -42,9 +51,5 @@ class All extends Parser
         $success = $this->success($input, $offset, $length, $matches);
         $success->setConcreteMatches($matches);
         return $success;
-    }
-    public function __toString(): string
-    {
-        return '( ' . implode(' + ', $this->parsers) . ' )';
     }
 }

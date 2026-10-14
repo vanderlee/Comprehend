@@ -64,90 +64,6 @@ class ByteFileSource implements Source
         }
     }
 
-    public function mode(): SourceMode
-    {
-        return SourceMode::BYTES;
-    }
-
-    public function byteLength(): int
-    {
-        return $this->length;
-    }
-
-    public function span(int $start, int $end): Span
-    {
-        return new Span($this, $start, $end);
-    }
-
-    public function close(): void
-    {
-        if (is_resource($this->handle)) {
-            fclose($this->handle);
-        }
-
-        $this->cache = '';
-        $this->cacheStart = -1;
-    }
-
-    public function isClosed(): bool
-    {
-        return !is_resource($this->handle);
-    }
-
-    public function __destruct()
-    {
-        $this->close();
-    }
-
-    public function sliceBytes(int $start, int $end): string
-    {
-        $this->assertReadableOffset($start);
-        $this->assertReadableOffset($end);
-        if ($end < $start) {
-            throw new InvalidArgumentException('Span end must not precede its start');
-        }
-
-        $output = '';
-        while ($start < $end) {
-            $page = intdiv($start, $this->pageSize) * $this->pageSize;
-            if ($page !== $this->cacheStart) {
-                $this->loadPage($page);
-            }
-
-            $count = min($end - $start, strlen($this->cache) - ($start - $page));
-            $output .= substr($this->cache, $start - $page, $count);
-            $start += $count;
-        }
-
-        return $output;
-    }
-
-    public function isUnitBoundary(int $byteOffset): bool
-    {
-        $this->assertReadableOffset($byteOffset);
-        return true;
-    }
-
-    public function readUnit(int $byteOffset): ?Span
-    {
-        $this->assertReadableOffset($byteOffset);
-        return $byteOffset === $this->length ? null : $this->span($byteOffset, $byteOffset + 1);
-    }
-
-    protected function assertReadableOffset(int $offset): void
-    {
-        if ($this->isClosed()) {
-            throw new LogicException('File source is closed');
-        }
-        if ($offset < 0 || $offset > $this->length) {
-            throw new InvalidArgumentException('Byte offset is outside the source');
-        }
-    }
-
-    private function __clone() {}
-
-    protected function validateContent(): void {}
-
     /**
      * @param resource $stream
      * @param resource $snapshot
@@ -173,6 +89,73 @@ class ByteFileSource implements Source
         }
     }
 
+    protected function validateContent(): void
+    {
+    }
+
+    public function mode(): SourceMode
+    {
+        return SourceMode::BYTES;
+    }
+
+    public function byteLength(): int
+    {
+        return $this->length;
+    }
+
+    public function __destruct()
+    {
+        $this->close();
+    }
+
+    public function close(): void
+    {
+        if (is_resource($this->handle)) {
+            fclose($this->handle);
+        }
+
+        $this->cache = '';
+        $this->cacheStart = -1;
+    }
+
+    public function sliceBytes(int $start, int $end): string
+    {
+        $this->assertReadableOffset($start);
+        $this->assertReadableOffset($end);
+        if ($end < $start) {
+            throw new InvalidArgumentException('Span end must not precede its start');
+        }
+
+        $output = '';
+        while ($start < $end) {
+            $page = intdiv($start, $this->pageSize) * $this->pageSize;
+            if ($page !== $this->cacheStart) {
+                $this->loadPage($page);
+            }
+
+            $count = min($end - $start, strlen($this->cache) - ($start - $page));
+            $output .= substr($this->cache, $start - $page, $count);
+            $start += $count;
+        }
+
+        return $output;
+    }
+
+    protected function assertReadableOffset(int $offset): void
+    {
+        if ($this->isClosed()) {
+            throw new LogicException('File source is closed');
+        }
+        if ($offset < 0 || $offset > $this->length) {
+            throw new InvalidArgumentException('Byte offset is outside the source');
+        }
+    }
+
+    public function isClosed(): bool
+    {
+        return !is_resource($this->handle);
+    }
+
     private function loadPage(int $pageStart): void
     {
         if (fseek($this->handle, $pageStart) !== 0) {
@@ -192,5 +175,26 @@ class ByteFileSource implements Source
         // Publish a cache page only after the complete read succeeds.
         $this->cache = $bytes;
         $this->cacheStart = $pageStart;
+    }
+
+    public function isUnitBoundary(int $byteOffset): bool
+    {
+        $this->assertReadableOffset($byteOffset);
+        return true;
+    }
+
+    public function readUnit(int $byteOffset): ?Span
+    {
+        $this->assertReadableOffset($byteOffset);
+        return $byteOffset === $this->length ? null : $this->span($byteOffset, $byteOffset + 1);
+    }
+
+    public function span(int $start, int $end): Span
+    {
+        return new Span($this, $start, $end);
+    }
+
+    private function __clone()
+    {
     }
 }

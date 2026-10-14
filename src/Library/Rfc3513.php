@@ -9,12 +9,14 @@ declare (strict_types=1);
  *
  * @see     https://tools.ietf.org/html/rfc4408
  */
+
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
-use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Integer;
+
 require_once 'functions.php';
+
 /**
  * IPv6 address
  * Supports formats:
@@ -27,6 +29,7 @@ require_once 'functions.php';
 class Rfc3513 extends AbstractRuleset
 {
     protected static $name = 'Rfc3513';
+
     public function __construct($overwrites = [])
     {
         /*

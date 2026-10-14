@@ -1,23 +1,28 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Runtime\Scope;
 
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Source\Source;
+
 trait SpacingContextTrait
 {
     /** @var list<Parser|null> Intervening trivia only; boundaries are explicit parsers. */
     private array $spacers = [];
+
     public function pushSpacer(?Parser $trivia = null): void
     {
         $this->spacers[] = $trivia;
     }
+
     public function popSpacer(): void
     {
         array_pop($this->spacers);
     }
+
     public function skipSpacing(Source $source, int $offset, ?Success &$match = null): int|false
     {
         $match = null;

@@ -38,6 +38,11 @@ final class Reader
         }
     }
 
+    private function fail(string $message, ?int $offset = null): never
+    {
+        throw new SyntaxException($message, $this->source, min($offset ?? $this->position, strlen($this->text)));
+    }
+
     public function readRules(): void
     {
         while ($this->position < strlen($this->text)) {
@@ -79,6 +84,72 @@ final class Reader
                 $this->fail('Undefined rule: ' . $name, $offset);
             }
         }
+    }
+
+    private function skipRuleSeparators(): void
+    {
+        while (true) {
+            $start = $this->position;
+            $this->take('/[ \t\r\n]+/A');
+            $this->take('/;[^\r\n]*/A');
+            if ($this->position === $start) {
+                return;
+            }
+        }
+    }
+
+    private function take(string $pattern): string
+    {
+        if (preg_match($pattern, $this->text, $match, 0, $this->position) !== 1) {
+            return '';
+        }
+        $this->position += strlen($match[0]);
+
+        return $match[0];
+    }
+
+    private function ruleName(): string
+    {
+        $name = $this->take('/[A-Za-z][A-Za-z0-9-]*/A');
+        if ($name === '') {
+            $this->fail('Expected rule name or supported element');
+        }
+
+        return strtolower($name);
+    }
+
+    /** Spaces, comments and indented continuation lines; an unindented newline ends a rule. */
+    private function skipWhitespace(): bool
+    {
+        $start = $this->position;
+        while (true) {
+            $this->take('/[ \t]+/A');
+            if ($this->peek() === ';') {
+                $this->take('/;[^\r\n]*/A');
+            }
+            $newline = $this->peek() === "\r" ? "\r\n" : "\n";
+            if (substr($this->text, $this->position, strlen($newline)) === $newline
+                && in_array($this->text[$this->position + strlen($newline)] ?? '', [' ', "\t"], true)) {
+                $this->position += strlen($newline);
+                continue;
+            }
+            break;
+        }
+
+        return $this->position > $start;
+    }
+
+    private function peek(): string
+    {
+        return $this->text[$this->position] ?? '';
+    }
+
+    private function expect(string $character): void
+    {
+        if ($this->peek() !== $character) {
+            $this->fail('Expected ' . $character);
+        }
+        ++$this->position;
     }
 
     private function alternation(): Parser
@@ -128,6 +199,18 @@ final class Reader
         $element = $this->element();
 
         return $digits === '' ? $element : Repeat::exact($element, $minimum);
+    }
+
+    private function repetitionCount(string $digits): int
+    {
+        $digits = ltrim($digits, '0');
+        $maximum = (string)PHP_INT_MAX;
+        if (strlen($digits) > strlen($maximum)
+            || (strlen($digits) === strlen($maximum) && strcmp($digits, $maximum) > 0)) {
+            $this->fail('Repetition count exceeds PHP integer range');
+        }
+
+        return $digits === '' ? 0 : (int)$digits;
     }
 
     private function element(): Parser
@@ -187,7 +270,9 @@ final class Reader
         $parser = (new Text($literal))->setCaseSensitivity($sensitive);
         if (!$sensitive) {
             // ABNF folds ASCII only; Text also supports Unicode case equivalents.
-            $parser->guard(static fn (ConcreteNode $node): bool => preg_match('/^[\x00-\x7F]*$/D', $node->rawText()) === 1);
+            $parser->guard(
+                static fn(ConcreteNode $node): bool => preg_match('/^[\x00-\x7F]*$/D', $node->rawText()) === 1
+            );
         }
 
         return $parser;
@@ -195,8 +280,11 @@ final class Reader
 
     private function numeric(string $prefix): Parser
     {
-        $base = ['b' => 2, 'd' => 10, 'x' => 16][$prefix];
-        $pattern = ['b' => '/[01]+/A', 'd' => '/[0-9]+/A', 'x' => '/[0-9A-Fa-f]+/A'][$prefix];
+        [$base, $pattern] = match ($prefix) {
+            'b' => [2, '/[01]+/A'],
+            'd' => [10, '/[0-9]+/A'],
+            'x' => [16, '/[0-9A-Fa-f]+/A'],
+        };
         $first = $this->numericValue($pattern, $base);
         if ($this->peek() === '-') {
             ++$this->position;
@@ -241,88 +329,5 @@ final class Reader
     private function character(int $value): string
     {
         return $this->encoding === SourceMode::BYTES ? chr($value) : mb_chr($value, 'UTF-8');
-    }
-
-    private function repetitionCount(string $digits): int
-    {
-        $digits = ltrim($digits, '0');
-        $maximum = (string) PHP_INT_MAX;
-        if (strlen($digits) > strlen($maximum)
-            || (strlen($digits) === strlen($maximum) && strcmp($digits, $maximum) > 0)) {
-            $this->fail('Repetition count exceeds PHP integer range');
-        }
-
-        return $digits === '' ? 0 : (int) $digits;
-    }
-
-    private function ruleName(): string
-    {
-        $name = $this->take('/[A-Za-z][A-Za-z0-9-]*/A');
-        if ($name === '') {
-            $this->fail('Expected rule name or supported element');
-        }
-
-        return strtolower($name);
-    }
-
-    /** Spaces, comments and indented continuation lines; an unindented newline ends a rule. */
-    private function skipWhitespace(): bool
-    {
-        $start = $this->position;
-        while (true) {
-            $this->take('/[ \t]+/A');
-            if ($this->peek() === ';') {
-                $this->take('/;[^\r\n]*/A');
-            }
-            $newline = $this->peek() === "\r" ? "\r\n" : "\n";
-            if (substr($this->text, $this->position, strlen($newline)) === $newline
-                && in_array($this->text[$this->position + strlen($newline)] ?? '', [' ', "\t"], true)) {
-                $this->position += strlen($newline);
-                continue;
-            }
-            break;
-        }
-
-        return $this->position > $start;
-    }
-
-    private function skipRuleSeparators(): void
-    {
-        while (true) {
-            $start = $this->position;
-            $this->take('/[ \t\r\n]+/A');
-            $this->take('/;[^\r\n]*/A');
-            if ($this->position === $start) {
-                return;
-            }
-        }
-    }
-
-    private function take(string $pattern): string
-    {
-        if (preg_match($pattern, $this->text, $match, 0, $this->position) !== 1) {
-            return '';
-        }
-        $this->position += strlen($match[0]);
-
-        return $match[0];
-    }
-
-    private function expect(string $character): void
-    {
-        if ($this->peek() !== $character) {
-            $this->fail('Expected ' . $character);
-        }
-        ++$this->position;
-    }
-
-    private function peek(): string
-    {
-        return $this->text[$this->position] ?? '';
-    }
-
-    private function fail(string $message, ?int $offset = null): never
-    {
-        throw new SyntaxException($message, $this->source, min($offset ?? $this->position, strlen($this->text)));
     }
 }

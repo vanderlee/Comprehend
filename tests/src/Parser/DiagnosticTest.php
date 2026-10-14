@@ -102,4 +102,17 @@ class DiagnosticTest extends ParserTestCase
         $this->assertSame(['line' => 1, 'column' => 2], $diagnostic->location());
         $this->assertSame("\xffx", $diagnostic->excerpt());
     }
+
+    public function testNewlineAtReadChunkBoundary()
+    {
+        $prefix = str_repeat('a', 8191);
+        foreach (["\r\nx" => 8193, "\rx" => 8192, "\r" => 8192] as $suffix => $offset) {
+            $source = new ByteSource($prefix . $suffix);
+            $diagnostic = (new Text('!'))->parseAll($source, $offset)->diagnostic;
+
+            $this->assertSame(['line' => 2, 'column' => 1], $diagnostic->location());
+            $this->assertSame($suffix === "\r" ? '' : 'x', $diagnostic->excerpt());
+            $this->assertSame(['line' => 2, 'column' => 1], $diagnostic->location());
+        }
+    }
 }

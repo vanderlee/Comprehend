@@ -1,15 +1,17 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
-use Vanderlee\Comprehend\Match\AbstractMatch;
-use Vanderlee\Comprehend\Source\Source;
 use Exception;
-use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+
 /**
  * Matches an integer within the specified range.
  *
@@ -18,6 +20,7 @@ use Vanderlee\Comprehend\Parser\Parser;
 class Integer extends Parser
 {
     use CaseSensitiveTrait;
+
     /**
      * List of digits to use for the different bases (up to 36).
      *
@@ -36,6 +39,7 @@ class Integer extends Parser
      * @var int
      */
     private int $base;
+
     /**
      * @param int|null $minimum
      * @param int|null $maximum
@@ -55,20 +59,12 @@ class Integer extends Parser
             throw new Exception('Unsupported base');
         }
     }
-    /**
-     * @param int|null $minimum
-     *
-     * @throws Exception
-     */
-    /**
-     * @param int|null $maximum
-     *
-     * @throws Exception
-     */
-    private function isInRange(int $integer): bool
+
+    public function __toString(): string
     {
-        return ($this->minimum === null || $integer >= $this->minimum) && ($this->maximum === null || $integer <= $this->maximum);
+        return ($this->minimum === null ? '<-INF' : '[' . $this->minimum) . ',' . ($this->maximum === null ? 'INF>' : $this->maximum . ']');
     }
+
     /**
      * @param Source $input
      * @param int $offset
@@ -80,7 +76,6 @@ class Integer extends Parser
     {
         $this->pushCaseSensitivityToContext($context);
         try {
-            // Build pattern
             $set0 = substr(self::$set, 0, $this->base);
             $set1 = substr(self::$set, 1, $this->base - 1);
             $pattern = '/(?:0|-?[' . $set1 . '][' . $set0 . ']*)/A' . ($context->isCaseSensitive() ? '' : 'i');
@@ -93,24 +88,23 @@ class Integer extends Parser
         if ($status === false) {
             throw new \RuntimeException('Integer recognition failed: ' . preg_last_error_msg());
         }
-        if ($status === 1) {
-            do {
-                $context->consumeWork(1, $offset);
-                $integer = intval($match[0], $this->base);
-                if ($this->isInRange($integer) && $match[0] !== '-') {
-                    return $this->success($input, $offset, strlen($match[0]));
-                }
-                $match[0] = substr($match[0], 0, -1);
-                // strip off last char
-            } while ($match[0] !== '');
+        if ($status !== 1) {
+            return $this->failure($input, $offset);
+        }
+
+        // Try shorter prefixes when the full integer lies outside the bounds.
+        for ($digits = $match[0]; $digits !== ''; $digits = substr($digits, 0, -1)) {
+            $context->consumeWork(1, $offset);
+            $integer = intval($digits, $this->base);
+            if ($this->isInRange($integer) && $digits !== '-') {
+                return $this->success($input, $offset, strlen($digits));
+            }
         }
         return $this->failure($input, $offset);
     }
-    /**
-     * @return string
-     */
-    public function __toString(): string
+
+    private function isInRange(int $integer): bool
     {
-        return ($this->minimum === null ? '<-INF' : '[' . $this->minimum) . ',' . ($this->maximum === null ? 'INF>' : $this->maximum . ']');
+        return ($this->minimum === null || $integer >= $this->minimum) && ($this->maximum === null || $integer <= $this->maximum);
     }
 }

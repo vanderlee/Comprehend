@@ -1,13 +1,20 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Tree;
 
 use DOMDocument;
 use DOMElement;
+
 /** The same explicit source-span schema for concrete and named trees. */
 trait Serialization
 {
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
+    }
+
     public function toArray(): array
     {
         $raw = $this->rawText();
@@ -28,14 +35,12 @@ trait Serialization
         }
         return $data;
     }
-    public function jsonSerialize(): array
-    {
-        return $this->toArray();
-    }
+
     public function toJson(): string
     {
         return json_encode($this, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     }
+
     /** Fixed XML element names; grammar names/groups are data, never namespaces. */
     public function toXml(): DOMDocument
     {
@@ -43,17 +48,18 @@ trait Serialization
         $document->appendChild($this->xmlNode($document));
         return $document;
     }
+
     private function xmlNode(DOMDocument $document): DOMElement
     {
         $element = $document->createElement('node');
         if ($this->name !== null) {
-            $element->setAttribute('name', (string) $this->name);
+            $element->setAttribute('name', (string)$this->name);
         }
         if ($this->group !== null) {
             $element->setAttribute('group', $this->group);
         }
-        $element->setAttribute('start', (string) $this->span->start);
-        $element->setAttribute('end', (string) $this->span->end);
+        $element->setAttribute('start', (string)$this->span->start);
+        $element->setAttribute('end', (string)$this->span->end);
         if ($this instanceof ConcreteNode) {
             $element->setAttribute('kind', $this->kind);
             $element->setAttribute('trivia', $this->isTrivia ? 'true' : 'false');

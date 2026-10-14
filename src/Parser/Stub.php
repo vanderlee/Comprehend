@@ -1,13 +1,15 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser;
 
-use Vanderlee\Comprehend\Match\AbstractMatch;
-use Vanderlee\Comprehend\Source\Source;
 use UnexpectedValueException;
-use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+
 /**
  * Description of StubParser.
  *
@@ -21,15 +23,24 @@ class Stub extends Parser
      * @var Parser|null
      */
     private $parser = null;
+
+    public function getParser(): ?Parser
+    {
+        return $this->parser;
+    }
+
     public function setParser(Parser $parser): static
     {
         $this->parser = $parser;
         return $this;
     }
-    public function getParser(): ?Parser
+
+    public function __toString(): string
     {
-        return $this->parser;
+        /* @noinspection HtmlUnknownTag */
+        return $this->parser ? (string)$this->parser : '<undefined>';
     }
+
     protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         if ($this->parser === null) {
@@ -40,10 +51,5 @@ class Stub extends Parser
             return $this->success($input, $offset, $match->length, $match);
         }
         return $this->failure($input, $offset, $match->length);
-    }
-    public function __toString(): string
-    {
-        /* @noinspection HtmlUnknownTag */
-        return $this->parser ? (string) $this->parser : '<undefined>';
     }
 }

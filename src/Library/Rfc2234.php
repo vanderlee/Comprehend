@@ -8,16 +8,19 @@ declare (strict_types=1);
  *
  * @see     https://tools.ietf.org/html/rfc2234
  */
+
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
-use Vanderlee\Comprehend\Parser\Parser;
+
 require_once 'functions.php';
+
 /**
  */
 class Rfc2234 extends AbstractRuleset
 {
     protected static $name = 'Rfc2234';
+
     public function __construct($overwrites = [])
     {
         /*
@@ -77,15 +80,26 @@ class Rfc2234 extends AbstractRuleset
             ),
             'repeat' => c($digits, s(star($this->rule('DIGIT')), text('*'), star($this->rule('DIGIT')))),
             'repetition' => s(opt($this->rule('repeat')), $this->rule('element')),
-            'concatenation' => s($this->rule('repetition'), star(s(plus($this->rule('c_wsp')), $this->rule('repetition')))),
-            'alternation' => s($this->rule('concatenation'), star(s($c_wsps, text('/'), $c_wsps, $this->rule('concatenation')))),
+            'concatenation' => s(
+                $this->rule('repetition'),
+                star(s(plus($this->rule('c_wsp')), $this->rule('repetition')))
+            ),
+            'alternation' => s(
+                $this->rule('concatenation'),
+                star(s($c_wsps, text('/'), $c_wsps, $this->rule('concatenation')))
+            ),
             'comment' => s(text(';'), star(c($this->rule('WSP'), $this->rule('VCHAR'))), $this->rule('CRLF')),
             'c_nl' => c($this->rule('comment'), $this->rule('CRLF')),
             'c_wsp' => c($this->rule('WSP'), s($this->rule('c_nl'), $this->rule('WSP'))),
             'elements' => s($this->rule('alternation'), $c_wsps),
             'defined_as' => s($c_wsps, c(text('='), text('=/')), $c_wsps),
             'rulename' => s($this->rule('ALPHA'), star(c($this->rule('ALPHA'), $this->rule('DIGIT'), text('-')))),
-            'rule' => s($this->rule('rulename'), $this->rule('defined_as'), $this->rule('elements'), $this->rule('c_nl')),
+            'rule' => s(
+                $this->rule('rulename'),
+                $this->rule('defined_as'),
+                $this->rule('elements'),
+                $this->rule('c_nl')
+            ),
             'rulelist' => plus(c($this->rule('rule'), s($c_wsps, $this->rule('c_nl')))),
             self::ROOT => $this->rule('rulelist'),
         ];

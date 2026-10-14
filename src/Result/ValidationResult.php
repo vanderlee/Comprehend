@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Result;
 
 /** Semantic acceptance is separate from syntactic success and diagnostics. */

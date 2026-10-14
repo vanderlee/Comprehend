@@ -1,16 +1,18 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
-use Vanderlee\Comprehend\Source\SourceMode;
-use Vanderlee\Comprehend\Match\AbstractMatch;
-use Vanderlee\Comprehend\Source\Source;
-use Vanderlee\Comprehend\Source\Utf8Source;
 use Exception;
 use InvalidArgumentException;
-use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Source\SourceMode;
+use Vanderlee\Comprehend\Source\Utf8Source;
+
 /**
  * Description of SetParser.
  *
@@ -19,6 +21,7 @@ use Vanderlee\Comprehend\Parser\Parser;
 class Set extends Parser
 {
     use CaseSensitiveTrait;
+
     private $set = null;
     private $sourceSet;
     /**
@@ -27,6 +30,7 @@ class Set extends Parser
      * @var bool
      */
     private $include = true;
+
     /**
      * Match any single character in the set or not in the set.
      *
@@ -44,9 +48,19 @@ class Set extends Parser
         $this->sourceSet = $set;
         $this->include = $include;
     }
+
+    public function __toString(): string
+    {
+        return ($this->include ? '' : chr(0xac)) . '( \'' . implode('\' | \'', str_split($this->set)) . '\' )';
+    }
+
     protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
-        $characters = $context->source()->mode() === SourceMode::UTF8 ? mb_str_split((new Utf8Source($this->sourceSet))->sliceBytes(0, strlen($this->sourceSet)), 1, 'UTF-8') : str_split($this->sourceSet);
+        $characters = $context->source()->mode() === SourceMode::UTF8 ? mb_str_split(
+            (new Utf8Source($this->sourceSet))->sliceBytes(0, strlen($this->sourceSet)),
+            1,
+            'UTF-8'
+        ) : str_split($this->sourceSet);
         $unit = $context->readSourceUnit($offset);
         if ($unit === null) {
             return $this->failure($input, $offset);
@@ -62,9 +76,5 @@ class Set extends Parser
         } finally {
             $this->popCaseSensitivityFromContext($context);
         }
-    }
-    public function __toString(): string
-    {
-        return ($this->include ? '' : chr(0xac)) . '( \'' . implode('\' | \'', str_split($this->set)) . '\' )';
     }
 }

@@ -1,14 +1,16 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Match\AbstractMatch;
-use Vanderlee\Comprehend\Source\Source;
 use InvalidArgumentException;
-use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+
 /**
  * Description of SequenceParser.
  *
@@ -17,6 +19,7 @@ use Vanderlee\Comprehend\Parser\Parser;
 class Sequence extends IterableParser
 {
     use SpacingTrait;
+
     public function __construct(Parser ...$arguments)
     {
         if (empty($arguments)) {
@@ -24,6 +27,25 @@ class Sequence extends IterableParser
         }
         $this->parsers = $arguments;
     }
+
+    /**
+     * Add one or more parsers to the end of this sequence.
+     *
+     * @param Parser[] $arguments
+     *
+     * @return $this
+     */
+    public function add(Parser ...$arguments)
+    {
+        $this->parsers = array_merge($this->parsers, $arguments);
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return '( ' . implode(' ', $this->parsers) . ' )';
+    }
+
     protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $childMatches = [];
@@ -31,22 +53,18 @@ class Sequence extends IterableParser
         $this->pushSpacer($context);
         try {
             $total = 0;
-            $first = true;
-            /** @var Parser $parser */
             foreach ($this->parsers as $parser) {
                 $spacingMatch = null;
-                if (!$first) {
+                if ($childMatches !== []) {
                     $skip = $context->skipSpacing($input, $offset + $total, $spacingMatch);
                     if ($skip === false) {
                         return $this->failure($input, $offset, $total);
                     }
                     $total += $skip;
                 }
-                $first = false;
                 $match = $parser->recognizeInSession($input, $offset + $total, $context);
                 $total += $match->length;
                 if (!$match instanceof Success) {
-                    // must match
                     return $this->failure($input, $offset, $total);
                 }
                 if ($spacingMatch !== null) {
@@ -62,21 +80,5 @@ class Sequence extends IterableParser
         $success = $this->success($input, $offset, $total, $childMatches);
         $success->setConcreteMatches($concreteMatches);
         return $success;
-    }
-    /**
-     * Add one or more parsers to the end of this sequence.
-     *
-     * @param Parser[] $arguments
-     *
-     * @return $this
-     */
-    public function add(Parser ...$arguments)
-    {
-        $this->parsers = array_merge($this->parsers, $arguments);
-        return $this;
-    }
-    public function __toString(): string
-    {
-        return '( ' . implode(' ', $this->parsers) . ' )';
     }
 }

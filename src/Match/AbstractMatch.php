@@ -1,12 +1,14 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Match;
 
 use InvalidArgumentException;
+use Vanderlee\Comprehend\Result\Diagnostic;
 use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
-use Vanderlee\Comprehend\Result\Diagnostic;
+
 /** @internal Execution record, not a public result or serialization model. */
 abstract class AbstractMatch
 {
@@ -15,6 +17,7 @@ abstract class AbstractMatch
     public ?int $farthestFailure = null;
     public ?Diagnostic $diagnostic = null;
     public ?ConcreteNode $node = null;
+
     public function __construct(public readonly int $length = 0)
     {
         if ($length < 0) {
@@ -22,6 +25,7 @@ abstract class AbstractMatch
         }
         $this->accepted = $this instanceof Success;
     }
+
     public function setConcreteNode(ConcreteNode $node): void
     {
         if (!$this->accepted || $node->span !== $this->span) {
@@ -29,6 +33,7 @@ abstract class AbstractMatch
         }
         $this->node = $node;
     }
+
     public function setSourceMetadata(Span $span, ?int $farthestFailure, ?Diagnostic $diagnostic = null): void
     {
         if (!$this->accepted && $span->byteLength() !== 0) {
@@ -41,10 +46,12 @@ abstract class AbstractMatch
         $this->farthestFailure = $farthestFailure;
         $this->diagnostic = $diagnostic;
     }
+
     public function getResults(): array
     {
         return [];
     }
+
     public function getResult(?string $name = null, mixed $default = null): mixed
     {
         return $default;

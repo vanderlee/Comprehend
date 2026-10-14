@@ -1,13 +1,15 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Result;
 
-use Vanderlee\Comprehend\Tree\AstNode;
-use Vanderlee\Comprehend\Tree\ConcreteNode;
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Source\Span;
+use Vanderlee\Comprehend\Tree\AstNode;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
+
 /** Canonical source-bound result; all outputs derive from its CST and selected execution. */
 final class ParseResult
 {
@@ -20,10 +22,7 @@ final class ParseResult
     public readonly ?Diagnostic $diagnostic;
     public readonly ?ConcreteNode $node;
     private ?AstNode $ast = null;
-    public function ast(): ?AstNode
-    {
-        return $this->node === null ? null : $this->ast ??= $this->node->ast();
-    }
+
     public function __construct(private readonly AbstractMatch $match)
     {
         $span = $match->span;
@@ -39,19 +38,23 @@ final class ParseResult
         $this->diagnostic = $match->diagnostic;
         $this->node = $match->node;
     }
+
+    public function ast(): ?AstNode
+    {
+        return $this->node === null ? null : $this->ast ??= $this->node->ast();
+    }
+
     public function rawText(): string
     {
         return $this->span->rawText();
     }
+
     /** Failed results have no value; successful unmapped results yield original text. */
     public function value(): mixed
     {
         return $this->success ? $this->match->getValue() : null;
     }
-    public function validate(): ValidationResult
-    {
-        return $this->success ? $this->match->validateSemantic() : new ValidationResult(false, ['Syntax was not accepted']);
-    }
+
     /** False means syntax or semantic validation rejected commit. */
     public function commit(): bool
     {
@@ -61,16 +64,26 @@ final class ParseResult
         $this->match->commit();
         return true;
     }
+
+    public function validate(): ValidationResult
+    {
+        return $this->success
+            ? $this->match->validateSemantic()
+            : new ValidationResult(false, ['Syntax was not accepted']);
+    }
+
     public function isCommitted(): bool
     {
         return $this->success && $this->match->isCommitted();
     }
+
     public function results(): array
     {
         $results = $this->match->getResults();
         unset($results['']);
         return $results;
     }
+
     public function result(?string $name = null, mixed $default = null): mixed
     {
         return $this->match->getResult($name, $default);

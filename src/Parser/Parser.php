@@ -1,23 +1,28 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser;
 
-use Vanderlee\Comprehend\Directive\Trivia;
-use Vanderlee\Comprehend\Directive\Lexeme;
 use InvalidArgumentException;
 use LogicException;
-use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Builder\FrozenGrammar;
+use Vanderlee\Comprehend\Directive\Lexeme;
+use Vanderlee\Comprehend\Directive\Trivia;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
-use Vanderlee\Comprehend\Source\Source;
-use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Result\Diagnostic;
+use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Runtime\ParseLimits;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+
 /** Source-based recognition; semantic reads and committed effects are separate. */
 abstract class Parser
 {
     use Output\ResultTrait, Output\AssignTrait;
+
     private array $effects = [];
     private $valueMapper = null;
     private array $guards = [];
@@ -27,14 +32,31 @@ abstract class Parser
     private bool $semanticLeaf = false;
     private ?string $ruleName = null;
 
-    public function freeze(): \Vanderlee\Comprehend\Builder\FrozenGrammar
+    protected static function parseCharacter(string $character): string
     {
-        return \Vanderlee\Comprehend\Builder\FrozenGrammar::from($this);
+        if ($character === '') {
+            throw new InvalidArgumentException('Empty argument');
+        }
+        if (mb_check_encoding($character, 'UTF-8') ? mb_strlen($character, 'UTF-8') !== 1 : strlen($character) !== 1) {
+            throw new InvalidArgumentException('Non-character argument');
+        }
+        return $character;
+    }
+
+    public function freeze(): FrozenGrammar
+    {
+        return FrozenGrammar::from($this);
     }
 
     public function graphLabel(): string
     {
         return $this->diagnosticName();
+    }
+
+    protected function diagnosticName(): string
+    {
+        $separator = strrpos(static::class, '\\');
+        return $this->ruleName ?? ($separator === false ? static::class : substr(static::class, $separator + 1));
     }
 
     public function name(string|int $name, ?string $group = null, bool $leaf = false): static
@@ -91,40 +113,14 @@ abstract class Parser
         return new Trivia($this);
     }
 
-    final public function matchPrefix(Source $source, int $byteOffset = 0, ?\Vanderlee\Comprehend\Runtime\ParseLimits $limits = null): ParseResult
-    {
-        return new ParseResult($this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits)));
-    }
-
-    final public function parseAll(Source $source, int $byteOffset = 0, ?\Vanderlee\Comprehend\Runtime\ParseLimits $limits = null): ParseResult
-    {
-        $match = $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits));
-        if (!$match->accepted || $match->span->end === $source->byteLength()) {
-            return new ParseResult($match);
-        }
-        return new ParseResult($this->trailingInputFailure($source, $byteOffset, $match));
-    }
-
-    private function trailingInputFailure(Source $source, int $byteOffset, AbstractMatch $match): Failure
-    {
-        $position = max($match->farthestFailure ?? $match->span->end, $match->span->end);
-        $previous = $match->diagnostic;
-        $expected = $position === $match->span->end ? ['end'] : [];
-        if ($previous !== null && $previous->byteOffset === $position) {
-            $expected = array_values(array_unique(array_merge($previous->expected, $expected)));
-        }
-        $failure = new Failure();
-        $failure->setSourceMetadata(
-            $source->span($byteOffset, $byteOffset),
-            $position,
-            new Diagnostic(
-                $source,
-                $position,
-                $expected,
-                $previous !== null && $previous->byteOffset === $position ? $previous->rulePaths : [],
-            ),
+    final public function matchPrefix(
+        Source $source,
+        int $byteOffset = 0,
+        ?ParseLimits $limits = null
+    ): ParseResult {
+        return new ParseResult(
+            $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits))
         );
-        return $failure;
     }
 
     /** @internal The only delegation path; custom parsers implement recognize(). */
@@ -184,6 +180,13 @@ abstract class Parser
         return $match;
     }
 
+    abstract protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch;
+
+    protected function diagnosticExpectation(): string
+    {
+        return str_contains(static::class, '\Terminal\\') ? (string)$this : $this->diagnosticName();
+    }
+
     private function assertReturnedMatch(Source $source, int $offset, AbstractMatch $match): void
     {
         $source->span($offset, $offset + $match->length);
@@ -207,62 +210,6 @@ abstract class Parser
             }
         }
         return $match;
-    }
-
-    private function prepareSuccessfulMatch(Source $source, int $offset, ParseSession $session, Success $match): AbstractMatch
-    {
-        $match->buildConcreteNode(static::class, $this->nodeName, $this->nodeGroup, $this->semanticLeaf);
-        $match->setValueMapper($this->valueMapper);
-        $match->addSemanticValidators($this->semanticValidators);
-
-        foreach ($this->guards as $guard) {
-            if (!$guard($match->node)) {
-                return $this->guardFailure($source, $offset, $session, $match);
-            }
-        }
-        return $match;
-    }
-
-    private function guardFailure(Source $source, int $offset, ParseSession $session, Success $match): Failure
-    {
-        $session->pushRule($this->diagnosticName());
-        try {
-            $session->recordFailure($offset + $match->length, 'guard(' . $this->diagnosticName() . ')');
-        } finally {
-            $session->popRule();
-        }
-        $failure = new Failure($match->length);
-        $failure->setSourceMetadata($source->span($offset, $offset), $session->farthestFailure(), $session->diagnostic());
-        return $failure;
-    }
-
-    protected function diagnosticName(): string
-    {
-        $separator = strrpos(static::class, '\\');
-        return $this->ruleName ?? ($separator === false ? static::class : substr(static::class, $separator + 1));
-    }
-
-    protected function diagnosticExpectation(): string
-    {
-        return str_contains(static::class, '\Terminal\\') ? (string) $this : $this->diagnosticName();
-    }
-
-    abstract protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch;
-
-    protected static function parseCharacter(string $character): string
-    {
-        if ($character === '') {
-            throw new InvalidArgumentException('Empty argument');
-        }
-        if (mb_check_encoding($character, 'UTF-8') ? mb_strlen($character, 'UTF-8') !== 1 : strlen($character) !== 1) {
-            throw new InvalidArgumentException('Non-character argument');
-        }
-        return $character;
-    }
-
-    protected function makeMatch(bool $accepted, Source $source, int $offset, int $length = 0, array|Success $children = []): AbstractMatch
-    {
-        return $accepted ? $this->success($source, $offset, $length, $children) : $this->failure($source, $offset);
     }
 
     protected function success(Source $source, int $offset, int $length = 0, array|Success $children = []): Success
@@ -294,10 +241,89 @@ abstract class Parser
         return $success;
     }
 
+    private function prepareSuccessfulMatch(
+        Source $source,
+        int $offset,
+        ParseSession $session,
+        Success $match
+    ): AbstractMatch {
+        $match->buildConcreteNode(static::class, $this->nodeName, $this->nodeGroup, $this->semanticLeaf);
+        $match->setValueMapper($this->valueMapper);
+        $match->addSemanticValidators($this->semanticValidators);
+
+        foreach ($this->guards as $guard) {
+            if (!$guard($match->node)) {
+                return $this->guardFailure($source, $offset, $session, $match);
+            }
+        }
+        return $match;
+    }
+
+    private function guardFailure(Source $source, int $offset, ParseSession $session, Success $match): Failure
+    {
+        $session->pushRule($this->diagnosticName());
+        try {
+            $session->recordFailure($offset + $match->length, 'guard(' . $this->diagnosticName() . ')');
+        } finally {
+            $session->popRule();
+        }
+        $failure = new Failure($match->length);
+        $failure->setSourceMetadata(
+            $source->span($offset, $offset),
+            $session->farthestFailure(),
+            $session->diagnostic()
+        );
+        return $failure;
+    }
+
+    final public function parseAll(
+        Source $source,
+        int $byteOffset = 0,
+        ?ParseLimits $limits = null
+    ): ParseResult {
+        $match = $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits));
+        if (!$match->accepted || $match->span->end === $source->byteLength()) {
+            return new ParseResult($match);
+        }
+        return new ParseResult($this->trailingInputFailure($source, $byteOffset, $match));
+    }
+
+    private function trailingInputFailure(Source $source, int $byteOffset, AbstractMatch $match): Failure
+    {
+        $position = max($match->farthestFailure ?? $match->span->end, $match->span->end);
+        $previous = $match->diagnostic;
+        $expected = $position === $match->span->end ? ['end'] : [];
+        if ($previous !== null && $previous->byteOffset === $position) {
+            $expected = array_values(array_unique(array_merge($previous->expected, $expected)));
+        }
+        $failure = new Failure();
+        $failure->setSourceMetadata(
+            $source->span($byteOffset, $byteOffset),
+            $position,
+            new Diagnostic(
+                $source,
+                $position,
+                $expected,
+                $previous !== null && $previous->byteOffset === $position ? $previous->rulePaths : [],
+            ),
+        );
+        return $failure;
+    }
+
+    abstract public function __toString(): string;
+
+    protected function makeMatch(
+        bool $accepted,
+        Source $source,
+        int $offset,
+        int $length = 0,
+        array|Success $children = []
+    ): AbstractMatch {
+        return $accepted ? $this->success($source, $offset, $length, $children) : $this->failure($source, $offset);
+    }
+
     protected function failure(Source $source, int $offset, int $progress = 0): Failure
     {
         return new Failure($progress);
     }
-
-    abstract public function __toString(): string;
 }

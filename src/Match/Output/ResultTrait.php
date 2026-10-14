@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Match\Output;
 
 trait ResultTrait
@@ -19,6 +20,7 @@ trait ResultTrait
      * @var callable[]
      */
     private $resultCallbacks = [];
+
     /**
      * Add a callback to this match, to be called after parsing is finished and
      * only if this match was part of the matched rules.
@@ -32,22 +34,14 @@ trait ResultTrait
         $this->resultCallbacks[] = $callback;
         return $this;
     }
-    /**
-     * Handle all registered result callbacks for this match and any matches
-     * at deeper levels of this match.
-     *
-     * @param array $results map of result-key => value
-     */
-    private function processResultCallbacks(&$results)
+
+    public function getResult(?string $name = null, mixed $default = null): mixed
     {
-        /** @var self $success */
-        foreach ($this->successes as $success) {
-            $success->processResultCallbacks($results);
-        }
-        foreach ($this->resultCallbacks as $callback) {
-            $callback($results);
-        }
+        $results = $this->getResults();
+        $key = $name ?? '';
+        return array_key_exists($key, $results) ? $results[$key] : $default;
     }
+
     /**
      * Pre-calculate results.
      *
@@ -76,10 +70,21 @@ trait ResultTrait
             $this->evaluatingResults = false;
         }
     }
-    public function getResult(?string $name = null, mixed $default = null): mixed
+
+    /**
+     * Handle all registered result callbacks for this match and any matches
+     * at deeper levels of this match.
+     *
+     * @param array $results map of result-key => value
+     */
+    private function processResultCallbacks(&$results)
     {
-        $results = $this->getResults();
-        $key = $name ?? '';
-        return array_key_exists($key, $results) ? $results[$key] : $default;
+        /** @var self $success */
+        foreach ($this->successes as $success) {
+            $success->processResultCallbacks($results);
+        }
+        foreach ($this->resultCallbacks as $callback) {
+            $callback($results);
+        }
     }
 }

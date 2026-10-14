@@ -1,15 +1,17 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
-use Vanderlee\Comprehend\Source\SourceMode;
-use Vanderlee\Comprehend\Match\AbstractMatch;
-use Vanderlee\Comprehend\Source\Source;
-use Vanderlee\Comprehend\Source\Utf8Source;
 use InvalidArgumentException;
-use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Source\SourceMode;
+use Vanderlee\Comprehend\Source\Utf8Source;
+
 /**
  * Description of RangeParser.
  *
@@ -18,9 +20,11 @@ use Vanderlee\Comprehend\Parser\Parser;
 class Range extends Parser
 {
     use CaseSensitiveTrait;
+
     private $first = null;
     private $last = null;
     private $in = true;
+
     public function __construct(?string $first, ?string $last, bool $in = true)
     {
         if ($first === null && $last === null) {
@@ -28,8 +32,16 @@ class Range extends Parser
         }
         $this->first = $first === null ? null : self::parseCharacter($first);
         $this->last = $last === null ? null : self::parseCharacter($last);
-        $this->in = (bool) $in;
+        $this->in = $in;
     }
+
+    public function __toString(): string
+    {
+        $first = $this->first === null ? '*' : json_encode($this->first);
+        $last = $this->last === null ? '*' : json_encode($this->last);
+        return 'range(' . $first . '..' . $last . ')';
+    }
+
     protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $this->pushCaseSensitivityToContext($context);
@@ -42,15 +54,14 @@ class Range extends Parser
             }
             $value = $this->sourceOrdinal($unit->rawText(), $context);
             $inside = $first <= $value && ($last === null || $value <= $last);
-            return $inside === $this->in ? $this->success($input, $offset, $unit->byteLength()) : $this->failure($input, $offset);
+            return $inside === $this->in
+                ? $this->success($input, $offset, $unit->byteLength())
+                : $this->failure($input, $offset);
         } finally {
             $this->popCaseSensitivityFromContext($context);
         }
     }
-    public function __toString(): string
-    {
-        return 'range(' . ($this->first === null ? '*' : json_encode($this->first)) . '..' . ($this->last === null ? '*' : json_encode($this->last)) . ')';
-    }
+
     private function sourceOrdinal($character, ParseSession $context)
     {
         $textMode = $context->source()->mode() === SourceMode::UTF8;

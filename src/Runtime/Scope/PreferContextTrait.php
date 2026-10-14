@@ -1,13 +1,22 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Runtime\Scope;
 
 use DomainException;
 use Vanderlee\Comprehend\Directive\Prefer;
+
 trait PreferContextTrait
 {
     private $preference = [];
+
+    public function pushPreference(string $preference): void
+    {
+        self::assertPreference($preference);
+        $this->preference[] = $preference;
+    }
+
     /**
      * @param $preference
      *
@@ -19,15 +28,12 @@ trait PreferContextTrait
             throw new DomainException('Invalid preference `' . $preference . '`');
         }
     }
-    public function pushPreference(string $preference): void
-    {
-        self::assertPreference($preference);
-        $this->preference[] = $preference;
-    }
+
     public function popPreference(): void
     {
         array_pop($this->preference);
     }
+
     public function getPreference(): string
     {
         return end($this->preference);

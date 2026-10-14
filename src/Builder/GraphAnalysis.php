@@ -6,15 +6,15 @@ namespace Vanderlee\Comprehend\Builder;
 
 use LogicException;
 use Vanderlee\Comprehend\Directive;
-use Vanderlee\Comprehend\Parser\Terminal;
 use Vanderlee\Comprehend\Parser\Parser;
-use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Structure\All;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Except;
 use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Stub;
+use Vanderlee\Comprehend\Parser\Terminal;
 
 /** Conservative structural analysis: opaque custom recognizers remain runtime guarded. */
 final class GraphAnalysis
@@ -38,51 +38,6 @@ final class GraphAnalysis
         return $warnings;
     }
 
-    private function initializeNullability(): array
-    {
-        $warnings = [];
-        foreach ($this->nodes as $id => $node) {
-            $known = $this->isKnown($node);
-            $this->nullable[$id] = $known ? false : null;
-            if (!$known) {
-                $warnings[] = 'Opaque parser: ' . implode(' -> ', $this->paths[$id]);
-            }
-        }
-
-        return $warnings;
-    }
-
-    private function resolveNullability(): void
-    {
-        // Recursive rules require a fixed point rather than one traversal.
-        do {
-            $changed = false;
-            foreach ($this->nodes as $id => $node) {
-                $nullable = $this->canMatchEmpty($node);
-                if ($nullable !== $this->nullable[$id]) {
-                    $this->nullable[$id] = $nullable;
-                    $changed = true;
-                }
-            }
-        } while ($changed);
-    }
-
-    private function rejectNullableRepetition(): void
-    {
-        foreach ($this->nodes as $id => $node) {
-            if ($node::class !== Repeat::class || GraphState::value($node, 'max') === 0) {
-                continue;
-            }
-
-            $child = GraphState::value($node, 'parser');
-            if ($this->nullable[spl_object_id($child)] === true) {
-                throw new LogicException(
-                    'Nullable repetition: ' . implode(' -> ', $this->paths[$id]) . ' -> ' . $child->graphLabel(),
-                );
-            }
-        }
-    }
-
     private function collect(Parser $node, array $path): void
     {
         $id = spl_object_id($node);
@@ -98,6 +53,20 @@ final class GraphAnalysis
         foreach (GraphState::children($node) as $child) {
             $this->collect($child, $this->paths[$id]);
         }
+    }
+
+    private function initializeNullability(): array
+    {
+        $warnings = [];
+        foreach ($this->nodes as $id => $node) {
+            $known = $this->isKnown($node);
+            $this->nullable[$id] = $known ? false : null;
+            if (!$known) {
+                $warnings[] = 'Opaque parser: ' . implode(' -> ', $this->paths[$id]);
+            }
+        }
+
+        return $warnings;
     }
 
     private function isKnown(Parser $node): bool
@@ -132,26 +101,19 @@ final class GraphAnalysis
         ], true);
     }
 
-    private function grammarChildren(Parser $node): array
+    private function resolveNullability(): void
     {
-        if ($node instanceof RuleReference || $node instanceof Implementation) {
-            return [$node->graphTarget()];
-        }
-        if ($node instanceof AbstractRuleset) {
-            return [$node->resolveRule(AbstractRuleset::ROOT)];
-        }
-        if ($node instanceof Sequence || $node instanceof Choice) {
-            return array_values(iterator_to_array($node));
-        }
-        if ($node instanceof All) {
-            return GraphState::value($node, 'parsers');
-        }
-        if ($node instanceof Except) {
-            return [GraphState::value($node, 'parserMatch'), GraphState::value($node, 'parserNot')];
-        }
-
-        $child = GraphState::value($node, 'parser');
-        return $child instanceof Parser ? [$child] : [];
+        // Recursive rules require a fixed point rather than one traversal.
+        do {
+            $changed = false;
+            foreach ($this->nodes as $id => $node) {
+                $nullable = $this->canMatchEmpty($node);
+                if ($nullable !== $this->nullable[$id]) {
+                    $this->nullable[$id] = $nullable;
+                    $changed = true;
+                }
+            }
+        } while ($changed);
     }
 
     private function canMatchEmpty(Parser $node): ?bool
@@ -179,7 +141,7 @@ final class GraphAnalysis
             return false;
         }
 
-        $values = array_map(fn ($child) => $this->nullable[spl_object_id($child)], $children);
+        $values = array_map(fn($child) => $this->nullable[spl_object_id($child)], $children);
         if ($node instanceof Choice || $node instanceof All) {
             if (in_array(true, $values, true)) {
                 return true;
@@ -192,6 +154,64 @@ final class GraphAnalysis
         }
 
         return in_array(null, $values, true) ? null : true;
+    }
+
+    private function grammarChildren(Parser $node): array
+    {
+        if ($node instanceof RuleReference || $node instanceof Implementation) {
+            return [$node->graphTarget()];
+        }
+        if ($node instanceof AbstractRuleset) {
+            return [$node->resolveRule(AbstractRuleset::ROOT)];
+        }
+        if ($node instanceof Sequence || $node instanceof Choice) {
+            return array_values(iterator_to_array($node));
+        }
+        if ($node instanceof All) {
+            return GraphState::value($node, 'parsers');
+        }
+        if ($node instanceof Except) {
+            return [GraphState::value($node, 'parserMatch'), GraphState::value($node, 'parserNot')];
+        }
+
+        $child = GraphState::value($node, 'parser');
+        return $child instanceof Parser ? [$child] : [];
+    }
+
+    private function rejectNullableRepetition(): void
+    {
+        foreach ($this->nodes as $id => $node) {
+            if ($node::class !== Repeat::class || GraphState::value($node, 'max') === 0) {
+                continue;
+            }
+
+            $child = GraphState::value($node, 'parser');
+            if ($this->nullable[spl_object_id($child)] === true) {
+                throw new LogicException(
+                    'Nullable repetition: ' . implode(' -> ', $this->paths[$id]) . ' -> ' . $child->graphLabel(),
+                );
+            }
+        }
+    }
+
+    private function checkLeadingCycles(Parser $node, array $active, array &$completed): void
+    {
+        $id = spl_object_id($node);
+        if (isset($active[$id])) {
+            throw new LogicException(
+                'Left-recursive grammar: ' . implode(' -> ', [...array_values($active), $node->graphLabel()]),
+            );
+        }
+        if (isset($completed[$id])) {
+            return;
+        }
+
+        $active[$id] = $node->graphLabel();
+        foreach ($this->leadingChildren($node) as $child) {
+            $this->checkLeadingCycles($child, $active, $completed);
+        }
+
+        $completed[$id] = true;
     }
 
     private function leadingChildren(Parser $node): array
@@ -217,25 +237,5 @@ final class GraphAnalysis
         }
 
         return $leading;
-    }
-
-    private function checkLeadingCycles(Parser $node, array $active, array &$completed): void
-    {
-        $id = spl_object_id($node);
-        if (isset($active[$id])) {
-            throw new LogicException(
-                'Left-recursive grammar: ' . implode(' -> ', [...array_values($active), $node->graphLabel()]),
-            );
-        }
-        if (isset($completed[$id])) {
-            return;
-        }
-
-        $active[$id] = $node->graphLabel();
-        foreach ($this->leadingChildren($node) as $child) {
-            $this->checkLeadingCycles($child, $active, $completed);
-        }
-
-        $completed[$id] = true;
     }
 }

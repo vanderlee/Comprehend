@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Output;
 
 /**
@@ -14,6 +15,7 @@ trait AssignTrait
      * @var callable[]
      */
     private $assignCallbacks = [];
+
     /**
      * On explicit commit, assign the matched input to the specified local variable.
      * Only assign if successfully matched entire parent up to root.

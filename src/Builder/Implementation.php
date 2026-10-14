@@ -1,21 +1,31 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Builder;
 
 use LogicException;
-use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+
 /** A parameterized definition instance using the canonical lifecycle. */
 final class Implementation extends Parser
 {
     private ?Parser $parser = null;
+
     public function __construct(private readonly Definition $definition, private readonly array $arguments = [])
     {
     }
+
+    /** @internal Materialize this parameterized definition before snapshotting. */
+    public function graphTarget(): Parser
+    {
+        return $this->parser();
+    }
+
     private function parser(): Parser
     {
         if ($this->parser === null) {
@@ -29,13 +39,16 @@ final class Implementation extends Parser
         return $this->parser;
     }
 
-    /** @internal Materialize this parameterized definition before snapshotting. */
-    public function graphTarget(): Parser
+    public function bindSnapshotTarget(Parser $parser): void
     {
-        return $this->parser();
+        $this->parser = $parser;
     }
 
-    public function bindSnapshotTarget(Parser $parser): void { $this->parser = $parser; }
+    public function __toString(): string
+    {
+        return 'definition';
+    }
+
     protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
         $match = $this->parser()->recognizeInSession($source, $offset, $session);
@@ -79,9 +92,5 @@ final class Implementation extends Parser
             );
         }
         return $success;
-    }
-    public function __toString(): string
-    {
-        return 'definition';
     }
 }

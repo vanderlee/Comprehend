@@ -1,9 +1,11 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Match\Output;
 
 use Vanderlee\Comprehend\Match\Success;
+
 trait CallbackTrait
 {
     /**
@@ -17,6 +19,7 @@ trait CallbackTrait
     private bool $effectsProcessed = false;
     private bool $effectsProcessing = false;
     private ?\Throwable $effectError = null;
+
     /**
      * Retain accepted effects before this match's callbacks, without adding
      * named collections. Used for trivia and processed rules.
@@ -27,6 +30,7 @@ trait CallbackTrait
     {
         $this->precedingMatches[] = $match;
     }
+
     /**
      * Add a callback to this match, to be called after parsing is finished and
      * only if this match was part of the matched rules.
@@ -40,6 +44,12 @@ trait CallbackTrait
         $this->customCallbacks[] = $callback;
         return $this;
     }
+
+    public function getCallback()
+    {
+        $this->processCustomCallbacks();
+    }
+
     /**
      * Handle all registered custom callbacks for this match and any matches
      * at deeper levels of this match.
@@ -71,9 +81,5 @@ trait CallbackTrait
         } finally {
             $this->effectsProcessing = false;
         }
-    }
-    public function getCallback()
-    {
-        $this->processCustomCallbacks();
     }
 }

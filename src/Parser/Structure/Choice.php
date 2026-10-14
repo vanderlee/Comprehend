@@ -1,15 +1,17 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Source\Source;
 use InvalidArgumentException;
-use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+
 /**
  * Match one of the provided parsers.
  *
@@ -42,17 +44,41 @@ class Choice extends IterableParser
         return (new self(...$arguments))->preferLongest();
     }
 
-    private function parseFirst(Source $source, int $offset, ParseSession $session): AbstractMatch
+    /**
+     * Add one or more parsers as choices.
+     *
+     * @param Parser[] $arguments
+     *
+     * @return self
+     */
+    public function add(Parser ...$arguments): self
     {
-        $farthestProgress = 0;
-        foreach ($this->parsers as $parser) {
-            $match = $parser->recognizeInSession($source, $offset, $session);
-            if ($match instanceof Success) {
-                return $this->success($source, $offset, $match->length, $match);
-            }
-            $farthestProgress = max($farthestProgress, $match->length);
+        $this->parsers = array_merge($this->parsers, $arguments);
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        $prefix = match ($this->preference) {
+            Prefer::LONGEST => 'longest-of',
+            Prefer::SHORTEST => 'shortest-of',
+            default => '',
+        };
+        return $prefix . '( ' . implode(' | ', $this->parsers) . ' )';
+    }
+
+    protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
+    {
+        $this->pushPreferenceToContext($session);
+        try {
+            $preference = $session->getPreference();
+            return match ($preference) {
+                Prefer::LONGEST, Prefer::SHORTEST => $this->parseRanked($source, $offset, $session, $preference),
+                default => $this->parseFirst($source, $offset, $session),
+            };
+        } finally {
+            $this->popPreferenceFromContext($session);
         }
-        return $this->failure($source, $offset, $farthestProgress);
     }
 
     private function parseRanked(Source $source, int $offset, ParseSession $session, string $preference): AbstractMatch
@@ -81,35 +107,16 @@ class Choice extends IterableParser
             : $attempt->length < $selected->length;
     }
 
-    protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
+    private function parseFirst(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
-        $this->pushPreferenceToContext($session);
-        try {
-            return match ($session->getPreference()) {
-                Prefer::LONGEST, Prefer::SHORTEST => $this->parseRanked($source, $offset, $session, $session->getPreference()),
-                default => $this->parseFirst($source, $offset, $session),
-            };
-        } finally {
-            $this->popPreferenceFromContext($session);
+        $farthestProgress = 0;
+        foreach ($this->parsers as $parser) {
+            $match = $parser->recognizeInSession($source, $offset, $session);
+            if ($match instanceof Success) {
+                return $this->success($source, $offset, $match->length, $match);
+            }
+            $farthestProgress = max($farthestProgress, $match->length);
         }
-    }
-
-    /**
-     * Add one or more parsers as choices.
-     *
-     * @param Parser[] $arguments
-     *
-     * @return self
-     */
-    public function add(Parser ...$arguments): self
-    {
-        $this->parsers = array_merge($this->parsers, $arguments);
-        return $this;
-    }
-
-    public function __toString(): string
-    {
-        $prefix = $this->preference === Prefer::LONGEST ? 'longest-of' : ($this->preference === Prefer::SHORTEST ? 'shortest-of' : '');
-        return $prefix . '( ' . implode(' | ', $this->parsers) . ' )';
+        return $this->failure($source, $offset, $farthestProgress);
     }
 }

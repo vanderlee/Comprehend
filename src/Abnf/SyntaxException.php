@@ -17,7 +17,9 @@ final class SyntaxException extends InvalidArgumentException
         $this->diagnostic = new Diagnostic($source, $byteOffset, [$reason], [['ABNF']]);
         $location = $this->diagnostic->location();
 
-        parent::__construct('ABNF: ' . $reason . ' at line ' . $location['line']
-            . ', column ' . $location['column'] . ' (byte ' . $byteOffset . ')');
+        parent::__construct(
+            'ABNF: ' . $reason . ' at line ' . $location['line']
+            . ', column ' . $location['column'] . ' (byte ' . $byteOffset . ')'
+        );
     }
 }

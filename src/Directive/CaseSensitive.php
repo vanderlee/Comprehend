@@ -1,48 +1,33 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Directive;
 
 use Vanderlee\Comprehend\Match\AbstractMatch;
-use Vanderlee\Comprehend\Source\Source;
-use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Parser\Parser;
-/**
- * Description of CaseDirective.
- *
- * @author Martijn
- */
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+
+/** Override case sensitivity within a subtree. */
 class CaseSensitive extends Parser
 {
-    /**
-     * @var Parser
-     */
-    private $parser;
-    /**
-     * @var bool
-     */
-    private $sensitivity;
-    /**
-     * @param Parser $parser
-     * @param bool $sensitivity
-     */
-    public function __construct(bool $sensitivity, Parser $parser)
+    public function __construct(private bool $sensitivity, private Parser $parser)
     {
-        $this->parser = $parser;
-        $this->sensitivity = (bool) $sensitivity;
     }
+
+    public function __toString(): string
+    {
+        return ($this->sensitivity ? 'case' : 'no-case') . '( ' . $this->parser . ' )';
+    }
+
     protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $context->pushCaseSensitivity($this->sensitivity);
         try {
-            $match = $this->parser->recognizeInSession($input, $offset, $context);
+            return $this->parser->recognizeInSession($input, $offset, $context);
         } finally {
             $context->popCaseSensitivity();
         }
-        return $match;
-    }
-    public function __toString(): string
-    {
-        return ($this->sensitivity ? 'case' : 'no-case') . '( ' . $this->parser . ' )';
     }
 }

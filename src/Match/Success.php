@@ -1,15 +1,17 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Vanderlee\Comprehend\Match;
 
 use Vanderlee\Comprehend\Directive\Trivia;
-use Vanderlee\Comprehend\Tree\ConcreteNode;
-use Vanderlee\Comprehend\Result\SemanticProjection;
-use Vanderlee\Comprehend\Result\ParseResult;
-use Vanderlee\Comprehend\Result\ValidationResult;
 use Vanderlee\Comprehend\Match\Output\CallbackTrait;
 use Vanderlee\Comprehend\Match\Output\ResultTrait;
+use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Result\SemanticProjection;
+use Vanderlee\Comprehend\Result\ValidationResult;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
+
 /**
  * Successful match of a parser.
  *
@@ -18,6 +20,7 @@ use Vanderlee\Comprehend\Match\Output\ResultTrait;
 class Success extends AbstractMatch
 {
     use ResultTrait, CallbackTrait;
+
     /**
      * Whether the selected effect sequence has started.
      * A failed or completed sequence is never replayed.
@@ -61,8 +64,12 @@ class Success extends AbstractMatch
     }
 
     /** @internal Build without evaluating lazy semantic output or effects. */
-    public function buildConcreteNode(string $kind, string|int|null $name = null, ?string $group = null, bool $leaf = false): void
-    {
+    public function buildConcreteNode(
+        string $kind,
+        string|int|null $name = null,
+        ?string $group = null,
+        bool $leaf = false
+    ): void {
         $children = [];
         foreach ($this->concreteMatches as $match) {
             if ($match->node === null) {
@@ -70,7 +77,9 @@ class Success extends AbstractMatch
             }
             $children[] = $match->node;
         }
-        $this->setConcreteNode(new ConcreteNode($kind, $this->span, $children, $kind === Trivia::class, $name, $group, $leaf));
+        $this->setConcreteNode(
+            new ConcreteNode($kind, $this->span, $children, $kind === Trivia::class, $name, $group, $leaf)
+        );
     }
 
     public function inheritValueFrom(self $child): void
@@ -99,6 +108,33 @@ class Success extends AbstractMatch
     public function addSemanticValidators(array $validators): void
     {
         $this->semanticValidators = array_merge($this->semanticValidators, $validators);
+    }
+
+    /** Explicit commits are idempotent; a failed effect sequence is never retried. */
+    public function commit(): void
+    {
+        if ($this->committing || $this->effectsProcessing) {
+            throw new \LogicException('Recursive effect commit');
+        }
+        if ($this->commitError !== null) {
+            throw $this->commitError;
+        }
+        if ($this->resolved) {
+            return;
+        }
+        if (!$this->validateSemantic()->valid) {
+            throw new \LogicException('Semantic validation rejected commit');
+        }
+        $this->resolved = true;
+        $this->committing = true;
+        try {
+            $this->getCallback();
+        } catch (\Throwable $error) {
+            $this->commitError = $error;
+            throw $error;
+        } finally {
+            $this->committing = false;
+        }
     }
 
     public function validateSemantic(): ValidationResult
@@ -156,33 +192,6 @@ class Success extends AbstractMatch
             }
         }
         return $errors;
-    }
-
-    /** Explicit commits are idempotent; a failed effect sequence is never retried. */
-    public function commit(): void
-    {
-        if ($this->committing || $this->effectsProcessing) {
-            throw new \LogicException('Recursive effect commit');
-        }
-        if ($this->commitError !== null) {
-            throw $this->commitError;
-        }
-        if ($this->resolved) {
-            return;
-        }
-        if (!$this->validateSemantic()->valid) {
-            throw new \LogicException('Semantic validation rejected commit');
-        }
-        $this->resolved = true;
-        $this->committing = true;
-        try {
-            $this->getCallback();
-        } catch (\Throwable $error) {
-            $this->commitError = $error;
-            throw $error;
-        } finally {
-            $this->committing = false;
-        }
     }
 
     public function isCommitted(): bool

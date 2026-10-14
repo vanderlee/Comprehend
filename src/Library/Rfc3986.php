@@ -6,17 +6,20 @@ declare (strict_types=1);
  *
  * @see https://tools.ietf.org/html/rfc3986
  */
+
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
-use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
+
 require_once 'functions.php';
+
 /**
  */
 class Rfc3986 extends AbstractRuleset
 {
     protected static $name = 'Rfc3986';
+
     public function __construct($overwrites = [])
     {
         $abnf = new Rfc2234();
@@ -40,9 +43,14 @@ class Rfc3986 extends AbstractRuleset
             ),
             'segment' => star($this->rule('pchar')),
             'segment_nz' => plus($this->rule('pchar')),
-            'segment_nz_nc' => plus(c($this->rule('unreserved'), $this->rule('pct_encoded'), $this->rule('sub_delims'), text('@'))),
+            'segment_nz_nc' => plus(
+                c($this->rule('unreserved'), $this->rule('pct_encoded'), $this->rule('sub_delims'), text('@'))
+            ),
             'path_abempty' => star(s(text('/'), $this->rule('segment'))),
-            'path_absolute' => s(text('/'), opt(s($this->rule('segment_nz'), star(s(text('/'), $this->rule('segment')))))),
+            'path_absolute' => s(
+                text('/'),
+                opt(s($this->rule('segment_nz'), star(s(text('/'), $this->rule('segment')))))
+            ),
             'path_noscheme' => s($this->rule('segment_nz_nc'), star(s(text('/'), $this->rule('segment')))),
             'path_rootless' => s($this->rule('segment_nz'), star(s(text('/'), $this->rule('segment')))),
             'path_empty' => new Nothing(),
@@ -87,7 +95,9 @@ class Rfc3986 extends AbstractRuleset
                 opt(s(text(':'), $this->rule('port'))),
             ),
             // 3.2.1.  User Information
-            'userinfo' => star(c($this->rule('unreserved'), $this->rule('pct_encoded'), $this->rule('sub_delims'), text(':'))),
+            'userinfo' => star(
+                c($this->rule('unreserved'), $this->rule('pct_encoded'), $this->rule('sub_delims'), text(':'))
+            ),
             // 3.2.3.  Port
             'port' => star($abnf->rule('DIGIT')),
             // 3.2.2.  Host
@@ -177,7 +187,12 @@ class Rfc3986 extends AbstractRuleset
             // 4.1.  URI Reference
             'URI_reference' => c($this->rule('URI'), $this->rule('relative_ref')),
             // 4.3.  Absolute URI
-            'absolute_URI' => s($this->rule('scheme'), text(':'), $this->rule('hier_part'), opt(s(text('?'), $this->rule('query')))),
+            'absolute_URI' => s(
+                $this->rule('scheme'),
+                text(':'),
+                $this->rule('hier_part'),
+                opt(s(text('?'), $this->rule('query')))
+            ),
         ];
         parent::__construct(array_merge($rules, $overwrites));
     }

@@ -9,12 +9,14 @@ declare (strict_types=1);
  *
  * @see     https://tools.ietf.org/html/rfc4408
  */
+
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
-use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Integer;
+
 require_once 'functions.php';
+
 /**
  * Class Rfc4408.
  *
@@ -25,6 +27,7 @@ require_once 'functions.php';
 class Rfc4408 extends AbstractRuleset
 {
     protected static $name = 'Rfc4408';
+
     public function __construct($overwrites = [])
     {
         $abnf = new Rfc4234();
@@ -72,7 +75,10 @@ class Rfc4408 extends AbstractRuleset
             'IP6' => s(text('ip6'), text(':'), $this->rule('ip6_network'), opt($this->rule('ip6_cidr_length'))),
             'ip4_cidr_length' => s(text('/'), plus($abnf->rule('DIGIT'))),
             'ip6_cidr_length' => s(text('/'), plus($abnf->rule('DIGIT'))),
-            'dual_cidr_length' => s(opt($this->rule('ip4_cidr_length')), opt(s(text('/'), $this->rule('ip6_cidr_length')))),
+            'dual_cidr_length' => s(
+                opt($this->rule('ip4_cidr_length')),
+                opt(s(text('/'), $this->rule('ip6_cidr_length')))
+            ),
             'ip4_network' => s(
                 $this->rule('qnum'),
                 text('.'),

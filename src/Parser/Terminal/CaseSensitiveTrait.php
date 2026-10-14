@@ -1,32 +1,16 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
 use Vanderlee\Comprehend\Runtime\ParseSession;
-/**
- * Classes implementing this can scan.
- *
- * @author Martijn
- */
+
+/** A local case policy; null inherits the session policy. */
 trait CaseSensitiveTrait
 {
-    /**
-     * @var bool
-     */
-    private $caseSensitivity = null;
-    private function pushCaseSensitivityToContext(ParseSession $context)
-    {
-        if ($this->caseSensitivity !== null) {
-            $context->pushCaseSensitivity($this->caseSensitivity);
-        }
-    }
-    private function popCaseSensitivityFromContext(ParseSession $context)
-    {
-        if ($this->caseSensitivity !== null) {
-            $context->popCaseSensitivity();
-        }
-    }
+    private ?bool $caseSensitivity = null;
+
     /**
      * @param bool $preference
      *
@@ -37,14 +21,30 @@ trait CaseSensitiveTrait
         $this->caseSensitivity = $preference;
         return $this;
     }
+
     public function caseSensitive(): static
     {
         $this->caseSensitivity = true;
         return $this;
     }
+
     public function caseInsensitive(): static
     {
         $this->caseSensitivity = false;
         return $this;
+    }
+
+    private function pushCaseSensitivityToContext(ParseSession $context)
+    {
+        if ($this->caseSensitivity !== null) {
+            $context->pushCaseSensitivity($this->caseSensitivity);
+        }
+    }
+
+    private function popCaseSensitivityFromContext(ParseSession $context)
+    {
+        if ($this->caseSensitivity !== null) {
+            $context->popCaseSensitivity();
+        }
     }
 }

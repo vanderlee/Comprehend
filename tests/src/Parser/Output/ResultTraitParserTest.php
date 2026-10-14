@@ -107,4 +107,24 @@ class ResultTraitParserTest extends ParserTestCase
         $this->assertEquals(['foo', 'BAR', 'zab'], $match->results()['var']);
         $this->assertEquals(['foo', 'BAR', 'zab'], $match->result('var'));
     }
+
+    public function testPushAndConcatPreserveAnExistingNullResult()
+    {
+        $calls = 0;
+        $nullable = (new Text('a'))->setResult('value', static function () use (&$calls) {
+            ++$calls;
+            return null;
+        });
+
+        $pushed = (new Sequence($nullable, (new Text('b'))->pushResult('value')))->parseAll(new ByteSource('ab'));
+        $this->assertSame(0, $calls);
+        $this->assertSame([null, 'b'], $pushed->result('value'));
+        $this->assertSame([null, 'b'], $pushed->result('value'));
+        $this->assertSame(1, $calls);
+
+        $concatenated = (new Sequence($nullable, (new Text('b'))->concatResult('value')))->parseAll(new ByteSource('ab'));
+        $this->assertSame('b', $concatenated->result('value'));
+        $this->assertSame('b', $concatenated->result('value'));
+        $this->assertSame(2, $calls);
+    }
 }

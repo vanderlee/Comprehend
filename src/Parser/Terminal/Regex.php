@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
-use Vanderlee\Comprehend\Source\SourceMode;
-use Vanderlee\Comprehend\Match\AbstractMatch;
-use Vanderlee\Comprehend\Source\Source;
 use InvalidArgumentException;
 use RuntimeException;
-use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
 /**
@@ -28,6 +28,18 @@ class Regex extends Parser
     private $pattern = null;
     private ?string $windowLiteral = null;
 
+    public function __construct(string $pattern)
+    {
+        if (empty($pattern)) {
+            throw new InvalidArgumentException('Empty pattern');
+        }
+        if (@preg_match($pattern, '') === false) {
+            throw new InvalidArgumentException('Invalid pattern');
+        }
+
+        $this->pattern = $pattern;
+    }
+
     /** Only quoted literals have a proven context-free, finite read window. */
     public static function literalWindow(string $literal): self
     {
@@ -40,16 +52,9 @@ class Regex extends Parser
         return $parser;
     }
 
-    public function __construct(string $pattern)
+    public function __toString(): string
     {
-        if (empty($pattern)) {
-            throw new InvalidArgumentException('Empty pattern');
-        }
-        if (@preg_match($pattern, '') === false) {
-            throw new InvalidArgumentException('Invalid pattern');
-        }
-
-        $this->pattern = $pattern;
+        return (string)$this->pattern;
     }
 
     protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
@@ -71,11 +76,6 @@ class Regex extends Parser
         }
 
         return $this->success($input, $offset, $length);
-    }
-
-    public function __toString(): string
-    {
-        return (string) $this->pattern;
     }
 
     /** @return array{string, bool} Pattern and whether the source uses UTF-8. */
@@ -101,29 +101,21 @@ class Regex extends Parser
         return [$pattern . ($textMode ? 'u' : ''), $textMode];
     }
 
-    /** @return array{string, int} Subject text and its PCRE starting offset. */
-    private function recognitionSubject(Source $input, int $offset, ParseSession $context, bool $textMode): array
+    private function usesUtf8(): bool
     {
-        $subjectOffset = $offset;
-        if ($this->windowLiteral === null) {
-            $context->consumeWork(max(1, $input->byteLength()), $offset);
-            $subject = $input->sliceBytes(0, $input->byteLength());
-        } else {
-            if ($textMode) {
-                new Utf8Source($this->windowLiteral);
-            }
-            $window = $textMode ? 4 * mb_strlen($this->windowLiteral, 'UTF-8') : strlen($this->windowLiteral);
-            $end = min($input->byteLength(), $offset + $window);
-            while (!$input->isUnitBoundary($end)) {
-                --$end;
-            }
-
-            $context->consumeWork(max(1, $end - $offset), $offset);
-            $subject = $input->sliceBytes($offset, $end);
-            $subjectOffset = 0;
+        preg_match('/[a-zA-Z]*$/', $this->pattern, $modifiers);
+        if (strpos($modifiers[0], 'u') !== false) {
+            return true;
         }
-
-        return [$subject, $subjectOffset];
+        // PCRE permits UTF mode switches before the pattern body as well.
+        $body = substr($this->pattern, 1);
+        while (preg_match('/^\(\*([A-Z0-9_]+)(?:=[0-9]+)?\)/', $body, $option) === 1) {
+            if (in_array($option[1], ['UTF', 'UTF8'], true)) {
+                return true;
+            }
+            $body = substr($body, strlen($option[0]));
+        }
+        return false;
     }
 
     private function containsByteEscape(): bool
@@ -145,20 +137,24 @@ class Regex extends Parser
         return false;
     }
 
-    private function usesUtf8(): bool
+    /** @return array{string, int} Subject text and its PCRE starting offset. */
+    private function recognitionSubject(Source $input, int $offset, ParseSession $context, bool $textMode): array
     {
-        preg_match('/[a-zA-Z]*$/', $this->pattern, $modifiers);
-        if (strpos($modifiers[0], 'u') !== false) {
-            return true;
+        if ($this->windowLiteral === null) {
+            $context->consumeWork(max(1, $input->byteLength()), $offset);
+            return [$input->sliceBytes(0, $input->byteLength()), $offset];
         }
-        // PCRE permits UTF mode switches before the pattern body as well.
-        $body = substr($this->pattern, 1);
-        while (preg_match('/^\(\*([A-Z0-9_]+)(?:=[0-9]+)?\)/', $body, $option) === 1) {
-            if (in_array($option[1], ['UTF', 'UTF8'], true)) {
-                return true;
-            }
-            $body = substr($body, strlen($option[0]));
+
+        if ($textMode) {
+            new Utf8Source($this->windowLiteral);
         }
-        return false;
+        $window = $textMode ? 4 * mb_strlen($this->windowLiteral, 'UTF-8') : strlen($this->windowLiteral);
+        $end = min($input->byteLength(), $offset + $window);
+        while (!$input->isUnitBoundary($end)) {
+            --$end;
+        }
+
+        $context->consumeWork(max(1, $end - $offset), $offset);
+        return [$input->sliceBytes($offset, $end), 0];
     }
 }

@@ -9,6 +9,7 @@ declare (strict_types=1);
  *
  * @see     https://tools.ietf.org/html/rfc5234
  */
+
 namespace Vanderlee\Comprehend\Library;
 
 /**

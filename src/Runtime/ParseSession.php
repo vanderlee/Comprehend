@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Runtime;
 
+use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Result\Diagnostic;
 use Vanderlee\Comprehend\Runtime\Scope\CaseSensitiveContextTrait;
 use Vanderlee\Comprehend\Runtime\Scope\PreferContextTrait;
 use Vanderlee\Comprehend\Runtime\Scope\SpacingContextTrait;
-use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Span;
 
@@ -47,22 +47,9 @@ final class ParseSession
         $this->source = $source;
         $this->limits = $limits ?? new ParseLimits();
 
-        self::assertPreference($preference);
         $this->pushSpacer($trivia);
         $this->pushCaseSensitivity($caseSensitive);
         $this->pushPreference($preference);
-    }
-
-    public function consumeWork(int $amount = 1, int $byteOffset = 0): void
-    {
-        if ($amount < 0) {
-            throw new \InvalidArgumentException('Work increment must not be negative');
-        }
-        if ($this->limits->maxWork !== null && $amount > $this->limits->maxWork - $this->work) {
-            throw new ParseLimitException('work', $byteOffset, $this->path, $this->limits->maxWork);
-        }
-
-        $this->work += $amount;
     }
 
     public function workUsed(): int
@@ -93,6 +80,18 @@ final class ParseSession
 
         ++$this->depth;
         $this->activeParsers[$key] = true;
+    }
+
+    public function consumeWork(int $amount = 1, int $byteOffset = 0): void
+    {
+        if ($amount < 0) {
+            throw new \InvalidArgumentException('Work increment must not be negative');
+        }
+        if ($this->limits->maxWork !== null && $amount > $this->limits->maxWork - $this->work) {
+            throw new ParseLimitException('work', $byteOffset, $this->path, $this->limits->maxWork);
+        }
+
+        $this->work += $amount;
     }
 
     public function leaveParser(Parser $parser, int $offset): void
