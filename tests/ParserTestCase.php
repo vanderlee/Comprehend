@@ -1,9 +1,10 @@
 <?php
 
-namespace tests;
+namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Result\ParseResult;
+
 /**
  * Description of TestCase.
  *
