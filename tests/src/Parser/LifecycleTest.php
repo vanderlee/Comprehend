@@ -13,6 +13,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Match\Success;
 class LifecycleTest extends ParserTestCase
 {
     public function testGuardRejectsCandidateWithoutSemanticOrCommittedEffects()
@@ -249,5 +250,35 @@ class LifecycleTest extends ParserTestCase
         }
         $this->assertSame(1, $calls);
         $this->assertFalse($result->isCommitted());
+    }
+
+    public function testSharedChildValidationErrorsAreCollectedOnceBeforeParentErrors(): void
+    {
+        $events = [];
+        $source = new Utf8Source('');
+        $child = new Success();
+        $child->setSourceMetadata($source->span(0, 0), null);
+        $child->addSemanticValidators([
+            function () use (&$events) {
+                $events[] = 'child';
+                return 'Child rejected';
+            },
+        ]);
+        $parent = new Success(0, [$child, $child]);
+        $parent->setSourceMetadata($source->span(0, 0), null);
+        $parent->addSemanticValidators([
+            function () use (&$events) {
+                $events[] = 'parent';
+                return false;
+            },
+        ]);
+        $result = new ParseResult($parent);
+
+        $report = $result->validate();
+        $this->assertFalse($report->valid);
+        $this->assertSame(['Child rejected', 'Semantic validation failed'], $report->errors);
+        $this->assertSame($report, $result->validate());
+        $this->assertFalse($result->commit());
+        $this->assertSame(['child', 'parent'], $events);
     }
 }

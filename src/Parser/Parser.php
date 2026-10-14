@@ -26,6 +26,7 @@ abstract class Parser
     private ?string $nodeGroup = null;
     private bool $semanticLeaf = false;
     private ?string $ruleName = null;
+
     public function name(string|int $name, ?string $group = null, bool $leaf = false): static
     {
         $this->nodeName = $name;
@@ -33,54 +34,69 @@ abstract class Parser
         $this->semanticLeaf = $leaf;
         return $this;
     }
+
     public function hasName(): bool
     {
         return $this->nodeName !== null;
     }
+
     public function diagnosticRule(string $name): static
     {
         $this->ruleName = $name;
         return $this;
     }
+
     public function guard(callable $predicate): static
     {
         $this->guards[] = $predicate;
         return $this;
     }
+
     public function validateSemantic(callable $validator): static
     {
         $this->semanticValidators[] = $validator;
         return $this;
     }
+
     public function mapValue(callable $mapper): static
     {
         $this->valueMapper = $mapper;
         return $this;
     }
+
     /** Effects receive the selected source-bound ParseResult, only on commit. */
     public function onCommit(callable $effect): static
     {
         $this->effects[] = $effect;
         return $this;
     }
+
     public function lexeme(): Lexeme
     {
         return new Lexeme($this);
     }
+
     public function trivia(): Trivia
     {
         return new Trivia($this);
     }
+
     final public function matchPrefix(Source $source, int $byteOffset = 0): ParseResult
     {
         return new ParseResult($this->recognizeInSession($source, $byteOffset, new ParseSession($source)));
     }
+
     final public function parseAll(Source $source, int $byteOffset = 0): ParseResult
     {
         $match = $this->recognizeInSession($source, $byteOffset, new ParseSession($source));
         if (!$match->accepted || $match->span->end === $source->byteLength()) {
             return new ParseResult($match);
         }
+        return new ParseResult($this->trailingInputFailure($source, $byteOffset, $match));
+    }
+
+    private function trailingInputFailure(Source $source, int $byteOffset, AbstractMatch $match): Failure
+    {
         $position = max($match->farthestFailure ?? $match->span->end, $match->span->end);
         $previous = $match->diagnostic;
         $expected = $position === $match->span->end ? ['end'] : [];
@@ -98,10 +114,28 @@ abstract class Parser
                 $previous !== null && $previous->byteOffset === $position ? $previous->rulePaths : [],
             ),
         );
-        return new ParseResult($failure);
+        return $failure;
     }
+
     /** @internal The only delegation path; custom parsers implement recognize(). */
     final public function recognizeInSession(Source $source, int $offset, ParseSession $session): AbstractMatch
+    {
+        $this->assertRecognitionPosition($source, $offset, $session);
+        $match = $this->recognizeWithDiagnostics($source, $offset, $session);
+        $this->assertReturnedMatch($source, $offset, $match);
+        $match = $this->wrapReturnedChild($source, $offset, $match);
+        $match->setSourceMetadata(
+            $source->span($offset, $match->accepted ? $offset + $match->length : $offset),
+            $session->farthestFailure(),
+            $session->diagnostic(),
+        );
+
+        return $match instanceof Success
+            ? $this->prepareSuccessfulMatch($source, $offset, $session, $match)
+            : $match;
+    }
+
+    private function assertRecognitionPosition(Source $source, int $offset, ParseSession $session): void
     {
         if ($session->source() !== $source) {
             throw new InvalidArgumentException('Recognition must use the session source');
@@ -110,11 +144,15 @@ abstract class Parser
         if (!$source->isUnitBoundary($offset)) {
             throw new InvalidArgumentException('Parser position is inside a UTF-8 code point');
         }
-        $revision = $session->failureRevision();
+    }
+
+    private function recognizeWithDiagnostics(Source $source, int $offset, ParseSession $session): AbstractMatch
+    {
+        $failureRevision = $session->failureRevision();
         $session->pushRule($this->diagnosticName());
         try {
             $match = $this->recognize($source, $offset, $session);
-            if (!$match->accepted && $revision === $session->failureRevision()) {
+            if (!$match->accepted && $failureRevision === $session->failureRevision()) {
                 $session->recordFailure(
                     $this instanceof Structure\Not || $this instanceof Structure\Except ? $offset : $offset + $match->length,
                     $this->diagnosticExpectation(),
@@ -123,6 +161,11 @@ abstract class Parser
         } finally {
             $session->popRule();
         }
+        return $match;
+    }
+
+    private function assertReturnedMatch(Source $source, int $offset, AbstractMatch $match): void
+    {
         $source->span($offset, $offset + $match->length);
         if ($match->span !== null && ($match->span->source !== $source || $match->span->start !== $offset)) {
             throw new LogicException('Recognition returned a foreign source or start position');
@@ -130,6 +173,10 @@ abstract class Parser
         if (!$source->isUnitBoundary($offset + $match->length)) {
             throw new LogicException('Parser returned a partial UTF-8 code point');
         }
+    }
+
+    private function wrapReturnedChild(Source $source, int $offset, AbstractMatch $match): AbstractMatch
+    {
         // A directive may return an existing child execution record. Always
         // wrap it so its span, value cache, naming and lifecycle remain stable.
         if ($match instanceof Success && $match->node !== null) {
@@ -139,41 +186,49 @@ abstract class Parser
                 $match->inheritValueFrom($child);
             }
         }
-        $match->setSourceMetadata(
-            $source->span($offset, $match->accepted ? $offset + $match->length : $offset),
-            $session->farthestFailure(),
-            $session->diagnostic(),
-        );
-        if ($match instanceof Success) {
-            $match->buildConcreteNode(static::class, $this->nodeName, $this->nodeGroup, $this->semanticLeaf);
-            $match->setValueMapper($this->valueMapper);
-            $match->addSemanticValidators($this->semanticValidators);
-            foreach ($this->guards as $guard) {
-                if (!$guard($match->node)) {
-                    $session->pushRule($this->diagnosticName());
-                    try {
-                        $session->recordFailure($offset + $match->length, 'guard(' . $this->diagnosticName() . ')');
-                    } finally {
-                        $session->popRule();
-                    }
-                    $failure = new Failure($match->length);
-                    $failure->setSourceMetadata($source->span($offset, $offset), $session->farthestFailure(), $session->diagnostic());
-                    return $failure;
-                }
+        return $match;
+    }
+
+    private function prepareSuccessfulMatch(Source $source, int $offset, ParseSession $session, Success $match): AbstractMatch
+    {
+        $match->buildConcreteNode(static::class, $this->nodeName, $this->nodeGroup, $this->semanticLeaf);
+        $match->setValueMapper($this->valueMapper);
+        $match->addSemanticValidators($this->semanticValidators);
+
+        foreach ($this->guards as $guard) {
+            if (!$guard($match->node)) {
+                return $this->guardFailure($source, $offset, $session, $match);
             }
         }
         return $match;
     }
+
+    private function guardFailure(Source $source, int $offset, ParseSession $session, Success $match): Failure
+    {
+        $session->pushRule($this->diagnosticName());
+        try {
+            $session->recordFailure($offset + $match->length, 'guard(' . $this->diagnosticName() . ')');
+        } finally {
+            $session->popRule();
+        }
+        $failure = new Failure($match->length);
+        $failure->setSourceMetadata($source->span($offset, $offset), $session->farthestFailure(), $session->diagnostic());
+        return $failure;
+    }
+
     protected function diagnosticName(): string
     {
         $separator = strrpos(static::class, '\\');
         return $this->ruleName ?? ($separator === false ? static::class : substr(static::class, $separator + 1));
     }
+
     protected function diagnosticExpectation(): string
     {
         return str_contains(static::class, '\Terminal\\') ? (string) $this : $this->diagnosticName();
     }
+
     abstract protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch;
+
     protected static function parseCharacter(string $character): string
     {
         if ($character === '') {
@@ -184,10 +239,12 @@ abstract class Parser
         }
         return $character;
     }
+
     protected function makeMatch(bool $accepted, Source $source, int $offset, int $length = 0, array|Success $children = []): AbstractMatch
     {
         return $accepted ? $this->success($source, $offset, $length, $children) : $this->failure($source, $offset);
     }
+
     protected function success(Source $source, int $offset, int $length = 0, array|Success $children = []): Success
     {
         $success = new Success($length, is_array($children) ? $children : [$children]);
@@ -216,9 +273,11 @@ abstract class Parser
         );
         return $success;
     }
+
     protected function failure(Source $source, int $offset, int $progress = 0): Failure
     {
         return new Failure($progress);
     }
+
     abstract public function __toString(): string;
 }

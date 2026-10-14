@@ -7,6 +7,8 @@ use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Parser\Terminal\Nothing;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 /**
  * @group structure
  * @group parser
@@ -171,5 +173,65 @@ class ChoiceTest extends ParserTestCase
         $this->assertResult(true, 2, $choice->matchPrefix(new ByteSource('aaa')));
         $choice->add(new Text('aaa'));
         $this->assertResult(true, 3, $choice->matchPrefix(new ByteSource('aaa')));
+    }
+
+    public function preferenceData(): array
+    {
+        return [[Prefer::FIRST], [Prefer::LONGEST], [Prefer::SHORTEST]];
+    }
+
+    /** @dataProvider preferenceData */
+    public function testEqualLengthAlternativesRetainFirstOutputAndEffects(string $preference): void
+    {
+        $events = [];
+        $first = (new Text('a'))->name('first')->setResult('first')->onCommit(
+            function () use (&$events) { $events[] = 'first'; },
+        );
+        $second = (new Text('a'))->name('second')->setResult('second')->onCommit(
+            function () use (&$events) { $events[] = 'second'; },
+        );
+        $result = (new Choice($first, $second))->setPreference($preference)->parseAll(new ByteSource('a'));
+
+        $this->assertTrue($result->success);
+        $this->assertSame('first', $result->node->children[0]->name);
+        $this->assertSame(['first' => 'a'], $result->results());
+        $this->assertSame([], $events);
+        $this->assertTrue($result->commit());
+        $this->assertTrue($result->commit());
+        $this->assertSame(['first'], $events);
+    }
+
+    /** @dataProvider preferenceData */
+    public function testSuccessOutranksLongerFailedAttemptInEitherOrder(string $preference): void
+    {
+        foreach ([false, true] as $failureFirst) {
+            foreach ([new Text('a'), new Nothing()] as $success) {
+                $failure = new Text('abc');
+                $alternatives = $failureFirst ? [$failure, $success] : [$success, $failure];
+                $result = (new Choice(...$alternatives))->setPreference($preference)->matchPrefix(new ByteSource('ab'));
+
+                $this->assertTrue($result->success);
+                $this->assertSame($success instanceof Nothing ? 0 : 1, $result->consumedByteLength);
+                $this->assertSame($success::class, $result->node->children[0]->kind);
+            }
+        }
+    }
+
+    /** @dataProvider preferenceData */
+    public function testFailureProgressIsDistinctFromFarthestDiagnostic(string $preference): void
+    {
+        foreach ([false, true] as $longerFirst) {
+            $alternatives = [new Text('aaa'), new Text('abc')];
+            if ($longerFirst) {
+                $alternatives = array_reverse($alternatives);
+            }
+            $source = new ByteSource('ab');
+            $match = (new Choice(...$alternatives))->setPreference($preference)->recognizeInSession($source, 0, new ParseSession($source));
+
+            $this->assertFalse($match->accepted);
+            $this->assertSame($preference === Prefer::SHORTEST ? 1 : 2, $match->length);
+            $this->assertSame(2, $match->diagnostic->byteOffset);
+            $this->assertSame(0, $match->span->byteLength());
+        }
     }
 }

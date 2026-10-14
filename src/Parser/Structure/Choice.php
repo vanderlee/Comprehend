@@ -7,7 +7,6 @@ use Vanderlee\Comprehend\Source\Source;
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Directive\Prefer;
-use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -19,9 +18,7 @@ use Vanderlee\Comprehend\Parser\Parser;
 class Choice extends IterableParser
 {
     use PreferTrait;
-    /**
-     * @param mixed ...$arguments
-     */
+
     public function __construct(Parser ...$arguments)
     {
         if (empty($arguments)) {
@@ -29,156 +26,74 @@ class Choice extends IterableParser
         }
         $this->parsers = $arguments;
     }
-    /**
-     * @param mixed ...$arguments
-     *
-     * @return self
-     */
+
     public static function first(Parser ...$arguments): self
     {
         return (new self(...$arguments))->preferFirst();
     }
-    /**
-     * @param mixed ...$arguments
-     *
-     * @return self
-     */
+
     public static function shortest(Parser ...$arguments): self
     {
         return (new self(...$arguments))->preferShortest();
     }
-    /**
-     * @param mixed ...$arguments
-     *
-     * @return self
-     */
+
     public static function longest(Parser ...$arguments): self
     {
         return (new self(...$arguments))->preferLongest();
     }
-    /**
-     * @param Source $input
-     * @param int $offset
-     * @param ParseSession $context
-     *
-     * @return Failure|Success
-     */
-    private function parseFirst(Source $input, int $offset, ParseSession $context)
+
+    private function parseFirst(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
-        $max = 0;
-        /** @var Parser $parser */
+        $farthestProgress = 0;
         foreach ($this->parsers as $parser) {
-            $match = $parser->recognizeInSession($input, $offset, $context);
+            $match = $parser->recognizeInSession($source, $offset, $session);
             if ($match instanceof Success) {
-                return $this->success($input, $offset, $match->length, $match);
+                return $this->success($source, $offset, $match->length, $match);
             }
-            $max = max($max, $match->length);
+            $farthestProgress = max($farthestProgress, $match->length);
         }
-        return $this->failure($input, $offset, $max);
+        return $this->failure($source, $offset, $farthestProgress);
     }
-    /**
-     * Determine the longest and most successful match.
-     *
-     * @param AbstractMatch $attempt
-     * @param AbstractMatch $match
-     *
-     * @return AbstractMatch
-     */
-    private static function determineLongestOf(AbstractMatch $attempt, AbstractMatch $match): AbstractMatch
+
+    private function parseRanked(Source $source, int $offset, ParseSession $session, string $preference): AbstractMatch
     {
-        if ($attempt->accepted === $match->accepted) {
-            if ($attempt->length > $match->length) {
-                return $attempt;
+        $selected = null;
+        foreach ($this->parsers as $parser) {
+            $attempt = $parser->recognizeInSession($source, $offset, $session);
+            if ($selected === null || self::outranks($attempt, $selected, $preference)) {
+                $selected = $attempt;
             }
-            return $match;
         }
-        if ($attempt instanceof Success) {
-            return $attempt;
-        }
-        return $match;
+        return $selected instanceof Success
+            ? $this->success($source, $offset, $selected->length, $selected)
+            : $this->failure($source, $offset, $selected->length);
     }
-    /**
-     * @param Source $input
-     * @param int $offset
-     * @param ParseSession $context
-     *
-     * @return Failure|Success
-     */
-    private function parseLongest(Source $input, int $offset, ParseSession $context)
+
+    private static function outranks(AbstractMatch $attempt, AbstractMatch $selected, string $preference): bool
     {
-        $match = $this->failure($input, $offset);
-        /** @var Parser $parser */
-        foreach ($this->parsers as $parser) {
-            $match = self::determineLongestOf($parser->recognizeInSession($input, $offset, $context), $match);
+        if ($attempt->accepted !== $selected->accepted) {
+            return $attempt instanceof Success;
         }
-        return $match instanceof Success ? $this->success($input, $offset, $match->length, $match) : $this->failure($input, $offset, $match->length);
+        // Strict comparisons preserve the earlier alternative on equal lengths.
+        // Failure progress follows this policy too; farthest diagnostics are separate.
+        return $preference === Prefer::LONGEST
+            ? $attempt->length > $selected->length
+            : $attempt->length < $selected->length;
     }
-    /**
-     * Determine the shortest and most successful match.
-     *
-     * @param AbstractMatch|null $attempt
-     * @param AbstractMatch $match
-     *
-     * @return AbstractMatch
-     */
-    private static function determineShortestOf(AbstractMatch $attempt, AbstractMatch $match = null)
+
+    protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
-        if ($match === null) {
-            return $attempt;
-        }
-        if ($attempt instanceof Success && $match instanceof Failure) {
-            return $attempt;
-        }
-        if ($attempt->accepted === $match->accepted && $attempt->length < $match->length) {
-            return $attempt;
-        }
-        return $match;
-    }
-    /**
-     * @param Source $input
-     * @param int $offset
-     * @param ParseSession $context
-     *
-     * @return Failure|Success
-     */
-    private function parseShortest(Source $input, int $offset, ParseSession $context)
-    {
-        /** @var AbstractMatch $match */
-        $match = null;
-        /** @var Parser $parser */
-        foreach ($this->parsers as $parser) {
-            $match = self::determineShortestOf($parser->recognizeInSession($input, $offset, $context), $match);
-        }
-        return $match instanceof Success ? $this->success($input, $offset, $match->length, $match) : $this->failure($input, $offset, $match->length);
-    }
-    /**
-     * @param Source $input
-     * @param int $offset
-     * @param ParseSession $context
-     *
-     * @return Failure|Success
-     */
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
-    {
-        $this->pushPreferenceToContext($context);
+        $this->pushPreferenceToContext($session);
         try {
-            switch ($context->getPreference()) {
-                default:
-                case Prefer::FIRST:
-                    $match = $this->parseFirst($input, $offset, $context);
-                    break;
-                case Prefer::LONGEST:
-                    $match = $this->parseLongest($input, $offset, $context);
-                    break;
-                case Prefer::SHORTEST:
-                    $match = $this->parseShortest($input, $offset, $context);
-                    break;
-            }
+            return match ($session->getPreference()) {
+                Prefer::LONGEST, Prefer::SHORTEST => $this->parseRanked($source, $offset, $session, $session->getPreference()),
+                default => $this->parseFirst($source, $offset, $session),
+            };
         } finally {
-            $this->popPreferenceFromContext($context);
+            $this->popPreferenceFromContext($session);
         }
-        return $match;
     }
+
     /**
      * Add one or more parsers as choices.
      *
@@ -191,9 +106,7 @@ class Choice extends IterableParser
         $this->parsers = array_merge($this->parsers, $arguments);
         return $this;
     }
-    /**
-     * @return string
-     */
+
     public function __toString(): string
     {
         $prefix = $this->preference === Prefer::LONGEST ? 'longest-of' : ($this->preference === Prefer::SHORTEST ? 'shortest-of' : '');
