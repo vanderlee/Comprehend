@@ -5,43 +5,37 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend;
 
 use Closure;
-use InvalidArgumentException;
+use Vanderlee\Comprehend\Syntax\Catalog;
+use Vanderlee\Comprehend\Syntax\ContinuationRegistry;
+use Vanderlee\Comprehend\Syntax\StartRegistry;
 
-/** An immutable, explicitly scoped vocabulary of syntax factories. */
+/** An immutable vocabulary with instance-local callable resolution caches. */
 final readonly class Syntax
 {
-    private function __construct(private array $factories = [], private array $continuations = []) {}
+    private StartRegistry $starts;
+    private ContinuationRegistry $continuations;
+
+    private function __construct(private Catalog $catalog)
+    {
+        $this->starts = new StartRegistry($catalog);
+        $this->continuations = new ContinuationRegistry($catalog);
+    }
 
     public static function create(): self
     {
-        return new self();
+        return new self(new Catalog());
     }
 
-    /** Return a new vocabulary; existing expressions keep their original scope. */
+    /** Existing expressions retain their catalog and caches. */
     public function define(string $name, callable $factory): self
     {
-        $name = strtolower($name);
-        self::validateName($name);
-        return new self([...$this->factories, $name => Closure::fromCallable($factory)], $this->continuations);
+        return new self($this->catalog->define($name, $factory));
     }
 
-    /** Continuation callbacks receive the current facade before user arguments. */
+    /** Callbacks receive the current facade before user arguments. */
     public function defineContinuation(string $name, callable $factory): self
     {
-        $name = strtolower($name);
-        self::validateName($name);
-        return new self($this->factories, [...$this->continuations, $name => Closure::fromCallable($factory)]);
-    }
-
-    private static function validateName(string $name): void
-    {
-        if (!preg_match('/\A[a-z][a-z0-9_]*\z/', $name)) {
-            throw new InvalidArgumentException('Syntax names must be method identifiers');
-        }
-        if (in_array($name, Comprehend::syntaxNames(), true)
-            || method_exists(Comprehend::class, $name) || method_exists(self::class, $name)) {
-            throw new InvalidArgumentException('Syntax name is reserved: ' . $name);
-        }
+        return new self($this->catalog->defineContinuation($name, $factory));
     }
 
     public function __call(string $name, array $arguments): Comprehend
@@ -56,18 +50,18 @@ final readonly class Syntax
 
     public function names(): array
     {
-        return array_values(array_unique([...Comprehend::syntaxNames(), ...array_keys($this->factories), ...array_keys($this->continuations)]));
+        return $this->catalog->names();
     }
 
-    /** @internal Used by the facade's authoring dispatch, never by recognition. */
+    /** @internal Authoring dispatch only. */
     public function factory(string $name): ?Closure
     {
-        return $this->factories[strtolower($name)] ?? null;
+        return $this->starts->factory($name);
     }
 
-    /** @internal Used only while constructing a fluent expression. */
+    /** @internal Authoring dispatch only. */
     public function continuation(string $name): ?Closure
     {
-        return $this->continuations[strtolower($name)] ?? null;
+        return $this->continuations->factory($name);
     }
 }

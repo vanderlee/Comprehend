@@ -31,6 +31,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Syntax\Catalog;
 
 /**
  * Immutable syntax authoring; magic calls only construct the existing parser graph.
@@ -76,21 +77,6 @@ use Vanderlee\Comprehend\Source\Source;
  */
 final readonly class Comprehend
 {
-    private const FACTORIES = [
-        'text' => 'makeText', 'regex' => 'makeRegex', 'char' => 'makeChar',
-        'set' => 'makeSet', 'range' => 'makeRange', 'any' => 'makeAny',
-        'nothing' => 'makeNothing', 'start' => 'makeStart', 'end' => 'makeEnd',
-        'integer' => 'makeInteger', 'binary' => 'makeBinary', 'octal' => 'makeOctal',
-        'hexadecimal' => 'makeHexadecimal', 'octet' => 'makeOctet', 'literalwindow' => 'makeLiteralWindow',
-        'sequence' => 'makeSequence', 'choice' => 'makeChoice', 'or' => 'makeChoice',
-        'firstof' => 'makeFirstOf', 'first' => 'makeFirst', 'longestof' => 'makeLongestOf',
-        'longest' => 'makeLongest', 'shortestof' => 'makeShortestOf', 'shortest' => 'makeShortest',
-        'all' => 'makeAll', 'except' => 'makeExcept', 'not' => 'makeNot', 'ref' => 'makeRef',
-        'repeat' => 'repeatOf', 'some' => 'someOf', 'plus' => 'someOf',
-        'many' => 'manyOf', 'star' => 'manyOf', 'kleene' => 'manyOf',
-        'maybe' => 'maybeOf', 'optional' => 'maybeOf',
-    ];
-
     private function __construct(private Parser $parser, private ?Syntax $syntax = null) {}
 
     public static function syntax(): Syntax
@@ -101,7 +87,7 @@ final readonly class Comprehend
     /** Names reserved by built-in factory and fluent dispatch. */
     public static function syntaxNames(): array
     {
-        return array_keys(self::FACTORIES);
+        return Catalog::builtinNames();
     }
 
     public static function __callStatic(string $name, array $arguments): self
@@ -112,17 +98,8 @@ final readonly class Comprehend
     public function __call(string $name, array $arguments): self
     {
         $name = strtolower($name);
-        if ($name === 'or') {
-            return self::invoke($this->chooseExpression(...), $arguments);
-        }
-        if ($name === 'repeat') {
-            return self::invoke($this->repeatExpression(...), $arguments);
-        }
-        $repetitions = ['plus' => 'fluentPlus', 'some' => 'fluentSome',
-            'star' => 'fluentStar', 'many' => 'fluentMany', 'kleene' => 'fluentKleene',
-            'optional' => 'fluentOptional', 'maybe' => 'fluentMaybe'];
-        if (isset($repetitions[$name])) {
-            $method = $repetitions[$name];
+        $method = Catalog::continuationMethod($name);
+        if ($method !== null) {
             return self::invoke($this->$method(...), $arguments);
         }
         $continuation = $this->syntax?->continuation($name);
@@ -136,7 +113,7 @@ final readonly class Comprehend
     public static function callSyntax(string $name, array $arguments, ?Syntax $syntax = null): self
     {
         $name = strtolower($name);
-        $method = self::FACTORIES[$name] ?? null;
+        $method = Catalog::startMethod($name);
         $factory = $method === null ? $syntax?->factory($name) : self::$method(...);
         if ($factory === null) {
             throw new \BadMethodCallException('Unknown syntax: ' . $name);

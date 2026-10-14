@@ -230,6 +230,15 @@ select the scope explicitly, or use `$syntax->call(name, ...arguments)` when the
 method name is data. `names()` lists built-in and registered factory names.
 Freezing retains the constructed parser graph and performs no syntax dispatch.
 
+Built-in static calls such as `Comprehend::text()` resolve directly from a fixed
+catalog without allocating or caching a default registry. That catalog coordinates
+start/continuation methods, aliases, name discovery and reserved names. Scoped
+Syntax vocabularies share one immutable catalog between their start and continuation
+registries. Each registry caches custom callable resolution on its own instance;
+factories still run for every authoring call and parser expressions are never cached.
+Extending a vocabulary creates a new catalog and fresh registries, leaving existing
+expressions and their caches unchanged. No mutable static registry is used.
+
 Built-in `@method` annotations provide completion and return types. Repetition
 annotations describe overloaded dispatch broadly; runtime signatures remain
 strict. Custom names require consumer annotations or the explicit `call()` API

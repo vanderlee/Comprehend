@@ -87,6 +87,38 @@ class SyntaxDispatchTest extends TestCase
         $syntax->between('[', ']');
     }
 
+    public function testCachedResolutionStillInvokesFactoriesForEveryExpression(): void
+    {
+        $calls = 0;
+        $syntax = C::syntax()->define('token', static function () use (&$calls): C {
+            return C::text((string) ++$calls);
+        });
+        $first = $syntax->token();
+        $second = $syntax->TOKEN();
+        $this->assertTrue($first->parse('1')->success);
+        $this->assertTrue($second->parse('2')->success);
+        $this->assertSame(2, $calls);
+        $first->parse('1');
+        $this->assertSame(2, $calls);
+    }
+
+    public function testStartsAndContinuationsWithTheSameNameRemainIndependent(): void
+    {
+        $syntax = C::syntax()
+            ->define('token', static fn(string $value): C => C::text($value))
+            ->defineContinuation('token', static fn(C $item, string $value): C => C::sequence('[', $item, $value, ']'));
+        $original = $syntax->token('a');
+        $this->assertTrue($original->token('b')->parse('[ab]')->success);
+        $changed = $syntax->defineContinuation(
+            'token',
+            static fn(C $item, string $value): C => C::sequence('(', $item, $value, ')'),
+        );
+        $this->assertTrue($changed->token('a')->token('b')->parse('(ab)')->success);
+        $this->assertTrue($original->token('b')->parse('[ab]')->success);
+        $this->assertContains('PLUS', array_map(strtoupper(...), $syntax->names()));
+        $this->assertTrue($syntax->PLUS('a')->parse('aa')->success);
+    }
+
     /** @dataProvider invalidCalls */
     public function testInvalidCallsAreRejectedExplicitly(callable $call, string $exception): void
     {
