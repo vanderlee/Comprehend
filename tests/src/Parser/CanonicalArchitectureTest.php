@@ -170,13 +170,13 @@ class CanonicalArchitectureTest extends ParserTestCase
     public function testFactoryMustReturnAParser(): void
     {
         $rules = new Ruleset(['bad' => static fn() => 'text']);
-        $this->expectExceptionMessage('Rule factory must return Parser: bad');
+        $this->expectExceptionMessage('Rule factory must return Comprehend or Parser: bad');
         $rules->ref('bad')->parseAll(new ByteSource('text'));
     }
     public function testDefinitionFactoryMustReturnAParser(): void
     {
         $definition = new Definition(static fn() => 'text');
-        $this->expectExceptionMessage('Definition factory must return Parser');
+        $this->expectExceptionMessage('Definition factory must return Comprehend or Parser');
         $definition->build()->parseAll(new ByteSource('text'));
     }
     public function testGrammarNamesAndRedefinitionAreIsolated(): void
@@ -205,7 +205,7 @@ class CanonicalArchitectureTest extends ParserTestCase
                 return 'rejected';
             },
         );
-        $parser = Choice::first($definition->build()->name('first'), (new Text('a'))->name('second'));
+        $parser = Choice::first($definition->implementation()->name('first'), (new Text('a'))->name('second'));
         $result = $parser->parseAll(new ByteSource('a'));
         $this->assertSame([], $events);
         $this->assertSame('first', $result->ast()->children[0]->name);
@@ -239,7 +239,7 @@ class CanonicalArchitectureTest extends ParserTestCase
                 return $local['item'] + 1;
             },
         );
-        $scope = $definition->build()->validateSemantic(static fn(ParseResult $result): bool => $result->result('total') === 2);
+        $scope = $definition->implementation()->validateSemantic(static fn(ParseResult $result): bool => $result->result('total') === 2);
         $result = (new Sequence($scope, new Text('b')))->parseAll(new ByteSource('ab'));
         $this->assertTrue($result->validate()->valid);
         $this->assertSame(['total' => 2], $result->results());

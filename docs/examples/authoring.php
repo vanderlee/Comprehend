@@ -78,7 +78,7 @@ function facadeArithmetic(): FrozenGrammar
     $trivia = $spacing->lexeme()->trivia();
     $rules->root(C::sequence($trivia, C::ref($rules, 'expr'), $trivia)
         ->spacing(null)
-        ->mapValue(fn(ParseResult $result): int => arithmeticValue($result->ast()->children[0])));
+        ->mapValue(fn(ParseResult $result): int => arithmeticValue($result->ast()->firstNamed('expr'))));
     return $rules->freeze();
 }
 

@@ -75,8 +75,8 @@ verify($binary['textEncoding'] === 'base64' && base64_decode($binary['text']) ==
 
 // Named definitions and reusable RFC imports use the same source runtime.
 $rules = new Ruleset([], 'example');
-$rules->define('twice', static fn(Parser $item): Parser => Repeat::exact($item, 2));
-$rules->define(Ruleset::ROOT, $rules->ref('twice', new Text('x')));
+$rules->define('twice', static fn(C $item): C => $item->repeat(2, 2));
+$rules->root($rules->rule('twice', C::text('x')));
 verify($rules->parseAll(new ByteSource('xx'))->success, 'parameterized named grammar');
 verify(C::text('a')->then(C::text('b'))->freeze()->parseAll(new ByteSource('ab'))->success, 'Comprehend composition');
 $uri = new Rfc3986();
@@ -116,7 +116,7 @@ verify($events === [] && $maps === 0, 'pure recognition');
 verify($result->value() === 42 && $result->value() === 42 && $maps === 1, 'cached typed value');
 verify($result->commit() && $result->commit() && $events === [42], 'explicit idempotent commit');
 verify(!$number->parseAll(new Utf8Source('42x'))->commit() && $events === [42], 'discarded effects');
-$definition = new Definition((new Text('a'))->setResult('item'));
+$definition = new Definition(C::text('a')->setResult('item'));
 $definition->addProcessor('length', static fn(array $local): int => strlen($local['item']));
 $definition->addValidator(static fn(ParseResult $result): bool => $result->result('length') === 1);
 $result = $definition->build()->parseAll(new ByteSource('a'));

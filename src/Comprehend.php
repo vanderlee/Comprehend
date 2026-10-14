@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
+use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Directive\CaseSensitive;
@@ -41,8 +42,15 @@ final readonly class Comprehend
         return self::of(new Text($text));
     }
 
-    public static function of(Parser $parser): self
+    public static function of(self|Parser|Definition $parser): self
     {
+        if ($parser instanceof self) {
+            return $parser;
+        }
+        if ($parser instanceof Definition) {
+            $parser = $parser->implementation();
+        }
+
         return new self((new GraphSnapshot(false))->copy($parser));
     }
 
@@ -268,6 +276,11 @@ final readonly class Comprehend
     public function onCommit(callable $effect): self
     {
         return new self($this->parser()->onCommit($effect));
+    }
+
+    public function assignTo(mixed &$variable): self
+    {
+        return new self($this->parser()->assignTo($variable));
     }
 
     public function setResult(?string $key = null, mixed $value = null): self

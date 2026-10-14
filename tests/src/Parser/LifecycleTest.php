@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Tests\Src\Parser;
 
 use RuntimeException;
@@ -14,6 +15,7 @@ use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 use Vanderlee\Comprehend\Source\Utf8Source;
 use Vanderlee\Comprehend\Match\Success;
+
 class LifecycleTest extends ParserTestCase
 {
     public function testGuardRejectsCandidateWithoutSemanticOrCommittedEffects()
@@ -137,7 +139,7 @@ class LifecycleTest extends ParserTestCase
                 return 42;
             },
         );
-        $abandoned = new Sequence($definition->build(), new Text('x'));
+        $abandoned = new Sequence($definition->implementation(), new Text('x'));
         $parser = Choice::first($abandoned, new Text('ab'));
         $result = $parser->parseAll(new Utf8Source('ab'));
         $this->assertTrue($result->commit());

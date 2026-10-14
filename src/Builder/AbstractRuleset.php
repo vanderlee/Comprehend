@@ -122,12 +122,15 @@ abstract class AbstractRuleset extends Parser
             throw new LogicException('Only rule factories accept arguments: ' . $name);
         }
         $parser = match (true) {
-            $definition instanceof Definition => $definition->build(...$arguments),
+            $definition instanceof Definition => $definition->implementation(...$arguments),
             $definition instanceof Parser => clone $definition,
             default => $definition(...$arguments),
         };
+        if ($parser instanceof Comprehend) {
+            $parser = $parser->parser();
+        }
         if (!$parser instanceof Parser) {
-            throw new LogicException('Rule factory must return Parser: ' . $name);
+            throw new LogicException('Rule factory must return Comprehend or Parser: ' . $name);
         }
         $parser->diagnosticRule($name);
         if (!$fresh && $arguments === []) {

@@ -270,7 +270,7 @@ class ComprehendTest extends TestCase
         $hidden = new Stub();
         $hidden->setParser(new Sequence(new Nothing(), $hidden));
         $definition = new Definition(new Nothing());
-        $selfImplementation = $definition->build();
+        $selfImplementation = $definition->implementation();
         $definition->setGenerator($selfImplementation);
         return [[$direct, 'expression'], [$indirect, 'first'], [$hidden, 'Left-recursive'],
             [$selfImplementation, 'Left-recursive'],

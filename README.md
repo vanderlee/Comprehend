@@ -39,15 +39,13 @@ are lazy and cached per recognition. `onCommit()` effects receive ParseResult an
 run only after explicit `commit()` and successful semantic validation.
 
 ```php
-use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
-use Vanderlee\Comprehend\Source\Utf8Source;
 
-$number = (new Text('42'))
-    ->name('number')
+$number = C::text('42')
+    ->named('number')
     ->mapValue(fn (ParseResult $r): int => (int) $r->rawText())
     ->validateSemantic(fn (ParseResult $r): bool => $r->value() > 0);
-$result = $number->parseAll(new Utf8Source('42'));
+$result = $number->parse('42');
 $result->value();     // 42, cached
 $result->ast();       // named source structure
 $result->commit();    // validates, then commits selected effects once
@@ -61,9 +59,12 @@ to array, JSON and XML. There is no separate Token output model.
 ## Named grammar authoring
 
 Use `Ruleset::define(string, Comprehend|Parser|Definition|callable)`, explicit
-`ref(string, ...$arguments)` lookup and `root(string|Comprehend|Parser)` selection. Deferred references permit forward and
+facade-returning `rule(string, ...$arguments)` lookup and `root(string|Comprehend|Parser)` selection.
+`ref()` remains the low-level Parser reference. Deferred references permit forward and
 recursive definitions; an undefined name raises a grammar error. Factories must
-return Parser. Use `Stub::setParser(Parser)` for recursive object grammars.
+return Comprehend values or low-level Parser instances. Definition generators
+accept both, and `build()` returns a facade for direct composition and parsing.
+Use `Stub::setParser(Parser)` only for low-level recursive object grammars.
 
 `freeze()` resolves and snapshots a graph, rejecting known left recursion and
 nullable repetition. The immutable `Comprehend` facade composes the same object

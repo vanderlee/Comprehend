@@ -34,7 +34,7 @@ $rules->define('digit', Comprehend::range('0', '9'));
 $digits->freeze()->parseAll(new Utf8Source('123'))->success; // true
 ```
 
-Use `ref()` in Parser-only object constructors and factories. Facade references
+Use `ref()` in low-level Parser-only object constructors. Facade references
 are recognized through `parse()`, `parseAll()` or `matchPrefix()` (which freeze
 automatically), or through an explicitly retained frozen grammar;
 they retain forward/recursive lookup, factory arguments and named rule groups.
@@ -46,11 +46,16 @@ unless the Ruleset has its own mapping.
 Ruleset constructor entries, `define()` and `root()` accept Comprehend values
 directly. Registration exports a detached parser graph internally, preserving
 facade isolation without explicit `parser()` calls. Deferred references still
-consult their owning builder until freezing. Factories continue to return Parser.
+consult their owning builder until freezing. Factories can accept and return
+Comprehend values directly; Parser returns remain supported for extensions.
+Factory arguments are passed unchanged. Definition accepts facade generators,
+and `build(...arguments)` returns an independent immutable facade that can be
+composed directly. `Comprehend::of(Definition)` builds its unparameterized facade.
+Factories remain deferred until recognition or freezing.
 
 ## Resolved graph snapshots
 
-`Parser::freeze()` returns a FrozenGrammar with only `matchPrefix()`, `parseAll()`
+`freeze()` returns a FrozenGrammar with `parse()`, `matchPrefix()`, `parseAll()`
 and read-only `analysisWarnings`. It resolves the root's reference graph, builds
 factory implementations, snapshots Parser/Definition state and validates known
 graph safety. Sharing and consuming recursive cycles are preserved. The result
@@ -108,7 +113,7 @@ The bundled RFC grammars import the facade as `C` with
 
 | Operation | Underlying behavior |
 | --- | --- |
-| `text()`, `char()`, `set()`, `range()`, `regex()`, `of(Parser)` | Wrap a detached object parser |
+| `text()`, `char()`, `set()`, `range()`, `regex()`, `of(Comprehend\|Parser\|Definition)` | Immutable public syntax; wrap custom parsers or build definitions |
 | `any()`, `nothing()`, `start()`, `end()` | Remaining terminals |
 | `integer(minimum, maximum, base, allowLeadingZeros, digits)` | Bounded numeric text; defaults are minimum 0, no maximum, base 10, no leading zeros and the standard digit alphabet |
 | `binary()`, `octal()`, `hexadecimal()`, `octet()` | Base-2/8/16 factories and decimal range 0–255; optional leading zeros |
@@ -122,12 +127,12 @@ The bundled RFC grammars import the facade as `C` with
 | `repeat(min, max)` | Repeat with existing bounds/progress semantics |
 | `some()` / `plus()`, `many()` / `star()` / `kleene()`, `maybe()` / `optional()` | One or more, zero or more, zero or one |
 | `named()`, `mapValue()` | Metadata on a detached graph |
-| `guard()`, `validateSemantic()`, `onCommit()` | Pure recognition predicate, selected semantic validation, explicit committed effects |
+| `guard()`, `validateSemantic()`, `onCommit()`, `assignTo()` | Pure recognition predicate, selected semantic validation, explicit committed effects and assignments |
 | `setResult()`, `concatResult()`, `pushResult()` | Cached named result collections, independent of source text |
 | `diagnosticRule(name)` | A readable rule label for failures |
 | `caseSensitive(bool)`, `prefer(preference)` | Scoped case and choice policy; preference uses the `Prefer::FIRST`, `LONGEST`, or `SHORTEST` constants |
 | `spacing()`, `lexeme()`, `trivia()` | Existing scoped directives |
-| `parser()` | Detached object graph for Parser-only factories/constructors |
+| `parser()` | Detached object graph for low-level integration |
 | `freeze()` | Resolved, analyzed reusable snapshot |
 | `parse(input)`, `parseAll(input)`, `matchPrefix(input)` | Freeze automatically and recognize a Source or validated UTF-8 string; parse/parseAll require complete input |
 
@@ -207,7 +212,7 @@ Call `repeat()` directly on an existing Comprehend value. `char()` and `set()`
 accept an optional `include` flag; `range()` accepts an optional `in` flag.
 These retain the underlying terminal's byte/Unicode and exclusion semantics.
 Supply facade values directly to Ruleset definitions or roots. Export through
-`parser()` for factories or object constructors that require Parser; use
+`parser()` only for low-level object constructors or integration that require Parser; use
 `freeze()` to resolve and recognize a complete grammar:
 
 ```php

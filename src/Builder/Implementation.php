@@ -5,6 +5,7 @@ declare (strict_types=1);
 namespace Vanderlee\Comprehend\Builder;
 
 use LogicException;
+use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -16,9 +17,7 @@ final class Implementation extends Parser
 {
     private ?Parser $parser = null;
 
-    public function __construct(private readonly Definition $definition, private readonly array $arguments = [])
-    {
-    }
+    public function __construct(private readonly Definition $definition, private readonly array $arguments = []) {}
 
     /** @internal Materialize this parameterized definition before snapshotting. */
     public function graphTarget(): Parser
@@ -30,9 +29,14 @@ final class Implementation extends Parser
     {
         if ($this->parser === null) {
             $generator = $this->definition->generator;
-            $parser = $generator instanceof Parser ? $generator : $generator(...$this->arguments);
+            $parser = $generator instanceof Parser || $generator instanceof Comprehend
+                ? $generator
+                : $generator(...$this->arguments);
+            if ($parser instanceof Comprehend) {
+                $parser = $parser->parser();
+            }
             if (!$parser instanceof Parser) {
-                throw new LogicException('Definition factory must return Parser');
+                throw new LogicException('Definition factory must return Comprehend or Parser');
             }
             $this->parser = $parser;
         }

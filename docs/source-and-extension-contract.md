@@ -1,5 +1,12 @@
 # Source coordinates and parser extensions
 
+Comprehend is the public authoring API. Custom recognizers still extend Parser
+and implement the typed contract below; wrap them with `Comprehend::of($parser)`
+to compose, register or parse through the facade. No manual parser export is
+needed in Ruleset/Definition factories, which may return facade values directly.
+Low-level constructors and extension code can still use detached `parser()`
+exports; those objects remain mutable and are not facade expressions.
+
 One typed contract serves every built-in and custom parser. There is no source
 opt-in, class allowlist, legacy offset fallback or mutable string input hook.
 Recognition uses byte positions on a stable Source and one per-run ParseSession.

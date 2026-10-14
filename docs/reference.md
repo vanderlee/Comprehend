@@ -5,7 +5,7 @@
 | Input | Source, ByteSource, Utf8Source, ByteFileSource, Utf8FileSource, SourceMode, immutable Span |
 | Runtime | ParseSession; checked `recognizeInSession(Source, int, ParseSession)` delegation |
 | Entry points | `matchPrefix(Source, int = 0, ?ParseLimits = null)`, `parseAll(Source, int = 0, ?ParseLimits = null)` |
-| Convenience entry points | Facade `parse/parseAll/matchPrefix(Source\|string, int = 0, ?ParseLimits = null)`; frozen `parseAll/matchPrefix` also accept validated UTF-8 strings |
+| Public entry points | Facade and frozen `parse/parseAll/matchPrefix(Source\|string, int = 0, ?ParseLimits = null)` |
 | Limits/profile | ParseLimits(maxDepth, maxWork), ParseLimitException, optional bounded ParseMetrics |
 | Bounded regex | `Regex::literalWindow(string)` for quoted literals; general Regex keeps full-subject semantics |
 | Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Integer, Start, End, Nothing |
@@ -22,12 +22,15 @@
 | Meaning | `mapValue(callable)`, named set/concat/push collection operations |
 | Lifecycle | `guard(callable)`, `validateSemantic(callable)`, `onCommit(callable)`, assignments |
 | Results | ParseResult, Diagnostic, ValidationResult, immutable ConcreteNode and AstNode |
+| AST navigation | `child()`, `firstChild()`, `lastChild()`, `firstNamed()`, `allNamed()`, `firstInGroup()`, `allInGroup()`, `descendants()` |
 | Serialization | CST/AST `toArray()`, `toJson()`, `toXml()`, JsonSerializable |
 
 Use `Comprehend` for concise authoring. It returns immutable facade values;
 Ruleset constructor entries, definitions and roots accept those values directly
 and detach their parser graphs at registration. `parser()` exports a detached
-Parser for factories or object constructors that require Parser.
+Parser only for low-level integration. Factories can return facade values;
+Definition accepts facades and `build()` returns a facade. Wrap a custom Parser
+with `Comprehend::of()` to use the public authoring API.
 The former free functions in `Vanderlee\Comprehend\Library` have been removed.
 
 See [Grammar authoring](grammar-authoring.md) for frozen factory lifetimes,
