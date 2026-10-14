@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\Ruleset;
-use Vanderlee\Comprehend\Comprehend;
+use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Library\Rfc2234;
 use Vanderlee\Comprehend\Library\Rfc3986;
 use Vanderlee\Comprehend\Match\AbstractMatch;
@@ -25,7 +25,9 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 function verify(bool $condition, string $label): void
 {
-    if (!$condition) throw new RuntimeException('Example failed: ' . $label);
+    if (!$condition) {
+        throw new RuntimeException('Example failed: ' . $label);
+    }
 }
 
 $nested = new Stub();
@@ -55,10 +57,10 @@ verify($failure->start === $failure->end && $failure->farthestFailure === 2, 'fa
 verify($failure->diagnostic->location() === ['line' => 1, 'column' => 2], 'Unicode diagnostic');
 
 // Explicit trivia boundaries and independent semantic/source projections.
-$trivia = Repeat::star(new Text(' '))->trivia();
-$letter = (new Text('é'))->name('letter')->setResult('letter', 'changed');
-$body = (new Sequence(new Text('('), $letter, new Text(')')))->spacing($trivia);
-$document = (new Sequence($trivia, $body, $trivia))->spacing(null);
+$trivia = C::text(' ')->star()->trivia();
+$letter = C::text('é')->named('letter')->setResult('letter', 'changed');
+$body = C::text('(')->then($letter, C::text(')'))->spacing($trivia);
+$document = C::sequence($trivia, $body, $trivia)->spacing(null)->freeze();
 $result = $document->parseAll(new Utf8Source(' ( é ) '));
 verify($result->success && $result->rawText() === ' ( é ) ', 'trivia source round trip');
 verify($result->ast()->children[0]->rawText() === 'é', 'named AST source');
@@ -73,10 +75,10 @@ verify($binary['textEncoding'] === 'base64' && base64_decode($binary['text']) ==
 
 // Named definitions and reusable RFC imports use the same source runtime.
 $rules = new Ruleset([], 'example');
-$rules->define('twice', static fn (Parser $item): Parser => Repeat::exact($item, 2));
+$rules->define('twice', static fn(Parser $item): Parser => Repeat::exact($item, 2));
 $rules->define(Ruleset::ROOT, $rules->rule('twice', new Text('x')));
 verify($rules->parseAll(new ByteSource('xx'))->success, 'parameterized named grammar');
-verify(Comprehend::sequence(Comprehend::text('a'), Comprehend::text('b'))->freeze()->parseAll(new ByteSource('ab'))->success, 'Comprehend composition');
+verify(C::text('a')->then(C::text('b'))->freeze()->parseAll(new ByteSource('ab'))->success, 'Comprehend composition');
 $uri = new Rfc3986();
 verify($uri->rule('IPv4address')->parseAll(new ByteSource('192.0.2.1'))->success, 'RFC IPv4');
 $abnf = new Rfc2234();
@@ -91,26 +93,32 @@ final class OneUnit extends Parser
         return $unit === null ? $this->failure($source, $offset)
             : $this->success($source, $offset, $unit->byteLength());
     }
-    public function __toString(): string { return 'one unit'; }
+    public function __toString(): string
+    {
+        return 'one unit';
+    }
 }
 verify((new OneUnit())->parseAll(new Utf8Source('😀'))->consumedByteLength === 4, 'custom parser');
 
 // Recognition does not produce effects or select alternatives by semantic validation.
 $events = [];
 $maps = 0;
-$number = (new Text('42'))->mapValue(static function (ParseResult $result) use (&$maps): int {
+$number = C::text('42')->mapValue(static function (ParseResult $result) use (&$maps): int {
     ++$maps;
     return (int) $result->rawText();
-})->validateSemantic(static fn (ParseResult $result): bool => $result->value() > 0)
-    ->onCommit(static function (ParseResult $result) use (&$events): void { $events[] = $result->value(); });
+})->validateSemantic(static fn(ParseResult $result): bool => $result->value() > 0)
+    ->onCommit(static function (ParseResult $result) use (&$events): void {
+        $events[] = $result->value();
+    })
+    ->freeze();
 $result = $number->parseAll(new Utf8Source('42'));
 verify($events === [] && $maps === 0, 'pure recognition');
 verify($result->value() === 42 && $result->value() === 42 && $maps === 1, 'cached typed value');
 verify($result->commit() && $result->commit() && $events === [42], 'explicit idempotent commit');
 verify(!$number->parseAll(new Utf8Source('42x'))->commit() && $events === [42], 'discarded effects');
 $definition = new Definition((new Text('a'))->setResult('item'));
-$definition->addProcessor('length', static fn (array $local): int => strlen($local['item']));
-$definition->addValidator(static fn (ParseResult $result): bool => $result->result('length') === 1);
+$definition->addProcessor('length', static fn(array $local): int => strlen($local['item']));
+$definition->addValidator(static fn(ParseResult $result): bool => $result->result('length') === 1);
 $result = $definition->build()->parseAll(new ByteSource('a'));
 verify($result->result('length') === 1 && $result->commit(), 'definition lifecycle');
 

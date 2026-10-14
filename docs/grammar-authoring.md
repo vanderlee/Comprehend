@@ -95,11 +95,20 @@ The bundled RFC grammars import the facade as `C` with
 | Operation | Underlying behavior |
 | --- | --- |
 | `text()`, `char()`, `set()`, `range()`, `regex()`, `of(Parser)` | Wrap a detached object parser |
+| `any()`, `nothing()`, `start()`, `end()`, `integer(minimum, maximum, base)` | Remaining terminals; integer defaults match the object parser (minimum 0, no maximum, base 10) |
+| `literalWindow(literal)` | Regex matching with a proven finite literal read window |
 | `ref(Ruleset, name, ...args)` | Deferred supported named reference |
-| `sequence(...items)`, `then(item)` | Sequence composition |
-| `choice(...items)`, `or(item)` | First-choice composition |
+| `sequence(...items)`, `then(...items)` | Sequence composition |
+| `choice(...items)`, `or(...items)`, `firstOf(...items)` | First-choice composition |
+| `longestOf(...items)`, `shortestOf(...items)` | Explicit local choice ranking |
+| `all(...items)`, `except(match, not)`, `not(item)` | Intersection (shortest accepted span), exclusion, negative lookahead |
 | `repeat(min, max)` | Repeat with existing bounds/progress semantics |
+| `plus()`, `star()` / `kleene()`, `optional()` / `maybe()` | One or more, zero or more, zero or one |
 | `named()`, `mapValue()` | Metadata on a detached graph |
+| `guard()`, `validateSemantic()`, `onCommit()` | Pure recognition predicate, selected semantic validation, explicit committed effects |
+| `setResult()`, `concatResult()`, `pushResult()` | Cached named result collections, independent of source text |
+| `diagnosticRule(name)` | A readable rule label for failures |
+| `caseSensitive(bool)`, `prefer(preference)` | Scoped case and choice policy; preference uses the `Prefer::FIRST`, `LONGEST`, or `SHORTEST` constants |
 | `spacing()`, `lexeme()`, `trivia()` | Existing scoped directives |
 | `parser()` | Detached object graph for Parser-only factories/constructors |
 | `freeze()` | Resolved, analyzed reusable snapshot |
@@ -111,6 +120,26 @@ Exporting via `parser()` does not expose the facade's internal containers.
 Mutable object builders remain available: migrate shared `add()`/array edits to
 facade `then()`/`or()`, or freeze a graph before changing its builders. Composition
 retains nested container structure rather than silently flattening named groups.
+
+`then()` and `or()` accept any number of facade values or Parser objects. With no
+arguments they return the unchanged facade; supplied object parsers are detached.
+Strings are still explicit `Comprehend::text(...)` calls. One variadic call groups
+its supplied children together; successive calls retain the preceding expression
+as a nested child, preserving names and scoped directives.
+
+```php
+$digits = Comprehend::range('0', '9')->plus()->named('digits');
+$bracketed = Comprehend::text('[')->then($digits, Comprehend::text(']'));
+$grammar = $bracketed->or(Comprehend::text('none'), Comprehend::text('empty'));
+$grammar->freeze()->parseAll(new Utf8Source('[123]'))->success; // true
+```
+
+Repetition shortcuts retain the same nullable-child rejection as `repeat()`,
+including optional repetition. Lifecycle operations retain their distinct timing:
+`guard()` receives ConcreteNode and may run speculatively; `validateSemantic()`
+and `onCommit()` receive ParseResult. Reading values does not commit effects.
+See [Lifecycle](lifecycle.md) for validation and commit behavior. Nested case or
+preference directives use the innermost applicable override.
 
 ### Replacing the Library functions
 

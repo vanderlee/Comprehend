@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\Ruleset;
-use Vanderlee\Comprehend\Comprehend;
+use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Library\Rfc3986;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Stub;
@@ -22,7 +22,9 @@ use Vanderlee\Comprehend\Tree\AstNode;
 
 function arithmeticValue(AstNode $node): int
 {
-    if ($node->name === 'number') { return (int) $node->rawText(); }
+    if ($node->name === 'number') {
+        return (int) $node->rawText();
+    }
     $values = array_map(arithmeticValue(...), $node->children);
     return $node->name === 'term' ? array_product($values) : array_sum($values);
 }
@@ -31,7 +33,7 @@ function arithmeticDocument(Parser $expression): Parser
 {
     $trivia = Repeat::star(new Set(" \t\r\n"))->lexeme()->trivia();
     return (new Sequence($trivia, $expression, $trivia))->spacing(null)
-        ->mapValue(fn (ParseResult $result): int => arithmeticValue($result->ast()->children[0]));
+        ->mapValue(fn(ParseResult $result): int => arithmeticValue($result->ast()->children[0]));
 }
 
 function objectArithmetic(): FrozenGrammar
@@ -63,13 +65,20 @@ function rulesetArithmetic(): FrozenGrammar
 function facadeArithmetic(): FrozenGrammar
 {
     $rules = new Ruleset();
-    $rules->define('number', Comprehend::regex('/[0-9]+/A'));
-    $factor = Comprehend::ref($rules, 'number')->or(Comprehend::text('(')->then(Comprehend::ref($rules, 'expr'))->then(Comprehend::text(')')));
-    $rules->define('term', $factor->then(Comprehend::text('*')->then($factor)->repeat()));
-    $rules->define('expr', Comprehend::ref($rules, 'term')
-        ->then(Comprehend::text('+')->then(Comprehend::ref($rules, 'term'))->repeat())
-        ->spacing(Comprehend::of(Repeat::star(new Set(" \t\r\n")))));
-    $rules->root(arithmeticDocument(Comprehend::ref($rules, 'expr')->parser()));
+    $spacing = C::set(" \t\r\n")->star();
+    // Inherited spacing belongs between tokens, never between a number's digits.
+    $rules->define('number', C::range('0', '9')->plus()->lexeme());
+    $factor = C::ref($rules, 'number')->or(
+        C::text('(')->then(C::ref($rules, 'expr'), C::text(')')),
+    );
+    $rules->define('term', $factor->then(C::text('*')->then($factor)->star()));
+    $rules->define('expr', C::ref($rules, 'term')
+        ->then(C::text('+')->then(C::ref($rules, 'term'))->star())
+        ->spacing($spacing));
+    $trivia = $spacing->lexeme()->trivia();
+    $rules->root(C::sequence($trivia, C::ref($rules, 'expr'), $trivia)
+        ->spacing(null)
+        ->mapValue(fn(ParseResult $result): int => arithmeticValue($result->ast()->children[0])));
     return $rules->freeze();
 }
 
@@ -89,13 +98,17 @@ foreach (['2+3*4' => 14, '(2+3)*4' => 20, " 2 * (3 + 4) \n" => 14, '42' => 42] a
             throw new RuntimeException('Arithmetic authoring disagreement: ' . $text);
         }
         $current = authoringAstShape($result->ast());
-        if ($shape !== null && $shape !== $current) { throw new RuntimeException('Arithmetic AST disagreement'); }
+        if ($shape !== null && $shape !== $current) {
+            throw new RuntimeException('Arithmetic AST disagreement');
+        }
         $shape = $current;
     }
 }
 foreach (['2+', '*3', '(2+3', '2 3', '2+bad'] as $text) {
     foreach ($arithmetic as $grammar) {
-        if ($grammar->parseAll(new Utf8Source($text))->success) { throw new RuntimeException('Malformed arithmetic accepted: ' . $text); }
+        if ($grammar->parseAll(new Utf8Source($text))->success) {
+            throw new RuntimeException('Malformed arithmetic accepted: ' . $text);
+        }
     }
 }
 
@@ -106,18 +119,24 @@ $rules->define('address', $address)->root('address');
 $addresses = [
     (new Sequence((clone $address)->name('address')))->freeze(),
     $rules->freeze(),
-    Comprehend::sequence(Comprehend::ref($rfc, 'scheme')->then(Comprehend::text('://'))
-        ->then(Comprehend::ref($rfc, 'host'))->named('address'))->freeze(),
+    C::sequence(C::ref($rfc, 'scheme')
+        ->then(C::text('://'), C::ref($rfc, 'host'))->named('address'))->freeze(),
 ];
 foreach (['https://example.com' => true, 'http://127.0.0.1' => true, '1bad://host' => false, 'http://host/path' => false] as $text => $accepted) {
     $shape = null;
     foreach ($addresses as $grammar) {
         $result = $grammar->parseAll(new Utf8Source($text));
-        if ($result->success !== $accepted) { throw new RuntimeException('RFC authoring disagreement: ' . $text); }
+        if ($result->success !== $accepted) {
+            throw new RuntimeException('RFC authoring disagreement: ' . $text);
+        }
         if ($accepted) {
             $current = authoringAstShape($result->ast());
-            if ($shape !== null && $shape !== $current) { throw new RuntimeException('RFC AST disagreement'); }
-            if ($result->rawText() !== $text) { throw new RuntimeException('RFC source reconstruction failed'); }
+            if ($shape !== null && $shape !== $current) {
+                throw new RuntimeException('RFC AST disagreement');
+            }
+            if ($result->rawText() !== $text) {
+                throw new RuntimeException('RFC source reconstruction failed');
+            }
             $shape = $current;
         }
     }

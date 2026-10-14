@@ -15,7 +15,6 @@ namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Parser\Terminal\Integer;
 
 /**
  * IPv6 address
@@ -48,7 +47,7 @@ class Rfc3513 extends AbstractRuleset
                 $this->rule('prefix_length'),
             ),
             'ipv6_address' => $rfc3986->rule('IPv6address'),
-            'prefix_length' => new Integer(0, 128),
+            'prefix_length' => C::integer(0, 128),
             self::ROOT => $this->rule('ipv6'),
         ];
         parent::__construct(array_merge($rules, $overwrites));

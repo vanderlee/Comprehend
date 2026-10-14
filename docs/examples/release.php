@@ -5,10 +5,9 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Builder\Ruleset;
-use Vanderlee\Comprehend\Comprehend;
+use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
-use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -33,13 +32,15 @@ final class ReleaseOneUnit extends Parser
 
 $events = [];
 $rules = new Ruleset();
-$rules->define('number', Comprehend::text('42')->named('number')
-    ->mapValue(fn (ParseResult $result): int => (int) $result->rawText()));
-$rules->root('number')->onCommit(function (ParseResult $result) use (&$events): void {
-    $events[] = $result->value();
-});
+$rules->define('number', C::text('42')->named('number')
+    ->mapValue(fn(ParseResult $result): int => (int) $result->rawText())
+    ->validateSemantic(fn(ParseResult $result): bool => $result->value() > 0)
+    ->onCommit(function (ParseResult $result) use (&$events): void {
+        $events[] = $result->value();
+    }));
+$rules->root('number');
 $grammar = $rules->freeze();
-$rules->define('number', new Text('changed'));
+$rules->define('number', C::text('changed'));
 $result = $grammar->parseAll(new Utf8Source('42'), limits: new ParseLimits(20, 100));
 if (!$result->success || $result->value() !== 42 || $events !== []
     || !$result->validate()->valid || !$result->commit() || !$result->commit() || $events !== [42]) {

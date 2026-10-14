@@ -28,10 +28,10 @@ class Rfc2234 extends AbstractRuleset
          * These are not part of the published specification, but help make the published rules more manageable without
          * altering meaning or syntax. They exist outside the named scope.
          */
-        $hexdigs = C::of($this->rule('HEXDIG'))->repeat(1);
-        $digits = C::of($this->rule('DIGIT'))->repeat(1);
-        $bits = C::of($this->rule('BIT'))->repeat(1);
-        $c_wsps = C::of($this->rule('c_wsp'))->repeat();
+        $hexdigs = C::of($this->rule('HEXDIG'))->plus();
+        $digits = C::of($this->rule('DIGIT'))->plus();
+        $bits = C::of($this->rule('BIT'))->plus();
+        $c_wsps = C::of($this->rule('c_wsp'))->star();
         /*
          * Normal rules
          */
@@ -60,32 +60,32 @@ class Rfc2234 extends AbstractRuleset
              */
             'prose_val' => C::sequence(
                 C::text('<'),
-                C::choice(C::range(chr(0x20), chr(0x3d)), C::range(chr(0x3f), chr(0x7e)))->repeat(),
+                C::choice(C::range(chr(0x20), chr(0x3d)), C::range(chr(0x3f), chr(0x7e)))->star(),
                 C::text('>'),
             ),
             'hex_val' => C::sequence(
                 C::text('x'),
                 $hexdigs,
                 C::choice(
-                    C::sequence(C::text('.'), $hexdigs)->repeat(1),
+                    C::sequence(C::text('.'), $hexdigs)->plus(),
                     C::sequence(C::text('-'), $hexdigs),
-                )->repeat(0, 1),
+                )->optional(),
             ),
             'dec_val' => C::sequence(
                 C::text('d'),
                 $digits,
                 C::choice(
-                    C::sequence(C::text('.'), $digits)->repeat(1),
+                    C::sequence(C::text('.'), $digits)->plus(),
                     C::sequence(C::text('-'), $digits),
-                )->repeat(0, 1),
+                )->optional(),
             ),
             'bin_val' => C::sequence(
                 C::text('b'),
                 $bits,
                 C::choice(
-                    C::sequence(C::text('.'), $bits)->repeat(1),
+                    C::sequence(C::text('.'), $bits)->plus(),
                     C::sequence(C::text('-'), $bits),
-                )->repeat(0, 1),
+                )->optional(),
             ),
             'num_val' => C::sequence(
                 C::text('%'),
@@ -93,7 +93,7 @@ class Rfc2234 extends AbstractRuleset
             ),
             'char_val' => C::sequence(
                 $this->rule('DQUOTE'),
-                C::choice(C::range(chr(0x20), chr(0x21)), C::range(chr(0x23), chr(0x7e)))->repeat(),
+                C::choice(C::range(chr(0x20), chr(0x21)), C::range(chr(0x23), chr(0x7e)))->star(),
                 $this->rule('DQUOTE'),
             ),
             'option' => C::sequence(
@@ -121,26 +121,26 @@ class Rfc2234 extends AbstractRuleset
             'repeat' => C::choice(
                 $digits,
                 C::sequence(
-                    C::of($this->rule('DIGIT'))->repeat(),
+                    C::of($this->rule('DIGIT'))->star(),
                     C::text('*'),
-                    C::of($this->rule('DIGIT'))->repeat(),
+                    C::of($this->rule('DIGIT'))->star(),
                 ),
             ),
             'repetition' => C::sequence(
-                C::of($this->rule('repeat'))->repeat(0, 1),
+                C::of($this->rule('repeat'))->optional(),
                 $this->rule('element'),
             ),
             'concatenation' => C::sequence(
                 $this->rule('repetition'),
-                C::sequence(C::of($this->rule('c_wsp'))->repeat(1), $this->rule('repetition'))->repeat()
+                C::sequence(C::of($this->rule('c_wsp'))->plus(), $this->rule('repetition'))->star(),
             ),
             'alternation' => C::sequence(
                 $this->rule('concatenation'),
-                C::sequence($c_wsps, C::text('/'), $c_wsps, $this->rule('concatenation'))->repeat()
+                C::sequence($c_wsps, C::text('/'), $c_wsps, $this->rule('concatenation'))->star(),
             ),
             'comment' => C::sequence(
                 C::text(';'),
-                C::choice($this->rule('WSP'), $this->rule('VCHAR'))->repeat(),
+                C::choice($this->rule('WSP'), $this->rule('VCHAR'))->star(),
                 $this->rule('CRLF'),
             ),
             'c_nl' => C::choice($this->rule('comment'), $this->rule('CRLF')),
@@ -156,18 +156,18 @@ class Rfc2234 extends AbstractRuleset
             ),
             'rulename' => C::sequence(
                 $this->rule('ALPHA'),
-                C::choice($this->rule('ALPHA'), $this->rule('DIGIT'), C::text('-'))->repeat(),
+                C::choice($this->rule('ALPHA'), $this->rule('DIGIT'), C::text('-'))->star(),
             ),
             'rule' => C::sequence(
                 $this->rule('rulename'),
                 $this->rule('defined_as'),
                 $this->rule('elements'),
-                $this->rule('c_nl')
+                $this->rule('c_nl'),
             ),
             'rulelist' => C::choice(
                 $this->rule('rule'),
                 C::sequence($c_wsps, $this->rule('c_nl')),
-            )->repeat(1),
+            )->plus(),
             self::ROOT => $this->rule('rulelist'),
         ];
         parent::__construct(array_merge($rules, $overwrites));
