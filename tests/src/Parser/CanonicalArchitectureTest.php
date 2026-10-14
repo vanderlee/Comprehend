@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Tests\Src\Parser;
 
 use Vanderlee\Comprehend\Parser\Structure\All;
@@ -28,12 +29,12 @@ use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Source\Utf8Source;
+
 class CanonicalArchitectureTest extends ParserTestCase
 {
     public function testCustomParserUsesTypedSourceUnitsWithoutOptIn(): void
     {
-        $parser = new class extends Parser
-        {
+        $parser = new class extends Parser {
             protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
             {
                 $first = $source->readUnit($offset);
@@ -55,8 +56,7 @@ class CanonicalArchitectureTest extends ParserTestCase
     }
     public function testSourceInterfaceWorksWithoutConcreteClassDispatch(): void
     {
-        $source = new class implements Source
-        {
+        $source = new class implements Source {
             private Utf8Source $inner;
             public function __construct()
             {
@@ -95,8 +95,7 @@ class CanonicalArchitectureTest extends ParserTestCase
     }
     public function testPartialCodePointReturnedByCustomParserIsRejected(): void
     {
-        $parser = new class extends Parser
-        {
+        $parser = new class extends Parser {
             protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
             {
                 return $this->success($source, $offset, 1);
@@ -111,8 +110,7 @@ class CanonicalArchitectureTest extends ParserTestCase
     }
     public function testForeignSourceReturnedByCustomParserIsRejected(): void
     {
-        $parser = new class extends Parser
-        {
+        $parser = new class extends Parser {
             protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
             {
                 return $this->success(new ByteSource('a'), $offset, 1);
@@ -151,7 +149,7 @@ class CanonicalArchitectureTest extends ParserTestCase
     public function testRuleFactoriesAndForwardReferencesUseExplicitCalls(): void
     {
         $rules = new Ruleset([], 'test');
-        $reference = $rules->rule('pair', new Text('é'));
+        $reference = $rules->ref('pair', new Text('é'));
         $rules->define('pair', static fn(Parser $item): Parser => new Sequence($item, $item));
         $result = $reference->parseAll(new Utf8Source('éé'));
         $this->assertResult(true, 4, $result);
@@ -159,12 +157,12 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertSame('test', $result->ast()->group);
         $definition = new Definition(static fn(string $literal): Parser => new Text($literal));
         $rules->define('item', $definition);
-        $this->assertTrue($rules->rule('item', 'x')->parseAll(new ByteSource('x'))->success);
+        $this->assertTrue($rules->ref('item', 'x')->parseAll(new ByteSource('x'))->success);
     }
     public function testUndefinedReferenceDoesNotGuessALiteral(): void
     {
         $rules = new Ruleset();
-        $reference = $rules->rule('missing');
+        $reference = $rules->ref('missing');
         $this->assertFalse($rules->defined('missing'));
         $this->expectExceptionMessage('Undefined grammar rule: missing');
         $reference->parseAll(new ByteSource('missing'));
@@ -173,7 +171,7 @@ class CanonicalArchitectureTest extends ParserTestCase
     {
         $rules = new Ruleset(['bad' => static fn() => 'text']);
         $this->expectExceptionMessage('Rule factory must return Parser: bad');
-        $rules->rule('bad')->parseAll(new ByteSource('text'));
+        $rules->ref('bad')->parseAll(new ByteSource('text'));
     }
     public function testDefinitionFactoryMustReturnAParser(): void
     {
@@ -185,13 +183,13 @@ class CanonicalArchitectureTest extends ParserTestCase
     {
         $first = new Ruleset(['letter' => new Text('a')], 'first');
         $second = new Ruleset(['letter' => new Text('b')], 'second');
-        $reference = $first->rule('letter');
+        $reference = $first->ref('letter');
         $old = $reference->parseAll(new ByteSource('a'));
         $first->define('letter', new Text('c'));
         $this->assertSame('a', $old->rawText());
         $this->assertSame('first', $old->ast()->group);
         $this->assertTrue($reference->parseAll(new ByteSource('c'))->success);
-        $this->assertSame('second', $second->rule('letter')->parseAll(new ByteSource('b'))->ast()->group);
+        $this->assertSame('second', $second->ref('letter')->parseAll(new ByteSource('b'))->ast()->group);
         $first->undefine('letter');
         $this->assertFalse($first->defined('letter'));
         $this->expectExceptionMessage('Undefined grammar rule: letter');
@@ -272,7 +270,7 @@ class CanonicalArchitectureTest extends ParserTestCase
 
     public function testStoredNullCollectionValueIsDistinctFromMissingValue(): void
     {
-        $result = (new Text('a'))->setResult('nullable', static fn () => null)->parseAll(new ByteSource('a'));
+        $result = (new Text('a'))->setResult('nullable', static fn() => null)->parseAll(new ByteSource('a'));
         $this->assertSame(['nullable' => null], $result->results());
         $this->assertNull($result->result('nullable', 'fallback'));
         $this->assertSame('fallback', $result->result('missing', 'fallback'));
@@ -304,8 +302,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertTrue($grammar->parseAll(new ByteSource('axb'))->success);
         $source = new ByteSource('ab');
         $session = new ParseSession($source);
-        $thrower = new class extends Parser
-        {
+        $thrower = new class extends Parser {
             protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
             {
                 throw new RuntimeException('scope');

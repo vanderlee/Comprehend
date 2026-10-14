@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Tests\Src\Parser;
 
 use Vanderlee\Comprehend\Result\ParseResult;
@@ -35,6 +36,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Start;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
+
 class SourceMatchingTest extends ParserTestCase
 {
     /** @dataProvider terminalData */
@@ -97,8 +99,8 @@ class SourceMatchingTest extends ParserTestCase
         $this->assertResult(true, 6, $result);
         $this->assertSame([], $events);
         $this->assertSame(['letter' => 'é', 'emoji' => '😀'], $result->results());
-        $this->assertSame([1, 3, 7], array_map(static fn ($node) => $node->span->start, $result->node->children));
-        $this->assertSame([2, 4, 0], array_map(static fn ($node) => $node->span->byteLength(), $result->node->children));
+        $this->assertSame([1, 3, 7], array_map(static fn($node) => $node->span->start, $result->node->children));
+        $this->assertSame([2, 4, 0], array_map(static fn($node) => $node->span->byteLength(), $result->node->children));
         $this->assertTrue($result->commit());
         $this->assertSame([['é', 1, 2]], $events);
     }
@@ -113,7 +115,7 @@ class SourceMatchingTest extends ParserTestCase
             $this->assertSame("\xFF", $result->node->rawText());
         }
         $abnf = new Rfc2234();
-        $this->assertTrue($abnf->rule('OCTET')->parseAll($source)->success);
+        $this->assertTrue($abnf->ref('OCTET')->parseAll($source)->success);
     }
 
     public function testCasePolicyDoesNotDependOnAmbientEncoding(): void

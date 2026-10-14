@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Tests\Src\Parser;
 
 use Tests\ParserTestCase;
@@ -13,6 +14,7 @@ use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
+
 class DiagnosticTest extends ParserTestCase
 {
     public function testUtf8FailureAndLazyLocation()
@@ -81,7 +83,7 @@ class DiagnosticTest extends ParserTestCase
     {
         $rules = new Ruleset();
         $rules->define('word', new Text('abc'));
-        $diagnostic = $rules->rule('word')->parseAll(new Utf8Source('abx'))->diagnostic;
+        $diagnostic = $rules->ref('word')->parseAll(new Utf8Source('abx'))->diagnostic;
         $this->assertContains('word', $diagnostic->rulePaths[0]);
     }
     public function testSpacingRetainsExpectedSymbol()

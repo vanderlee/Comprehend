@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Tests\Src\Parser;
 
 use Error;
@@ -13,6 +14,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
+
 class AstTest extends ParserTestCase
 {
     public function testUnnamedRootPromotesNamedNestedBranchesAndKeepsPunctuation()
@@ -96,7 +98,7 @@ class AstTest extends ParserTestCase
         $definition->addProcessor('value', fn() => 42);
         $rules = new Ruleset();
         $rules->define('document', $definition);
-        $result = $rules->rule('document')->parseAll(new Utf8Source('ab'));
+        $result = $rules->ref('document')->parseAll(new Utf8Source('ab'));
         $this->assertSame(['value' => 42], $result->results());
         $this->assertSame('document', $result->ast()->name);
         $this->assertSame('item', $result->ast()->children[0]->name);

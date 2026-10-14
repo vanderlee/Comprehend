@@ -44,8 +44,8 @@ class Rfc3986 extends AbstractRuleset
                 C::text(':'),
                 C::text('@'),
             ),
-            'segment' => C::of($this->rule('pchar'))->many(),
-            'segment_nz' => C::of($this->rule('pchar'))->some(),
+            'segment' => $this->rule('pchar')->many(),
+            'segment_nz' => $this->rule('pchar')->some(),
             'segment_nz_nc' => C::choice(
                 $this->rule('unreserved'),
                 $this->rule('pct_encoded'),
@@ -131,9 +131,9 @@ class Rfc3986 extends AbstractRuleset
                 C::text(':'),
             )->many(),
             // 3.2.3.  Port
-            'port' => C::of($abnf->rule('DIGIT'))->many(),
+            'port' => $abnf->rule('DIGIT')->many(),
             // 3.2.2.  Host
-            'h16' => C::of($abnf->rule('HEXDIG'))->repeat(1, 4),
+            'h16' => $abnf->rule('HEXDIG')->repeat(1, 4),
             'ls32' => C::choice(
                 C::sequence($this->rule('h16'), C::text(':'), $this->rule('h16')),
                 $this->rule('IPv4address'),
@@ -149,7 +149,7 @@ class Rfc3986 extends AbstractRuleset
                     $this->rule('ls32'),
                 ),
                 C::sequence(
-                    C::of($this->rule('h16'))->maybe(),
+                    $this->rule('h16')->maybe(),
                     C::text('::'),
                     C::sequence($this->rule('h16'), C::text(':'))->repeat(4, 4),
                     $this->rule('ls32'),
@@ -209,7 +209,7 @@ class Rfc3986 extends AbstractRuleset
             'dec_octet' => C::choice(
                 C::sequence(C::text('25'), C::range('0', '5')),
                 C::sequence(C::text('2'), C::range('0', '4'), $abnf->rule('DIGIT')),
-                C::sequence(C::text('1'), C::of($abnf->rule('DIGIT'))->repeat(2, 2)),
+                C::sequence(C::text('1'), $abnf->rule('DIGIT')->repeat(2, 2)),
                 C::sequence(C::range('1', '9'), $abnf->rule('DIGIT')),
                 $abnf->rule('DIGIT'),
             ),
@@ -224,7 +224,7 @@ class Rfc3986 extends AbstractRuleset
             ),
             'IPvFuture' => C::sequence(
                 C::text('v'),
-                C::of($abnf->rule('HEXDIG'))->some(),
+                $abnf->rule('HEXDIG')->some(),
                 C::text('.'),
                 C::choice($this->rule('unreserved'), $this->rule('sub_delims'), C::text(':'))->some(),
             ),

@@ -6,8 +6,10 @@ namespace Tests\Src;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Directive\Prefer;
+use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Source\Utf8Source;
@@ -15,6 +17,59 @@ use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 class ComprehendErgonomicsTest extends TestCase
 {
+    public function testFluentRulesKeepForwardRecursionNamesAndSnapshotIsolation(): void
+    {
+        $rules = new Ruleset([], 'syntax');
+        $leaf = $rules->rule('leaf');
+        $rules->root($rules->rule('nested'));
+        $rules->define('nested', C::first(
+            $leaf,
+            C::text('(')->then($rules->rule('nested'), C::text(')')),
+        ));
+        $rules->define('leaf', C::text('x'));
+        $grammar = $rules->freeze();
+        $rules->define('leaf', C::text('y'));
+
+        $result = $grammar->parseAll(new Utf8Source('((x))'));
+        $this->assertTrue($result->success);
+        $this->assertSame('nested', $result->ast()->children[0]->name);
+        $this->assertSame('syntax', $result->ast()->children[0]->group);
+        $this->assertSame('((x))', $result->ast()->rawText());
+        $this->assertTrue($rules->freeze()->parseAll(new Utf8Source('((y))'))->success);
+        $this->assertFalse($grammar->parseAll(new Utf8Source('((y))'))->success);
+        $this->assertTrue($leaf->some()->freeze()->parseAll(new Utf8Source('yy'))->success);
+        $this->assertFalse($leaf->freeze()->parseAll(new Utf8Source('yy'))->success);
+        $this->assertInstanceOf(Parser::class, $rules->ref('leaf'));
+    }
+
+    public function testFluentParameterizedRulesResolveOnlyWhenFrozen(): void
+    {
+        $calls = 0;
+        $rules = new Ruleset();
+        $pair = $rules->rule('pair', 'x')->some();
+        $rules->define('pair', static function (string $text) use (&$calls): Parser {
+            ++$calls;
+            return C::text($text)->then(C::text($text))->parser();
+        });
+
+        $this->assertSame(0, $calls);
+        $grammar = $pair->freeze();
+        $this->assertSame(1, $calls);
+        $this->assertTrue($grammar->parseAll(new Utf8Source('xxxx'))->success);
+        $this->assertFalse($grammar->parseAll(new Utf8Source('xxx'))->success);
+        $this->assertSame(1, $calls);
+    }
+
+    public function testUndefinedFluentRuleFailsAtFreeze(): void
+    {
+        $rules = new Ruleset();
+        $reference = $rules->rule('missing');
+        $this->assertFalse($rules->defined('missing'));
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Undefined grammar rule: missing');
+        $reference->freeze();
+    }
+
     public function testVariadicChainsKeepNamedGroupsAndDetachObjectArguments(): void
     {
         $base = C::text('a')->then(C::text('b'))->named('pair');

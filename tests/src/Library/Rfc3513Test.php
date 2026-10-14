@@ -1,12 +1,14 @@
 <?php
 
 /** @noinspection PhpUndefinedFieldInspection */
+
 namespace Tests\Src\Library;
 
 use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Library\Rfc3513;
 use Vanderlee\Comprehend\Parser\Parser;
+
 /**
  * @group library
  * @group rfc
@@ -38,13 +40,13 @@ class Rfc3513Test extends ParserTestCase
         $ipv6 = $this->getRfc();
         return [
             // Core rules
-            [$ipv6->rule('ipv6_address'), '::1', true, 3],
-            [$ipv6->rule('ipv6_address'), '::1/1', true, 3],
-            [$ipv6->rule('ipv6_address'), '::0.0.0.1', true, 9],
-            [$ipv6->rule('ipv6_address'), 'FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF', false, 34],
-            [$ipv6->rule('ipv6_address'), 'FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF', true, 39],
-            [$ipv6->rule('ipv6_address'), 'FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF', true, 39],
-            [$ipv6->rule('ipv6'), '::1/1', true, 5],
+            [$ipv6->ref('ipv6_address'), '::1', true, 3],
+            [$ipv6->ref('ipv6_address'), '::1/1', true, 3],
+            [$ipv6->ref('ipv6_address'), '::0.0.0.1', true, 9],
+            [$ipv6->ref('ipv6_address'), 'FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF', false, 34],
+            [$ipv6->ref('ipv6_address'), 'FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF', true, 39],
+            [$ipv6->ref('ipv6_address'), 'FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF', true, 39],
+            [$ipv6->ref('ipv6'), '::1/1', true, 5],
         ];
     }
 }

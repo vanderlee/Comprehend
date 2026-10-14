@@ -76,13 +76,13 @@ verify($binary['textEncoding'] === 'base64' && base64_decode($binary['text']) ==
 // Named definitions and reusable RFC imports use the same source runtime.
 $rules = new Ruleset([], 'example');
 $rules->define('twice', static fn(Parser $item): Parser => Repeat::exact($item, 2));
-$rules->define(Ruleset::ROOT, $rules->rule('twice', new Text('x')));
+$rules->define(Ruleset::ROOT, $rules->ref('twice', new Text('x')));
 verify($rules->parseAll(new ByteSource('xx'))->success, 'parameterized named grammar');
 verify(C::text('a')->then(C::text('b'))->freeze()->parseAll(new ByteSource('ab'))->success, 'Comprehend composition');
 $uri = new Rfc3986();
-verify($uri->rule('IPv4address')->parseAll(new ByteSource('192.0.2.1'))->success, 'RFC IPv4');
+verify($uri->ref('IPv4address')->parseAll(new ByteSource('192.0.2.1'))->success, 'RFC IPv4');
 $abnf = new Rfc2234();
-verify($abnf->rule('OCTET')->parseAll(new ByteSource("\xFF"))->success, 'RFC octet');
+verify($abnf->ref('OCTET')->parseAll(new ByteSource("\xFF"))->success, 'RFC octet');
 
 // Typed custom parser without any compatibility opt-in or fallback hook.
 final class OneUnit extends Parser

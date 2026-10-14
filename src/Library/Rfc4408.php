@@ -41,11 +41,11 @@ class Rfc4408 extends AbstractRuleset
             'version' => $this->rule('v=spf1'),
             // 4.6.1. Term Evaluation
             'terms' => C::sequence(
-                C::of($abnf->rule('SP'))->some(),
+                $abnf->rule('SP')->some(),
                 C::choice($this->rule('directive'), $this->rule('modifier')),
             )->many(),
             'directive' => C::sequence(
-                C::of($this->rule('qualifier'))->maybe(),
+                $this->rule('qualifier')->maybe(),
                 $this->rule('mechanism'),
             ),
             'qualifier' => C::set('+-?~'),
@@ -92,13 +92,13 @@ class Rfc4408 extends AbstractRuleset
             'A' => C::sequence(
                 C::text('a'),
                 C::sequence(C::text(':'), $this->rule('domain_spec'))->maybe(),
-                C::of($this->rule('dual_cidr_length'))->maybe(),
+                $this->rule('dual_cidr_length')->maybe(),
             ),
             // 5.4. "mx"
             'MX' => C::sequence(
                 C::text('mx'),
                 C::sequence(C::text(':'), $this->rule('domain_spec'))->maybe(),
-                C::of($this->rule('dual_cidr_length'))->maybe(),
+                $this->rule('dual_cidr_length')->maybe(),
             ),
             // 5.5. "ptr"
             'PTR' => C::sequence(C::text('ptr'), C::text(':'), $this->rule('domain_spec')),
@@ -107,24 +107,24 @@ class Rfc4408 extends AbstractRuleset
                 C::text('ip4'),
                 C::text(':'),
                 $this->rule('ip4_network'),
-                C::of($this->rule('ip4_cidr_length'))->maybe(),
+                $this->rule('ip4_cidr_length')->maybe(),
             ),
             'IP6' => C::sequence(
                 C::text('ip6'),
                 C::text(':'),
                 $this->rule('ip6_network'),
-                C::of($this->rule('ip6_cidr_length'))->maybe(),
+                $this->rule('ip6_cidr_length')->maybe(),
             ),
             'ip4_cidr_length' => C::sequence(
                 C::text('/'),
-                C::of($abnf->rule('DIGIT'))->some(),
+                $abnf->rule('DIGIT')->some(),
             ),
             'ip6_cidr_length' => C::sequence(
                 C::text('/'),
-                C::of($abnf->rule('DIGIT'))->some(),
+                $abnf->rule('DIGIT')->some(),
             ),
             'dual_cidr_length' => C::sequence(
-                C::of($this->rule('ip4_cidr_length'))->maybe(),
+                $this->rule('ip4_cidr_length')->maybe(),
                 C::sequence(C::text('/'), $this->rule('ip6_cidr_length'))->maybe(),
             ),
             'ip4_network' => C::sequence(
@@ -164,12 +164,12 @@ class Rfc4408 extends AbstractRuleset
             ),
             'toplabel' => C::choice(
                 C::sequence(
-                    C::of($this->rule('alphanum'))->many(),
+                    $this->rule('alphanum')->many(),
                     $abnf->rule('ALPHA'),
-                    C::of($this->rule('alphanum'))->many(),
+                    $this->rule('alphanum')->many(),
                 ),
                 C::sequence(
-                    C::of($this->rule('alphanum'))->some(),
+                    $this->rule('alphanum')->some(),
                     C::text('='),
                     C::choice($this->rule('alphanum'), C::text('-'))->many(),
                     $this->rule('alphanum'),
@@ -187,7 +187,7 @@ class Rfc4408 extends AbstractRuleset
                     C::text('%{'),
                     $this->rule('macro_letter'),
                     $this->rule('transformers'),
-                    C::of($this->rule('delimiter'))->many(),
+                    $this->rule('delimiter')->many(),
                     C::text('}'),
                 ),
                 C::text('%%'),
@@ -200,7 +200,7 @@ class Rfc4408 extends AbstractRuleset
             ),
             'macro_letter' => C::set('slodiphcrt'),
             'transformers' => C::sequence(
-                C::of($abnf->rule('DIGIT'))->many(),
+                $abnf->rule('DIGIT')->many(),
                 C::text('r')->maybe(),
             ),
             'delimiter' => C::set('.-+,/_='),

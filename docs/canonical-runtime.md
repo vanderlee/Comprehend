@@ -32,7 +32,7 @@ typed objects / Ruleset factories / RFC imports
 | TokenProjection, Core Token and parser/match token callbacks | Direct immutable CST/AST array, JSON and XML schemas | TreeSerializationTest, AST and concrete-node tests |
 | Token transparency, token child indexes and compatibility-only serialization layouts | Complete CST children, named AST projection and semantic-leaf markers | Punctuation, unnamed input, trivia and empty-span tests |
 | ArgumentsTrait and string/int/array/class-name rule coercion | Explicit typed Parser arguments and factory returns | Constructor rejection and factory-contract tests |
-| Magic instance/static Ruleset dispatch and shared rule registry | `define()`, `rule()`, `defined()`, `undefine()` on each instance; facade definitions detach on registration | Rule isolation, forward references and missing-name tests |
+| Magic instance/static Ruleset dispatch and shared rule registry | `define()`, facade-returning `rule()`, Parser-returning `ref()`, `defined()`, `undefine()` on each instance; facade definitions detach on registration | Rule isolation, forward references and missing-name tests |
 | Magic Stub/Implementation properties and Definition invocation | `Stub::setParser()/getParser()`, `Definition::build()` | Recursive examples and canonical API gate |
 | Definition's speculative validation and parent-dependent processors | ParseResult semantic validators and cached processors over local collections | Selected validation, caching and abandoned-definition tests |
 | Compatibility-only fixtures and obsolete documentation | Canonical behavior fixtures, updated contracts and runnable examples | Full suite, PHP syntax/API gate and example execution |

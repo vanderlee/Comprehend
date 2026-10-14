@@ -2,10 +2,12 @@
 
 /** @noinspection PhpUndefinedMethodInspection */
 /** @noinspection PhpUndefinedFieldInspection */
+
 namespace Tests\example;
 
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+
 require_once 'ReversePolishNotationTrait.php';
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Builder\Ruleset;
@@ -14,6 +16,7 @@ use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
+
 /**
  * Example of a simple maths parser, constructed using basic objects.
  *
@@ -43,25 +46,25 @@ class MathRulesetTest extends ParserTestCase
         );
         $rules->define(
             'factor',
-            Choice::first(new Sequence($literal('('), $rules->rule('expression'), $literal(')')), $rules->rule('integer')),
+            Choice::first(new Sequence($literal('('), $rules->ref('expression'), $literal(')')), $rules->ref('integer')),
         );
         $rules->define(
             'term',
             Choice::first(
-                (new Sequence($rules->rule('factor'), $literal('*'), $rules->rule('term')))->pushResult(null, 'multiply'),
-                (new Sequence($rules->rule('factor'), $literal('/'), $rules->rule('term')))->pushResult(null, 'divide'),
-                $rules->rule('factor'),
+                (new Sequence($rules->ref('factor'), $literal('*'), $rules->ref('term')))->pushResult(null, 'multiply'),
+                (new Sequence($rules->ref('factor'), $literal('/'), $rules->ref('term')))->pushResult(null, 'divide'),
+                $rules->ref('factor'),
             ),
         );
         $rules->define(
             'expression',
             Choice::first(
-                (new Sequence($rules->rule('term'), $literal('+'), $rules->rule('expression')))->pushResult(null, 'add'),
-                (new Sequence($rules->rule('term'), $literal('-'), $rules->rule('expression')))->pushResult(null, 'subtract'),
-                $rules->rule('term'),
+                (new Sequence($rules->ref('term'), $literal('+'), $rules->ref('expression')))->pushResult(null, 'add'),
+                (new Sequence($rules->ref('term'), $literal('-'), $rules->ref('expression')))->pushResult(null, 'subtract'),
+                $rules->ref('term'),
             ),
         );
-        $rules->define(Ruleset::ROOT, $rules->rule('expression'));
+        $rules->define(Ruleset::ROOT, $rules->ref('expression'));
         self::$math = $rules;
     }
     /**

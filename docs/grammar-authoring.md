@@ -23,7 +23,20 @@ $grammar->parseAll(new Utf8Source('ab'))->success; // true
 `define(string, Comprehend|Parser|Definition|callable)` registers a facade, typed parser or factory.
 `ref(string, ...$arguments)` creates a deferred named reference; definitions can
 be written in any order. `root(string|Comprehend|Parser)` chooses the start rule by name or
-supplies its facade or parser directly. `rule()` is a direct convenience call to `ref()`.
+supplies its facade or parser directly. `rule()` returns a Comprehend facade around
+the deferred reference, while `ref()` returns the RuleReference parser itself.
+
+```php
+use Vanderlee\Comprehend\Comprehend;
+
+$digits = $rules->rule('digit')->some();
+$rules->define('digit', Comprehend::range('0', '9'));
+$digits->freeze()->parseAll(new Utf8Source('123'))->success; // true
+```
+
+Use `ref()` in Parser-only object constructors and factories. Facade references
+are recognized through `freeze()->parseAll()` or `freeze()->matchPrefix()`;
+they retain forward/recursive lookup, factory arguments and named rule groups.
 References never guess a literal or class name. Missing names and invalid factory
 returns are grammar errors. Named references preserve their Ruleset group in
 AST/diagnostic output. Ruleset roots inherit the selected root's typed value

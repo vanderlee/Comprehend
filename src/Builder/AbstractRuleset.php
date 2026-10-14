@@ -84,10 +84,10 @@ abstract class AbstractRuleset extends Parser
         $this->implementations = [];
     }
 
-    /** Explicit deferred rule lookup permits construction in any order. */
-    public function rule(string $name, mixed ...$arguments): Parser
+    /** Fluent deferred rule lookup; use ref() for Parser-only consumers. */
+    public function rule(string $name, mixed ...$arguments): Comprehend
     {
-        return $this->ref($name, ...$arguments);
+        return Comprehend::ref($this, $name, ...$arguments);
     }
 
     public function __toString(): string

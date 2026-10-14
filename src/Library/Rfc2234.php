@@ -28,10 +28,10 @@ class Rfc2234 extends AbstractRuleset
          * These are not part of the published specification, but help make the published rules more manageable without
          * altering meaning or syntax. They exist outside the named scope.
          */
-        $hexdigs = C::of($this->rule('HEXDIG'))->some();
-        $digits = C::of($this->rule('DIGIT'))->some();
-        $bits = C::of($this->rule('BIT'))->some();
-        $c_wsps = C::of($this->rule('c_wsp'))->many();
+        $hexdigs = $this->rule('HEXDIG')->some();
+        $digits = $this->rule('DIGIT')->some();
+        $bits = $this->rule('BIT')->some();
+        $c_wsps = $this->rule('c_wsp')->many();
         /*
          * Normal rules
          */
@@ -121,18 +121,18 @@ class Rfc2234 extends AbstractRuleset
             'repeat' => C::choice(
                 $digits,
                 C::sequence(
-                    C::of($this->rule('DIGIT'))->many(),
+                    $this->rule('DIGIT')->many(),
                     C::text('*'),
-                    C::of($this->rule('DIGIT'))->many(),
+                    $this->rule('DIGIT')->many(),
                 ),
             ),
             'repetition' => C::sequence(
-                C::of($this->rule('repeat'))->maybe(),
+                $this->rule('repeat')->maybe(),
                 $this->rule('element'),
             ),
             'concatenation' => C::sequence(
                 $this->rule('repetition'),
-                C::sequence(C::of($this->rule('c_wsp'))->some(), $this->rule('repetition'))->many(),
+                C::sequence($this->rule('c_wsp')->some(), $this->rule('repetition'))->many(),
             ),
             'alternation' => C::sequence(
                 $this->rule('concatenation'),

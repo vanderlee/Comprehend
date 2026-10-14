@@ -2,7 +2,9 @@
 
 Ruleset provides explicit `define(string, Comprehend|Parser|Definition|callable)`,
 `ref(string, ...$arguments)`, `root(string|Comprehend|Parser)`, `defined(string)` and
-`undefine(string)` operations. `rule()` delegates to `ref()`.
+`undefine(string)` operations. `rule(string, ...$arguments)` returns an immutable
+Comprehend facade for fluent authoring; `ref()` returns a RuleReference parser for
+object constructors, factories and direct recognition.
 Rule lookup is deferred so forward/recursive definitions can be constructed in
 any order. Undefined names raise LogicException on recognition; there is no
 literal fallback or magic/static registry. Select the document parser explicitly

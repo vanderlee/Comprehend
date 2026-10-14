@@ -86,7 +86,7 @@ class ComprehendTest extends TestCase
             'facade' => Comprehend::text('a'),
             'parser' => new Text('b'),
             'definition' => new Definition(new Text('c')),
-            'factory' => static fn (): Parser => new Text('d'),
+            'factory' => static fn(): Parser => new Text('d'),
         ]);
         $rules->root(Comprehend::sequence(
             Comprehend::ref($rules, 'facade'),
@@ -149,7 +149,7 @@ class ComprehendTest extends TestCase
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Only rule factories accept arguments: word');
-        $rules->rule('word', 'argument')->parseAll(new ByteSource('a'));
+        $rules->ref('word', 'argument')->parseAll(new ByteSource('a'));
     }
 
     public function testForwardReferencesAndExplicitRoot()
@@ -176,12 +176,12 @@ class ComprehendTest extends TestCase
     {
         $sequence = new Sequence(new Text('a'));
         $definition = new Definition($sequence);
-        $definition->addProcessor('value', fn () => 1);
+        $definition->addProcessor('value', fn() => 1);
         $rules = new Ruleset();
         $rules->define('word', $definition)->root('word');
         $frozen = $rules->freeze();
         $sequence->add(new Text('b'));
-        $definition->addProcessor('value', fn () => 2);
+        $definition->addProcessor('value', fn() => 2);
         $rules->define('word', new Text('c'));
         $result = $frozen->parseAll(new Utf8Source('a'));
         $this->assertTrue($result->success);
@@ -194,7 +194,10 @@ class ComprehendTest extends TestCase
     {
         $calls = 0;
         $rules = new Ruleset();
-        $rules->define('literal', function (string $text) use (&$calls): Parser { ++$calls; return new Text($text); });
+        $rules->define('literal', function (string $text) use (&$calls): Parser {
+            ++$calls;
+            return new Text($text);
+        });
         $rules->root(new Sequence($rules->ref('literal', 'a'), $rules->ref('literal', 'b'), $rules->ref('literal', 'a')));
         $frozen = $rules->freeze();
         $this->assertSame(2, $calls);
@@ -206,8 +209,10 @@ class ComprehendTest extends TestCase
     public function testParameterizedConsumingRecursionResolvesFiniteGraph()
     {
         $rules = new Ruleset();
-        $rules->define('nested', fn (string $letter): Parser => new Choice(new Text($letter),
-            new Sequence(new Text('('), $rules->ref('nested', $letter), new Text(')'))));
+        $rules->define('nested', fn(string $letter): Parser => new Choice(
+            new Text($letter),
+            new Sequence(new Text('('), $rules->ref('nested', $letter), new Text(')')),
+        ));
         $rules->root($rules->ref('nested', 'a'));
         $this->assertTrue($rules->freeze()->parseAll(new Utf8Source('((a))'))->success);
     }
@@ -215,7 +220,7 @@ class ComprehendTest extends TestCase
     public function testByteFactoryArgumentsDoNotRequireUtf8Keys()
     {
         $rules = new Ruleset();
-        $rules->define('literal', fn (string $text): Parser => new Text($text))->root($rules->ref('literal', "\xff"));
+        $rules->define('literal', fn(string $text): Parser => new Text($text))->root($rules->ref('literal', "\xff"));
         $this->assertTrue($rules->freeze()->parseAll(new \Vanderlee\Comprehend\Source\ByteSource("\xff"))->success);
     }
 
@@ -307,12 +312,17 @@ class ComprehendTest extends TestCase
     public function testOpaqueNullableParserKeepsRuntimeProgressGuard()
     {
         $opaque = new class extends Parser {
-            protected function recognize(\Vanderlee\Comprehend\Source\Source $source, int $offset,
-                \Vanderlee\Comprehend\Runtime\ParseSession $session): \Vanderlee\Comprehend\Match\AbstractMatch
-            {
+            protected function recognize(
+                \Vanderlee\Comprehend\Source\Source $source,
+                int $offset,
+                \Vanderlee\Comprehend\Runtime\ParseSession $session,
+            ): \Vanderlee\Comprehend\Match\AbstractMatch {
                 return $this->success($source, $offset);
             }
-            public function __toString(): string { return 'opaque'; }
+            public function __toString(): string
+            {
+                return 'opaque';
+            }
         };
         $frozen = Repeat::star($opaque)->freeze();
         $this->assertCount(1, $frozen->analysisWarnings);
@@ -324,12 +334,17 @@ class ComprehendTest extends TestCase
     public function testOpaqueRecursionFailsPredictablyAtRuntime()
     {
         $opaque = new class extends Parser {
-            protected function recognize(\Vanderlee\Comprehend\Source\Source $source, int $offset,
-                \Vanderlee\Comprehend\Runtime\ParseSession $session): \Vanderlee\Comprehend\Match\AbstractMatch
-            {
+            protected function recognize(
+                \Vanderlee\Comprehend\Source\Source $source,
+                int $offset,
+                \Vanderlee\Comprehend\Runtime\ParseSession $session,
+            ): \Vanderlee\Comprehend\Match\AbstractMatch {
                 return $this->recognizeInSession($source, $offset, $session);
             }
-            public function __toString(): string { return 'opaque'; }
+            public function __toString(): string
+            {
+                return 'opaque';
+            }
         };
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Left recursion at byte 0');
