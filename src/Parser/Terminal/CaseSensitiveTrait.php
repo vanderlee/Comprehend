@@ -1,9 +1,9 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
-use Vanderlee\Comprehend\Core\Context;
-
+use Vanderlee\Comprehend\Runtime\ParseSession;
 /**
  * Classes implementing this can scan.
  *
@@ -15,44 +15,36 @@ trait CaseSensitiveTrait
      * @var bool
      */
     private $caseSensitivity = null;
-
-    private function pushCaseSensitivityToContext(Context $context)
+    private function pushCaseSensitivityToContext(ParseSession $context)
     {
         if ($this->caseSensitivity !== null) {
             $context->pushCaseSensitivity($this->caseSensitivity);
         }
     }
-
-    private function popCaseSensitivityFromContext(Context $context)
+    private function popCaseSensitivityFromContext(ParseSession $context)
     {
         if ($this->caseSensitivity !== null) {
             $context->popCaseSensitivity();
         }
     }
-
     /**
      * @param bool $preference
      *
      * @return $this
      */
-    public function setCaseSensitivity($preference)
+    public function setCaseSensitivity(?bool $preference): static
     {
         $this->caseSensitivity = $preference;
-
         return $this;
     }
-
-    public function caseSensitive()
+    public function caseSensitive(): static
     {
         $this->caseSensitivity = true;
-
         return $this;
     }
-
-    public function caseInsensitive()
+    public function caseInsensitive(): static
     {
         $this->caseSensitivity = false;
-
         return $this;
     }
 }

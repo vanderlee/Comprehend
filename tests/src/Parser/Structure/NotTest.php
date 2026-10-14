@@ -2,9 +2,10 @@
 
 namespace Tests\Src\Parser\Structure;
 
+use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Structure\Not;
-
 /**
  * @group structure
  * @group parser
@@ -13,9 +14,8 @@ class NotTest extends ParserTestCase
 {
     public function testConstructor()
     {
-        $this->assertInstanceOf(Not::class, new Not('a'));
+        $this->assertInstanceOf(Not::class, new Not(new Text('a')));
     }
-
     /**
      * @dataProvider notData
      *
@@ -27,21 +27,19 @@ class NotTest extends ParserTestCase
      */
     public function testNot(Not $parser, $input, $offset, $match, $length)
     {
-        $result = $parser->match($input, $offset);
-
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $result = $parser->matchPrefix(new ByteSource($input), $offset);
+        $this->assertSame($match, $result->success, (string) $parser);
+        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
-
     public function notData()
     {
         return [
-            [new Not('a'), 'a', 0, false, 1],
-            [new Not('aa'), 'aa', 0, false, 2],
-            [new Not('ab'), 'aa', 0, true, 0],
-            [new Not('a'), 'b', 0, true, 0],
-            [new Not('ab'), 'ac', 0, true, 0],
-            [new Not('a'), 'ab', 1, true, 0],
+            [new Not(new Text('a')), 'a', 0, false, 1],
+            [new Not(new Text('aa')), 'aa', 0, false, 2],
+            [new Not(new Text('ab')), 'aa', 0, true, 0],
+            [new Not(new Text('a')), 'b', 0, true, 0],
+            [new Not(new Text('ab')), 'ac', 0, true, 0],
+            [new Not(new Text('a')), 'ab', 1, true, 0],
         ];
     }
 }

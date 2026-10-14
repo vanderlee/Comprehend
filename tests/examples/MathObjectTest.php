@@ -2,8 +2,9 @@
 
 namespace Tests\example;
 
+use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 require_once 'ReversePolishNotationTrait.php';
-
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
@@ -11,7 +12,6 @@ use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
-
 /**
  * Example of a simple maths parser, constructed using basic objects.
  *
@@ -25,35 +25,34 @@ use Vanderlee\Comprehend\Parser\Terminal\Range;
 class MathObjectTest extends ParserTestCase
 {
     use ReversePolishNotationTrait;
-
     /**
      * Math expression parser.
      *
      * @var Parser
      */
     private static $math;
-
     public static function setUpBeforeClass(): void
     {
         $term = new Stub();
         $expression = new Stub();
-
-        $integer = (new Sequence(Repeat::star('-'), Repeat::plus(new Range('0', '9'))))->pushResult();
-        $factor = new Choice(
-            ['(', $expression, ')'], $integer
+        $integer = (new Sequence(Repeat::star(new Text('-')), Repeat::plus(new Range('0', '9'))))->pushResult();
+        $factor = new Choice(new Sequence(new Text('('), $expression, new Text(')')), $integer);
+        $term->setParser(
+            new Choice(
+                (new Sequence($factor, new Text('*'), $term))->pushResult(null, 'multiply'),
+                (new Sequence($factor, new Text('/'), $term))->pushResult(null, 'divide'),
+                $factor,
+            ),
         );
-        $term->parser = new Choice(
-            (new Sequence($factor, '*', $term))->pushResult(null, 'multiply'),
-            (new Sequence($factor, '/', $term))->pushResult(null, 'divide'), $factor
+        $expression->setParser(
+            new Choice(
+                (new Sequence($term, new Text('+'), $expression))->pushResult(null, 'add'),
+                (new Sequence($term, new Text('-'), $expression))->pushResult(null, 'subtract'),
+                $term,
+            ),
         );
-        $expression->parser = new Choice(
-            (new Sequence($term, '+', $expression))->pushResult(null, 'add'),
-            (new Sequence($term, '-', $expression))->pushResult(null, 'subtract'), $term
-        );
-
         self::$math = $expression;
     }
-
     /**
      * @dataProvider dataExpression
      *
@@ -63,12 +62,11 @@ class MathObjectTest extends ParserTestCase
      */
     public function testExpression($expression, $expected, $result)
     {
-        $match = self::$math->match($expression);
+        $match = self::$math->matchPrefix(new ByteSource($expression));
         $this->assertResult(true, strlen($expression), $match);
-        $this->assertEquals($expected, $match->result);
-        $this->assertEquals($result, $this->solveRpn($match->result));
+        $this->assertEquals($expected, $match->result());
+        $this->assertEquals($result, $this->solveRpn($match->result()));
     }
-
     public function dataExpression()
     {
         return [
@@ -81,7 +79,6 @@ class MathObjectTest extends ParserTestCase
             'Multiply before add #1' => ['2*3+4', [2, 3, 'multiply', 4, 'add'], 10],
             'Multiply before add #2' => ['2+3*4', [2, 3, 4, 'multiply', 'add'], 14],
             'Parenthesis before priority #1' => ['(2+3)*4', [2, 3, 'add', 4, 'multiply'], 20],
-            //			'Parenthesis before priority #2' => ['2+(3*4)', [2, 3, 4, 'multiply', 'add'], 14],
         ];
     }
 }

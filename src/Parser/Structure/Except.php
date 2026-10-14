@@ -1,13 +1,14 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
-
 /**
  * Match the first parser but not the second.
  * Essentially the same as (A - B) = (A + !B).
@@ -16,43 +17,35 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Except extends Parser
 {
-    use ArgumentsTrait;
-
     private $parserMatch;
     private $parserNot;
-
     /**
-     * @param Parser|string $match
-     * @param Parser|string $not
+     * @param Parser $match
+     * @param Parser $not
      */
-    public function __construct($match, $not)
+    public function __construct(Parser $match, Parser $not)
     {
-        $this->parserMatch = self::getArgument($match);
-        $this->parserNot = self::getArgument($not);
+        $this->parserMatch = $match;
+        $this->parserNot = $not;
     }
-
-    protected function parse(&$input, $offset, Context $context)
+    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
-        $match = $this->parserMatch->parseInContext($input, $offset, $context);
+        $match = $this->parserMatch->recognizeInSession($input, $offset, $context);
         $diagnostics = $context->diagnosticState();
         try {
-            $not = $this->parserNot->parseInContext($input, $offset, $context);
+            $not = $this->parserNot->recognizeInSession($input, $offset, $context);
         } finally {
             $context->restoreDiagnostics($diagnostics);
         }
-
-        if (($match instanceof Success) && ($not instanceof Failure)) {
+        if ($match instanceof Success && $not instanceof Failure) {
             return $this->success($input, $offset, $match->length, $match);
         }
-
         if ($match instanceof Success) {
             $context->recordFailure($offset, 'Except');
         }
-
         return $this->failure($input, $offset, min($match->length, $not->length));
     }
-
-    public function __toString()
+    public function __toString(): string
     {
         return '( ' . $this->parserMatch . ' - ' . $this->parserNot . ' )';
     }

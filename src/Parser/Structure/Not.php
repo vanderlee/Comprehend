@@ -1,12 +1,13 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
-
 /**
  * Description of NotParser.
  *
@@ -14,30 +15,22 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Not extends Parser
 {
-    use ArgumentsTrait;
-
     private $parser;
-
-    public function __construct($parser)
+    public function __construct(Parser $parser)
     {
-        $this->parser = self::getArgument($parser);
+        $this->parser = $parser;
     }
-
-    protected function parse(&$input, $offset, Context $context)
+    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $diagnostics = $context->diagnosticState();
         try {
-            $match = $this->parser->parseInContext($input, $offset, $context);
+            $match = $this->parser->recognizeInSession($input, $offset, $context);
         } finally {
             $context->restoreDiagnostics($diagnostics);
         }
-
-        return ($match instanceof Success)
-            ? $this->failure($input, $offset, $match->length)
-            : $this->success($input, $offset);
+        return $match instanceof Success ? $this->failure($input, $offset, $match->length) : $this->success($input, $offset);
     }
-
-    public function __toString()
+    public function __toString(): string
     {
         return '!' . $this->parser;
     }

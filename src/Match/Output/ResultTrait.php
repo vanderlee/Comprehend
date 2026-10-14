@@ -1,5 +1,6 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Match\Output;
 
 trait ResultTrait
@@ -9,15 +10,15 @@ trait ResultTrait
      *
      * @var array|null
      */
-    private $resultCache = null;
-
+    private ?array $resultCache = null;
+    private ?\Throwable $resultError = null;
+    private bool $evaluatingResults = false;
     /**
      * List of partial-resolvable result callbacks.
      *
      * @var callable[]
      */
     private $resultCallbacks = [];
-
     /**
      * Add a callback to this match, to be called after parsing is finished and
      * only if this match was part of the matched rules.
@@ -29,10 +30,8 @@ trait ResultTrait
     public function addResultCallback(callable $callback)
     {
         $this->resultCallbacks[] = $callback;
-
         return $this;
     }
-
     /**
      * Handle all registered result callbacks for this match and any matches
      * at deeper levels of this match.
@@ -45,39 +44,42 @@ trait ResultTrait
         foreach ($this->successes as $success) {
             $success->processResultCallbacks($results);
         }
-
         foreach ($this->resultCallbacks as $callback) {
             $callback($results);
         }
     }
-
     /**
      * Pre-calculate results.
      *
      * @return array
      */
-    public function getResults()
+    public function getResults(): array
     {
-        if ($this->resultCache === null) {
-            $this->resultCache = [];
-            $this->processResultCallbacks($this->resultCache);
+        if ($this->resultError !== null) {
+            throw $this->resultError;
         }
-
-        return $this->resultCache;
+        if ($this->resultCache !== null) {
+            return $this->resultCache;
+        }
+        if ($this->evaluatingResults) {
+            throw new \LogicException('Recursive named result evaluation');
+        }
+        $this->evaluatingResults = true;
+        try {
+            $results = [];
+            $this->processResultCallbacks($results);
+            return $this->resultCache = $results;
+        } catch (\Throwable $error) {
+            $this->resultError = $error;
+            throw $error;
+        } finally {
+            $this->evaluatingResults = false;
+        }
     }
-
-    //@todo deprecate? Saves no time and is part of collection
-    public function getResult(string $name = null, $default = null)
+    public function getResult(?string $name = null, mixed $default = null): mixed
     {
         $results = $this->getResults();
-
-        return $results[$name]
-            ?? $default;
-    }
-
-    //@todo deprecate? Saves no time and is part of collection
-    public function hasResult(string $name = null): bool
-    {
-        return isset($this->getResults()[$name]);
+        $key = $name ?? '';
+        return array_key_exists($key, $results) ? $results[$key] : $default;
     }
 }

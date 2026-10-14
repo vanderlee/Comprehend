@@ -1,191 +1,79 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Builder;
 
-use Exception;
-use InvalidArgumentException;
-use Vanderlee\Comprehend\Core\Context;
-use Vanderlee\Comprehend\Match\Failure;
+use LogicException;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
-
-/**
- * Description of Factory.
- *
- * @author Martijn
- */
-class Implementation extends Parser
+use Vanderlee\Comprehend\Source\Source;
+/** A parameterized definition instance using the canonical lifecycle. */
+final class Implementation extends Parser
 {
-    /**
-     * @var Parser|callable|null
-     */
-    private $parser = null;
-
-    /**
-     * @var Definition
-     */
-    private $definition;
-    private $arguments;
-
-    /**
-     * @param Definition $definition
-     * @param array $arguments
-     */
-    public function __construct(Definition $definition, array $arguments = [])
+    private ?Parser $parser = null;
+    public function __construct(private readonly Definition $definition, private readonly array $arguments = [])
     {
-        $this->definition = $definition;
-        $this->arguments = $arguments;
     }
-
-    /**
-     * @param $name
-     *
-     * @return callable|null|Parser
-     */
-    public function __get($name)
-    {
-        if ($name === 'parser') {
-            try {
-                $this->build();
-            } catch (Exception $exception) {
-                $this->parser = null;
-            }
-
-            return $this->parser;
-        }
-
-        throw new InvalidArgumentException('Property `' . $name . '` does not exist');
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function build()
+    private function parser(): Parser
     {
         if ($this->parser === null) {
-            $this->parser = $this->definition->generator;
-            if (!$this->parser instanceof Parser) {
-                if (!is_callable($this->parser)) {
-                    throw new Exception('Parser not defined');
-                }
-
-                $parser = ($this->parser);
-                $this->parser = $parser(...$this->arguments);
+            $generator = $this->definition->generator;
+            $parser = $generator instanceof Parser ? $generator : $generator(...$this->arguments);
+            if (!$parser instanceof Parser) {
+                throw new LogicException('Definition factory must return Parser');
             }
+            $this->parser = $parser;
         }
+        return $this->parser;
     }
-
-    /**
-     * Get and validate a set of results for the local scope of this parser.
-     *
-     * @param AbstractMatch $match
-     * @param string $text
-     *
-     * @return array|false
-     */
-    private function validateResults(AbstractMatch $match, $text)
+    protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
-        $results = [];
-        if ($match instanceof Success) {
-            $results = $match->results;
-            foreach ($this->definition->validators as $validator) {
-                if (!($validator($text, $results))) {
-                    return false;
-                }
-            }
+        $match = $this->parser()->recognizeInSession($source, $offset, $session);
+        if (!$match instanceof Success) {
+            return $this->failure($source, $offset, $match->length);
         }
-
-        return $results;
+        $processors = $this->definition->processors;
+        $success = $this->success($source, $offset, $match->length, $processors === [] ? $match : []);
+        $success->setConcreteMatches([$match]);
+        $success->addSemanticValidators($this->definition->validators);
+        if ($processors === []) {
+            $success->inheritValueFrom($match);
+        } else {
+            // Processed collections replace local collections while retaining
+            // the concrete tree and selected effect/validation graph.
+            $success->addPrecedingMatch($match);
+            $evaluated = false;
+            $values = [];
+            $error = null;
+            $success->addResultCallback(
+                static function (array &$output) use ($processors, $match, &$evaluated, &$values, &$error) {
+                    if ($error !== null) {
+                        throw $error;
+                    }
+                    if (!$evaluated) {
+                        $evaluated = true;
+                        try {
+                            $local = $match->getResults();
+                            foreach ($processors as $name => $processor) {
+                                $values[$name] = $processor($local);
+                            }
+                        } catch (\Throwable $failure) {
+                            $error = $failure;
+                            throw $failure;
+                        }
+                    }
+                    foreach ($values as $name => $value) {
+                        $output[$name] = $value;
+                    }
+                },
+            );
+        }
+        return $success;
     }
-
-    /**
-     * Apply a callback to handle all processors.
-     *
-     * @param Success $match
-     * @param array $localResults
-     *
-     * @return Success
-     */
-    private function addProcessors(Success $match, $localResults)
+    public function __toString(): string
     {
-        if (!empty($this->definition->processors)) {
-            $processors = $this->definition->processors;
-            $match->addResultCallback(function (&$results) use ($processors, $localResults) {
-                foreach ($processors as $key => $processor) {
-                    $results[$key] = $processor($localResults, $results);
-                }
-            });
-        }
-
-        return $match;
-    }
-
-    /**
-     * @param string $input
-     * @param int $offset
-     * @param Context $context
-     *
-     * @return Failure|Success
-     * @throws Exception
-     *
-     */
-    protected function parse(&$input, $offset, Context $context)
-    {
-        $this->build();
-
-        $match = $this->parser->parseInContext($input, $offset, $context);
-
-        $text = $context->source() !== null
-            ? $context->source()->sliceBytes($offset, $offset + $match->length)
-            : substr($input, $offset, $match->length);
-        $legacy = $context->source() === null || $context->usesLegacySemantics();
-        $results = $legacy ? $this->validateResults($match, $text) : [];
-        if ($results === false) {
-            return $this->failure($input, $offset, $match->length);
-        }
-
-        if ($match instanceof Success) {
-            $successes = empty($this->definition->processors)
-                ? $match
-                : [];
-
-            $success = $this->success($input, $offset, $match->length, $successes);
-            $success->setConcreteMatches([$match]);
-            if (!$legacy) {
-                $validators = array_map(fn ($validator) => fn () => $validator($text, $match->results), $this->definition->validators);
-                $success->addSemanticValidators($validators);
-            }
-            if (!empty($this->definition->processors)) {
-                // Processed results hide child outputs, but not selected effects.
-                $success->addPrecedingMatch($match);
-            }
-
-            if ($legacy) { return $this->addProcessors($success, $results); }
-            $processors = $this->definition->processors;
-            if ($processors !== []) {
-                $success->addResultCallback(function (&$output) use ($processors, $match) {
-                    $localResults = $match->results;
-                    foreach ($processors as $key => $processor) { $output[$key] = $processor($localResults, $output); }
-                });
-            }
-            return $success;
-        }
-
-        return $this->failure($input, $offset, $match->length);
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
-    {
-        try {
-            $this->build();
-        } catch (Exception $e) {
-            // ignore
-        }
-
-        return (string)$this->parser;
+        return 'definition';
     }
 }

@@ -1,178 +1,118 @@
 <?php
 
+declare(strict_types=1);
+
+use Vanderlee\Comprehend\Builder\Definition;
+use Vanderlee\Comprehend\Builder\Ruleset;
+use Vanderlee\Comprehend\Library\Rfc2234;
+use Vanderlee\Comprehend\Library\Rfc3986;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
-use Vanderlee\Comprehend\Parser\Terminal\End;
-use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
-use Vanderlee\Comprehend\Parser\Terminal\Char;
-use Vanderlee\Comprehend\Parser\Terminal\Nothing;
-use Vanderlee\Comprehend\Parser\Terminal\Regex;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Utf8Source;
-use Vanderlee\Comprehend\Compatibility\CoordinatePolicy;
-use Vanderlee\Comprehend\Compatibility\LegacyParserAdapter;
+use function Vanderlee\Comprehend\Library\s;
+use function Vanderlee\Comprehend\Library\text;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+function verify(bool $condition, string $label): void
+{
+    if (!$condition) throw new RuntimeException('Example failed: ' . $label);
+}
+
 $nested = new Stub();
-$nested->parser = Choice::first('x', new Sequence('(', $nested, ')'));
-
-$examples = [
-    ['prefix', new Text('a'), 'ab', true, 1, 0],
-    ['explicit offset', new Text('a'), 'za', true, 1, 1],
-    ['trailing input', new Sequence('a', new End()), 'ab', false, 1, 0],
-    ['complete input', new Sequence('a', new End()), 'a', true, 1, 0],
-    ['first choice', Choice::first('a', 'ab'), 'abc', true, 1, 0],
-    ['longest choice', Choice::longest('a', 'ab'), 'abc', true, 2, 0],
-    ['shortest choice', Choice::shortest('ab', 'a'), 'abc', true, 1, 0],
-    ['choice stays selected', new Sequence(Choice::first('a', 'ab'), 'c', new End()), 'abc', false, 1, 0],
-    ['longest fits suffix', new Sequence(Choice::longest('a', 'ab'), 'c', new End()), 'abc', true, 3, 0],
-    ['longest stays selected', new Sequence(Choice::longest('a', 'ab'), 'b', new End()), 'ab', false, 2, 0],
-    ['first fits suffix', new Sequence(Choice::first('a', 'ab'), 'b', new End()), 'ab', true, 2, 0],
-    ['factored prefix', new Sequence('a', Choice::first('bc', 'c'), new End()), 'abc', true, 3, 0],
-    ['greedy repeat', new Sequence(new Repeat('a'), 'a', new End()), 'aaa', false, 3, 0],
-    ['required item first', new Sequence('a', new Repeat('a'), new End()), 'aaa', true, 3, 0],
-    ['consuming recursion', new Sequence($nested, new End()), '((x))', true, 5, 0],
+$nested->setParser(Choice::first(new Text('x'), new Sequence(new Text('('), $nested, new Text(')'))));
+$cases = [
+    ['first choice', Choice::first(new Text('a'), new Text('ab')), 'abc', true, 1],
+    ['longest choice', Choice::longest(new Text('a'), new Text('ab')), 'abc', true, 2],
+    ['shortest choice', Choice::shortest(new Text('ab'), new Text('a')), 'abc', true, 1],
+    ['choice stays selected', new Sequence(Choice::first(new Text('a'), new Text('ab')), new Text('c')), 'abc', false, 0],
+    ['factored prefix', new Sequence(new Text('a'), Choice::first(new Text('bc'), new Text('c'))), 'abc', true, 3],
+    ['greedy repeat stays greedy', new Sequence(Repeat::star(new Text('a')), new Text('a')), 'aaa', false, 0],
+    ['consuming recursion', $nested, '((x))', true, 5],
+    ['Unicode wrong suffix', new Text('éa'), 'éb', false, 0],
+    ['whole code point', new Any(), '😀a', true, 4],
 ];
-
-foreach ($examples as [$label, $parser, $input, $accepted, $length, $offset]) {
-    $result = $parser->match($input, $offset);
-    if ($result->match !== $accepted || $result->length !== $length) {
-        throw new RuntimeException('Documented behavior changed: ' . $label);
-    }
-    echo $label . ': ' . ($result->match ? 'success' : 'failure') . ', length ' . $result->length . PHP_EOL;
+foreach ($cases as [$label, $parser, $input, $accepted, $bytes]) {
+    $result = $parser->matchPrefix(new Utf8Source($input));
+    verify($result->success === $accepted && $result->consumedByteLength === $bytes, $label);
+    echo $label . ': ' . ($accepted ? 'accepted' : 'rejected') . PHP_EOL;
 }
+$literal = new Text('a');
+verify($literal->matchPrefix(new Utf8Source('ab'))->success, 'prefix policy');
+verify(!$literal->parseAll(new Utf8Source('ab'))->success, 'complete-input policy');
+verify($literal->parseAll(new Utf8Source('éa'), 2)->success, 'explicit byte offset');
+$failure = (new Text('éa'))->parseAll(new Utf8Source('éb'));
+verify($failure->start === $failure->end && $failure->farthestFailure === 2, 'failure span');
+verify($failure->diagnostic->location() === ['line' => 1, 'column' => 2], 'Unicode diagnostic');
 
-$sourceExamples = [
-    ['UTF-8 wrong suffix', new Sequence(new Text("\u{00E9}a"), new End()), new Utf8Source("\u{00E9}b"), false, 2, 0],
-    ['UTF-8 complete input', new Sequence(new Text("\u{00E9}a"), new End()), new Utf8Source("\u{00E9}a"), true, 3, 0],
-    ['UTF-8 complete code point', new Char("\u{00E9}"), new Utf8Source("\u{00E9}"), true, 2, 0],
-    ['UTF-8 supplementary code point', new Any(), new Utf8Source("\u{1F600}"), true, 4, 0],
-    ['UTF-8 byte offset', new Char('a'), new Utf8Source("\u{00E9}a"), true, 1, 2],
-    ['arbitrary byte', new Char(0xFF), new ByteSource("\xFF"), true, 1, 0],
-];
-foreach ($sourceExamples as [$label, $parser, $source, $accepted, $length, $offset]) {
-    $result = $parser->matchSource($source, $offset);
-    if ($result->match !== $accepted || $result->length !== $length
-        || ($accepted && $result->token->text !== $source->sliceBytes($offset, $offset + $length))) {
-        throw new RuntimeException('Documented source behavior changed: ' . $label);
-    }
-    echo $label . ': ' . ($result->match ? 'success' : 'failure') . ', bytes ' . $result->length . PHP_EOL;
-}
-
-$canonical = (new Text("\u{00E9}a"))->parseSource(new Utf8Source("z\u{00E9}b"), 1);
-if ($canonical->success || $canonical->start !== 1 || $canonical->end !== 1
-    || $canonical->consumedByteLength !== 0 || $canonical->farthestFailure !== 3) {
-    throw new RuntimeException('Canonical failure contract changed');
-}
-$adapted = (new LegacyParserAdapter((new Text('a'))->token('letter'), CoordinatePolicy::CODE_POINTS))
-    ->match("\u{00E9}a", 1);
-if (!$adapted->match || $adapted->length !== 1 || $adapted->token->offset !== 1
-    || $adapted->token->text !== 'a' || $adapted->span->start !== 2) {
-    throw new RuntimeException('Explicit coordinate adapter contract changed');
-}
-echo 'Canonical result and code-point adapter examples passed.' . PHP_EOL;
-
-$consumptionExamples = [
-    [new Text('a'), 'ab', true, false],
-    [new Text('a'), 'a', true, true],
-    [new Text('a'), 'a ', true, false],
-    [new Text('a'), '', false, false],
-    [new Nothing(), '', true, true],
-    [new Nothing(), 'a', true, false],
-    [new Sequence('a', Repeat::star(' ')), 'a  ', true, true],
-];
-foreach ($consumptionExamples as [$parser, $input, $prefixAccepted, $allAccepted]) {
-    $source = new Utf8Source($input);
-    $prefix = $parser->matchPrefix($source);
-    $full = $parser->parseAll($source);
-    if ($prefix->success !== $prefixAccepted || $full->success !== $allAccepted
-        || $full->consumedByteLength !== ($allAccepted ? strlen($input) : 0)) {
-        throw new RuntimeException('Prefix/full-input contract changed');
-    }
-}
-echo 'Prefix/full-input, empty-input and trailing-trivia examples passed.' . PHP_EOL;
-
-// Report legacy match() defects without preserving them as expectations.
-$encoding = mb_internal_encoding();
-try {
-    mb_internal_encoding('UTF-8');
-    $result = (new Sequence(new Text('éa'), new End()))->match('éb');
-    echo 'Legacy match() Unicode limitation probe: '
-        . ($result->match ? 'accepted' : 'rejected') . PHP_EOL;
-    $result = (new Text('é'))->token('letter')->match('é');
-    echo 'Legacy match() Unicode token bytes: ' . bin2hex($result->token->text) . PHP_EOL;
-} finally {
-    mb_internal_encoding($encoding);
-}
-
-// Explicit boundary trivia, automatic intervening trivia and literal spacing.
-$trivia = (new Regex('~(?:\s|/\*[^*]*\*/)*~'))->lexeme()->trivia();
-$body = (new Sequence('a', 'b'))->spacing($trivia);
+// Explicit trivia boundaries and independent semantic/source projections.
+$trivia = Repeat::star(new Text(' '))->trivia();
+$letter = (new Text('é'))->name('letter')->setResult('letter', 'changed');
+$body = (new Sequence(new Text('('), $letter, new Text(')')))->spacing($trivia);
 $document = (new Sequence($trivia, $body, $trivia))->spacing(null);
-$documentText = ' /*lead*/ a /*between*/ b /*tail*/ ';
-$documentResult = $document->parseAll(new Utf8Source($documentText));
-if (!$documentResult->success || $documentResult->node->rawText() !== $documentText
-    || !$documentResult->node->children[0]->isTrivia
-    || !$documentResult->node->children[1]->children[1]->isTrivia
-    || !$documentResult->node->children[2]->isTrivia) {
-    throw new RuntimeException('Explicit trivia round-trip example failed');
-}
-$literal = (new Sequence('a', 'b'))->spacing(' ');
-$literalGrammar = (new Sequence($literal->lexeme(), 'c'))->spacing(' ');
-if (!$literalGrammar->parseAll(new Utf8Source('ab c'))->success
-    || $literalGrammar->parseAll(new Utf8Source('a b c'))->success
-    || !$literal->parseAll(new Utf8Source('a b'))->success) {
-    throw new RuntimeException('Lexeme scope example failed');
-}
-echo "Trivia round-trip and lexeme examples passed.\n";
+$result = $document->parseAll(new Utf8Source(' ( é ) '));
+verify($result->success && $result->rawText() === ' ( é ) ', 'trivia source round trip');
+verify($result->ast()->children[0]->rawText() === 'é', 'named AST source');
+verify($result->result('letter') === 'changed', 'separate semantic collection');
+$json = json_decode($result->node->toJson(), true, flags: JSON_THROW_ON_ERROR);
+verify($json['text'] === $result->rawText(), 'CST JSON');
+$xml = $result->node->toXml();
+verify(base64_decode($xml->getElementsByTagName('text')[0]->textContent) === $result->rawText(), 'CST XML');
+$raw = "\xFF\0";
+$binary = (new Text($raw))->parseAll(new ByteSource($raw))->node->toArray();
+verify($binary['textEncoding'] === 'base64' && base64_decode($binary['text']) === $raw, 'binary serialization');
 
-$astPair = (new Sequence((new Text('é'))->token('letter'), ',', (new Text('a'))->token('letter')))->token('pair');
-$astResult = (new Sequence('(', $astPair, ')'))->parseAll(new Utf8Source('(é,a)'));
-$ast = $astResult->ast();
-if (!$astResult->success || $ast->name !== null || $ast->rawText() !== '(é,a)'
-    || count($ast->children) !== 1 || $ast->children[0]->name !== 'pair'
-    || count($ast->children[0]->children) !== 2
-    || $ast->children[0]->children[0]->span->start !== 1
-    || $ast->children[0]->children[0]->span->end !== 3
-    || $astResult->ast() !== $ast) {
-    throw new RuntimeException('Named AST shape and span example failed');
-}
-echo "Named AST shape, source and span examples passed.\n";
+// Named definitions and reusable RFC imports use the same source runtime.
+$rules = new Ruleset([], 'example');
+$rules->define('twice', static fn (Parser $item): Parser => Repeat::exact($item, 2));
+$rules->define(Ruleset::ROOT, $rules->rule('twice', new Text('x')));
+verify($rules->parseAll(new ByteSource('xx'))->success, 'parameterized named grammar');
+verify(s(text('a'), text('b'))->parseAll(new ByteSource('ab'))->success, 'autoloaded typed helpers');
+$uri = new Rfc3986();
+verify($uri->rule('IPv4address')->parseAll(new ByteSource('192.0.2.1'))->success, 'RFC IPv4');
+$abnf = new Rfc2234();
+verify($abnf->rule('OCTET')->parseAll(new ByteSource("\xFF"))->success, 'RFC octet');
 
-$valueCalls = 0;
-$numberParser = (new Text('42'))->token('number')->setResult('digits')->mapValue(
-    function (\Vanderlee\Comprehend\Result\ParseResult $result) use (&$valueCalls): int {
-        ++$valueCalls;
-        return (int) $result->result('digits');
+// Typed custom parser without any compatibility opt-in or fallback hook.
+final class OneUnit extends Parser
+{
+    protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
+    {
+        $unit = $source->readUnit($offset);
+        return $unit === null ? $this->failure($source, $offset)
+            : $this->success($source, $offset, $unit->byteLength());
     }
-);
-$numberResult = $numberParser->parseAll(new Utf8Source('42'));
-if ($valueCalls !== 0 || $numberResult->value() !== 42 || $numberResult->value() !== 42
-    || $valueCalls !== 1 || $numberResult->results() !== ['digits' => '42']
-    || $numberResult->rawText() !== '42' || $numberResult->ast()->span->end !== 2
-    || json_decode(json_encode($numberResult->token()), true)['text'] !== '42'
-    || $numberResult->token()->toXml()->documentElement->textContent !== '42') {
-    throw new RuntimeException('Typed value and CST token serialization example failed');
+    public function __toString(): string { return 'one unit'; }
 }
-echo "Typed value cache and CST token serialization examples passed.\n";
+verify((new OneUnit())->parseAll(new Utf8Source('😀'))->consumedByteLength === 4, 'custom parser');
 
-$lifecycleAssigned = null;
-$lifecycleEffects = 0;
-$lifecycleParser = (new Text('42'))
-    ->guard(fn (\Vanderlee\Comprehend\Tree\ConcreteNode $node): bool => $node->rawText() !== '00')
-    ->mapValue(fn (\Vanderlee\Comprehend\Result\ParseResult $result): int => (int) $result->rawText())
-    ->validateSemantic(fn (\Vanderlee\Comprehend\Result\ParseResult $result) => $result->value() < 100 ? true : 'Number too large')
-    ->assignTo($lifecycleAssigned)
-    ->callback(function () use (&$lifecycleEffects) { ++$lifecycleEffects; });
-$lifecycleResult = $lifecycleParser->parseAll(new Utf8Source('42'));
-if (!$lifecycleResult->success || $lifecycleAssigned !== null || $lifecycleEffects !== 0
-    || !$lifecycleResult->validate()->valid || !$lifecycleResult->commit()
-    || !$lifecycleResult->commit() || !$lifecycleResult->isCommitted()
-    || $lifecycleAssigned !== '42' || $lifecycleEffects !== 1) {
-    throw new RuntimeException('Explicit validation and commit example failed');
-}
-echo "Recognition, validation and idempotent commit examples passed.\n";
+// Recognition does not produce effects or select alternatives by semantic validation.
+$events = [];
+$maps = 0;
+$number = (new Text('42'))->mapValue(static function (ParseResult $result) use (&$maps): int {
+    ++$maps;
+    return (int) $result->rawText();
+})->validateSemantic(static fn (ParseResult $result): bool => $result->value() > 0)
+    ->onCommit(static function (ParseResult $result) use (&$events): void { $events[] = $result->value(); });
+$result = $number->parseAll(new Utf8Source('42'));
+verify($events === [] && $maps === 0, 'pure recognition');
+verify($result->value() === 42 && $result->value() === 42 && $maps === 1, 'cached typed value');
+verify($result->commit() && $result->commit() && $events === [42], 'explicit idempotent commit');
+verify(!$number->parseAll(new Utf8Source('42x'))->commit() && $events === [42], 'discarded effects');
+$definition = new Definition((new Text('a'))->setResult('item'));
+$definition->addProcessor('length', static fn (array $local): int => strlen($local['item']));
+$definition->addValidator(static fn (ParseResult $result): bool => $result->result('length') === 1);
+$result = $definition->build()->parseAll(new ByteSource('a'));
+verify($result->result('length') === 1 && $result->commit(), 'definition lifecycle');
+
+echo 'All canonical execution examples passed.' . PHP_EOL;

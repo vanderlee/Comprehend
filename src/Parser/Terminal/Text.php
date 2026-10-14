@@ -1,13 +1,15 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
+use Vanderlee\Comprehend\Source\SourceMode;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Utf8Source;
-
 use InvalidArgumentException;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Parser\Parser;
-
 /**
  * Description of TextParser.
  *
@@ -16,59 +18,35 @@ use Vanderlee\Comprehend\Parser\Parser;
 class Text extends Parser
 {
     use CaseSensitiveTrait;
-
     private $text;
     private $length;
-
-    public function __construct($text)
+    public function __construct(string $text)
     {
         $this->text = $text;
-
-        $this->length = mb_strlen($text);
+        $this->length = strlen($text);
         if ($this->length <= 0) {
             throw new InvalidArgumentException('Empty argument');
         }
     }
-
-    protected function parse(&$input, $offset, Context $context)
+    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $this->pushCaseSensitivityToContext($context);
-
         try {
-            if ($context->source() !== null) {
-                $literal = $context->source() instanceof Utf8Source
-                    ? mb_str_split((new Utf8Source($this->text))
-                        ->sliceBytes(0, strlen($this->text)), 1, 'UTF-8')
-                    : str_split($this->text);
-
-                $position = $offset;
-                foreach ($literal as $character) {
-                    $unit = $context->readSourceUnit($position);
-                    if ($unit === null || $context->handleCase($unit->rawText()) !== $context->handleCase($character)) {
-                        return $this->failure($input, $offset, $position - $offset);
-                    }
-
-                    $position = $unit->end;
+            $literal = $context->source()->mode() === SourceMode::UTF8 ? mb_str_split((new Utf8Source($this->text))->sliceBytes(0, strlen($this->text)), 1, 'UTF-8') : str_split($this->text);
+            $position = $offset;
+            foreach ($literal as $character) {
+                $unit = $context->readSourceUnit($position);
+                if ($unit === null || $context->handleCase($unit->rawText()) !== $context->handleCase($character)) {
+                    return $this->failure($input, $offset, $position - $offset);
                 }
-
-                return $this->success($input, $offset, $position - $offset);
+                $position = $unit->end;
             }
-
-            $text = $context->handleCase($this->text);
-
-            for ($c = 0; $c < $this->length; $c++) {
-                if ($offset + $c >= mb_strlen($input) || $text[$c] != $context->handleCase($input[$offset + $c])) {
-                    return $this->failure($input, $offset, $c);
-                }
-            }
+            return $this->success($input, $offset, $position - $offset);
         } finally {
             $this->popCaseSensitivityFromContext($context);
         }
-
-        return $this->success($input, $offset, $this->length);
     }
-
-    public function __toString()
+    public function __toString(): string
     {
         return '"' . $this->text . '"';
     }

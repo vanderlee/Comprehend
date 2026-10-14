@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Tests\Src\Parser;
 
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Builder\Ruleset;
-use Vanderlee\Comprehend\Compatibility\LegacyParserAdapter;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Except;
 use Vanderlee\Comprehend\Parser\Structure\Not;
@@ -15,7 +13,6 @@ use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
-
 class DiagnosticTest extends ParserTestCase
 {
     public function testUtf8FailureAndLazyLocation()
@@ -30,88 +27,69 @@ class DiagnosticTest extends ParserTestCase
         $this->assertSame($diagnostic->location(), $diagnostic->location());
         $this->assertStringContainsString('byte 2', $diagnostic->message());
     }
-
     public function testTiedExpectationsAndPaths()
     {
-        $diagnostic = (new Sequence('a', new Choice('b', 'c', 'b')))->parseAll(new Utf8Source('ax'))->diagnostic;
+        $diagnostic = (new Sequence(new Text('a'), new Choice(new Text('b'), new Text('c'), new Text('b'))))->parseAll(new Utf8Source('ax'))->diagnostic;
         $this->assertSame(1, $diagnostic->byteOffset);
-        $this->assertSame(["'b'", "'c'"], $diagnostic->expected);
-        $this->assertSame([['Sequence', 'Choice', 'Char']], $diagnostic->rulePaths);
+        $this->assertSame(['"b"', '"c"'], $diagnostic->expected);
+        $this->assertSame([['Sequence', 'Choice', 'Text']], $diagnostic->rulePaths);
     }
-
     /** @dataProvider probeData */
     public function testIrrelevantProbesAreSuppressed($probe)
     {
-        $result = (new Sequence($probe, 'z'))->parseAll(new Utf8Source('abx'));
+        $result = (new Sequence($probe, new Text('z')))->parseAll(new Utf8Source('abx'));
         $this->assertSame(0, $result->farthestFailure);
-        $this->assertSame(["'z'"], $result->diagnostic->expected);
+        $this->assertSame(['"z"'], $result->diagnostic->expected);
     }
-
     public function probeData(): array
     {
-        return [[Repeat::optional('abc')], [Repeat::star('abc')], [new Not('abc')]];
+        return [[Repeat::optional(new Text('abc'))], [Repeat::star(new Text('abc'))], [new Not(new Text('abc'))]];
     }
-
     public function testRequiredRepetitionRetainsFailure()
     {
-        $result = Repeat::plus('abc')->parseAll(new Utf8Source('abx'));
+        $result = Repeat::plus(new Text('abc'))->parseAll(new Utf8Source('abx'));
         $this->assertSame(2, $result->farthestFailure);
         $this->assertSame(['"abc"'], $result->diagnostic->expected);
     }
-
     public function testTerminationAfterMinimumAndSuccessfulExclusionDiscardProbes()
     {
-        $result = (new Sequence(Repeat::plus('ab'), 'z'))->parseAll(new Utf8Source('abax'));
+        $result = (new Sequence(Repeat::plus(new Text('ab')), new Text('z')))->parseAll(new Utf8Source('abax'));
         $this->assertSame(2, $result->farthestFailure);
-        $this->assertSame(["'z'"], $result->diagnostic->expected);
-        $result = (new Sequence(new Except('a', 'abcd'), 'z'))->parseAll(new Utf8Source('abcx'));
+        $this->assertSame(['"z"'], $result->diagnostic->expected);
+        $result = (new Sequence(new Except(new Text('a'), new Text('abcd')), new Text('z')))->parseAll(new Utf8Source('abcx'));
         $this->assertSame(1, $result->farthestFailure);
-        $this->assertSame(["'z'"], $result->diagnostic->expected);
+        $this->assertSame(['"z"'], $result->diagnostic->expected);
     }
-
     public function testEofMergesTiesButRetainsFartherChoiceFailure()
     {
-        $result = Choice::first('ab', 'a')->parseAll(new Utf8Source('ax'));
+        $result = Choice::first(new Text('ab'), new Text('a'))->parseAll(new Utf8Source('ax'));
         $this->assertSame(['"ab"', 'end'], $result->diagnostic->expected);
-        $result = Choice::first('abcd', 'a')->parseAll(new Utf8Source('abcx'));
+        $result = Choice::first(new Text('abcd'), new Text('a'))->parseAll(new Utf8Source('abcx'));
         $this->assertSame(3, $result->diagnostic->byteOffset);
         $this->assertSame(['"abcd"'], $result->diagnostic->expected);
     }
-
     public function testNegativeLookaheadFailureReportsItsStart()
     {
-        $result = (new Not('abc'))->parseAll(new Utf8Source('abc'));
+        $result = (new Not(new Text('abc')))->parseAll(new Utf8Source('abc'));
         $this->assertSame(0, $result->farthestFailure);
         $this->assertSame(['Not'], $result->diagnostic->expected);
-        $result = (new Except('abc', 'abc'))->parseAll(new Utf8Source('abc'));
+        $result = (new Except(new Text('abc'), new Text('abc')))->parseAll(new Utf8Source('abc'));
         $this->assertSame(0, $result->farthestFailure);
         $this->assertSame(['Except'], $result->diagnostic->expected);
     }
-
-    public function testEofExpectationAndAdapterMetadata()
-    {
-        $result = Repeat::star('a')->parseAll(new Utf8Source('aax'));
-        $this->assertSame(2, $result->farthestFailure);
-        $this->assertSame(['end'], $result->diagnostic->expected);
-        $match = (new LegacyParserAdapter(new Text('a')))->parseAll('ab');
-        $this->assertSame(['end'], $match->diagnostic->expected);
-    }
-
     public function testNamedRulePath()
     {
         $rules = new Ruleset();
         $rules->define('word', new Text('abc'));
-        $diagnostic = $rules->word()->parseAll(new Utf8Source('abx'))->diagnostic;
+        $diagnostic = $rules->rule('word')->parseAll(new Utf8Source('abx'))->diagnostic;
         $this->assertContains('word', $diagnostic->rulePaths[0]);
     }
-
     public function testSpacingRetainsExpectedSymbol()
     {
-        $diagnostic = (new Sequence('a', 'b'))->spacing(new Text(' -'))->parseAll(new Utf8Source('a x'))->diagnostic;
+        $diagnostic = (new Sequence(new Text('a'), new Text('b')))->spacing(new Text(' -'))->parseAll(new Utf8Source('a x'))->diagnostic;
         $this->assertSame(2, $diagnostic->byteOffset);
         $this->assertSame(['" -"'], $diagnostic->expected);
     }
-
     public function testNewlinesByteColumnsAndEmptyEofExcerpt()
     {
         $source = new Utf8Source("é\r\nx\ry\nz\n");

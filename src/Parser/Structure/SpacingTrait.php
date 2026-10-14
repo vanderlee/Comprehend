@@ -1,59 +1,31 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Parser\Parser;
-
-/**
- * Classes implementing this can scan.
- *
- * @author Martijn
- */
+/** Explicit scoped policy for intervening trivia; null disables it. */
 trait SpacingTrait
 {
-    use ArgumentsTrait;
-
-    /**
-     * Parser used for scanning the text.
-     *
-     * @var Parser
-     */
-    private $spacer = false;
-
-    private function pushSpacer(Context $context)
+    private ?Parser $spacer = null;
+    private bool $hasSpacingPolicy = false;
+    private function pushSpacer(ParseSession $context): void
     {
-        if ($this->spacer !== false) {
+        if ($this->hasSpacingPolicy) {
             $context->pushSpacer($this->spacer);
         }
     }
-
-    private function popSpacer(Context $context)
+    private function popSpacer(ParseSession $context): void
     {
-        if ($this->spacer !== false) {
+        if ($this->hasSpacingPolicy) {
             $context->popSpacer();
         }
     }
-
-    /**
-     * Set a spacing parser for this parser or disable or enable (if a previous
-     * spacing parser is enabled) spacing parsing.
-     *
-     * @param Parser|bool|null $spacer
-     *
-     * @return $this
-     */
-    public function spacing($spacer = true)
+    public function spacing(?Parser $trivia): static
     {
-        if ($spacer === true) {
-            $this->spacer = true;
-        } elseif ($spacer === null || $spacer === false) {
-            $this->spacer = null;
-        } else {
-            $this->spacer = self::getArgument($spacer);
-        }
-
+        $this->spacer = $trivia;
+        $this->hasSpacingPolicy = true;
         return $this;
     }
 }

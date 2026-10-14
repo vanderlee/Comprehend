@@ -1,7 +1,6 @@
 <?php
 
-/** @noinspection PhpUndefinedFieldInspection */
-
+declare (strict_types=1);
 /**
  * RFC 5234 - Augmented BNF for Syntax Specifications: ABNF.
  *
@@ -10,7 +9,6 @@
  *
  * @see     https://tools.ietf.org/html/rfc5234
  */
-
 namespace Vanderlee\Comprehend\Library;
 
 /**

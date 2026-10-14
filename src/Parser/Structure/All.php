@@ -1,13 +1,14 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Structure;
 
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
 use InvalidArgumentException;
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
-
 /**
  * Matches if and only if all parsers individually match. Returned length is the shortest length of all matches.
  *
@@ -15,40 +16,34 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class All extends Parser
 {
-    use ArgumentsTrait;
-
     /**
      * @var Parser[]
      */
     private $parsers = [];
-
-    public function __construct(...$arguments)
+    public function __construct(Parser ...$arguments)
     {
         if (count($arguments) < 2) {
             throw new InvalidArgumentException('Less than 2 arguments provided');
         }
-        $this->parsers = self::getArguments($arguments);
+        $this->parsers = $arguments;
     }
-
-    protected function parse(&$input, $offset, Context $context)
+    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $length = PHP_INT_MAX;
         $matches = [];
         foreach ($this->parsers as $parser) {
-            $match = $parser->parseInContext($input, $offset, $context);
+            $match = $parser->recognizeInSession($input, $offset, $context);
             $length = min($length, $match->length);
-            if (!($match instanceof Success)) {
+            if (!$match instanceof Success) {
                 return $this->failure($input, $offset, $length);
             }
             $matches[] = $match;
         }
-
-        $success = $this->success($input, $offset, $length);
+        $success = $this->success($input, $offset, $length, $matches);
         $success->setConcreteMatches($matches);
         return $success;
     }
-
-    public function __toString()
+    public function __toString(): string
     {
         return '( ' . implode(' + ', $this->parsers) . ' )';
     }

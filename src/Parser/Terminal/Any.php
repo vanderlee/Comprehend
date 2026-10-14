@@ -1,10 +1,12 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Parser\Parser;
-
 /**
  * Matches any single symbol.
  *
@@ -12,22 +14,12 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Any extends Parser
 {
-    protected function parse(&$input, $offset, Context $context)
+    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
-        if ($context->source() !== null) {
-            $unit = $context->readSourceUnit($offset);
-            return $unit !== null
-                ? $this->success($input, $offset, $unit->byteLength())
-                : $this->failure($input, $offset);
-        }
-        if ($offset < mb_strlen($input)) {
-            return $this->success($input, $offset, 1);
-        }
-
-        return $this->failure($input, $offset);
+        $unit = $context->readSourceUnit($offset);
+        return $unit !== null ? $this->success($input, $offset, $unit->byteLength()) : $this->failure($input, $offset);
     }
-
-    public function __toString()
+    public function __toString(): string
     {
         return '.';
     }

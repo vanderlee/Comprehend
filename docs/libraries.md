@@ -1,20 +1,21 @@
-Libraries
-=========
-Comprehend comes with a number of predefined parser libraries implementing various standard specifications.
+# Bundled RFC grammars
 
-Where multiple revisions of the same standard are available, current version is **marked**.
+Rfc2234, Rfc4234, Rfc5234 and Rfc7405 provide ABNF-related reusable rules.
+Rfc3513, Rfc3986 and Rfc4408 provide IPv6, URI and SPF-related grammar assets.
+They are typed object grammars using explicit Ruleset references and the same
+source runtime as application parsers.
 
-## ABNF
--   RFC 2234 - Augmented BNF for Syntax Specifications: ABNF
--   RFC 4234 - Augmented BNF for Syntax Specifications: ABNF 
--   RFC 4234 - Augmented BNF for Syntax Specifications: ABNF 
--   **RFC 7405** - Case-Sensitive String Support in ABNF
+```php
+$rfc = new \Vanderlee\Comprehend\Library\Rfc3986();
+$result = $rfc->rule('IPv4address')->parseAll(
+    new \Vanderlee\Comprehend\Source\ByteSource('192.0.2.1')
+);
+```
 
-## IPv6
--   **RFC 3513** - Internet Protocol Version 6 (IPv6) Addressing Architecture
-
-## SPF
--   **RFC 4408** - Sender Policy Framework (SPF) for Authorizing Use of Domains in E-Mail, Version 1
-
-## URI
--   **RFC 3986** - Uniform Resource Identifier (URI): Generic Syntax
+Use explicit `rule('name')` imports; magic property/method imports are removed.
+Octet rules such as OCTET require ByteSource. ASCII rules generally work in both
+source modes; mode-incompatible octet bounds are explicit errors in UTF-8 mode.
+Tests preserve existing acceptance fixtures in both modes where meaningful.
+These assets are not a claim of exhaustive RFC conformance; conformance review
+is separate from runtime consolidation. Constructors accept explicit Parser,
+Definition or factory overrides as named maps.

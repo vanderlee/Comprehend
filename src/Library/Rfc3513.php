@@ -1,7 +1,6 @@
 <?php
 
-/** @noinspection PhpUndefinedFieldInspection */
-
+declare (strict_types=1);
 /**
  * RFC 3513 - Internet Protocol Version 6 (IPv6) Addressing Architecture.
  *
@@ -10,15 +9,12 @@
  *
  * @see     https://tools.ietf.org/html/rfc4408
  */
-
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Integer;
-
 require_once 'functions.php';
-
 /**
  * IPv6 address
  * Supports formats:
@@ -27,13 +23,10 @@ require_once 'functions.php';
  *  1234:0:0:0:0:0:12.34.56.78
  *  1234::12.34.56.78.
  *
- * @property-read Parser ipv6         IPv6 address with CIDR range
- * @property-read Parser ipv6_address IPv6 address without CIDR range
  */
 class Rfc3513 extends AbstractRuleset
 {
-    protected static $name = 'Rfc4408';
-
+    protected static $name = 'Rfc3513';
     public function __construct($overwrites = [])
     {
         /*
@@ -41,19 +34,16 @@ class Rfc3513 extends AbstractRuleset
          * This may not be 100% accurate, but RFC 3513's definition is sloppy at best.
          */
         $rfc3986 = new Rfc3986();
-
         /*
          * Normal rules
          */
         $rules = [
             // 2.3 Text Representation of Address Prefixes
-            'ipv6' => [$this->ipv6_address, '/', $this->prefix_length],
-            'ipv6_address' => $rfc3986->IPv6address,
+            'ipv6' => s($this->rule('ipv6_address'), text('/'), $this->rule('prefix_length')),
+            'ipv6_address' => $rfc3986->rule('IPv6address'),
             'prefix_length' => new Integer(0, 128),
-
-            self::ROOT => $this->ipv6,
+            self::ROOT => $this->rule('ipv6'),
         ];
-
         parent::__construct(array_merge($rules, $overwrites));
     }
 }

@@ -1,43 +1,34 @@
 <?php
 
-namespace Vanderlee\Comprehend\Core\Context;
+declare (strict_types=1);
+namespace Vanderlee\Comprehend\Runtime\Scope;
 
 use DomainException;
 use Vanderlee\Comprehend\Directive\Prefer;
-
 trait PreferContextTrait
 {
     private $preference = [];
-
     /**
      * @param $preference
      *
      * @throws DomainException
      */
-    private static function assertPreference($preference)
+    private static function assertPreference(string $preference): void
     {
-        if (!in_array($preference, [
-            Prefer::FIRST,
-            Prefer::LONGEST,
-            Prefer::SHORTEST,
-        ])) {
+        if (!in_array($preference, [Prefer::FIRST, Prefer::LONGEST, Prefer::SHORTEST], true)) {
             throw new DomainException('Invalid preference `' . $preference . '`');
         }
     }
-
-    public function pushPreference($preference)
+    public function pushPreference(string $preference): void
     {
         self::assertPreference($preference);
-
         $this->preference[] = $preference;
     }
-
-    public function popPreference()
+    public function popPreference(): void
     {
         array_pop($this->preference);
     }
-
-    public function getPreference()
+    public function getPreference(): string
     {
         return end($this->preference);
     }

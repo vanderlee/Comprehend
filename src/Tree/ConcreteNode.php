@@ -1,27 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Tree;
 
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Source\Span;
-
-/** Immutable recognition structure, independent of token and semantic projections. */
-final readonly class ConcreteNode
+/** Immutable recognition structure, independent of semantic projections. */
+final readonly class ConcreteNode implements \JsonSerializable
 {
+    use Serialization;
     /** @param list<ConcreteNode> $children */
-    public function __construct(
-        public string $kind,
-        public Span $span,
-        public array $children = [],
-        public bool $isTrivia = false,
-        public string|int|null $name = null,
-        public ?string $group = null,
-        public bool $isTerminal = false,
-        public bool $tokenTransparent = false,
-        public ?array $tokenChildIndexes = null
-    )
+    public function __construct(public string $kind, public Span $span, public array $children = [], public bool $isTrivia = false, public string|int|null $name = null, public ?string $group = null, public bool $semanticLeaf = false)
     {
         if (!array_is_list($children)) {
             throw new InvalidArgumentException('Concrete children must be a list');
@@ -31,23 +20,11 @@ final readonly class ConcreteNode
                 throw new InvalidArgumentException('Concrete children must be nodes from the same source');
             }
         }
-        if ($tokenChildIndexes !== null) {
-            if (!array_is_list($tokenChildIndexes)) {
-                throw new InvalidArgumentException('Token child indexes must be a list');
-            }
-            foreach ($tokenChildIndexes as $index) {
-                if (!is_int($index) || !isset($children[$index])) {
-                    throw new InvalidArgumentException('Token child index must identify a concrete child');
-                }
-            }
-        }
     }
-
     public function rawText(): string
     {
         return $this->span->rawText();
     }
-
     public function ast(): AstNode
     {
         return AstNode::fromConcrete($this);

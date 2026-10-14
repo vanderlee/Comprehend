@@ -1,45 +1,43 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Source;
 
 use InvalidArgumentException;
-
 /** Validated UTF-8 with canonical byte offsets and explicit code-point access. */
 final class Utf8Source extends InMemorySource
 {
     private readonly int $codePointLength;
-
     public function __construct(string $bytes)
     {
         if (!mb_check_encoding($bytes, 'UTF-8')) {
             throw new InvalidArgumentException('Source must contain valid UTF-8');
         }
-
         parent::__construct($bytes);
         $this->codePointLength = mb_strlen($bytes, 'UTF-8');
     }
-
     public function mode(): SourceMode
     {
         return SourceMode::UTF8;
     }
-
     public function codePointLength(): int
     {
         return $this->codePointLength;
     }
-
+    public function readUnit(int $byteOffset): ?Span
+    {
+        return $this->readCodePoint($byteOffset);
+    }
+    public function isUnitBoundary(int $byteOffset): bool
+    {
+        return $this->isCodePointBoundary($byteOffset);
+    }
     /** Invalid/out-of-range positions throw; an interior byte returns false. */
     public function isCodePointBoundary(int $byteOffset): bool
     {
         $this->assertByteOffset($byteOffset);
-
-        return $byteOffset === $this->byteLength()
-            || (ord($this->bytes[$byteOffset]) & 0xC0) !== 0x80;
+        return $byteOffset === $this->byteLength() || (ord($this->bytes[$byteOffset]) & 0xc0) !== 0x80;
     }
-
     /** Read one code point; null denotes EOF. The span's end is the next boundary. */
     public function readCodePoint(int $byteOffset): ?Span
     {
@@ -47,30 +45,23 @@ final class Utf8Source extends InMemorySource
         if ($byteOffset === $this->byteLength()) {
             return null;
         }
-
         // Validation guarantees a complete sequence beginning at this boundary.
         $lead = ord($this->bytes[$byteOffset]);
-        $length = $lead < 0x80 ? 1 : ($lead < 0xE0 ? 2 : ($lead < 0xF0 ? 3 : 4));
-
+        $length = $lead < 0x80 ? 1 : ($lead < 0xe0 ? 2 : ($lead < 0xf0 ? 3 : 4));
         return $this->span($byteOffset, $byteOffset + $length);
     }
-
     public function byteOffsetForCodePointPosition(int $position): int
     {
         if ($position < 0 || $position > $this->codePointLength) {
             throw new InvalidArgumentException('Code-point position is outside the source');
         }
-
         return strlen(mb_substr($this->bytes, 0, $position, 'UTF-8'));
     }
-
     public function codePointPositionForByteOffset(int $byteOffset): int
     {
         $this->assertCodePointBoundary($byteOffset);
-
         return mb_strlen(substr($this->bytes, 0, $byteOffset), 'UTF-8');
     }
-
     private function assertCodePointBoundary(int $byteOffset): void
     {
         if (!$this->isCodePointBoundary($byteOffset)) {

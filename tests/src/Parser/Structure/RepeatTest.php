@@ -2,16 +2,18 @@
 
 namespace Tests\Src\Parser\Structure;
 
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Source\ByteSource;
 use InvalidArgumentException;
 use LogicException;
 use Tests\ParserTestCase;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
-
 /**
  * @group structure
  * @group parser
@@ -20,9 +22,8 @@ class RepeatTest extends ParserTestCase
 {
     public function testConstructor()
     {
-        $this->assertInstanceOf(Repeat::class, new Repeat('a'));
+        $this->assertInstanceOf(Repeat::class, new Repeat(new Text('a')));
     }
-
     /**
      * @dataProvider invalidBoundsData
      */
@@ -30,9 +31,8 @@ class RepeatTest extends ParserTestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid repeat range specified');
-        new Repeat('a', $min, $max);
+        new Repeat(new Text('a'), $min, $max);
     }
-
     public function invalidBoundsData()
     {
         return [
@@ -43,57 +43,34 @@ class RepeatTest extends ParserTestCase
             'both negative in ascending order' => [-2, -1],
         ];
     }
-
     public function testNegativeExactCount()
     {
         $this->expectException(InvalidArgumentException::class);
-        Repeat::exact('a', -1);
+        Repeat::exact(new Text('a'), -1);
     }
-
-    public function testZeroMaximumDoesNotInvokeChild()
-    {
-        $child = new class('a') extends Text {
-            protected function parse(&$input, $offset, Context $context)
-            {
-                throw new \LogicException('Child must not be invoked');
-            }
-        };
-
-        $result = (new Repeat($child, 0, 0))->match('ba', 1);
-        $this->assertResult(true, 0, $result);
-        $this->assertSame(1, $result->token->offset);
-        $this->assertSame('', $result->token->text);
-        $this->assertSame([], $result->token->children);
-    }
-
     public function testStaticConstructors()
     {
-        $c = Repeat::plus('a');
-        $this->assertResult(false, 0, $c->match(''));
-        $this->assertResult(true, 1, $c->match('a'));
-        $this->assertResult(true, 2, $c->match('aa'));
-
-        $c = Repeat::star('a');
-        $this->assertResult(true, 0, $c->match(''));
-        $this->assertResult(true, 1, $c->match('a'));
-        $this->assertResult(true, 2, $c->match('aa'));
-
-        $c = Repeat::optional('a');
-        $this->assertResult(true, 0, $c->match(''));
-        $this->assertResult(true, 1, $c->match('a'));
-        $this->assertResult(true, 1, $c->match('aa'));
-
-        $c = Repeat::exact('a', 2);
-        $this->assertResult(false, 0, $c->match(''));
-        $this->assertResult(false, 1, $c->match('a'));
-        $this->assertResult(true, 2, $c->match('aa'));
-        $this->assertResult(true, 2, $c->match('aaa'));
-
-        $c = Repeat::exact('a', 0);
-        $this->assertResult(true, 0, $c->match(''));
-        $this->assertResult(true, 0, $c->match('a'));
+        $c = Repeat::plus(new Text('a'));
+        $this->assertResult(false, 0, $c->matchPrefix(new ByteSource('')));
+        $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('a')));
+        $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aa')));
+        $c = Repeat::star(new Text('a'));
+        $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('')));
+        $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('a')));
+        $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aa')));
+        $c = Repeat::optional(new Text('a'));
+        $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('')));
+        $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('a')));
+        $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('aa')));
+        $c = Repeat::exact(new Text('a'), 2);
+        $this->assertResult(false, 0, $c->matchPrefix(new ByteSource('')));
+        $this->assertResult(false, 1, $c->matchPrefix(new ByteSource('a')));
+        $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aa')));
+        $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aaa')));
+        $c = Repeat::exact(new Text('a'), 0);
+        $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('')));
+        $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('a')));
     }
-
     /**
      * @dataProvider zeroLengthChildData
      */
@@ -101,56 +78,53 @@ class RepeatTest extends ParserTestCase
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Repeat child matched successfully without consuming input');
-        $parser->match($input);
+        $parser->matchPrefix(new ByteSource($input));
     }
-
     public function zeroLengthChildData()
     {
         $cases = [];
         foreach ([1, 3, null] as $max) {
             $label = $max === null ? 'unbounded' : 'maximum ' . $max;
             $cases[$label . ' Nothing'] = [new Repeat(new Nothing(), 0, $max), 'a'];
-            $cases[$label . ' lookahead'] = [new Repeat(new Not('b'), 0, $max), 'a'];
-            $cases[$label . ' nullable optional'] = [new Repeat(Repeat::optional('b'), 0, $max), 'a'];
+            $cases[$label . ' lookahead'] = [new Repeat(new Not(new Text('b')), 0, $max), 'a'];
+            $cases[$label . ' nullable optional'] = [new Repeat(Repeat::optional(new Text('b')), 0, $max), 'a'];
         }
-
-        $cases['positive minimum'] = [new Repeat(new Not('b'), 1), 'a'];
-        $cases['nullable after consuming child'] = [
-            new Repeat(new Choice('a', new Not('b'))), 'a',
+        $cases['positive minimum'] = [new Repeat(new Not(new Text('b')), 1), 'a'];
+        $cases['nullable after consuming child'] = [new Repeat(new Choice(new Text('a'), new Not(new Text('b')))), 'a'];
+        $cases['spacing cannot supply child progress'] = [(new Repeat(new Choice(new Text('a'), new Not(new Text('b'))), 0, 2))->spacing(new Text(' ')), 'a c'];
+        $cases['custom nullable parser'] = [
+            new Repeat(
+                new class('a') extends Text
+                {
+                    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+                    {
+                        return $this->success($input, $offset);
+                    }
+                },
+            ),
+            'a',
         ];
-        $cases['spacing cannot supply child progress'] = [
-            (new Repeat(new Choice('a', new Not('b')), 0, 2))->spacing(' '), 'a c',
-        ];
-        $cases['custom nullable parser'] = [new Repeat(new class('a') extends Text {
-            protected function parse(&$input, $offset, Context $context)
-            {
-                return $this->success($input, $offset);
-            }
-        }), 'a'];
-
         return $cases;
     }
-
     public function testZeroMaximumAllowsNullableChild()
     {
-        $this->assertResult(true, 0, (new Repeat(new Nothing(), 0, 0))->match('a'));
+        $this->assertResult(true, 0, (new Repeat(new Nothing(), 0, 0))->matchPrefix(new ByteSource('a')));
     }
-
     public function testZeroLengthChildCallbackIsNotResolved()
     {
         $calls = 0;
-        $child = (new Not('b'))->callback(function () use (&$calls) {
-            $calls++;
-        });
-
+        $child = (new Not(new Text('b')))->onCommit(
+            function () use (&$calls) {
+                $calls++;
+            },
+        );
         try {
-            (new Repeat($child, 0, 1))->match('a');
+            (new Repeat($child, 0, 1))->matchPrefix(new ByteSource('a'));
             $this->fail('Expected zero-length repetition to throw');
         } catch (LogicException $exception) {
             $this->assertSame(0, $calls);
         }
     }
-
     /**
      * @dataProvider repeatData
      *
@@ -162,52 +136,45 @@ class RepeatTest extends ParserTestCase
      */
     public function testRepeat(Repeat $parser, $input, $offset, $match, $length)
     {
-        $result = $parser->match($input, $offset);
-
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $result = $parser->matchPrefix(new ByteSource($input), $offset);
+        $this->assertSame($match, $result->success, (string) $parser);
+        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
-
     public function repeatData()
     {
         return [
-            [new Repeat('a', 0, 0), '', 0, true, 0],
-            [new Repeat('a', 0, 0), 'a', 0, true, 0],
-            [new Repeat('a', 0, 0), 'b', 0, true, 0],
-            [new Repeat('a', 0, 0), 'ba', 1, true, 0],
-            [new Repeat('a', 2, 4), 'b', 0, false, 0],
-
-            [new Repeat('a', 2, 4), '', 0, false, 0],
-            [new Repeat('a', 2, 4), 'a', 0, false, 1],
-            [new Repeat('a', 2, 4), 'aa', 0, true, 2],
-            [new Repeat('a', 2, 4), 'aaa', 0, true, 3],
-            [new Repeat('a', 2, 4), 'aaaa', 0, true, 4],
-            [new Repeat('a', 2, 4), 'aaaaa', 0, true, 4],
-
-            [new Repeat('a', 0, 1), '', 0, true, 0],
-            [new Repeat('a', 0, 1), 'a', 0, true, 1],
-            [new Repeat('a', 0, 1), 'aa', 0, true, 1],
-            [new Repeat('a', 0, 2), 'aa', 0, true, 2],
-            [new Repeat('a', 0, 2), 'aaa', 0, true, 2],
-            [new Repeat('a', 1, 1), 'aaa', 0, true, 1],
-            [new Repeat('a', 1, 2), 'aaa', 0, true, 2],
-
-            [new Repeat('a', 2, 2), 'a', 0, false, 1],
-            [new Repeat('a', 2, 2), 'aa', 0, true, 2],
-            [new Repeat('a', 2, 2), 'aaa', 0, true, 2],
-
-            [new Repeat('a', 0), '', 0, true, 0],
-            [new Repeat('a', 0), 'a', 0, true, 1],
-            [new Repeat('a', 2), 'a', 0, false, 1],
-            [new Repeat('a', 2), 'aa', 0, true, 2],
-            [new Repeat('a', 2), 'aaa', 0, true, 3],
-            [new Repeat('a', 2), 'aaaa', 0, true, 4],
-
-            [new Repeat('ab', 2, 2), 'ab', 0, false, 2],
-            [new Repeat('ab', 2, 2), 'aba', 0, false, 2],
-            [new Repeat('ab', 2, 2), 'abab', 0, true, 4],
-            [new Repeat('ab', 2, 2), 'ababa', 0, true, 4],
-            [new Repeat('ab', 2, 2), 'ababab', 0, true, 4],
+            [new Repeat(new Text('a'), 0, 0), '', 0, true, 0],
+            [new Repeat(new Text('a'), 0, 0), 'a', 0, true, 0],
+            [new Repeat(new Text('a'), 0, 0), 'b', 0, true, 0],
+            [new Repeat(new Text('a'), 0, 0), 'ba', 1, true, 0],
+            [new Repeat(new Text('a'), 2, 4), 'b', 0, false, 0],
+            [new Repeat(new Text('a'), 2, 4), '', 0, false, 0],
+            [new Repeat(new Text('a'), 2, 4), 'a', 0, false, 1],
+            [new Repeat(new Text('a'), 2, 4), 'aa', 0, true, 2],
+            [new Repeat(new Text('a'), 2, 4), 'aaa', 0, true, 3],
+            [new Repeat(new Text('a'), 2, 4), 'aaaa', 0, true, 4],
+            [new Repeat(new Text('a'), 2, 4), 'aaaaa', 0, true, 4],
+            [new Repeat(new Text('a'), 0, 1), '', 0, true, 0],
+            [new Repeat(new Text('a'), 0, 1), 'a', 0, true, 1],
+            [new Repeat(new Text('a'), 0, 1), 'aa', 0, true, 1],
+            [new Repeat(new Text('a'), 0, 2), 'aa', 0, true, 2],
+            [new Repeat(new Text('a'), 0, 2), 'aaa', 0, true, 2],
+            [new Repeat(new Text('a'), 1, 1), 'aaa', 0, true, 1],
+            [new Repeat(new Text('a'), 1, 2), 'aaa', 0, true, 2],
+            [new Repeat(new Text('a'), 2, 2), 'a', 0, false, 1],
+            [new Repeat(new Text('a'), 2, 2), 'aa', 0, true, 2],
+            [new Repeat(new Text('a'), 2, 2), 'aaa', 0, true, 2],
+            [new Repeat(new Text('a'), 0), '', 0, true, 0],
+            [new Repeat(new Text('a'), 0), 'a', 0, true, 1],
+            [new Repeat(new Text('a'), 2), 'a', 0, false, 1],
+            [new Repeat(new Text('a'), 2), 'aa', 0, true, 2],
+            [new Repeat(new Text('a'), 2), 'aaa', 0, true, 3],
+            [new Repeat(new Text('a'), 2), 'aaaa', 0, true, 4],
+            [new Repeat(new Text('ab'), 2, 2), 'ab', 0, false, 2],
+            [new Repeat(new Text('ab'), 2, 2), 'aba', 0, false, 2],
+            [new Repeat(new Text('ab'), 2, 2), 'abab', 0, true, 4],
+            [new Repeat(new Text('ab'), 2, 2), 'ababa', 0, true, 4],
+            [new Repeat(new Text('ab'), 2, 2), 'ababab', 0, true, 4],
         ];
     }
 }

@@ -2,9 +2,9 @@
 
 namespace Tests\Src\Parser\Terminal;
 
+use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
-
 /**
  * @group terminal
  * @group parser
@@ -22,12 +22,10 @@ class AnyTest extends ParserTestCase
      */
     public function testAny(Any $parser, $input, $offset, $match, $length)
     {
-        $result = $parser->match($input, $offset);
-
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $result = $parser->matchPrefix(new ByteSource($input), $offset);
+        $this->assertSame($match, $result->success, (string) $parser);
+        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
-
     public function anyData()
     {
         return [

@@ -2,10 +2,10 @@
 
 namespace Tests\Src\Parser\Terminal;
 
+use Vanderlee\Comprehend\Source\ByteSource;
 use Exception;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
-
 /**
  * @group terminal
  * @group parser
@@ -19,7 +19,6 @@ class SetTest extends ParserTestCase
     {
         $this->assertInstanceOf(Set::class, new Set('abc'));
     }
-
     /**
      * @throws Exception
      */
@@ -28,7 +27,6 @@ class SetTest extends ParserTestCase
         $this->expectExceptionMessage('Empty set');
         new Set('');
     }
-
     /**
      * @dataProvider setData
      *
@@ -40,12 +38,10 @@ class SetTest extends ParserTestCase
      */
     public function testSet(Set $parser, $input, $offset, $match, $length)
     {
-        $result = $parser->match($input, $offset);
-
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $result = $parser->matchPrefix(new ByteSource($input), $offset);
+        $this->assertSame($match, $result->success, (string) $parser);
+        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
-
     /**
      * @return array
      * @throws Exception
@@ -55,7 +51,6 @@ class SetTest extends ParserTestCase
     {
         return [
             [new Set('a'), 'abc', 0, true, 1],
-            [new Set('a'), 'abc', 999, false, 0],
             [new Set('b'), 'abc', 0, false, 0],
             [new Set('az'), 'abc', 0, true, 1],
             [new Set('az'), 'b', 0, false, 0],

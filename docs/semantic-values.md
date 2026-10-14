@@ -1,55 +1,26 @@
-# Cached typed semantic values
+# Cached semantic output
 
-`Parser::mapValue(callable)` declares a lazy mapping from an accepted
-`ParseResult` to any PHP value. `ParseResult::value()` evaluates that mapping on
-its first read and caches the result for the lifetime of the recognized match.
-Unmapped successful results return original raw text. Failed results return
-null without evaluating the mapper; successful mappings may also return null,
-so inspect `success` to distinguish those cases.
+`mapValue(callable(ParseResult): mixed)` adds a lazy typed mapping. `value()`
+caches scalars, null, arrays, objects and thrown errors for that recognition.
+Without a mapping it returns raw text. Transparent runtime wrappers preserve
+their accepted child's mapping unless explicitly mapped. Failed results return
+null; abandoned alternatives do not evaluate their mappings automatically.
 
-```php
-use Vanderlee\Comprehend\Parser\Terminal\Text;
-use Vanderlee\Comprehend\Result\ParseResult;
-use Vanderlee\Comprehend\Source\Utf8Source;
+Named collections remain useful supported projections: `setResult(name, value)`,
+`concatResult(name, value)` and `pushResult(name, value)`. A callable value maps
+raw text. `results()` returns the named map; `result()` accesses the default
+collection, or `result(name, default)` accesses a named value. A transform is
+evaluated once per recognition even when both local semantic validation and a
+parent collection read need it. Errors are retained and recursive evaluation is
+rejected. A stored null is distinct from a missing key when using a default.
+Collection operations do not affect raw text, CST or AST.
 
-$number = (new Text('42'))->token('number')->setResult('digits')
-    ->mapValue(fn (ParseResult $result): int => (int) $result->result('digits'));
-$result = $number->parseAll(new Utf8Source('42'));
-$result->value();   // int 42, calculated once
-$result->value();   // same cached value
-$result->results(); // ['digits' => '42']: supported named collection
-$result->rawText(); // '42'
-$result->ast()->span->end; // 2, unchanged by semantic mapping
-```
+Definition processors receive the local result collection and produce a named
+value. They replace local collection output, retaining child syntax, validation
+and effects. Processor results/errors are cached per recognition; they do not
+depend on mutable parent output. Definition validators receive ParseResult under
+the selected [semantic lifecycle](lifecycle.md).
 
-Scalars, arrays, null and object values are cached. Object results retain their
-identity; they are not cloned or made immutable. A mapping exception is cached
-and rethrown on later reads without rerunning the mapper. Recursive reads of the
-same value throw `LogicException`. Syntax acceptance is already established:
-mapper errors are semantic errors and do not retry alternative recognition.
-
-The mapping callable and named result callback list are captured per
-recognition. Later `mapValue()` or `setResult()` calls on a mutable parser affect
-future matches, not existing results. Each new recognition gets a separate
-cache. Captured external objects and references remain under the caller's
-control; mapping and collection caches do not freeze those dependencies.
-
-Named result collection remains a separate supported projection with its
-existing cache. Mapping may read `result()`, `results()`, CST or AST data, but
-reading those other projections does not automatically evaluate `value()`.
-Default `value()` uses raw text independently of a transformed default result.
-Token serialization, raw source and AST spans are unaffected by either mapping
-or collection output.
-
-Transparent wrappers such as lexeme and spacing inherit the wrapped mapping
-unless explicitly mapped themselves. Other combinators and named rule wrappers
-use their own mapping or default raw text; they do not implicitly evaluate child
-mappings. Discarded alternatives and prefixes rejected by EOF never evaluate
-their mappings. An accepted result can be wrapped by `LegacyParserAdapter` and
-then `ParseResult` without losing its mapping/cache. Legacy string `match()` does
-not expose the source-based typed value API.
-
-`mapValue()` follows the existing mutable parser authoring style; recognition
-snapshots isolate its lifetime. See [Recognition, validation and effect commit](lifecycle.md)
-for pure guards and selected semantic validation. Prefer pure mappings; external side
-effects are not rolled back by the cache.
+Later grammar mutations do not change accepted mappings, collection operations,
+names, validators or effects. Builders themselves remain mutable until Phase 3;
+each separate recognition has its own output caches.

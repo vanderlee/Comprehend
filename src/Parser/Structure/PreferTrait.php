@@ -1,11 +1,11 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Parser\Parser;
-
 /**
  * Classes implementing this can scan.
  *
@@ -19,51 +19,41 @@ trait PreferTrait
      * @var Parser
      */
     private $preference = null;
-
-    private function pushPreferenceToContext(Context $context)
+    private function pushPreferenceToContext(ParseSession $context)
     {
         if ($this->preference) {
             $context->pushPreference($this->preference);
         }
     }
-
-    private function popPreferenceFromContext(Context $context)
+    private function popPreferenceFromContext(ParseSession $context)
     {
         if ($this->preference) {
             $context->popPreference();
         }
     }
-
     /**
      * @param string $preference
      *
      * @return $this
      */
-    public function setPreference($preference)
+    public function setPreference(?string $preference): static
     {
         $this->preference = $preference;
-
         return $this;
     }
-
-    public function preferShortest()
+    public function preferShortest(): static
     {
         $this->preference = Prefer::SHORTEST;
-
         return $this;
     }
-
-    public function preferLongest()
+    public function preferLongest(): static
     {
         $this->preference = Prefer::LONGEST;
-
         return $this;
     }
-
-    public function preferFirst()
+    public function preferFirst(): static
     {
         $this->preference = Prefer::FIRST;
-
         return $this;
     }
 }

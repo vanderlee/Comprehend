@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Tests\Src\Source;
 
 use InvalidArgumentException;
@@ -10,7 +9,6 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Source\Utf8Source;
-
 class SourceTest extends TestCase
 {
     /** @dataProvider coordinateData */
@@ -27,21 +25,19 @@ class SourceTest extends TestCase
         $this->assertSame($start, $source->byteOffsetForCodePointPosition($cpStart));
         $this->assertSame($end, $source->byteOffsetForCodePointPosition($cpEnd));
     }
-
     public function coordinateData()
     {
         return [
             'ASCII' => ['abc', 1, 3, 'bc', 1, 3],
-            'two-byte code point' => ["\u{00E9}a", 0, 2, "\u{00E9}", 0, 1],
-            'after multibyte prefix' => ["\u{00E9}a", 2, 3, 'a', 1, 2],
-            'empty at boundary' => ["\u{00E9}a", 2, 2, '', 1, 1],
-            'empty at EOF' => ["\u{00E9}a", 3, 3, '', 2, 2],
+            'two-byte code point' => ["éa", 0, 2, "é", 0, 1],
+            'after multibyte prefix' => ["éa", 2, 3, 'a', 1, 2],
+            'empty at boundary' => ["éa", 2, 2, '', 1, 1],
+            'empty at EOF' => ["éa", 3, 3, '', 2, 2],
             'empty source' => ['', 0, 0, '', 0, 0],
-            'decomposed code points' => ["e\u{0301}", 0, 3, "e\u{0301}", 0, 2],
-            'four-byte prefix' => ["\u{1F600}a", 4, 5, 'a', 1, 2],
+            'decomposed code points' => ["é", 0, 3, "é", 0, 2],
+            'four-byte prefix' => ["😀a", 4, 5, 'a', 1, 2],
         ];
     }
-
     public function testAllOctetsAreAcceptedAndReadWithoutDecoding()
     {
         $bytes = implode('', array_map('chr', range(0, 255)));
@@ -56,15 +52,14 @@ class SourceTest extends TestCase
         }
         $this->assertNull($source->readByte(256));
     }
-
     public function testCodePointReadsUseOriginalByteBoundaries()
     {
-        $source = new Utf8Source("A\u{00E9}\u{20AC}\u{1F600}\0");
+        $source = new Utf8Source("Aé€😀\x00");
         $this->assertSame(SourceMode::UTF8, $source->mode());
         $this->assertSame(11, $source->byteLength());
         $this->assertSame(5, $source->codePointLength());
         $boundaries = [0, 1, 3, 6, 10, 11];
-        $points = ['A', "\u{00E9}", "\u{20AC}", "\u{1F600}", "\0"];
+        $points = ['A', "é", "€", "😀", "\x00"];
         foreach ($boundaries as $position => $offset) {
             $this->assertTrue($source->isCodePointBoundary($offset));
             $this->assertSame($offset, $source->byteOffsetForCodePointPosition($position));
@@ -78,16 +73,14 @@ class SourceTest extends TestCase
         }
         $this->assertNull($source->readCodePoint(11));
     }
-
     public function testRawByteAccessMaySplitCodePoints()
     {
-        $source = new Utf8Source("\u{00E9}a");
+        $source = new Utf8Source("éa");
         $this->assertFalse($source->isCodePointBoundary(1));
-        $this->assertSame("\xA9", $source->sliceBytes(1, 2));
-        $this->assertSame("\xA9", $source->span(1, 2)->rawText());
+        $this->assertSame("\xa9", $source->sliceBytes(1, 2));
+        $this->assertSame("\xa9", $source->span(1, 2)->rawText());
         $this->assertSame('', $source->span(1, 1)->rawText());
     }
-
     /** @dataProvider invalidRangeData */
     public function testInvalidRangesAreRejected($start, $end, $operation)
     {
@@ -96,10 +89,9 @@ class SourceTest extends TestCase
         if ($operation === 'constructor') {
             new Span($source, $start, $end);
         } else {
-            $source->$operation($start, $end);
+            $source->{$operation}($start, $end);
         }
     }
-
     public function invalidRangeData()
     {
         $cases = [];
@@ -110,7 +102,6 @@ class SourceTest extends TestCase
         }
         return $cases;
     }
-
     /** @dataProvider invalidUtf8Data */
     public function testMalformedUtf8IsRejectedAtConstruction($bytes)
     {
@@ -119,33 +110,30 @@ class SourceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         new Utf8Source($bytes);
     }
-
     public function invalidUtf8Data()
     {
         return [
-            'Latin-1' => ["\xE9"],
+            'Latin-1' => ["\xe9"],
             'isolated continuation' => ["\x80"],
-            'truncated two-byte sequence' => ["\xC3"],
-            'truncated three-byte sequence' => ["\xE2\x82"],
-            'truncated four-byte sequence' => ["\xF0\x9F\x98"],
-            'wrong continuation' => ["\xC3a"],
-            'overlong two-byte sequence' => ["\xC0\xAF"],
-            'overlong three-byte sequence' => ["\xE0\x80\xAF"],
-            'overlong four-byte sequence' => ["\xF0\x80\x80\xAF"],
-            'surrogate' => ["\xED\xA0\x80"],
-            'above Unicode maximum' => ["\xF4\x90\x80\x80"],
-            'invalid leading byte' => ["\xFF"],
+            'truncated two-byte sequence' => ["\xc3"],
+            'truncated three-byte sequence' => ["\xe2\x82"],
+            'truncated four-byte sequence' => ["\xf0\x9f\x98"],
+            'wrong continuation' => ["\xc3a"],
+            'overlong two-byte sequence' => ["\xc0\xaf"],
+            'overlong three-byte sequence' => ["\xe0��"],
+            'overlong four-byte sequence' => ["\xf0���"],
+            'surrogate' => ["���"],
+            'above Unicode maximum' => ["����"],
+            'invalid leading byte' => ["\xff"],
         ];
     }
-
     /** @dataProvider invalidPositionData */
     public function testInvalidReadAndConversionPositionsAreRejected($method, $position)
     {
-        $source = new Utf8Source("A\u{00E9}\u{20AC}\u{1F600}\0");
+        $source = new Utf8Source("Aé€😀\x00");
         $this->expectException(InvalidArgumentException::class);
-        $source->$method($position);
+        $source->{$method}($position);
     }
-
     public function invalidPositionData()
     {
         $cases = [];
@@ -162,19 +150,16 @@ class SourceTest extends TestCase
         }
         return $cases;
     }
-
     /** @dataProvider invalidByteReadData */
     public function testByteReadDoesNotClampInvalidOffsets($offset)
     {
         $this->expectException(InvalidArgumentException::class);
         (new ByteSource('abc'))->readByte($offset);
     }
-
     public function invalidByteReadData()
     {
         return [[-1], [4]];
     }
-
     public function testEmptySourcesHaveValidEofSpansAndNoReadUnit()
     {
         $bytes = new ByteSource('');
@@ -190,37 +175,34 @@ class SourceTest extends TestCase
         $this->assertSame(0, $text->byteOffsetForCodePointPosition(0));
         $this->assertSame(0, $text->codePointPositionForByteOffset(0));
     }
-
     public function testEncodingAndRawTextDoNotDependOnAmbientSettings()
     {
         $encoding = mb_internal_encoding();
         try {
             mb_internal_encoding('ISO-8859-1');
-            $bytes = "\xEF\xBB\xBF" . "e\u{0301}\r\n\0\u{1F600}";
+            $bytes = "﻿" . "é\r\n\x00😀";
             $source = new Utf8Source($bytes);
             $this->assertSame($bytes, $source->span(0, strlen($bytes))->rawText());
             $this->assertSame(7, $source->codePointLength());
-            $this->assertSame("\xEF\xBB\xBF", $source->readCodePoint(0)->rawText());
+            $this->assertSame("﻿", $source->readCodePoint(0)->rawText());
             $this->assertSame(3, $source->byteOffsetForCodePointPosition(1));
             $this->assertSame(1, $source->codePointPositionForByteOffset(3));
             $this->expectException(InvalidArgumentException::class);
-            new Utf8Source("\xE9");
+            new Utf8Source("\xe9");
         } finally {
             mb_internal_encoding($encoding);
         }
     }
-
     public function testSpanRetainsStableSourceAfterOriginalVariableChanges()
     {
-        $input = "\u{00E9}a";
+        $input = "éa";
         $source = new Utf8Source($input);
         $span = $source->span(0, 2);
         $input = 'changed';
         unset($source);
-        $this->assertSame("\u{00E9}", $span->rawText());
+        $this->assertSame("é", $span->rawText());
         $this->assertSame(3, $span->source->byteLength());
     }
-
     public function testCoverKeepsSourceIdentityAndIncludesGap()
     {
         $source = new ByteSource('abcde');

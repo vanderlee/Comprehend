@@ -1,13 +1,12 @@
 <?php
 
 /** @noinspection PhpUndefinedMethodInspection */
-
 /** @noinspection PhpUndefinedFieldInspection */
-
 namespace Tests\example;
 
+use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 require_once 'ReversePolishNotationTrait.php';
-
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -15,7 +14,6 @@ use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
-
 /**
  * Example of a simple maths parser, constructed using basic objects.
  *
@@ -29,53 +27,43 @@ use Vanderlee\Comprehend\Parser\Terminal\Range;
 class MathRulesetTest extends ParserTestCase
 {
     use ReversePolishNotationTrait;
-
     /**
      * Math expression parser.
      *
      * @var Parser
      */
     private static $math;
-
     public static function setUpBeforeClass(): void
     {
-        self::$math = new Ruleset([
-            's' => Sequence::class,
-            'r' => Range::class,
-            'opt' => function ($parser) {
-                return new Repeat($parser, 0, 1);
-            },
-            'plus' => function ($parser) {
-                return new Repeat($parser, 1);
-            },
-            'kleene' => Repeat::class,
-            'choice' => Choice::class,
-        ]);
-
-        self::$math->define([
-            'integer' => self::$math->s(
-                self::$math->opt('-'),
-                self::$math->plus(
-                    self::$math->r('0', '9')
-                )
-            )->pushResult(),
-            'factor' => self::$math->choice(self::$math->s('(', self::$math->expression, ')'),
-                self::$math->integer),
-            'term' => self::$math->choice(
-                self::$math->s(self::$math->factor, '*', self::$math->term)->pushResult(null, 'multiply'),
-                self::$math->s(self::$math->factor, '/', self::$math->term)->pushResult(null, 'divide'),
-                self::$math->factor
+        $rules = new Ruleset();
+        $literal = static fn(string $text) => new Text($text);
+        $rules->define(
+            'integer',
+            (new Sequence(Repeat::optional($literal('-')), Repeat::plus(new Range('0', '9'))))->pushResult(),
+        );
+        $rules->define(
+            'factor',
+            Choice::first(new Sequence($literal('('), $rules->rule('expression'), $literal(')')), $rules->rule('integer')),
+        );
+        $rules->define(
+            'term',
+            Choice::first(
+                (new Sequence($rules->rule('factor'), $literal('*'), $rules->rule('term')))->pushResult(null, 'multiply'),
+                (new Sequence($rules->rule('factor'), $literal('/'), $rules->rule('term')))->pushResult(null, 'divide'),
+                $rules->rule('factor'),
             ),
-            'expression' => self::$math->choice(
-                self::$math->s(self::$math->term, '+', self::$math->expression)->pushResult(null, 'add'),
-                self::$math->s(self::$math->term, '-', self::$math->expression)->pushResult(null, 'subtract'),
-                self::$math->term
+        );
+        $rules->define(
+            'expression',
+            Choice::first(
+                (new Sequence($rules->rule('term'), $literal('+'), $rules->rule('expression')))->pushResult(null, 'add'),
+                (new Sequence($rules->rule('term'), $literal('-'), $rules->rule('expression')))->pushResult(null, 'subtract'),
+                $rules->rule('term'),
             ),
-        ]);
-
-        self::$math->define(Ruleset::ROOT, 'expression');
+        );
+        $rules->define(Ruleset::ROOT, $rules->rule('expression'));
+        self::$math = $rules;
     }
-
     /**
      * @dataProvider dataExpression
      *
@@ -85,12 +73,11 @@ class MathRulesetTest extends ParserTestCase
      */
     public function testExpression($expression, $expected, $result)
     {
-        $match = self::$math->match($expression);
+        $match = self::$math->matchPrefix(new ByteSource($expression));
         $this->assertResult(true, strlen($expression), $match);
-        $this->assertEquals($expected, $match->result);
-        $this->assertEquals($result, $this->solveRpn($match->result));
+        $this->assertEquals($expected, $match->result());
+        $this->assertEquals($result, $this->solveRpn($match->result()));
     }
-
     public function dataExpression()
     {
         return [

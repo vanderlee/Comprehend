@@ -2,22 +2,20 @@
 
 namespace Tests\Src\Parser\Terminal;
 
+use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
-
 class TextTest extends ParserTestCase
 {
     public function testConstruction()
     {
         $this->assertInstanceOf(Text::class, new Text('foo'));
     }
-
     public function testEmpty()
     {
         $this->expectExceptionMessage('Empty argument');
         new Text('');
     }
-
     /**
      * @group        terminal
      * @group        parser
@@ -31,9 +29,8 @@ class TextTest extends ParserTestCase
      */
     public function testText(Text $parser, $input, $offset, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->match($input, $offset), (string)$parser);
+        $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input), $offset), (string) $parser);
     }
-
     public function textData()
     {
         return [

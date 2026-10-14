@@ -1,13 +1,15 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
 use Exception;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
-
 /**
  * Matches an integer within the specified range.
  *
@@ -16,29 +18,24 @@ use Vanderlee\Comprehend\Parser\Parser;
 class Integer extends Parser
 {
     use CaseSensitiveTrait;
-
     /**
      * List of digits to use for the different bases (up to 36).
      *
      * @var string
      */
     private static $set = '0123456789abcdefghijklmnopqrstuvwxyz';
-
     /**
      * @var int|null
      */
-    private $minimum;
-
+    private ?int $minimum;
     /**
      * @var int|null
      */
-    private $maximum;
-
+    private ?int $maximum;
     /**
      * @var int
      */
-    private $base;
-
+    private int $base;
     /**
      * @param int|null $minimum
      * @param int|null $maximum
@@ -46,115 +43,72 @@ class Integer extends Parser
      *
      * @throws Exception
      */
-    public function __construct($minimum = 0, $maximum = null, $base = 10)
+    public function __construct(?int $minimum = 0, ?int $maximum = null, int $base = 10)
     {
-        if ($minimum !== null
-            && $maximum !== null
-            && $minimum > $maximum) {
+        if ($minimum !== null && $maximum !== null && $minimum > $maximum) {
             throw new Exception('Maximum must be greater than minimum');
         }
-
-        $this->setMinimum($minimum);
-        $this->setMaximum($maximum);
-
-        $this->base = intval($base);
-        if ($base < 2
-            || $base > strlen(self::$set)) {
+        $this->minimum = $minimum;
+        $this->maximum = $maximum;
+        $this->base = $base;
+        if ($base < 2 || $base > strlen(self::$set)) {
             throw new Exception('Unsupported base');
         }
     }
-
     /**
      * @param int|null $minimum
      *
      * @throws Exception
      */
-    private function setMinimum($minimum)
-    {
-        if ($minimum !== null
-            && !is_int($minimum)) {
-            throw new Exception('Minimum must be integer or `null`');
-        }
-
-        $this->minimum = $minimum;
-    }
-
     /**
      * @param int|null $maximum
      *
      * @throws Exception
      */
-    private function setMaximum($maximum)
+    private function isInRange(int $integer): bool
     {
-        if ($maximum !== null
-            && !is_int($maximum)) {
-            throw new Exception('Maximum must be integer or `null`');
-        }
-
-        $this->maximum = $maximum;
+        return ($this->minimum === null || $integer >= $this->minimum) && ($this->maximum === null || $integer <= $this->maximum);
     }
-
-    private function isInRange($integer)
-    {
-        return ($this->minimum === null
-                || $integer >= $this->minimum)
-            && ($this->maximum === null
-                || $integer <= $this->maximum);
-    }
-
     /**
-     * @param string $input
+     * @param Source $input
      * @param int $offset
-     * @param Context $context
+     * @param ParseSession $context
      *
      * @return Failure|Success
      */
-    protected function parse(&$input, $offset, Context $context)
+    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $this->pushCaseSensitivityToContext($context);
-
         try {
             // Build pattern
             $set0 = substr(self::$set, 0, $this->base);
             $set1 = substr(self::$set, 1, $this->base - 1);
-            $pattern = '/(?:0|-?[' . $set1 . '][' . $set0 . ']*)/A' . ($context->isCaseSensitive()
-                    ? ''
-                    : 'i');
+            $pattern = '/(?:0|-?[' . $set1 . '][' . $set0 . ']*)/A' . ($context->isCaseSensitive() ? '' : 'i');
         } finally {
             $this->popCaseSensitivityFromContext($context);
         }
-
-        $subject = $context->source() !== null
-            ? $context->source()->sliceBytes(0, $context->source()->byteLength()) : $input;
+        $subject = $input->sliceBytes(0, $input->byteLength());
         $status = preg_match($pattern, $subject, $match, 0, $offset);
-        if ($context->source() !== null && $status === false) {
+        if ($status === false) {
             throw new \RuntimeException('Integer recognition failed: ' . preg_last_error_msg());
         }
         if ($status === 1) {
             do {
                 $integer = intval($match[0], $this->base);
-                if ($this->isInRange($integer)
-                    && $match[0] !== '-') {
-                    return $this->success($input, $offset,
-                        $context->source() !== null ? strlen($match[0]) : mb_strlen($match[0]));
+                if ($this->isInRange($integer) && $match[0] !== '-') {
+                    return $this->success($input, $offset, strlen($match[0]));
                 }
-
-                $match[0] = substr($match[0], 0, -1); // strip off last char
+                $match[0] = substr($match[0], 0, -1);
+                // strip off last char
             } while ($match[0] !== '');
         }
-
         return $this->failure($input, $offset);
     }
-
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return ($this->minimum === null
-                ? '<-INF'
-                : ('[' . $this->minimum)) . ',' . ($this->maximum === null
-                ? 'INF>'
-                : ($this->maximum . ']'));
+        return ($this->minimum === null ? '<-INF' : '[' . $this->minimum) . ',' . ($this->maximum === null ? 'INF>' : $this->maximum . ']');
     }
 }

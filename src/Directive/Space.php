@@ -1,11 +1,12 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Directive;
 
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Parser\Parser;
-
 /**
  * Description of LexemeDirective.
  *
@@ -13,47 +14,37 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class Space extends Parser
 {
-    use ArgumentsTrait;
-
     /**
      * @var null|Parser
      */
     private $spacer;
-
     /**
      * @var null|Parser
      */
     private $parser;
-
     /**
      * Set (or disable) a spacer for the parser.
      *
-     * @param Parser|string|int|bool|null $spacer
-     * @param Parser|string|int $parser
+     * @param Parser|null $spacer
+     * @param Parser $parser
      */
-    public function __construct($spacer, $parser)
+    public function __construct(?Parser $spacer, Parser $parser)
     {
-        $this->spacer = $spacer === null
-            ? null
-            : self::getArgument($spacer);
-        $this->parser = self::getArgument($parser);
+        $this->spacer = $spacer === null ? null : $spacer;
+        $this->parser = $parser;
     }
-
-    protected function parse(&$input, $offset, Context $context)
+    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $context->pushSpacer($this->spacer);
-
         try {
-            $match = $this->parser->parseInContext($input, $offset, $context);
+            $match = $this->parser->recognizeInSession($input, $offset, $context);
         } finally {
             $context->popSpacer();
         }
-
         return $match;
     }
-
-    public function __toString()
+    public function __toString(): string
     {
-        return (string)$this->parser;
+        return (string) $this->parser;
     }
 }

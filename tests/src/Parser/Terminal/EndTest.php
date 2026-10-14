@@ -2,9 +2,9 @@
 
 namespace Tests\Src\Parser\Terminal;
 
+use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\End;
-
 /**
  * @group structure
  * @group parser
@@ -22,18 +22,12 @@ class EndTest extends ParserTestCase
      */
     public function testEnd(End $parser, $input, $offset, $match, $length)
     {
-        $result = $parser->match($input, $offset);
-
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $result = $parser->matchPrefix(new ByteSource($input), $offset);
+        $this->assertSame($match, $result->success, (string) $parser);
+        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
-
     public function endData()
     {
-        return [
-            [new End(), 'aa', 0, false, 0],
-            [new End(), 'aa', 1, false, 0],
-            [new End(), 'aa', 2, true, 0],
-        ];
+        return [[new End(), 'aa', 0, false, 0], [new End(), 'aa', 1, false, 0], [new End(), 'aa', 2, true, 0]];
     }
 }

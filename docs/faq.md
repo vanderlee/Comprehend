@@ -1,6 +1,13 @@
-# Frequently Asked Questions
+# Frequently asked questions
 
-## Can I redefine rules in a ruleset?
-You can, but in the new rule will not be available to any previously instantiated parsers that reference the redefined
-rule.
+**Does Comprehend read BNF files?** No. Grammars are currently object/Ruleset
+compositions. A frontend is optional later work.
 
+**Does parsing execute callbacks?** Recognition does not execute effects.
+Read semantic projections explicitly and call `commit()` for accepted effects.
+
+**Are offsets characters?** No. Public offsets/spans are bytes; Utf8Source
+provides explicit code-point conversions.
+
+**Is old API compatibility supported?** No. See the
+[breaking changes](canonical-runtime.md#breaking-changes).

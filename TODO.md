@@ -1,62 +1,15 @@
-# Todo
-## Milestone 1
- -  Consistent copyright notices
- -  Ruleset; global context settings (lazy binding)
- -  Ruleset; dedupe/refactor argument parsing
- -  Test AbstractRuleset->call() (indirect) with instance with token already set
- -  Try to match Matches internally on `instanceof` or `is_a()` to avoid warnings on `->match`
- -  PHP 5.latest as low target (can we do this with PHPUnit support?) 
- -  Match() must match entire length or parse
-     -   Boolean option
-     -   Adjust many testcases
- -	Readme's
-      -  Core readme: introduction to the framework and link-out to docs
-      -  Concepts document
-      -  Tutorial document
-      -  BNF-to-object example
-      -  Object reference
- -  Extra "type" terminal parsers (like Integer).
-    -   Cheap to do, but means a lot more classes to know and learn.
-    -   digit, alpha, hex, float (IEEE-standard?), etc...
-        -   Only when implementation can provide functionality beyond Regex parser.
- -  Library: configurable path of config file?
- -  RFCs
-    -   Inherit RFCs (easy way to do aliasses?)
- 
-## Milestone 2
- -  Alternative $input; stream(seekable),generator
- -  Failure; line/position finder
- -	Debug logging mode
- -  Callback for result value; late processing
- -  AST generation
-     -  `->tree($token, $value = null)`
-     -  Allow callback for value
- -  Tokenizer
-     -  `->token($token)`
- -	Facade
-     -  $C = new Comprehend;
-	 -  $C->barbaz = $C->text('baz')->or->text('bar');
-	 -  $C->fooba = $C->text('foo')->barbaz;	
-	 -  Special version of ruleset?
- -	ABNF parser
-     -  To PHP code (design-time)
-     -  To parser (run-time)
- -	Callbacks
-	 -	Match; error/warnings/etc (flexible decorators w/ callbacks)
-		 -	Define decorators at runtime
-		 -	Also impacts Match properties and methods
-	 -	Match results as arrays (optional through name.sub or name. or name[]?)
- -  Ruleset
-     -  Multiple levels in config (dot-path?), i.e. rfc1234.ws
+# Remaining work
 
-# Phase 2
- -  Stream parsing
-     -  Low memory profile
-     -  Sourcing from stream (rewind, position-cache, buffer-cache)
-     -  `->stream(callable $callback, $token = null)`    
- -	Non-greedy repeater
-	 -	Parent responsible for ungreedy backtracking?
- -	Anchor-optional parsing.
- -	Predefineds (global)
- -	Add token-handling.
- -	Build an AST using callbacks.
+The [evolution plan](docs/comprehend--review.md) is the authoritative backlog.
+Phase 2A's runtime cleanup is implemented; the [removal inventory](docs/canonical-runtime.md)
+records the supported replacement for each removed API.
+
+- Phase 3: explicit named graph API, graph freezing, immutable fluent composition,
+  static safety analysis and authoring equivalence examples.
+- Phase 4: measured performance baselines, bounded file input, incremental encoding
+  validation, depth/work budgets and evidence-driven optional memoization.
+- Phase 5: optional ABNF frontend, final documentation and breaking release.
+- Review bundled RFC assets for conformance beyond existing acceptance fixtures.
+
+Backwards compatibility, legacy runtime adapters and old Token output shapes are
+not backlog items or release requirements.

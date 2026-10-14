@@ -1,60 +1,28 @@
 # Contributing
-Want to contribute to Comprehend? Here's some important things you need to know!
 
-## Parsers
-Custom parsers extend `Parser` and implement protected
-`parse(&$input, $offset, Context $context)` plus `__toString()`. Recognition
-returns a match through the inherited factories; keep callbacks deferred and
-restore scoped Context overrides on every exit path.
+Use PHP 8.2+ with DOM, JSON and mbstring. Install development dependencies with
+Composer. Run platform checks, PHPUnit, the canonical API/syntax gate and examples:
 
-Before changing protected signatures or input units, read the phase 1.1
-[source coordinate and extension contract](source-and-extension-contract.md).
-It inventories current subclasses, records adapter policies and explains the
-limits of legacy multibyte offsets. The current runtime still has the
-[documented Unicode limitation](execution.md#current-unicode-limitation).
+```sh
+composer validate --strict
+composer check-platform-reqs
+php vendor/phpunit/phpunit/phpunit --do-not-cache-result
+php tools/check-canonical.php
+php docs/examples/execution.php
+```
 
-For phase 1.3 source matching, custom subclasses explicitly override
-`supportsSource(): bool` and return true only after migrating to byte coordinates.
-Use `parseInContext()` when delegating to children so their source compatibility
-and returned boundaries are checked. See [Source matching](source-matching.md).
+The PHPUnit configuration covers `src`; a coverage driver optionally writes
+Clover output under `build/logs`. CI runs the checks on PHP 8.2–8.5, with an
+experimental nonblocking PHP 8.6 job. Composer.lock is locally generated/ignored.
 
-## Libraries
-TODO: Instructions on how to make custom parser libraries.
+Custom parsers implement the [typed recognition contract](source-and-extension-contract.md).
+Keep recognition/guards pure, spans in bytes, scope restoration exception-safe,
+semantic projections cached and effects explicit. All authoring styles share the
+same runtime. Add meaningful acceptance, diagnostics, source-round-trip and
+lifecycle tests when changing those contracts. Do not reintroduce compatibility
+adapters, old entry points, magic dispatch or Token output layouts; the removal
+inventory and CI gate make this a breaking canonical API.
 
-## Where?
-TODO: Where to find issue tracking, downloads, etc.
-
-## Unittesting
-Use PHP 8.2 or newer with DOM, JSON, and mbstring enabled. Install development
-dependencies with `composer install`, then run `composer check-platform-reqs` and
-`php vendor/phpunit/phpunit/phpunit --do-not-cache-result` with PHPUnit 9.6.
-The default `phpunit.xml` runs the suite in `tests` and limits coverage to `src`.
-If a coverage driver is enabled, Clover output is written to `build/logs/clover.xml`.
-
-CI requires the suite and Composer platform checks to pass on PHP 8.2, 8.3, 8.4,
-and 8.5. PHP 8.6 runs experimentally and may fail without blocking the workflow.
-Add each new stable supported PHP branch to the required matrix after checking
-compatibility; retain PHP 8.2 as the floor until a major release changes it.
-
-Runtime requirements are declared in Composer's `require` section. Development
-tools and their additional extensions are declared through `require-dev` and
-checked by Composer. Coverage additionally needs PCOV or Xdebug; ordinary CI
-tests run without a coverage driver. PHPUnit 6 and PHP 7 are no longer supported.
-
-Upgrading to this baseline requires PHP 8.2+; PHP 8.0 and 8.1 are also below the
-new minimum. Run `composer update` if an existing local lock file still records
-the old platform requirements. This library does not commit `composer.lock`,
-so clean CI resolves dependencies on each tested runtime. Subsequent PHP floor
-increases and the typed runtime redesign belong in a new major release.
-
-Token XML tests compare element order, local names, namespace URIs, and text.
-Token groups become namespace URIs, sanitized groups become prefixes, and
-sanitized token names (or parser class names) become local names. DOM/libxml may
-place namespace declarations on different ancestors across versions; declaration
-placement and redundant declarations are not part of the serialization contract.
-
-## Integration
-TODO: Integrating with Laravel/Symfony/Dingo/etc.
-
-## Inspiration
-TODO: List of things on the to-do list or possible future directions.
+Source code from the supplied  snapshot is not copied. Its architectural
+ideas are implemented independently; the review identifies defects to avoid.
+New graph authoring/freezing work is Phase 3; file/performance work is Phase 4.

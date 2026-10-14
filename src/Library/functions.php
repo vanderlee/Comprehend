@@ -1,8 +1,10 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Library;
 
 use Exception;
+use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
@@ -11,61 +13,50 @@ use Vanderlee\Comprehend\Parser\Terminal\Range;
 use Vanderlee\Comprehend\Parser\Terminal\Regex;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
-
-function plus($parser)
+function plus(Parser $parser): Repeat
 {
     return Repeat::plus($parser);
 }
-
-function star($parser)
+function star(Parser $parser): Repeat
 {
     return Repeat::star($parser);
 }
-
-function opt($parser)
+function opt(Parser $parser): Repeat
 {
     return Repeat::optional($parser);
 }
-
-function repeat($from, $to, $parser)
+function repeat(int $from, ?int $to, Parser $parser): Repeat
 {
     return new Repeat($parser, $from, $to);
 }
-
-function s(...$parsers)
+function s(Parser ...$parsers): Sequence
 {
     return new Sequence(...$parsers);
 }
-
-function c(...$choices)
+function c(Parser ...$choices): Choice
 {
     return new Choice(...$choices);
 }
-
-function range($from, $to)
+function range(?string $from, ?string $to): Range
 {
     return new Range($from, $to);
 }
-
 /**
  * @throws Exception
  */
-function set(string $set)
+function set(string $set): Set
 {
     return new Set($set);
 }
-
-function regex(string $pattern)
+function regex(string $pattern): Regex
 {
     return new Regex($pattern);
 }
-
-function char($char)
+function char(string $char): Char
 {
     return new Char($char);
 }
-
-function text($text)
+function text(string $text): Text
 {
     return new Text($text);
 }

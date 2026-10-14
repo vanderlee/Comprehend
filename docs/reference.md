@@ -1,85 +1,27 @@
-# Reference
+# Supported API reference
 
-See [Execution behavior and limitations](execution.md) for prefix matching,
-complete ASCII input checks, choice selection, greedy repetition, recursion,
-and the current Unicode limitation.
+| Concern | API |
+|---|---|
+| Input | Source, ByteSource, Utf8Source, SourceMode, immutable Span |
+| Runtime | ParseSession; checked `recognizeInSession(Source, int, ParseSession)` delegation |
+| Entry points | `matchPrefix(Source, int = 0)`, `parseAll(Source, int = 0)` |
+| Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Integer, Start, End, Nothing |
+| Structures | Sequence(Parser...), Choice(Parser...), All(Parser...), Except(Parser, Parser), Not(Parser), Repeat(Parser, int = 0, ?int = null) |
+| Repetition helpers | `plus(Parser)`, `star(Parser)`, `optional(Parser)`, `exact(Parser, int)` |
+| Choice policy | `first/longest/shortest(Parser...)`, scoped Prefer |
+| Scoped policy | CaseSensitive(bool, Parser), Space(?Parser, Parser), `spacing(?Parser)`, `lexeme()`, `trivia()` |
+| Grammar | Ruleset, Definition, Implementation, RuleReference, explicit Stub setter |
+| Naming | `name(string|int, ?string = null, bool $leaf = false)` |
+| Meaning | `mapValue(callable)`, named set/concat/push collection operations |
+| Lifecycle | `guard(callable)`, `validateSemantic(callable)`, `onCommit(callable)`, assignments |
+| Results | ParseResult, Diagnostic, ValidationResult, immutable ConcreteNode and AstNode |
+| Serialization | CST/AST `toArray()`, `toJson()`, `toXml()`, JsonSerializable |
 
-The phase 1.1 [source coordinate and extension contract](source-and-extension-contract.md)
-specifies byte spans, encoding modes and compatibility policies. Independent
-[in-memory sources and spans](sources.md) and explicit
-[source-based matching](source-matching.md) are available, together with
-[canonical results and legacy coordinate adapters](parse-results.md).
+Typed helpers in `Vanderlee\Comprehend\Library` are autoloaded by Composer:
+`text`, `char`, `set`, `range`, `regex`, `s`, `c`, `plus`, `star`, `opt`, `repeat`.
+They construct the same objects and require explicit Parser arguments.
+Integer recognizes bounded base-2–36 integers; its bounds must be integers/null.
+Use explicit `chr()` for octet literals, not integer-to-character coercion.
 
-See [Prefix and full-input entry points](consumption.md) for `matchPrefix()`,
-`parseAll()`, empty input and explicit trailing-trivia policies.
-
-See [Structured diagnostics](diagnostics.md) for expected symbols, rule paths, source excerpts and lazy locations.
-
-See [Immutable concrete trees](concrete-trees.md) for source-bound nodes, children
-and raw text independent of token names and semantic transformations.
-
-See [Trivia retention and literal spacing](trivia.md) for leading/intervening/trailing
-trivia, CST markers, `trivia()` and `lexeme()`.
-
-See [Named AST projection](ast.md) for named branches, synthetic unnamed roots,
-span preservation and source access independent of semantic output.
-
-See [Legacy tokens over the concrete tree](token-projection.md) for token/JSON/XML
-compatibility and [Cached typed semantic values](semantic-values.md) for
-`mapValue()`, `value()` and recognition-owned cache lifetimes.
-
-See [Recognition, validation and effect commit](lifecycle.md) for pure guards,
-selected semantic validation, explicit commits and legacy callback timing.
-
-## Arguments
-There are 
-
-## Terminal parsers
-
-### Any
-Matches any single character.
-
-### Char
-### End
-### Nothing
-### Range
-### Regex
-### Set
-### Start
-### Text
-
-## Scoped directives and parser options
-
-Spacing, case sensitivity, and choice preference overrides apply only within
-their parser or directive. The previous context is restored after success,
-failure, or an exception, including nested overrides. Exceptions propagate to
-the caller after restoration.
-
-Spacing recognition defers callbacks and `assignTo()` until the enclosing
-successful root resolves them through `match()`, like ordinary child callbacks.
-Accepted spacer callbacks run before the following child's callbacks. Failed
-alternatives, failing parents, and spacing before a failed repeat iteration
-produce no spacing effects. Successful zero-length spacers still run their
-callbacks when accepted; spacers retain their independent default context.
-
-Spacing stays out of token children and named result collection. Processed
-rules retain selected child callbacks even when their processors replace child
-outputs. `Context::skipSpacing()` no longer resolves effects itself; custom
-parsers using it must capture its optional third argument and attach that match
-with `Success::addPrecedingMatch()` to the following accepted child.
-
-## Structure parsers
-
-### Repeat
-
-`Repeat($parser, $min = 0, $max = null)` greedily repeats a child parser.
-Bounds must be nonnegative, and a finite maximum must be at least the minimum.
-`null` means no maximum. A maximum of zero succeeds without invoking the child.
-
-Every successful child match must consume input. A successful zero-length match
-throws `LogicException`, even for bounded repetition or when the minimum has
-already been met. This applies to nullable parsers, successful lookahead, and
-custom parsers. Skipped spacing does not satisfy the child progress requirement.
-A failed child match ends repetition normally; the repetition succeeds if its
-minimum has been met. Use lookahead outside repetition, or repeat a sequence
-that also consumes input.
+See [custom extensions](source-and-extension-contract.md), [builders](builder.md),
+[results](parse-results.md) and [breaking changes](canonical-runtime.md#breaking-changes).

@@ -56,5 +56,8 @@ jobs:
       - name: Run tests
         run: vendor/bin/phpunit
 
+      - name: Verify canonical API and syntax
+        run: php tools/check-canonical.php
+
       - name: Verify execution examples
         run: php docs/examples/execution.php

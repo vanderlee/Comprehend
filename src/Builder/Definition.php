@@ -1,117 +1,48 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Builder;
 
-use InvalidArgumentException;
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
+use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Parser\Parser;
-
-/**
- * Shorthand for parser definitions.
- *
- * @author Martijn
- */
-class Definition
+/** Parser or typed factory, with selected-scope validators and lazy processors. */
+final class Definition
 {
-    use ArgumentsTrait;
-
-    /**
-     * @var callable|Parser
-     */
+    /** @var Parser|callable(...mixed): Parser */
     public $generator;
-    public $validators = [];
-    public $processors = [];
-
-    /**
-     * @param Parser|callable $generator Either a parser or a function returning a parser ('generator')
-     * @param callable[] $validator
-     */
-    public function __construct($generator = null, $validator = null)
+    /** @var list<callable(ParseResult): bool|string> */
+    public array $validators = [];
+    /** @var array<string, callable(array): mixed> */
+    public array $processors = [];
+    public function __construct(Parser|callable $generator, ?callable $validator = null)
     {
-        //@todo validate parser and validator
-
         $this->generator = $generator;
-        if (is_callable($validator)) {
+        if ($validator !== null) {
             $this->validators[] = $validator;
         }
     }
-
-    /**
-     * (Re-)define this definition from any supported source.
-     *
-     * @param mixed $definition
-     *
-     * @throws InvalidArgumentException
-     */
-    public function define($definition)
+    public function setGenerator(Parser|callable $generator): self
     {
-        if ($definition instanceof self) {
-            $this->generator = $definition->generator;
-            $this->validators = $definition->validators;
-
-            return;
-        }
-
-        if ($definition instanceof Parser
-            || is_callable($definition)) {
-            $this->generator = $definition;
-
-            return;
-        }
-
-        $this->generator = self::getArgument($definition);
-    }
-
-    public function setGenerator($parser)
-    {
-        $this->generator = $parser;
-
+        $this->generator = $generator;
         return $this;
     }
-
-    public function clearValidators()
+    public function clearValidators(): self
     {
         $this->validators = [];
-
         return $this;
     }
-
-    public function addValidator($validator)
+    public function addValidator(callable $validator): self
     {
         $this->validators[] = $validator;
-
         return $this;
     }
-
-    public function addProcessor($key, $processor)
+    public function addProcessor(string $name, callable $processor): self
     {
-        $this->processors[$key] = $processor;
-
+        $this->processors[$name] = $processor;
         return $this;
     }
-
-    /**
-     * Build an instance of this parser definition.
-     *
-     * @param array $arguments
-     *
-     * @return Implementation
-     */
-    public function build(...$arguments)
+    public function build(mixed ...$arguments): Implementation
     {
         return new Implementation($this, $arguments);
-    }
-
-    /**
-     * Build an instance of this parser definition.
-     * Alias of `build()` method.
-     *
-     * @param array $arguments
-     *
-     * @return Implementation
-     */
-    public function __invoke(...$arguments)
-    {
-        return $this->build(...$arguments);
     }
 }

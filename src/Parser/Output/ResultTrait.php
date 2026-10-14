@@ -1,99 +1,64 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Output;
 
-/**
- * @author Martijn
- */
+use Vanderlee\Comprehend\Source\Span;
+/** Named collection operations; transformed values are cached per recognition. */
 trait ResultTrait
 {
-    /**
-     * List of result names to assign the matched text to.
-     *
-     * @var callable[]
-     */
-    private $resultCallbacks = [];
-
-    /**
-     * After parsing, assign the matched input of this parser to the named result.
-     * Only assign if successfully matched entire parent up to root.
-     *
-     * @param string|int $key
-     * @param null|callable|string $value
-     *
-     * @return $this
-     */
-    public function setResult($key = null, $value = null)
+    private array $resultCallbacks = [];
+    private function collect(string $operation, ?string $key, mixed $value): static
     {
-        $this->resultCallbacks[] = function (&$results, $text) use (&$key, &$value) {
-            if (is_callable($value)) {
-                $text = $value($text);
-            } elseif ($value !== null) {
-                $text = $value;
-            }
-
-            $results[$key] = $text;
+        $this->resultCallbacks[] = static function (Span $span) use ($operation, $key, $value) {
+            $evaluated = false;
+            $mapped = null;
+            $error = null;
+            return static function (array &$results) use ($span, $operation, $key, $value, &$evaluated, &$mapped, &$error) {
+                if ($error !== null) {
+                    throw $error;
+                }
+                if (!$evaluated) {
+                    $evaluated = true;
+                    try {
+                        $mapped = is_callable($value) ? $value($span->rawText()) : $value ?? $span->rawText();
+                    } catch (\Throwable $failure) {
+                        $error = $failure;
+                        throw $failure;
+                    }
+                }
+                $name = $key ?? '';
+                if ($operation === 'set') {
+                    $results[$name] = $mapped;
+                } elseif ($operation === 'push') {
+                    if (!array_key_exists($name, $results)) {
+                        $results[$name] = [$mapped];
+                    } elseif (is_array($results[$name])) {
+                        $results[$name][] = $mapped;
+                    } else {
+                        $results[$name] = [$results[$name], $mapped];
+                    }
+                } else if (!array_key_exists($name, $results)) {
+                    $results[$name] = (string) $mapped;
+                } elseif (is_array($results[$name])) {
+                    $results[$name][] = array_pop($results[$name]) . $mapped;
+                } else {
+                    $results[$name] .= $mapped;
+                }
+            };
         };
-
         return $this;
     }
-
-    /**
-     * If result exists, concatenate the matched text as a string, otherwise
-     * create it. If result is an array, concat to the last entry.
-     *
-     * @param null|string $key
-     * @param null|callable|string $value
-     *
-     * @return $this
-     */
-    public function concatResult($key = null, $value = null)
+    public function setResult(?string $key = null, mixed $value = null): static
     {
-        $this->resultCallbacks[] = function (&$results, $text) use (&$key, &$value) {
-            if (is_callable($value)) {
-                $text = $value($text);
-            } elseif ($value !== null) {
-                $text = $value;
-            }
-
-            if (!isset($results[$key])) {
-                $results[$key] = (string)$text;
-            } elseif (is_array($results[$key])) {
-                $results[$key][] = array_pop($results[$key]) . $text;
-            } else {
-                $results[$key] .= $text;
-            }
-        };
-
-        return $this;
+        return $this->collect('set', $key, $value);
     }
-
-    /**
-     * Turn the result into an array and start a new entry.
-     *
-     * @param null|string $key
-     * @param null|callable|string $value
-     *
-     * @return $this
-     */
-    public function pushResult($key = null, $value = null)
+    public function concatResult(?string $key = null, mixed $value = null): static
     {
-        $this->resultCallbacks[] = function (&$results, $text) use (&$key, &$value) {
-            if (is_callable($value)) {
-                $text = $value($text);
-            } elseif ($value !== null) {
-                $text = $value;
-            }
-
-            if (!isset($results[$key])) {
-                $results[$key] = [$text];
-            } elseif (is_array($results[$key])) {
-                $results[$key][] = $text;
-            } else {
-                $results[$key] = [$results[$key], $text];
-            }
-        };
-
-        return $this;
+        return $this->collect('concat', $key, $value);
+    }
+    public function pushResult(?string $key = null, mixed $value = null): static
+    {
+        return $this->collect('push', $key, $value);
     }
 }

@@ -1,13 +1,13 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser;
 
-use InvalidArgumentException;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
 use UnexpectedValueException;
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Match\Success;
-
 /**
  * Description of StubParser.
  *
@@ -17,50 +17,33 @@ use Vanderlee\Comprehend\Match\Success;
  */
 class Stub extends Parser
 {
-    use ArgumentsTrait;
-
     /**
      * @var Parser|null
      */
     private $parser = null;
-
-    public function __set($name, $parser)
+    public function setParser(Parser $parser): static
     {
-        if ($name === 'parser') {
-            return $this->parser = self::getArgument($parser);
-        }
-
-        throw new InvalidArgumentException('Property `' . $name . '` does not exist');
+        $this->parser = $parser;
+        return $this;
     }
-
-    public function __get($name)
+    public function getParser(): ?Parser
     {
-        if ($name === 'parser') {
-            return $this->parser;
-        }
-
-        throw new InvalidArgumentException('Property `' . $name . '` does not exist');
+        return $this->parser;
     }
-
-    protected function parse(&$input, $offset, Context $context)
+    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         if ($this->parser === null) {
             throw new UnexpectedValueException('Missing parser');
         }
-
-        $match = $this->parser->parseInContext($input, $offset, $context);
+        $match = $this->parser->recognizeInSession($input, $offset, $context);
         if ($match instanceof Success) {
             return $this->success($input, $offset, $match->length, $match);
         }
-
         return $this->failure($input, $offset, $match->length);
     }
-
-    public function __toString()
+    public function __toString(): string
     {
         /* @noinspection HtmlUnknownTag */
-        return $this->parser
-            ? (string)$this->parser
-            : '<undefined>';
+        return $this->parser ? (string) $this->parser : '<undefined>';
     }
 }

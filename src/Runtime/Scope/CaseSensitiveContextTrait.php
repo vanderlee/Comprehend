@@ -1,0 +1,33 @@
+<?php
+
+declare (strict_types=1);
+namespace Vanderlee\Comprehend\Runtime\Scope;
+
+use Vanderlee\Comprehend\Source\SourceMode;
+trait CaseSensitiveContextTrait
+{
+    private $caseSensitivity = [];
+    public function pushCaseSensitivity(bool $caseSensitive = true): void
+    {
+        $this->caseSensitivity[] = $caseSensitive;
+    }
+    public function popCaseSensitivity(): bool
+    {
+        return array_pop($this->caseSensitivity);
+    }
+    public function isCaseSensitive(): bool
+    {
+        return end($this->caseSensitivity);
+    }
+    // Helper
+    public function handleCase(string $text): string
+    {
+        if ($this->isCaseSensitive()) {
+            return $text;
+        }
+        if ($this->source()->mode() === SourceMode::UTF8) {
+            return mb_strtolower($text, 'UTF-8');
+        }
+        return strtolower($text);
+    }
+}

@@ -1,7 +1,6 @@
 <?php
 
-/** @noinspection PhpUndefinedFieldInspection */
-
+declare (strict_types=1);
 /**
  * RFC 7405 - Case-Sensitive String Support in ABNF.
  *
@@ -9,34 +8,30 @@
  *
  * @see     https://tools.ietf.org/html/rfc7405
  */
-
 namespace Vanderlee\Comprehend\Library;
 
 require_once 'functions.php';
-
 use Vanderlee\Comprehend\Parser\Parser;
-
 /**
- * @property-read Parser case_sensitive_string
- * @property-read Parser quoted_string
- * @property-read Parser case_insensitive_string
  */
 class Rfc7405 extends Rfc5234
 {
     protected static $name = 'Rfc7405';
-
     public function __construct($overwrites = [])
     {
         $rules = [
             /*
              * 2.2 ABNF Definition of ABNF - char-val
              */
-            'quoted_string' => s($this->DQUOTE, star(c(range(0x20, 0x21), range(0x23, 0x7E))), $this->DQUOTE),
-            'case_sensitive_string' => s('%s', $this->quoted_string),
-            'case_insensitive_string' => s(opt('%i'), $this->quoted_string),
-            'char_val' => c($this->case_insensitive_string, $this->case_sensitive_string),
+            'quoted_string' => s(
+                $this->rule('DQUOTE'),
+                star(c(range(chr(0x20), chr(0x21)), range(chr(0x23), chr(0x7e)))),
+                $this->rule('DQUOTE'),
+            ),
+            'case_sensitive_string' => s(text('%s'), $this->rule('quoted_string')),
+            'case_insensitive_string' => s(opt(text('%i')), $this->rule('quoted_string')),
+            'char_val' => c($this->rule('case_insensitive_string'), $this->rule('case_sensitive_string')),
         ];
-
         parent::__construct(array_merge($rules, $overwrites));
     }
 }

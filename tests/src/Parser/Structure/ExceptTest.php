@@ -2,9 +2,10 @@
 
 namespace Tests\Src\Parser\Structure;
 
+use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Structure\Except;
-
 /**
  * @group structure
  * @group parser
@@ -13,9 +14,8 @@ class ExceptTest extends ParserTestCase
 {
     public function testConstructor()
     {
-        $this->assertInstanceOf(Except::class, new Except('a', 'aa'));
+        $this->assertInstanceOf(Except::class, new Except(new Text('a'), new Text('aa')));
     }
-
     /**
      * @dataProvider exceptData
      *
@@ -27,23 +27,21 @@ class ExceptTest extends ParserTestCase
      */
     public function testExcept(Except $parser, $input, $offset, $match, $length)
     {
-        $result = $parser->match($input, $offset);
-
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $result = $parser->matchPrefix(new ByteSource($input), $offset);
+        $this->assertSame($match, $result->success, (string) $parser);
+        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
-
     public function exceptData()
     {
         return [
-            [new Except('a', 'aa'), '', 0, false, 0],
-            [new Except('a', 'aa'), 'aa', 0, false, 1],
-            [new Except('aa', 'a'), 'aa', 0, false, 1],
-            [new Except('a', 'b'), 'a', 0, true, 1],
-            [new Except('a', 'b'), 'ab', 0, true, 1],
-            [new Except('a', 'b'), 'ab', 1, false, 0],
-            [new Except('a', 'b'), 'ba', 1, true, 1],
-            [new Except('a', 'b'), 'b', 0, false, 0],
+            [new Except(new Text('a'), new Text('aa')), '', 0, false, 0],
+            [new Except(new Text('a'), new Text('aa')), 'aa', 0, false, 1],
+            [new Except(new Text('aa'), new Text('a')), 'aa', 0, false, 1],
+            [new Except(new Text('a'), new Text('b')), 'a', 0, true, 1],
+            [new Except(new Text('a'), new Text('b')), 'ab', 0, true, 1],
+            [new Except(new Text('a'), new Text('b')), 'ab', 1, false, 0],
+            [new Except(new Text('a'), new Text('b')), 'ba', 1, true, 1],
+            [new Except(new Text('a'), new Text('b')), 'b', 0, false, 0],
         ];
     }
 }

@@ -1,36 +1,30 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Directive;
 
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Parser\Parser;
-
 /** Suppress spacing within a subtree, including local spacing overrides. */
 class Lexeme extends Parser
 {
-    use ArgumentsTrait;
-
     private Parser $parser;
-
-    public function __construct($parser)
+    public function __construct(Parser $parser)
     {
-        $this->parser = self::getArgument($parser);
+        $this->parser = $parser;
     }
-
-    protected function parse(&$input, $offset, Context $context)
+    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $context->pushLexeme();
         try {
-            return $this->parser->parseInContext($input, $offset, $context);
+            return $this->parser->recognizeInSession($input, $offset, $context);
         } finally {
             $context->popLexeme();
         }
     }
-
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->parser;
     }

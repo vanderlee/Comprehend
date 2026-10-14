@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Result;
 
 use Closure;
 use LogicException;
 use Throwable;
-
 /** One recognition-owned mapping; cache null, objects and failures as well as scalars. */
 final class SemanticProjection
 {
@@ -16,15 +14,15 @@ final class SemanticProjection
     private bool $evaluated = false;
     private mixed $cached = null;
     private ?Throwable $error = null;
-
     public function __construct(?callable $mapper)
     {
         $this->mapper = $mapper === null ? null : Closure::fromCallable($mapper);
     }
-
     public function value(ParseResult $result): mixed
     {
-        if ($this->evaluating) { throw new LogicException('Recursive semantic value evaluation'); }
+        if ($this->evaluating) {
+            throw new LogicException('Recursive semantic value evaluation');
+        }
         if (!$this->evaluated) {
             $this->evaluating = true;
             try {
@@ -36,7 +34,9 @@ final class SemanticProjection
                 $this->evaluated = true;
             }
         }
-        if ($this->error !== null) { throw $this->error; }
+        if ($this->error !== null) {
+            throw $this->error;
+        }
         return $this->cached;
     }
 }

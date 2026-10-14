@@ -1,11 +1,12 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Directive;
 
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Parser\Parser;
-
 /**
  * Description of CaseDirective.
  *
@@ -13,45 +14,35 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 class CaseSensitive extends Parser
 {
-    use ArgumentsTrait;
-
     /**
      * @var Parser
      */
     private $parser;
-
     /**
      * @var bool
      */
     private $sensitivity;
-
     /**
-     * @param Parser|string|int $parser
+     * @param Parser $parser
      * @param bool $sensitivity
      */
-    public function __construct($sensitivity, $parser)
+    public function __construct(bool $sensitivity, Parser $parser)
     {
-        $this->parser = self::getArgument($parser);
-        $this->sensitivity = (bool)$sensitivity;
+        $this->parser = $parser;
+        $this->sensitivity = (bool) $sensitivity;
     }
-
-    protected function parse(&$input, $offset, Context $context)
+    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $context->pushCaseSensitivity($this->sensitivity);
-
         try {
-            $match = $this->parser->parseInContext($input, $offset, $context);
+            $match = $this->parser->recognizeInSession($input, $offset, $context);
         } finally {
             $context->popCaseSensitivity();
         }
-
         return $match;
     }
-
-    public function __toString()
+    public function __toString(): string
     {
-        return ($this->sensitivity
-                ? 'case'
-                : 'no-case') . '( ' . $this->parser . ' )';
+        return ($this->sensitivity ? 'case' : 'no-case') . '( ' . $this->parser . ' )';
     }
 }

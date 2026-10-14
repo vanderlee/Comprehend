@@ -1,31 +1,25 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Directive;
 
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Parser\Parser;
-
-/** Mark explicitly recognized whitespace/comments without changing legacy outputs. */
+/** Mark explicitly recognized whitespace/comments with independent raw source access. */
 class Trivia extends Parser
 {
-    use ArgumentsTrait;
-
     private Parser $parser;
-
-    public function __construct($parser)
+    public function __construct(Parser $parser)
     {
-        $this->parser = self::getArgument($parser);
+        $this->parser = $parser;
     }
-
-    protected function parse(&$input, $offset, Context $context)
+    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
-        return $this->parser->parseInContext($input, $offset, $context);
+        return $this->parser->recognizeInSession($input, $offset, $context);
     }
-
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->parser;
     }

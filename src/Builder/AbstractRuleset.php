@@ -1,282 +1,92 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Builder;
 
-use Exception;
-use RuntimeException;
-use UnexpectedValueException;
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
-use Vanderlee\Comprehend\Match\Success;
+use InvalidArgumentException;
+use LogicException;
 use Vanderlee\Comprehend\Parser\Parser;
-
-/**
- * @author Martijn
- */
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Match\Success;
+/** Named rules and parameterized factories, directly on the source runtime. */
 abstract class AbstractRuleset extends Parser
 {
-    use ArgumentsTrait,
-        RuleToParserTrait;
-
-    /**
-     * Constant to specify default parser for this ruleset, which is called when Ruleset is used as a Parser.
-     */
     public const ROOT = 'ROOT';
-
-    /**
-     * List of reserved parser names. These are used as methods instead.
-     *
-     * @var string[]
-     */
-    private static $reserved = [
-        'define',
-        'defined',
-        'undefine',
-    ];
-
-    /**
-     * Name of this ruleset. Intended for use with the standard library rulesets.
-     *
-     * @var string
-     */
     protected static $name = null;
-
-    /**
-     * Parser to use as the default parser used when calling this Ruleset as a Parser.
-     *
-     * @var null|Parser
-     */
-    private $defaultParserCache = null;
-
-    /**
-     * @var Definition[]|Parser[]|callable[]
-     */
-    private static $staticRules = [];
-
-    /**
-     * @var Definition[]|Parser[]|callable[]
-     */
-    protected $instanceRules = [];
-
-    /**
-     * Ruleset constructor, defining initial instance rules.
-     *
-     * @param string|array $key Either a key of an initial rule to define or a [ key : definition ] array
-     * @param             $definition Definition of the initial rule or `null` if `$key` is an array
-     * @param string|null $name optional identifier for this ruleset
-     *
-     * @throws Exception
-     */
-    public function __construct($key = null, $definition = null, string $name = null)
+    /** @var array<string, Definition|Parser|callable> */
+    protected array $instanceRules = [];
+    private array $implementations = [];
+    public function __construct(array $rules = [], ?string $name = null)
     {
-        if ($key !== null) {
-            self::defineRule($this->instanceRules, $key, $definition);
-        }
-
-        self::$name = $name;
-    }
-
-    /**
-     * Instantiate the default parser (if available).
-     *
-     * @return null|Implementation|Parser
-     */
-    private function getRootParser()
-    {
-        if ($this->defaultParserCache === null) {
-            if (!isset($this->instanceRules[self::ROOT])) {
-                throw new UnexpectedValueException('Missing default parser');
-            }
-
-            $this->defaultParserCache = static::call($this->instanceRules, self::ROOT);
-        }
-
-        return $this->defaultParserCache;
-    }
-
-    /**
-     * @throws Exception
-     */
-    protected function parse(&$input, $offset, Context $context)
-    {
-        $match = $this->getRootParser()->parseInContext($input, $offset, $context);
-        if ($match instanceof Success) {
-            return $this->success($input, $offset, $match->length, $match);
-        }
-
-        return $this->failure($input, $offset, $match->length);
-    }
-
-    /**
-     * Set a definition.
-     *
-     * @param callable[]|Definition[]|Parser[] $rules
-     * @param string $key
-     * @param Definition|Parser|callable $definition
-     *
-     * @throws Exception
-     */
-    protected static function setRule(array &$rules, string $key, $definition)
-    {
-        if (isset($rules[$key])
-            && $rules[$key] instanceof Definition) {
-            try {
-                $rules[$key]->define($definition);
-
-                return;
-            } catch (Exception $exception) {
-                throw new RuntimeException(sprintf('Cannot redefine `%2$s` using definition type `%1$s`',
-                    self::getArgumentType($definition), $key));
-            }
-        }
-
-        $rules[$key] = $definition;
-    }
-
-    /**
-     * Define a rule.
-     *
-     * @param array $rules
-     * @param string|array $name
-     * @param mixed|null $definition
-     *
-     * @throws Exception
-     */
-    protected static function defineRule(array &$rules, $name, $definition = null)
-    {
-        if (is_array($name)) {
-            foreach ($name as $key => $value) {
-                self::defineRule($rules, $key, $value);
-            }
-
-            return;
-        }
-
-        if (in_array($name, self::$reserved)) {
-            throw new RuntimeException('Cannot define reserved name `' . $name . '`');
-        }
-
-        self::setRule($rules, $name, $definition);
-    }
-
-    /**
-     * Check if a specified name is defined in the rules map provided.
-     *
-     * @param $rules
-     * @param $names
-     *
-     * @return bool
-     */
-    protected static function isRuleDefined($rules, $names)
-    {
-        foreach ((array)$names as $key) {
-            if (!isset($rules[$key])) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    protected static function undefineRule(&$rules, $names)
-    {
-        foreach ((array)$names as $key) {
-            unset($rules[$key]);
+        $this->groupName = $name ?? static::$name;
+        foreach ($rules as $key => $rule) {
+            $this->define($key, $rule);
         }
     }
-
-    private static function applyToken($key, Parser $parser)
+    private ?string $groupName = null;
+    public function groupName(): ?string
     {
-        $parser->diagnosticRule($key);
-        if (!$parser->hasToken()) {
-            $parser->token($key, static::$name);
+        return $this->groupName ?? static::$name;
+    }
+    public function define(string $name, Parser|Definition|callable $definition): static
+    {
+        if ($name === '') {
+            throw new InvalidArgumentException('Rule name cannot be empty');
         }
-
-        return $parser;
+        $this->instanceRules[$name] = $definition;
+        // Explicit redefinition affects future recognitions; existing results
+        // retain their own nodes, values, validators and effects.
+        $this->implementations = [];
+        return $this;
     }
-
-    /**
-     * Create a new instance of a definition.
-     *
-     * @param       $rules
-     * @param       $key
-     * @param array $arguments
-     *
-     * @return Implementation|Parser
-     */
-    protected static function call(&$rules, $key, array $arguments = [])
-    {
-        // Undefined rule; return empty definition implementation
-        if (!isset($rules[$key])) {
-            $rules[$key] = new Definition();
-
-            return self::applyToken($key, new Implementation($rules[$key], $arguments));
-        }
-
-        // Rule reference
-        if (is_string($rules[$key])
-            && isset($rules[$rules[$key]])) {
-            return self::applyToken($key, static::call($rules, $rules[$key], $arguments));
-        }
-
-        // Generic rule interpreters
-        $instance = self::ruleToParser($rules[$key], $arguments);
-        if ($instance) {
-            return self::applyToken($key, $instance);
-        }
-
-        throw new RuntimeException(sprintf('Cannot instantiate `%2$s` using definition type `%1$s`',
-            self::getArgumentType($rules[$key]), $key));
-    }
-
-    /**
-     * Handle instance/object definitions.
-     *
-     * @param string $name
-     * @param array $arguments
-     *
-     * @return Parser
-     * @throws Exception
-     *
-     */
-    public function __call($name, $arguments = [])
-    {
-        return static::call($this->instanceRules, $name, $arguments);
-    }
-
-    /**
-     * Handle static/class definitions.
-     *
-     * @param string $name
-     * @param array $arguments
-     *
-     * @return Parser
-     * @throws Exception
-     *
-     */
-    public static function __callStatic($name, $arguments = [])
-    {
-        return static::call(self::$staticRules, $name, $arguments);
-    }
-
-    public function __get($name)
-    {
-        return static::call($this->instanceRules, $name);
-    }
-
-    public function __isset($name)
+    public function defined(string $name): bool
     {
         return isset($this->instanceRules[$name]);
     }
-
-    public function __toString()
+    public function undefine(string $name): void
     {
-        try {
-            return (string)$this->getRootParser();
-        } catch (Exception $e) {
-            // ignore
+        unset($this->instanceRules[$name]);
+        $this->implementations = [];
+    }
+    /** Explicit deferred rule lookup permits construction in any order. */
+    public function rule(string $name, mixed ...$arguments): Parser
+    {
+        return new RuleReference($this, $name, $arguments);
+    }
+    /** @internal Resolve on recognition, never guess a literal or class name. */
+    public function resolveRule(string $name, array $arguments = []): Parser
+    {
+        if (!isset($this->instanceRules[$name])) {
+            throw new LogicException('Undefined grammar rule: ' . $name);
         }
-
-        return '';
+        // Factory arguments can contain arbitrary objects; avoid serialization
+        // or shared caches for parameterized implementations.
+        if ($arguments === [] && isset($this->implementations[$name])) {
+            return $this->implementations[$name];
+        }
+        $definition = $this->instanceRules[$name];
+        if ($definition instanceof Parser && $arguments !== []) {
+            throw new LogicException('Only rule factories accept arguments: ' . $name);
+        }
+        $parser = $definition instanceof Definition ? $definition->build(...$arguments) : ($definition instanceof Parser ? clone $definition : $definition(...$arguments));
+        if (!$parser instanceof Parser) {
+            throw new LogicException('Rule factory must return Parser: ' . $name);
+        }
+        $parser->diagnosticRule($name);
+        if ($arguments === []) {
+            $this->implementations[$name] = $parser;
+        }
+        return $parser;
+    }
+    protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
+    {
+        $match = $this->resolveRule(self::ROOT)->recognizeInSession($source, $offset, $session);
+        return $match instanceof Success ? $this->success($source, $offset, $match->length, $match) : $this->failure($source, $offset, $match->length);
+    }
+    public function __toString(): string
+    {
+        return static::class;
     }
 }

@@ -1,13 +1,12 @@
 <?php
 
+declare (strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Structure;
 
 use ArrayAccess;
 use ArrayIterator;
 use IteratorAggregate;
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Parser\Parser;
-
 /**
  * Abstract class indicating a parser that consists of multiple parsers and can be accessed as an array.
  *
@@ -15,46 +14,37 @@ use Vanderlee\Comprehend\Parser\Parser;
  */
 abstract class IterableParser extends Parser implements IteratorAggregate, ArrayAccess
 {
-    use ArgumentsTrait;
-
     /**
      * @var Parser[]
      */
     protected $parsers = [];
-
     // implements IteratorAggregate
-
-    public function getIterator()
+    public function getIterator(): \Traversable
     {
         return new ArrayIterator($this->parsers);
     }
-
     // implements ArrayAccess
-
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
-        $value = self::getArgument($value);
-
+        if (!$value instanceof Parser) {
+            throw new \InvalidArgumentException('Children must be Parser instances');
+        }
         if (is_null($offset)) {
             $this->parsers[] = $value;
         } else {
             $this->parsers[$offset] = $value;
         }
     }
-
-    public function offsetExists($offset)
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->parsers[$offset]);
     }
-
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->parsers[$offset]);
     }
-
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): ?Parser
     {
-        return $this->parsers[$offset]
-            ?? null;
+        return $this->parsers[$offset] ?? null;
     }
 }

@@ -2,9 +2,9 @@
 
 namespace Tests\Src\Parser\Terminal;
 
+use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
-
 /**
  * @group terminal
  * @group parser
@@ -15,19 +15,16 @@ class CharTest extends ParserTestCase
     {
         $this->assertInstanceOf(Char::class, new Char('a'));
     }
-
     public function testEmpty()
     {
         $this->expectExceptionMessage('Empty argument');
         new Char('');
     }
-
     public function testTooLong()
     {
         $this->expectExceptionMessage('Non-character argument');
         new Char('aa');
     }
-
     /**
      * @dataProvider charData
      *
@@ -39,12 +36,10 @@ class CharTest extends ParserTestCase
      */
     public function testChar(Char $parser, $input, $offset, $match, $length)
     {
-        $result = $parser->match($input, $offset);
-
-        $this->assertSame($match, $result->match, (string)$parser);
-        $this->assertSame($length, $result->length, (string)$parser);
+        $result = $parser->matchPrefix(new ByteSource($input), $offset);
+        $this->assertSame($match, $result->success, (string) $parser);
+        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
-
     public function charData()
     {
         return [
@@ -56,7 +51,7 @@ class CharTest extends ParserTestCase
             [new Char('a'), '', 0, false, 0],
             [new Char('a'), 'ba', 0, false, 0],
             [new Char('a'), 'ba', 1, true, 1],
-            [new Char(ord('a')), 'a', 0, true, 1],
+            [new Char(chr(ord('a'))), 'a', 0, true, 1],
             [(new Char('a'))->caseInsensitive(), 'a', 0, true, 1],
             [(new Char('A'))->caseInsensitive(), 'A', 0, true, 1],
             [(new Char('a'))->caseInsensitive(), 'A', 0, true, 1],
