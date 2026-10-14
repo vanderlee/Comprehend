@@ -99,11 +99,12 @@ The bundled RFC grammars import the facade as `C` with
 | `literalWindow(literal)` | Regex matching with a proven finite literal read window |
 | `ref(Ruleset, name, ...args)` | Deferred supported named reference |
 | `sequence(...items)`, `then(...items)` | Sequence composition |
-| `choice(...items)`, `or(...items)`, `firstOf(...items)` | First-choice composition |
-| `longestOf(...items)`, `shortestOf(...items)` | Explicit local choice ranking |
+| `choice(...items)`, `or(...items)` | Choice composition inheriting the scoped ranking policy (first by default) |
+| `first(...items)` / `firstOf(...items)` | Explicit local first-success choice |
+| `longest(...items)` / `longestOf(...items)`, `shortest(...items)` / `shortestOf(...items)` | Explicit local choice ranking |
 | `all(...items)`, `except(match, not)`, `not(item)` | Intersection (shortest accepted span), exclusion, negative lookahead |
 | `repeat(min, max)` | Repeat with existing bounds/progress semantics |
-| `plus()`, `star()` / `kleene()`, `optional()` / `maybe()` | One or more, zero or more, zero or one |
+| `some()` / `plus()`, `many()` / `star()` / `kleene()`, `maybe()` / `optional()` | One or more, zero or more, zero or one |
 | `named()`, `mapValue()` | Metadata on a detached graph |
 | `guard()`, `validateSemantic()`, `onCommit()` | Pure recognition predicate, selected semantic validation, explicit committed effects |
 | `setResult()`, `concatResult()`, `pushResult()` | Cached named result collections, independent of source text |
@@ -128,7 +129,7 @@ its supplied children together; successive calls retain the preceding expression
 as a nested child, preserving names and scoped directives.
 
 ```php
-$digits = Comprehend::range('0', '9')->plus()->named('digits');
+$digits = Comprehend::range('0', '9')->some()->named('digits');
 $bracketed = Comprehend::text('[')->then($digits, Comprehend::text(']'));
 $grammar = $bracketed->or(Comprehend::text('none'), Comprehend::text('empty'));
 $grammar->freeze()->parseAll(new Utf8Source('[123]'))->success; // true

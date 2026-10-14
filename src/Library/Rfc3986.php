@@ -44,29 +44,29 @@ class Rfc3986 extends AbstractRuleset
                 C::text(':'),
                 C::text('@'),
             ),
-            'segment' => C::of($this->rule('pchar'))->star(),
-            'segment_nz' => C::of($this->rule('pchar'))->plus(),
+            'segment' => C::of($this->rule('pchar'))->many(),
+            'segment_nz' => C::of($this->rule('pchar'))->some(),
             'segment_nz_nc' => C::choice(
                 $this->rule('unreserved'),
                 $this->rule('pct_encoded'),
                 $this->rule('sub_delims'),
                 C::text('@'),
-            )->plus(),
-            'path_abempty' => C::sequence(C::text('/'), $this->rule('segment'))->star(),
+            )->some(),
+            'path_abempty' => C::sequence(C::text('/'), $this->rule('segment'))->many(),
             'path_absolute' => C::sequence(
                 C::text('/'),
                 C::sequence(
                     $this->rule('segment_nz'),
-                    C::sequence(C::text('/'), $this->rule('segment'))->star(),
-                )->optional(),
+                    C::sequence(C::text('/'), $this->rule('segment'))->many(),
+                )->maybe(),
             ),
             'path_noscheme' => C::sequence(
                 $this->rule('segment_nz_nc'),
-                C::sequence(C::text('/'), $this->rule('segment'))->star(),
+                C::sequence(C::text('/'), $this->rule('segment'))->many(),
             ),
             'path_rootless' => C::sequence(
                 $this->rule('segment_nz'),
-                C::sequence(C::text('/'), $this->rule('segment'))->star(),
+                C::sequence(C::text('/'), $this->rule('segment'))->many(),
             ),
             'path_empty' => C::nothing(),
             'path' => C::choice(
@@ -81,13 +81,13 @@ class Rfc3986 extends AbstractRuleset
                 $this->rule('pchar'),
                 C::text('/'),
                 C::text('?'),
-            )->star(),
+            )->many(),
             // 3.5.  Fragment
             'fragment' => C::choice(
                 $this->rule('pchar'),
                 C::text('/'),
                 C::text('?'),
-            )->star(),
+            )->many(),
             // 3.  Syntax Components
             'hier_part' => C::sequence(
                 C::text('//'),
@@ -103,8 +103,8 @@ class Rfc3986 extends AbstractRuleset
                 $this->rule('scheme'),
                 C::text(':'),
                 $this->rule('hier_part'),
-                C::sequence(C::text('?'), $this->rule('query'))->optional(),
-                C::sequence(C::text('#'), $this->rule('fragment'))->optional(),
+                C::sequence(C::text('?'), $this->rule('query'))->maybe(),
+                C::sequence(C::text('#'), $this->rule('fragment'))->maybe(),
             ),
             // 3.1.  Scheme
             'scheme' => C::sequence(
@@ -115,13 +115,13 @@ class Rfc3986 extends AbstractRuleset
                     C::text('+'),
                     C::text('-'),
                     C::text('.'),
-                )->star(),
+                )->many(),
             ),
             // 3.2.  Authority
             'authority' => C::sequence(
-                C::sequence($this->rule('userinfo'), C::text('@'))->optional(),
+                C::sequence($this->rule('userinfo'), C::text('@'))->maybe(),
                 $this->rule('host'),
-                C::sequence(C::text(':'), $this->rule('port'))->optional(),
+                C::sequence(C::text(':'), $this->rule('port'))->maybe(),
             ),
             // 3.2.1.  User Information
             'userinfo' => C::choice(
@@ -129,9 +129,9 @@ class Rfc3986 extends AbstractRuleset
                 $this->rule('pct_encoded'),
                 $this->rule('sub_delims'),
                 C::text(':'),
-            )->star(),
+            )->many(),
             // 3.2.3.  Port
-            'port' => C::of($abnf->rule('DIGIT'))->star(),
+            'port' => C::of($abnf->rule('DIGIT'))->many(),
             // 3.2.2.  Host
             'h16' => C::of($abnf->rule('HEXDIG'))->repeat(1, 4),
             'ls32' => C::choice(
@@ -149,16 +149,16 @@ class Rfc3986 extends AbstractRuleset
                     $this->rule('ls32'),
                 ),
                 C::sequence(
-                    C::of($this->rule('h16'))->optional(),
+                    C::of($this->rule('h16'))->maybe(),
                     C::text('::'),
                     C::sequence($this->rule('h16'), C::text(':'))->repeat(4, 4),
                     $this->rule('ls32'),
                 ),
                 C::sequence(
                     C::sequence(
-                        C::sequence($this->rule('h16'), C::text(':'))->optional(),
+                        C::sequence($this->rule('h16'), C::text(':'))->maybe(),
                         $this->rule('h16'),
-                    )->optional(),
+                    )->maybe(),
                     C::text('::'),
                     C::sequence($this->rule('h16'), C::text(':'))->repeat(3, 3),
                     $this->rule('ls32'),
@@ -167,7 +167,7 @@ class Rfc3986 extends AbstractRuleset
                     C::sequence(
                         C::sequence($this->rule('h16'), C::text(':'))->repeat(0, 2),
                         $this->rule('h16'),
-                    )->optional(),
+                    )->maybe(),
                     C::text('::'),
                     C::sequence($this->rule('h16'), C::text(':'))->repeat(2, 2),
                     $this->rule('ls32'),
@@ -176,7 +176,7 @@ class Rfc3986 extends AbstractRuleset
                     C::sequence(
                         C::sequence($this->rule('h16'), C::text(':'))->repeat(0, 3),
                         $this->rule('h16'),
-                    )->optional(),
+                    )->maybe(),
                     C::text('::'),
                     $this->rule('h16'),
                     C::text(':'),
@@ -186,7 +186,7 @@ class Rfc3986 extends AbstractRuleset
                     C::sequence(
                         C::sequence($this->rule('h16'), C::text(':'))->repeat(0, 4),
                         $this->rule('h16'),
-                    )->optional(),
+                    )->maybe(),
                     C::text('::'),
                     $this->rule('ls32'),
                 ),
@@ -194,7 +194,7 @@ class Rfc3986 extends AbstractRuleset
                     C::sequence(
                         C::sequence($this->rule('h16'), C::text(':'))->repeat(0, 5),
                         $this->rule('h16'),
-                    )->optional(),
+                    )->maybe(),
                     C::text('::'),
                     $this->rule('h16'),
                 ),
@@ -202,7 +202,7 @@ class Rfc3986 extends AbstractRuleset
                     C::sequence(
                         C::sequence($this->rule('h16'), C::text(':'))->repeat(0, 6),
                         $this->rule('h16'),
-                    )->optional(),
+                    )->maybe(),
                     C::text('::'),
                 ),
             ),
@@ -224,9 +224,9 @@ class Rfc3986 extends AbstractRuleset
             ),
             'IPvFuture' => C::sequence(
                 C::text('v'),
-                C::of($abnf->rule('HEXDIG'))->plus(),
+                C::of($abnf->rule('HEXDIG'))->some(),
                 C::text('.'),
-                C::choice($this->rule('unreserved'), $this->rule('sub_delims'), C::text(':'))->plus(),
+                C::choice($this->rule('unreserved'), $this->rule('sub_delims'), C::text(':'))->some(),
             ),
             'IP_literal' => C::sequence(
                 C::text('['),
@@ -237,7 +237,7 @@ class Rfc3986 extends AbstractRuleset
                 $this->rule('unreserved'),
                 $this->rule('pct_encoded'),
                 $this->rule('sub_delims'),
-            )->star(),
+            )->many(),
             'host' => C::choice(
                 $this->rule('IP_literal'),
                 $this->rule('IPv4address'),
@@ -256,8 +256,8 @@ class Rfc3986 extends AbstractRuleset
             ),
             'relative_ref' => C::sequence(
                 $this->rule('relative_part'),
-                C::sequence(C::text('?'), $this->rule('query'))->optional(),
-                C::sequence(C::text('#'), $this->rule('fragment'))->optional(),
+                C::sequence(C::text('?'), $this->rule('query'))->maybe(),
+                C::sequence(C::text('#'), $this->rule('fragment'))->maybe(),
             ),
             // 4.1.  URI Reference
             'URI_reference' => C::choice($this->rule('URI'), $this->rule('relative_ref')),
@@ -266,7 +266,7 @@ class Rfc3986 extends AbstractRuleset
                 $this->rule('scheme'),
                 C::text(':'),
                 $this->rule('hier_part'),
-                C::sequence(C::text('?'), $this->rule('query'))->optional(),
+                C::sequence(C::text('?'), $this->rule('query'))->maybe(),
             ),
         ];
         parent::__construct(array_merge($rules, $overwrites));

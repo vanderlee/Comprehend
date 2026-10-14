@@ -108,14 +108,29 @@ final readonly class Comprehend
         return new self(Choice::first(...array_map(self::unwrap(...), $parsers)));
     }
 
+    public static function first(self|Parser ...$parsers): self
+    {
+        return self::firstOf(...$parsers);
+    }
+
     public static function longestOf(self|Parser ...$parsers): self
     {
         return new self(Choice::longest(...array_map(self::unwrap(...), $parsers)));
     }
 
+    public static function longest(self|Parser ...$parsers): self
+    {
+        return self::longestOf(...$parsers);
+    }
+
     public static function shortestOf(self|Parser ...$parsers): self
     {
         return new self(Choice::shortest(...array_map(self::unwrap(...), $parsers)));
+    }
+
+    public static function shortest(self|Parser ...$parsers): self
+    {
+        return self::shortestOf(...$parsers);
     }
 
     public static function all(self|Parser ...$parsers): self
@@ -166,9 +181,19 @@ final readonly class Comprehend
         return $this->repeat(1);
     }
 
+    public function some(): self
+    {
+        return $this->plus();
+    }
+
     public function star(): self
     {
         return $this->repeat();
+    }
+
+    public function many(): self
+    {
+        return $this->star();
     }
 
     public function optional(): self

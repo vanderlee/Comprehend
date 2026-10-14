@@ -57,6 +57,10 @@ class ComprehendErgonomicsTest extends TestCase
         $this->assertSame('a', C::firstOf($a, $ab)->freeze()->matchPrefix($source)->rawText());
         $this->assertSame('ab', C::longestOf($a, $ab)->freeze()->matchPrefix($source)->rawText());
         $this->assertSame('a', C::shortestOf($ab, $a)->freeze()->matchPrefix($source)->rawText());
+        $this->assertSame('a', C::first($a, $ab)->freeze()->matchPrefix($source)->rawText());
+        $this->assertSame('ab', C::longest($a, $ab)->freeze()->matchPrefix($source)->rawText());
+        $this->assertSame('a', C::shortest($ab, $a)->freeze()->matchPrefix($source)->rawText());
+        $this->assertSame('a', C::first($a, $ab)->prefer(Prefer::LONGEST)->freeze()->matchPrefix($source)->rawText());
         $this->assertSame('ab', C::choice($a, $ab)->prefer(Prefer::LONGEST)->freeze()->matchPrefix($source)->rawText());
         $sensitive = C::text('a')->caseSensitive();
         $insensitive = $sensitive->caseSensitive(false);
@@ -83,11 +87,11 @@ class ComprehendErgonomicsTest extends TestCase
     public function testRepetitionShortcutsRetainBoundsAndOriginalGrammar(): void
     {
         $letter = C::text('a');
-        foreach (['star', 'kleene', 'plus', 'optional', 'maybe'] as $shortcut) {
+        foreach (['star', 'kleene', 'plus', 'optional', 'maybe', 'some', 'many'] as $shortcut) {
             $grammar = $letter->$shortcut()->freeze();
-            $this->assertSame($shortcut !== 'plus', $grammar->parseAll(new Utf8Source(''))->success);
+            $this->assertSame(!in_array($shortcut, ['plus', 'some'], true), $grammar->parseAll(new Utf8Source(''))->success);
             $this->assertTrue($grammar->parseAll(new Utf8Source('a'))->success);
-            $this->assertSame(in_array($shortcut, ['star', 'kleene', 'plus'], true), $grammar->parseAll(new Utf8Source('aa'))->success);
+            $this->assertSame(in_array($shortcut, ['star', 'kleene', 'plus', 'some', 'many'], true), $grammar->parseAll(new Utf8Source('aa'))->success);
             $this->assertFalse($grammar->parseAll(new Utf8Source('b'))->success);
         }
         $this->assertFalse($letter->freeze()->parseAll(new Utf8Source('aa'))->success);

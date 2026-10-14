@@ -41,11 +41,11 @@ class Rfc4408 extends AbstractRuleset
             'version' => $this->rule('v=spf1'),
             // 4.6.1. Term Evaluation
             'terms' => C::sequence(
-                C::of($abnf->rule('SP'))->repeat(1),
+                C::of($abnf->rule('SP'))->some(),
                 C::choice($this->rule('directive'), $this->rule('modifier')),
-            )->repeat(),
+            )->many(),
             'directive' => C::sequence(
-                C::of($this->rule('qualifier'))->repeat(0, 1),
+                C::of($this->rule('qualifier'))->maybe(),
                 $this->rule('mechanism'),
             ),
             'qualifier' => C::set('+-?~'),
@@ -78,7 +78,7 @@ class Rfc4408 extends AbstractRuleset
                     C::text('-'),
                     C::text('_'),
                     C::text('.'),
-                )->repeat(),
+                )->many(),
             ),
             // 5.1. "all"
             'all' => $this->rule('all'),
@@ -91,14 +91,14 @@ class Rfc4408 extends AbstractRuleset
             // 5.3. "a"
             'A' => C::sequence(
                 C::text('a'),
-                C::sequence(C::text(':'), $this->rule('domain_spec'))->repeat(0, 1),
-                C::of($this->rule('dual_cidr_length'))->repeat(0, 1),
+                C::sequence(C::text(':'), $this->rule('domain_spec'))->maybe(),
+                C::of($this->rule('dual_cidr_length'))->maybe(),
             ),
             // 5.4. "mx"
             'MX' => C::sequence(
                 C::text('mx'),
-                C::sequence(C::text(':'), $this->rule('domain_spec'))->repeat(0, 1),
-                C::of($this->rule('dual_cidr_length'))->repeat(0, 1),
+                C::sequence(C::text(':'), $this->rule('domain_spec'))->maybe(),
+                C::of($this->rule('dual_cidr_length'))->maybe(),
             ),
             // 5.5. "ptr"
             'PTR' => C::sequence(C::text('ptr'), C::text(':'), $this->rule('domain_spec')),
@@ -107,25 +107,25 @@ class Rfc4408 extends AbstractRuleset
                 C::text('ip4'),
                 C::text(':'),
                 $this->rule('ip4_network'),
-                C::of($this->rule('ip4_cidr_length'))->repeat(0, 1),
+                C::of($this->rule('ip4_cidr_length'))->maybe(),
             ),
             'IP6' => C::sequence(
                 C::text('ip6'),
                 C::text(':'),
                 $this->rule('ip6_network'),
-                C::of($this->rule('ip6_cidr_length'))->repeat(0, 1),
+                C::of($this->rule('ip6_cidr_length'))->maybe(),
             ),
             'ip4_cidr_length' => C::sequence(
                 C::text('/'),
-                C::of($abnf->rule('DIGIT'))->repeat(1),
+                C::of($abnf->rule('DIGIT'))->some(),
             ),
             'ip6_cidr_length' => C::sequence(
                 C::text('/'),
-                C::of($abnf->rule('DIGIT'))->repeat(1),
+                C::of($abnf->rule('DIGIT'))->some(),
             ),
             'dual_cidr_length' => C::sequence(
-                C::of($this->rule('ip4_cidr_length'))->repeat(0, 1),
-                C::sequence(C::text('/'), $this->rule('ip6_cidr_length'))->repeat(0, 1)
+                C::of($this->rule('ip4_cidr_length'))->maybe(),
+                C::sequence(C::text('/'), $this->rule('ip6_cidr_length'))->maybe(),
             ),
             'ip4_network' => C::sequence(
                 $this->rule('qnum'),
@@ -159,35 +159,35 @@ class Rfc4408 extends AbstractRuleset
             // 8. Macros
             'domain_spec' => C::sequence($this->rule('macro_string'), $this->rule('domain_end')),
             'domain_end' => C::choice(
-                C::sequence(C::text('.'), $this->rule('toplabel'), C::text('.')->repeat(0, 1)),
+                C::sequence(C::text('.'), $this->rule('toplabel'), C::text('.')->maybe()),
                 $this->rule('macro_expand'),
             ),
             'toplabel' => C::choice(
                 C::sequence(
-                    C::of($this->rule('alphanum'))->repeat(),
+                    C::of($this->rule('alphanum'))->many(),
                     $abnf->rule('ALPHA'),
-                    C::of($this->rule('alphanum'))->repeat(),
+                    C::of($this->rule('alphanum'))->many(),
                 ),
                 C::sequence(
-                    C::of($this->rule('alphanum'))->repeat(1),
+                    C::of($this->rule('alphanum'))->some(),
                     C::text('='),
-                    C::choice($this->rule('alphanum'), C::text('-'))->repeat(),
+                    C::choice($this->rule('alphanum'), C::text('-'))->many(),
                     $this->rule('alphanum'),
                 ),
             ),
             // LDH rule plus additional TLD restrictions (see [RFC3696], Section 2) @todo Read & implement
             'alphanum' => C::choice($abnf->rule('ALPHA'), $abnf->rule('DIGIT')),
-            'explain_string' => C::choice($this->rule('macro_string'), $abnf->rule('SP'))->repeat(),
+            'explain_string' => C::choice($this->rule('macro_string'), $abnf->rule('SP'))->many(),
             'macro_string' => C::choice(
                 $this->rule('macro_expand'),
                 $this->rule('macro_literal'),
-            )->repeat(),
+            )->many(),
             'macro_expand' => C::choice(
                 C::sequence(
                     C::text('%{'),
                     $this->rule('macro_letter'),
                     $this->rule('transformers'),
-                    C::of($this->rule('delimiter'))->repeat(),
+                    C::of($this->rule('delimiter'))->many(),
                     C::text('}'),
                 ),
                 C::text('%%'),
@@ -200,8 +200,8 @@ class Rfc4408 extends AbstractRuleset
             ),
             'macro_letter' => C::set('slodiphcrt'),
             'transformers' => C::sequence(
-                C::of($abnf->rule('DIGIT'))->repeat(),
-                C::text('r')->repeat(0, 1),
+                C::of($abnf->rule('DIGIT'))->many(),
+                C::text('r')->maybe(),
             ),
             'delimiter' => C::set('.-+,/_='),
             // 7. The Received-SPF Header Field
