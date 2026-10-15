@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Structure;
 
 use InvalidArgumentException;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -17,8 +20,10 @@ use Vanderlee\Comprehend\Source\Source;
  *
  * @author Martijn
  */
-class All extends Parser
+class All extends Parser implements AnalyzableParser
 {
+    use DefaultAnalysisTrait;
+
     /**
      * @var Parser[]
      */
@@ -39,6 +44,17 @@ class All extends Parser
     public function getParsers(): array
     {
         return $this->parsers;
+    }
+
+    /** @return list<Parser> */
+    public function analysisLeadingParsers(NullabilityLookup $lookup): array
+    {
+        return array_values($this->parsers);
+    }
+
+    public function analysisNullability(NullabilityLookup $lookup): ?bool
+    {
+        return $lookup->any(array_values($this->parsers));
     }
 
     public function __toString(): string

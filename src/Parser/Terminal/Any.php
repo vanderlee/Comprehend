@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -15,8 +18,15 @@ use Vanderlee\Comprehend\Source\Source;
  *
  * @author Martijn
  */
-class Any extends Parser
+class Any extends Parser implements AnalyzableParser
 {
+    use DefaultAnalysisTrait;
+
+    public function analysisNullability(NullabilityLookup $lookup): ?bool
+    {
+        return false;
+    }
+
     public function __toString(): string
     {
         return '.';

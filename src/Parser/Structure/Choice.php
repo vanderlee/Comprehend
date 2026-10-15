@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Structure;
 
 use InvalidArgumentException;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
@@ -18,8 +21,9 @@ use Vanderlee\Comprehend\Source\Source;
  *
  * @author Martijn
  */
-class Choice extends IterableParser
+class Choice extends IterableParser implements AnalyzableParser
 {
+    use DefaultAnalysisTrait;
     use PreferTrait;
 
     public function __construct(Parser ...$arguments)
@@ -63,6 +67,17 @@ class Choice extends IterableParser
         $this->parsers = array_merge($this->parsers, $arguments);
 
         return $this;
+    }
+
+    /** @return list<Parser> */
+    public function analysisLeadingParsers(NullabilityLookup $lookup): array
+    {
+        return array_values($this->parsers);
+    }
+
+    public function analysisNullability(NullabilityLookup $lookup): ?bool
+    {
+        return $lookup->any(array_values($this->parsers));
     }
 
     public function __toString(): string

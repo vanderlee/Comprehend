@@ -6,6 +6,9 @@ namespace Vanderlee\Comprehend\Parser\Terminal;
 
 use Exception;
 use InvalidArgumentException;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -19,8 +22,9 @@ use Vanderlee\Comprehend\Source\Utf8Source;
  *
  * @author Martijn
  */
-class Set extends Parser
+class Set extends Parser implements AnalyzableParser
 {
+    use DefaultAnalysisTrait;
     use CaseSensitiveTrait;
 
     private string $set;
@@ -48,6 +52,11 @@ class Set extends Parser
         $this->set = count_chars($set, 3);
         $this->sourceSet = $set;
         $this->include = $include;
+    }
+
+    public function analysisNullability(NullabilityLookup $lookup): ?bool
+    {
+        return false;
     }
 
     public function __toString(): string

@@ -367,6 +367,10 @@ such conditions may need restructuring rather than disabling progress checks.
 
 Opaque custom parsers appear in `analysisWarnings`. Analysis does not infer their
 nullable or leading behavior, nor prove cycles through unknown prefixes safe.
+Custom parsers can opt into these checks through the
+[optional structural analysis contract](source-and-extension-contract.md#optional-structural-analysis),
+without changing the analyzer. Built-ins implement that same contract; subclasses
+that change recognition must also maintain their inherited analysis declarations.
 Runtime checks still reject a parser re-entering at the same byte position and
 a repeated successful child consuming zero bytes. Session state restores on
 exceptions. This is not left-recursion support, memoization, or a general depth

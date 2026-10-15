@@ -18,8 +18,10 @@ use Vanderlee\Comprehend\Source\Source;
  * RuleReference targets and wraps Definition instances while keeping registrations local to
  * each ruleset.
  */
-abstract class AbstractRuleset extends Parser
+abstract class AbstractRuleset extends Parser implements AnalyzableParser
 {
+    use ForwardingAnalysisTrait;
+
     public const ROOT = 'ROOT';
     /**
      * @var string|null
@@ -99,6 +101,11 @@ abstract class AbstractRuleset extends Parser
     public function rule(string $name, mixed ...$arguments): Comprehend
     {
         return Comprehend::ref($this, $name, ...$arguments);
+    }
+
+    protected function analysisTarget(): Parser
+    {
+        return $this->resolveRule(self::ROOT);
     }
 
     public function __toString(): string

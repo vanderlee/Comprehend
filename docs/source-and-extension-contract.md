@@ -66,3 +66,81 @@ custom parser implementing this contract.
 Custom recognizers with long loops should use session `readSourceUnit()` or
 `consumeWork()` to cooperate with optional ParseLimits. Parser entry/depth checks
 are automatic; arbitrary user PHP work cannot be preempted.
+
+## Optional structural analysis
+
+Custom parsers may additionally implement `Builder\AnalyzableParser` to participate
+in freeze-time safety checks. No central parser registration is needed. Parsers
+without this contract remain opaque, appear in `FrozenGrammar::analysisWarnings`,
+and retain runtime recursion and repetition-progress guards.
+
+The contract describes conservative structure, independently of recognition:
+
+- `analysisNullability(NullabilityLookup): ?bool` returns false for non-nullable
+  structure, true for potentially empty matches, or null when unknown. It does
+  not promise that a match succeeds on any particular input. Use `get($child)`,
+  `every($children)` for sequence consumption, or `any($children)` for alternative
+  or shortest-operand consumption.
+- `analysisLeadingParsers(NullabilityLookup): array` returns operands that may be
+  called before consuming input. A sequence includes its nullable prefix and the
+  next operand. An unknown prefix stops traversal, preserving conservative
+  analysis; runtime guards remain necessary.
+- `analysisProgressParsers(): array` returns operands whose successful matches
+  must consume input. Repetition declares its body unless its maximum is zero.
+  A known nullable operand fails freezing with a `Nullable repetition` diagnostic.
+- `analysisError(): ?string` returns a local structural error or null. The analyzer
+  appends the parser path; unresolved Stubs use this to reject missing targets.
+
+All analysis methods must be pure and deterministic. Nullability is calculated
+to a fixed point, starting at false for participating parsers and null for opaque
+ones. Calculations must be monotone in the order **false < null < true** as child
+estimates increase. Each iteration reads a stable set of estimates. A backwards
+transition raises `LogicException` rather than allowing analysis to oscillate.
+The lookup is valid only for that analysis step and must not be retained.
+
+`DefaultAnalysisTrait` supplies empty leading/progress lists and no local error;
+the parser still implements its nullability calculation. For transparent wrappers,
+`ForwardingAnalysisTrait` supplies all four methods using an
+`analysisTarget(): Parser` method:
+
+```php
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+
+final class Wrapper extends Parser implements AnalyzableParser
+{
+    use ForwardingAnalysisTrait;
+
+    public function __construct(private Parser $child) {}
+
+    protected function analysisTarget(): Parser
+    {
+        return $this->child;
+    }
+
+    public function __toString(): string
+    {
+        return 'wrapper';
+    }
+
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
+    {
+        return $this->child->recognizeInSession($source, $byteOffset, $session);
+    }
+}
+```
+
+Keep operands in declared Parser fields or arrays so graph snapshots and discovery
+include them. Analysis operands must belong to the collected graph; returning or
+looking up an undiscovered operand raises `LogicException`. Discovery also includes
+stored policy parsers, such as spacing, which need not be leading operands.
+
+Subclasses inherit the analysis contract. If recognition behavior changes, update
+the inherited analysis methods too. To opt out while extending a participating
+built-in, return null from `analysisNullability()` and empty leading/progress
+lists; this explicitly declares unknown behavior, without an opaque-parser warning.
+Analysis must never run recognition, guards, semantic callbacks or commit effects.

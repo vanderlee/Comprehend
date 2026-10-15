@@ -16,8 +16,10 @@ use Vanderlee\Comprehend\Source\Source;
  * Binds a Definition to factory arguments as an executable Parser. Applies its validators and
  * collection processors through the canonical recognition and semantic lifecycle.
  */
-final class Implementation extends Parser
+final class Implementation extends Parser implements AnalyzableParser
 {
+    use ForwardingAnalysisTrait;
+
     private ?Parser $parser = null;
 
     /**
@@ -59,6 +61,11 @@ final class Implementation extends Parser
     public function bindSnapshotTarget(Parser $parser): void
     {
         $this->parser = $parser;
+    }
+
+    protected function analysisTarget(): Parser
+    {
+        return $this->graphTarget();
     }
 
     public function __toString(): string

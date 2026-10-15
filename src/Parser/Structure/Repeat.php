@@ -6,6 +6,9 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 
 use InvalidArgumentException;
 use LogicException;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -16,8 +19,9 @@ use Vanderlee\Comprehend\Source\Source;
  * Greedily recognizes a child within repetition bounds, with optional intervening trivia.
  * Rejects non-progressing matches to prevent nullable children from causing unbounded loops.
  */
-class Repeat extends Parser
+class Repeat extends Parser implements AnalyzableParser
 {
+    use DefaultAnalysisTrait;
     use SpacingTrait;
 
     public function __construct(private Parser $parser, private int $min = 0, private ?int $max = null)
@@ -63,6 +67,23 @@ class Repeat extends Parser
     public static function exact(Parser $parser, int $times): self
     {
         return new self($parser, $times, $times);
+    }
+
+    /** @return list<Parser> */
+    public function analysisLeadingParsers(NullabilityLookup $lookup): array
+    {
+        return $this->max === 0 ? [] : [$this->parser];
+    }
+
+    /** @return list<Parser> */
+    public function analysisProgressParsers(): array
+    {
+        return $this->max === 0 ? [] : [$this->parser];
+    }
+
+    public function analysisNullability(NullabilityLookup $lookup): ?bool
+    {
+        return $this->min === 0 ? true : $lookup->get($this->parser);
     }
 
     public function __toString(): string

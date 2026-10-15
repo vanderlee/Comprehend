@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Parser;
 
 use UnexpectedValueException;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -16,8 +18,10 @@ use Vanderlee\Comprehend\Source\Source;
  *
  * @author Martijn
  */
-class Stub extends Parser
+class Stub extends Parser implements AnalyzableParser
 {
+    use ForwardingAnalysisTrait;
+
     /**
      * @var Parser|null
      */
@@ -33,6 +37,16 @@ class Stub extends Parser
         $this->parser = $parser;
 
         return $this;
+    }
+
+    public function analysisError(): ?string
+    {
+        return $this->parser === null ? 'Unresolved stub' : null;
+    }
+
+    protected function analysisTarget(): Parser
+    {
+        return $this->parser ?? throw new \LogicException('Unresolved stub');
     }
 
     public function __toString(): string

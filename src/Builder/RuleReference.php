@@ -13,8 +13,10 @@ use Vanderlee\Comprehend\Source\Source;
  * Represents a deferred named rule lookup within an AbstractRuleset. Supports forward and
  * recursive references and binds to a detached target when GraphSnapshot freezes the grammar.
  */
-final class RuleReference extends Parser
+final class RuleReference extends Parser implements AnalyzableParser
 {
+    use ForwardingAnalysisTrait;
+
     private ?Parser $target = null;
     private readonly object $scopeIdentity;
     private ?AbstractRuleset $rules;
@@ -46,6 +48,11 @@ final class RuleReference extends Parser
     {
         $this->target = $target;
         $this->rules = null;
+    }
+
+    protected function analysisTarget(): Parser
+    {
+        return $this->graphTarget();
     }
 
     public function __toString(): string

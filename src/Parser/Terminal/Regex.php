@@ -6,6 +6,9 @@ namespace Vanderlee\Comprehend\Parser\Terminal;
 
 use InvalidArgumentException;
 use RuntimeException;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -19,8 +22,9 @@ use Vanderlee\Comprehend\Source\Utf8Source;
  *
  * @author Martijn
  */
-class Regex extends Parser
+class Regex extends Parser implements AnalyzableParser
 {
+    use DefaultAnalysisTrait;
     use CaseSensitiveTrait;
 
     private string $pattern;
@@ -49,6 +53,11 @@ class Regex extends Parser
         $parser->windowLiteral = $literal;
 
         return $parser;
+    }
+
+    public function analysisNullability(NullabilityLookup $lookup): ?bool
+    {
+        return false;
     }
 
     public function __toString(): string

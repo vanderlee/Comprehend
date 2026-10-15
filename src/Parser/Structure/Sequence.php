@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Structure;
 
 use InvalidArgumentException;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -17,8 +20,9 @@ use Vanderlee\Comprehend\Source\Source;
  *
  * @author Martijn
  */
-class Sequence extends IterableParser
+class Sequence extends IterableParser implements AnalyzableParser
 {
+    use DefaultAnalysisTrait;
     use SpacingTrait;
 
     public function __construct(Parser ...$arguments)
@@ -47,6 +51,25 @@ class Sequence extends IterableParser
         $this->parsers = array_merge($this->parsers, $arguments);
 
         return $this;
+    }
+
+    /** @return list<Parser> */
+    public function analysisLeadingParsers(NullabilityLookup $lookup): array
+    {
+        $leading = [];
+        foreach ($this->parsers as $parser) {
+            $leading[] = $parser;
+            if ($lookup->get($parser) !== true) {
+                break;
+            }
+        }
+
+        return $leading;
+    }
+
+    public function analysisNullability(NullabilityLookup $lookup): ?bool
+    {
+        return $lookup->every(array_values($this->parsers));
     }
 
     public function __toString(): string

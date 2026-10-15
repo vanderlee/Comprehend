@@ -6,6 +6,9 @@ namespace Vanderlee\Comprehend\Parser\Terminal;
 
 use Exception;
 use InvalidArgumentException;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -18,8 +21,9 @@ use Vanderlee\Comprehend\Source\SourceMode;
  *
  * @author Martijn
  */
-class Integer extends Parser
+class Integer extends Parser implements AnalyzableParser
 {
+    use DefaultAnalysisTrait;
     use CaseSensitiveTrait;
 
     /**
@@ -72,6 +76,11 @@ class Integer extends Parser
         }
         $this->digitSymbols = array_slice($symbols, 0, $base);
         $this->allowLeadingZeros = $allowLeadingZeros;
+    }
+
+    public function analysisNullability(NullabilityLookup $lookup): ?bool
+    {
+        return false;
     }
 
     public function __toString(): string

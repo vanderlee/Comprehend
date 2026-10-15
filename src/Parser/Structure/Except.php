@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
@@ -17,8 +20,10 @@ use Vanderlee\Comprehend\Source\Source;
  *
  * @author Martijn
  */
-class Except extends Parser
+class Except extends Parser implements AnalyzableParser
 {
+    use DefaultAnalysisTrait;
+
     private Parser $parserMatch;
     private Parser $parserNot;
 
@@ -42,6 +47,17 @@ class Except extends Parser
     public function getExcludedParser(): Parser
     {
         return $this->parserNot;
+    }
+
+    /** @return list<Parser> */
+    public function analysisLeadingParsers(NullabilityLookup $lookup): array
+    {
+        return [$this->parserMatch, $this->parserNot];
+    }
+
+    public function analysisNullability(NullabilityLookup $lookup): ?bool
+    {
+        return $lookup->get($this->parserMatch);
     }
 
     public function __toString(): string

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Directive;
 
 use DomainException;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -14,8 +16,10 @@ use Vanderlee\Comprehend\Source\Source;
  * Overrides first, longest or shortest choice selection within a subtree. Scopes the
  * ParseSession preference consumed by Choice and restores it after recognition.
  */
-class Prefer extends Parser
+class Prefer extends Parser implements AnalyzableParser
 {
+    use ForwardingAnalysisTrait;
+
     public const FIRST = 'first';
     public const LONGEST = 'longest';
     public const SHORTEST = 'shortest';
@@ -31,6 +35,11 @@ class Prefer extends Parser
     public function getParser(): Parser
     {
         return $this->parser;
+    }
+
+    protected function analysisTarget(): Parser
+    {
+        return $this->getParser();
     }
 
     public function __toString(): string
