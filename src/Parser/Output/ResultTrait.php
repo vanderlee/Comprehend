@@ -49,33 +49,53 @@ trait ResultTrait
                 if ($error !== null) {
                     throw $error;
                 }
-                $name = $key ?? '';
-                if ($operation === 'set') {
-                    $results[$name] = $mapped;
 
-                    return;
-                }
-                if (!array_key_exists($name, $results)) {
-                    $results[$name] = $operation === 'push' ? [$mapped] : (string) $mapped;
-
-                    return;
-                }
-
-                if ($operation === 'push') {
-                    if (is_array($results[$name])) {
-                        $results[$name][] = $mapped;
-                    } else {
-                        $results[$name] = [$results[$name], $mapped];
-                    }
-                } elseif (is_array($results[$name])) {
-                    $results[$name][] = array_pop($results[$name]) . $mapped;
-                } else {
-                    $results[$name] .= $mapped;
-                }
+                self::applyCollectionResult($results, $operation, $key ?? '', $mapped);
             };
         };
 
         return $this;
+    }
+
+    /** @param array<array-key, mixed> $results */
+    private static function applyCollectionResult(array &$results, string $operation, string $name, mixed $value): void
+    {
+        if ($operation === 'set') {
+            $results[$name] = $value;
+
+            return;
+        }
+        if (!array_key_exists($name, $results)) {
+            $results[$name] = $operation === 'push' ? [$value] : self::resultText($value);
+
+            return;
+        }
+
+        if ($operation === 'push') {
+            if (is_array($results[$name])) {
+                $results[$name][] = $value;
+            } else {
+                $results[$name] = [$results[$name], $value];
+            }
+        } elseif (is_array($results[$name])) {
+            $results[$name][] = self::resultText(array_pop($results[$name])) . self::resultText($value);
+        } else {
+            $results[$name] = self::resultText($results[$name]) . self::resultText($value);
+        }
+    }
+
+    private static function resultText(mixed $value): string
+    {
+        if (
+            is_scalar($value)
+            || $value === null
+            || is_resource($value)
+            || $value instanceof \Stringable
+        ) {
+            return (string) $value;
+        }
+
+        throw new \UnexpectedValueException('Concatenated results must be scalar, null, resources or Stringable');
     }
 
     public function concatResult(?string $key = null, mixed $value = null): static

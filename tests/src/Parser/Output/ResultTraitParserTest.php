@@ -5,6 +5,7 @@ namespace Tests\Src\Parser\Output;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /**
@@ -14,6 +15,102 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
  */
 class ResultTraitParserTest extends ParserTestCase
 {
+    /** @dataProvider concatenatedValues */
+    public function testConcatenationConvertsSupportedValues(mixed $value, string $expected): void
+    {
+        $mapping = static fn(): mixed => $value;
+        $parsers = [
+            (new Text('a'))->concatResult('value', $mapping),
+            new Sequence(
+                (new Text('a'))->setResult('value', $mapping),
+                (new Nothing())->concatResult('value', ''),
+            ),
+            new Sequence(
+                (new Text('a'))->pushResult('value', $mapping),
+                (new Nothing())->concatResult('value', ''),
+            ),
+        ];
+
+        foreach ($parsers as $index => $parser) {
+            $result = $parser->parseAll(new ByteSource('a'));
+            $output = $index === 2 ? [$expected] : $expected;
+
+            $this->assertSame($output, $result->result('value'));
+            $this->assertSame($output, $result->result('value'));
+        }
+    }
+
+    public function concatenatedValues(): array
+    {
+        return [
+            'string' => ['text', 'text'],
+            'integer' => [42, '42'],
+            'float' => [1.5, '1.5'],
+            'true' => [true, '1'],
+            'false' => [false, ''],
+            'null' => [null, ''],
+            'Stringable' => [new class implements \Stringable {
+                public function __toString(): string
+                {
+                    return 'object text';
+                }
+            }, 'object text'],
+        ];
+    }
+
+    /** @dataProvider invalidConcatenatedValues */
+    public function testInvalidConcatenatedValuesFailLazilyAndRetainTheirError(mixed $value): void
+    {
+        $calls = 0;
+        $parser = (new Text('a'))->concatResult('value', static function () use ($value, &$calls): mixed {
+            ++$calls;
+
+            return $value;
+        });
+        $result = $parser->parseAll(new ByteSource('a'));
+        $this->assertTrue($result->success);
+        $this->assertSame(0, $calls);
+
+        $firstError = null;
+        for ($read = 0; $read < 2; ++$read) {
+            try {
+                $result->result('value');
+                $this->fail('Expected an invalid concatenated value to be rejected');
+            } catch (\UnexpectedValueException $error) {
+                $firstError ??= $error;
+                $this->assertSame($firstError, $error);
+            }
+        }
+        $this->assertSame(1, $calls);
+    }
+
+    public function invalidConcatenatedValues(): array
+    {
+        return [
+            'array' => [[['nested']]],
+            'object without string conversion' => [new \stdClass()],
+        ];
+    }
+
+    /** @dataProvider invalidConcatenatedValues */
+    public function testConcatenationRejectsAnInvalidExistingValueOrPushedTail(mixed $value): void
+    {
+        foreach (['setResult', 'pushResult'] as $operation) {
+            $parser = new Sequence(
+                (new Text('a'))->$operation('value', static fn(): mixed => $value),
+                (new Text('b'))->concatResult('value'),
+            );
+            $result = $parser->parseAll(new ByteSource('ab'));
+
+            try {
+                $result->result('value');
+                $this->fail('Expected an invalid concatenation operand to be rejected');
+            } catch (\UnexpectedValueException $error) {
+                $this->assertStringContainsString('Concatenated results', $error->getMessage());
+            }
+        }
+    }
+
     public function testConcatFlat()
     {
         $parser = new Sequence(

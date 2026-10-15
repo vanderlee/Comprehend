@@ -35,6 +35,10 @@ class TreeSerializationTest extends ParserTestCase
         $this->assertSame([4, 4], [$ast['children'][1]['start'], $ast['children'][1]['end']]);
         $xml = $result->node->toXml();
         $this->assertSame('root', $xml->documentElement->getAttribute('name'));
+        $this->assertSame(Sequence::class, $xml->documentElement->getAttribute('kind'));
+        $this->assertSame('false', $xml->documentElement->getAttribute('trivia'));
+        $this->assertSame('false', $xml->documentElement->getAttribute('semanticLeaf'));
+        $this->assertFalse($result->ast()->toXml()->documentElement->hasAttribute('kind'));
         $this->assertSame('(é )', base64_decode($xml->getElementsByTagName('text')[0]->textContent));
         $reloaded = new \DOMDocument();
         $this->assertTrue($reloaded->loadXML($xml->saveXML()));

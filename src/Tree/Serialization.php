@@ -43,14 +43,20 @@ trait Serialization
             $data['tags'] = $this->tags;
         }
         if ($this instanceof AstNode) {
-            foreach (['preamble', 'postamble'] as $side) {
-                if ($this->$side !== []) {
-                    $data[$side] = array_map(self::spanArray(...), $this->$side);
+            foreach (self::surroundings($this) as $side => $spans) {
+                if ($spans !== []) {
+                    $data[$side] = array_map(self::spanArray(...), $spans);
                 }
             }
         }
 
         return $data;
+    }
+
+    /** @return array{preamble: list<Span>, postamble: list<Span>} */
+    private static function surroundings(AstNode $node): array
+    {
+        return ['preamble' => $node->preamble, 'postamble' => $node->postamble];
     }
 
     /**
@@ -99,9 +105,7 @@ trait Serialization
         $element->setAttribute('start', (string) $this->span->start);
         $element->setAttribute('end', (string) $this->span->end);
         if ($this instanceof ConcreteNode) {
-            $element->setAttribute('kind', $this->kind);
-            $element->setAttribute('trivia', $this->isTrivia ? 'true' : 'false');
-            $element->setAttribute('semanticLeaf', $this->semanticLeaf ? 'true' : 'false');
+            self::appendConcreteAttributes($element, $this);
         }
         // Bytes are valid parser data even when they cannot be XML text.
         $raw = $this->rawText();
@@ -116,6 +120,13 @@ trait Serialization
         }
 
         return $element;
+    }
+
+    private static function appendConcreteAttributes(DOMElement $element, ConcreteNode $node): void
+    {
+        $element->setAttribute('kind', $node->kind);
+        $element->setAttribute('trivia', $node->isTrivia ? 'true' : 'false');
+        $element->setAttribute('semanticLeaf', $node->semanticLeaf ? 'true' : 'false');
     }
 
     private function appendXmlTags(DOMDocument $document, DOMElement $element): void
@@ -139,13 +150,13 @@ trait Serialization
             return;
         }
 
-        foreach (['preamble', 'postamble'] as $side) {
-            if ($this->$side === []) {
+        foreach (self::surroundings($this) as $side => $spans) {
+            if ($spans === []) {
                 continue;
             }
 
             $container = $document->createElement($side);
-            foreach ($this->$side as $span) {
+            foreach ($spans as $span) {
                 $fragment = $document->createElement('span');
                 $fragment->setAttribute('start', (string) $span->start);
                 $fragment->setAttribute('end', (string) $span->end);

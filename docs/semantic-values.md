@@ -21,6 +21,12 @@ parent collection read need it. Errors are retained and recursive evaluation is
 rejected. A stored null is distinct from a missing key when using a default.
 Collection operations do not affect raw text, CST or AST.
 
+Concatenation accepts scalars, null, resources and objects implementing `Stringable`,
+using their PHP string representation. Arrays and other objects raise
+`UnexpectedValueException` when the collection is read; the error is cached.
+When concatenating onto a pushed collection, only its last item is concatenated.
+`setResult()` and `pushResult()` continue to retain arbitrary values.
+
 Definition processors receive the local result collection and produce a named
 value. They replace local collection output, retaining child syntax, validation
 and effects. Processor results/errors are cached per recognition; they do not
