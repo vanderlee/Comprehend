@@ -23,6 +23,13 @@ Nonempty tags use `<tags><tag>...</tag></tags>`. Surrounding AST fragments use
 `<preamble>`/`<postamble>` containers with `<span start="..." end="...">` elements
 and base64 text. Empty tag and surrounding fields are omitted from all serializations.
 
+The DOM extension is optional for parsing, AST navigation, arrays and JSON.
+Install/enable `ext-dom` to use `toXml()`; without it, both AST and CST XML methods
+throw `LogicException` with the message
+`XML serialization requires the ext-dom PHP extension`. The return type and XML
+schema are unchanged when DOM is available. Composer lists DOM as a suggestion;
+development dependencies such as PHPUnit can still require it.
+
 Raw source is independent of semantic mappings and collection processors.
 Choose CST serialization for complete concrete syntax/trivia, or AST serialization
 for named semantic structure. AST text still spans original punctuation/trivia.

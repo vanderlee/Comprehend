@@ -2,7 +2,7 @@
 
 An interpreted parser-combinator framework for PHP 8.1+, with named grammars,
 reusable RFC rules, explicit sources, immutable concrete trees and named ASTs.
-MIT licensed. Requires DOM, JSON and mbstring.
+MIT licensed. Requires JSON and mbstring. DOM is optional, needed only for XML output.
 
 ## Quick start
 

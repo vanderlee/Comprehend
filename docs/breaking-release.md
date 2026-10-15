@@ -1,7 +1,7 @@
 # Comprehend 2.0.0 breaking-release preparation
 
 The 2.0.0 candidate exposes one canonical source/recognition/result/lifecycle
-contract. PHP 8.1+ and DOM, JSON and mbstring are required. Existing 1.x callers
+contract. PHP 8.1+, JSON and mbstring are required; DOM is optional for XML output. Existing 1.x callers
 must migrate; removed APIs have no compatibility adapters or deprecation window.
 The changelog remains marked Unreleased until publication is ready.
 

@@ -1,6 +1,7 @@
 # Contributing
 
-Use PHP 8.1+ with DOM, JSON and mbstring. Install development dependencies with
+Use PHP 8.1+ with JSON and mbstring. DOM is optional at runtime, but required for
+the PHPUnit suite and XML serialization tests. Install development dependencies with
 Composer. Run platform checks, PHPUnit, the canonical API/syntax gate and examples:
 
 ```sh
@@ -15,6 +16,12 @@ php docs/examples/abnf.php
 php docs/examples/release.php
 php tools/release-notes.php 2.0.0
 ```
+
+CI also runs `php -n -d extension=mbstring tools/check-without-dom.php` on Linux,
+where DOM is a shared extension disabled by `-n`. This verifies parsing, semantic
+values, AST/CST arrays and JSON, and the explicit XML dependency exception. The
+standalone check does not need PHPUnit. Windows PHP builds may compile DOM in;
+on those builds, `-n` cannot remove it and the check intentionally refuses to run.
 
 The PHPUnit configuration covers `src`; a coverage driver optionally writes
 Clover output under `build/logs`. CI runs the checks on PHP 8.1–8.5, with an

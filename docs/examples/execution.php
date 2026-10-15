@@ -67,8 +67,10 @@ verify($result->ast()->children[0]->rawText() === 'é', 'named AST source');
 verify($result->result('letter') === 'changed', 'separate semantic collection');
 $json = json_decode($result->node->toJson(), true, flags: JSON_THROW_ON_ERROR);
 verify($json['text'] === $result->rawText(), 'CST JSON');
-$xml = $result->node->toXml();
-verify(base64_decode($xml->getElementsByTagName('text')[0]->textContent) === $result->rawText(), 'CST XML');
+if (class_exists(DOMDocument::class)) {
+    $xml = $result->node->toXml();
+    verify(base64_decode($xml->getElementsByTagName('text')[0]->textContent) === $result->rawText(), 'CST XML');
+}
 $raw = "\xFF\0";
 $binary = (new Text($raw))->parseAll(new ByteSource($raw))->node->toArray();
 verify($binary['textEncoding'] === 'base64' && base64_decode($binary['text']) === $raw, 'binary serialization');

@@ -62,6 +62,9 @@ jobs:
       - name: Verify canonical API and syntax
         run: php tools/check-canonical.php
 
+      - name: Verify runtime without DOM
+        run: php -n -d extension=mbstring tools/check-without-dom.php
+
       - name: Verify quick start
         run: php docs/examples/quick-start.php
 

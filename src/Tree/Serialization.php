@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend\Tree;
 
 use DOMDocument;
 use DOMElement;
+use LogicException;
 use Vanderlee\Comprehend\Source\Span;
 
 /** The same explicit source-span schema for concrete and named trees. */
@@ -62,6 +63,10 @@ trait Serialization
     /** Fixed XML element names; grammar names/groups are data, never namespaces. */
     public function toXml(): DOMDocument
     {
+        if (!class_exists(DOMDocument::class)) {
+            throw new LogicException('XML serialization requires the ext-dom PHP extension');
+        }
+
         $document = new DOMDocument('1.0', 'UTF-8');
         $document->appendChild($this->xmlNode($document));
         return $document;

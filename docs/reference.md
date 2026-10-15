@@ -31,7 +31,7 @@
 | Simple result access | Readonly `ok` aliases `success`; `output()` aliases lazy typed `value()`, returning null on syntax failure without committing effects |
 | AST navigation | `child()`, `firstChild()`, `lastChild()`, `firstNamed()`, `allNamed()`, `firstInGroup()`, `allInGroup()`, `descendants()` |
 | Tree metadata | `tag()`, fixed or callable `named()`, `hasTag()`, `firstTagged()`, `allTagged()`, AST preamble/postamble spans and text helpers |
-| Serialization | CST/AST `toArray()`, `toJson()`, `toXml()`, JsonSerializable |
+| Serialization | CST/AST `toArray()`, `toJson()`, JsonSerializable; `toXml()` returns DOMDocument and requires optional ext-dom |
 
 Use `Comprehend` for concise authoring. It returns immutable facade values;
 Ruleset constructor entries, definitions and roots accept those values directly
