@@ -5,6 +5,7 @@ namespace Tests\Src\Parser\Output;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+
 /**
  * @group parser
  * @group trait

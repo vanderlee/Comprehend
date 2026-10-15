@@ -7,6 +7,7 @@ use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+
 /**
  * @group structure
  * @group parser

@@ -13,9 +13,7 @@ use Vanderlee\Comprehend\Source\Source;
 /** Negative lookahead; a successful probe rejects without consuming input. */
 class Not extends Parser
 {
-    public function __construct(private Parser $parser)
-    {
-    }
+    public function __construct(private Parser $parser) {}
 
     public function __toString(): string
     {

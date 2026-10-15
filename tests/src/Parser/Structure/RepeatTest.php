@@ -14,6 +14,7 @@ use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+
 /**
  * @group structure
  * @group parser
@@ -94,8 +95,7 @@ class RepeatTest extends ParserTestCase
         $cases['spacing cannot supply child progress'] = [(new Repeat(new Choice(new Text('a'), new Not(new Text('b'))), 0, 2))->spacing(new Text(' ')), 'a c'];
         $cases['custom nullable parser'] = [
             new Repeat(
-                new class('a') extends Text
-                {
+                new class ('a') extends Text {
                     protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
                     {
                         return $this->success($input, $offset);

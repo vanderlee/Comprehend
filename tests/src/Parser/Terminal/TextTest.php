@@ -5,6 +5,7 @@ namespace Tests\Src\Parser\Terminal;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+
 class TextTest extends ParserTestCase
 {
     public function testConstruction()

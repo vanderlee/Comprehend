@@ -8,6 +8,7 @@ use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Directive\Space;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
+
 /**
  * @group directive
  */

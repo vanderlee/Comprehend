@@ -16,7 +16,7 @@ final class Diagnostic
         public readonly Source $source,
         public readonly int $byteOffset,
         public readonly array $expected,
-        public readonly array $rulePaths
+        public readonly array $rulePaths,
     ) {
         $source->span($byteOffset, $byteOffset);
     }

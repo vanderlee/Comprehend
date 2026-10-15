@@ -59,7 +59,7 @@ class Set extends Parser
         $characters = $context->source()->mode() === SourceMode::UTF8 ? mb_str_split(
             (new Utf8Source($this->sourceSet))->sliceBytes(0, strlen($this->sourceSet)),
             1,
-            'UTF-8'
+            'UTF-8',
         ) : str_split($this->sourceSet);
         $unit = $context->readSourceUnit($offset);
         if ($unit === null) {

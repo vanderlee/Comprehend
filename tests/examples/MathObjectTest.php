@@ -4,6 +4,7 @@ namespace Tests\example;
 
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+
 require_once 'ReversePolishNotationTrait.php';
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -12,6 +13,7 @@ use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
+
 /**
  * Example of a simple maths parser, constructed using basic objects.
  *

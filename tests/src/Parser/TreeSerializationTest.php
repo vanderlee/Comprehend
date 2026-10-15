@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Tests\Src\Parser;
 
 use Tests\ParserTestCase;
@@ -9,6 +10,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
+
 class TreeSerializationTest extends ParserTestCase
 {
     public function testConcreteAndAstSerializationUseSourceSpansAndNamingAsData(): void

@@ -9,6 +9,7 @@ use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Runtime\ParseSession;
+
 /**
  * @group structure
  * @group parser
@@ -185,10 +186,14 @@ class ChoiceTest extends ParserTestCase
     {
         $events = [];
         $first = (new Text('a'))->name('first')->setResult('first')->onCommit(
-            function () use (&$events) { $events[] = 'first'; },
+            function () use (&$events) {
+                $events[] = 'first';
+            },
         );
         $second = (new Text('a'))->name('second')->setResult('second')->onCommit(
-            function () use (&$events) { $events[] = 'second'; },
+            function () use (&$events) {
+                $events[] = 'second';
+            },
         );
         $result = (new Choice($first, $second))->setPreference($preference)->parseAll(new ByteSource('a'));
 

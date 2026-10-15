@@ -33,8 +33,15 @@ $rules->define('dec-octet', new Choice(
     new Sequence(new Text('2'), new Range('0', '4'), $rules->ref('digit')),
     new Sequence(new Text('25'), new Range('0', '5')),
 ));
-$address = new Sequence($rules->ref('dec-octet'), new Text('.'), $rules->ref('dec-octet'),
-    new Text('.'), $rules->ref('dec-octet'), new Text('.'), $rules->ref('dec-octet'));
+$address = new Sequence(
+    $rules->ref('dec-octet'),
+    new Text('.'),
+    $rules->ref('dec-octet'),
+    new Text('.'),
+    $rules->ref('dec-octet'),
+    new Text('.'),
+    $rules->ref('dec-octet'),
+);
 $rules->define('ipv4address', $address)->root(new Prefer(Prefer::LONGEST, $rules->ref('ipv4address')));
 $object = (new Prefer(Prefer::LONGEST, $rules->ref('ipv4address')))->freeze();
 $named = $rules->freeze();

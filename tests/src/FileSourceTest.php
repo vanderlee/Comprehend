@@ -29,11 +29,14 @@ class FileSourceTest extends TestCase
         fseek($stream, 2);
         $source = new ByteFileSource($stream, 4);
         $this->assertSame(2, ftell($stream));
-        fseek($stream, 0); fwrite($stream, 'changed'); fclose($stream);
+        fseek($stream, 0);
+        fwrite($stream, 'changed');
+        fclose($stream);
         $this->assertSame("a\xffbc", $source->sliceBytes(0, 4));
         $this->assertSame("\xff", $source->readUnit(1)->rawText());
         $this->assertNull($source->readUnit(4));
-        $source->close(); $source->close();
+        $source->close();
+        $source->close();
         $this->assertTrue($source->isClosed());
         $this->expectException(LogicException::class);
         $source->sliceBytes(0, 0);
@@ -53,7 +56,9 @@ class FileSourceTest extends TestCase
             $result->span->source->close();
             $this->expectException(LogicException::class);
             $result->node->rawText();
-        } finally { unlink($path); }
+        } finally {
+            unlink($path);
+        }
     }
 
     public function testFileAndMemoryRecognitionAndRandomSlicesAgree()
@@ -100,7 +105,9 @@ class FileSourceTest extends TestCase
         } catch (InvalidArgumentException $error) {
             $this->assertStringContainsString('valid UTF-8', $error->getMessage());
             $this->assertSame(1, ftell($stream));
-        } finally { fclose($stream); }
+        } finally {
+            fclose($stream);
+        }
     }
 
     public function malformedUtf8(): array
@@ -112,7 +119,8 @@ class FileSourceTest extends TestCase
     public function testEmptyFileAndFailurePositionsRemainDefined()
     {
         $stream = $this->stream('');
-        $source = new Utf8FileSource($stream); fclose($stream);
+        $source = new Utf8FileSource($stream);
+        fclose($stream);
         $this->assertSame(0, $source->byteLength());
         $this->assertSame(0, $source->codePointLength());
         $this->assertSame('', $source->span(0, 0)->rawText());
@@ -124,7 +132,8 @@ class FileSourceTest extends TestCase
     public function testDiagnosticCrLfIndexCrossesChunkBoundary()
     {
         $stream = $this->stream(str_repeat('x', 8191) . "\r\né");
-        $source = new Utf8FileSource($stream); fclose($stream);
+        $source = new Utf8FileSource($stream);
+        fclose($stream);
         $result = (new Text('!'))->parseAll($source, 8193);
         $this->assertSame(['line' => 2, 'column' => 1], $result->diagnostic->location());
         $this->assertSame('é', $result->diagnostic->excerpt());

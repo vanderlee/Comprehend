@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Tests\Src\Parser;
 
 use Error;
@@ -20,6 +21,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
+
 class ConcreteNodeTest extends ParserTestCase
 {
     /** @dataProvider emptyParsers */

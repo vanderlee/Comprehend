@@ -54,7 +54,7 @@ class Regex extends Parser
 
     public function __toString(): string
     {
-        return (string)$this->pattern;
+        return (string) $this->pattern;
     }
 
     protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch

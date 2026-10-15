@@ -19,8 +19,10 @@ class RegexWindowTest extends TestCase
         $bounded = Regex::literalWindow($literal);
         $ordinary->setCaseSensitivity(!$caseInsensitive);
         $bounded->setCaseSensitivity(!$caseInsensitive);
-        $stream = tmpfile(); fwrite($stream, $text);
-        $file = new Utf8FileSource($stream, 4); fclose($stream);
+        $stream = tmpfile();
+        fwrite($stream, $text);
+        $file = new Utf8FileSource($stream, 4);
+        fclose($stream);
         foreach ([new Utf8Source($text), $file] as $source) {
             $expected = $ordinary->matchPrefix($source, $offset);
             $actual = $bounded->matchPrefix($source, $offset);
@@ -36,8 +38,10 @@ class RegexWindowTest extends TestCase
 
     public function testGeneralRegexRetainsAnchorsAndLookbehindOnFiles()
     {
-        $stream = tmpfile(); fwrite($stream, 'abc');
-        $source = new Utf8FileSource($stream); fclose($stream);
+        $stream = tmpfile();
+        fwrite($stream, 'abc');
+        $source = new Utf8FileSource($stream);
+        fclose($stream);
         $this->assertFalse((new Regex('/^b/'))->matchPrefix($source, 1)->success);
         $this->assertTrue((new Regex('/(?<=a)b/A'))->matchPrefix($source, 1)->success);
         $this->assertTrue(Regex::literalWindow('b')->matchPrefix($source, 1)->success);
@@ -45,8 +49,10 @@ class RegexWindowTest extends TestCase
 
     public function testWindowDoesNotChargeOrReadWholeLargeSource()
     {
-        $stream = tmpfile(); fwrite($stream, 'a' . str_repeat('x', 10000));
-        $source = new Utf8FileSource($stream); fclose($stream);
+        $stream = tmpfile();
+        fwrite($stream, 'a' . str_repeat('x', 10000));
+        $source = new Utf8FileSource($stream);
+        fclose($stream);
         $this->assertTrue(Regex::literalWindow('a')->matchPrefix($source, limits: new ParseLimits(maxWork: 5))->success);
     }
 }

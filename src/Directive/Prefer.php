@@ -29,7 +29,7 @@ class Prefer extends Parser
         return match ($this->preference) {
             self::LONGEST => 'longest-of' . $this->parser,
             self::SHORTEST => 'shortest-of' . $this->parser,
-            default => (string)$this->parser,
+            default => (string) $this->parser,
         };
     }
 

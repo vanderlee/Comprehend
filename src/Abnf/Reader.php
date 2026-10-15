@@ -204,13 +204,13 @@ final class Reader
     private function repetitionCount(string $digits): int
     {
         $digits = ltrim($digits, '0');
-        $maximum = (string)PHP_INT_MAX;
+        $maximum = (string) PHP_INT_MAX;
         if (strlen($digits) > strlen($maximum)
             || (strlen($digits) === strlen($maximum) && strcmp($digits, $maximum) > 0)) {
             $this->fail('Repetition count exceeds PHP integer range');
         }
 
-        return $digits === '' ? 0 : (int)$digits;
+        return $digits === '' ? 0 : (int) $digits;
     }
 
     private function element(): Parser
@@ -271,7 +271,7 @@ final class Reader
         if (!$sensitive) {
             // ABNF folds ASCII only; Text also supports Unicode case equivalents.
             $parser->guard(
-                static fn(ConcreteNode $node): bool => preg_match('/^[\x00-\x7F]*$/D', $node->rawText()) === 1
+                static fn(ConcreteNode $node): bool => preg_match('/^[\x00-\x7F]*$/D', $node->rawText()) === 1,
             );
         }
 

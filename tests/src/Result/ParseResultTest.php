@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Tests\Src\Result;
 
 use InvalidArgumentException;
@@ -13,6 +14,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Source\Utf8Source;
+
 class ParseResultTest extends ParserTestCase
 {
     /** @dataProvider failureData */

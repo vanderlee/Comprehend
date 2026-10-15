@@ -89,9 +89,7 @@ class ByteFileSource implements Source
         }
     }
 
-    protected function validateContent(): void
-    {
-    }
+    protected function validateContent(): void {}
 
     public function mode(): SourceMode
     {
@@ -194,7 +192,5 @@ class ByteFileSource implements Source
         return new Span($this, $start, $end);
     }
 
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 }

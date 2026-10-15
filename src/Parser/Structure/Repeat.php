@@ -66,7 +66,7 @@ class Repeat extends Parser
                 $match = $skip !== false ? $this->parser->recognizeInSession(
                     $input,
                     $offset + $length + $skip,
-                    $context
+                    $context,
                 ) : null;
                 if (!$match instanceof Success) {
                     if (count($childMatches) >= $this->min) {

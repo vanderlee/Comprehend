@@ -7,6 +7,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
+
 /**
  * @group directive
  */

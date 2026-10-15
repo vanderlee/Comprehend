@@ -38,7 +38,7 @@ final class ParseMetrics
             'parser_entries' => $this->entries,
             'repeated_positions' => $this->repeatedPositions,
             'tracked_positions' => count($this->positions),
-            'capacity' => $this->maxTrackedPositions
+            'capacity' => $this->maxTrackedPositions,
         ];
     }
 }

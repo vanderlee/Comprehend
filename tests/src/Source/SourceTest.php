@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Tests\Src\Source;
 
 use InvalidArgumentException;
@@ -9,6 +10,7 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Source\Utf8Source;
+
 class SourceTest extends TestCase
 {
     /** @dataProvider coordinateData */

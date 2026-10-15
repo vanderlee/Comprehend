@@ -45,7 +45,7 @@ class Text extends Parser
             $literal = $context->source()->mode() === SourceMode::UTF8 ? mb_str_split(
                 (new Utf8Source($this->text))->sliceBytes(0, strlen($this->text)),
                 1,
-                'UTF-8'
+                'UTF-8',
             ) : str_split($this->text);
             $position = $offset;
             foreach ($literal as $character) {

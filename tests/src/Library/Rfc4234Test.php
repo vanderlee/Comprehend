@@ -1,10 +1,12 @@
 <?php
 
 /** @noinspection PhpUndefinedFieldInspection */
+
 namespace Tests\Src\Library;
 
 require_once 'Rfc2234Test.php';
 use Vanderlee\Comprehend\Library\Rfc4234;
+
 /**
  * @group library
  * @group rfc

@@ -6,6 +6,7 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Exception;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Integer;
+
 /**
  * @group terminal
  * @group parser

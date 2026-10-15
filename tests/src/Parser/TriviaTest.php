@@ -1,6 +1,7 @@
 <?php
 
 declare (strict_types=1);
+
 namespace Tests\Src\Parser;
 
 use Vanderlee\Comprehend\Source\ByteSource;
@@ -12,6 +13,7 @@ use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Regex;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\Utf8Source;
+
 class TriviaTest extends ParserTestCase
 {
     public function testExplicitAndAutomaticTriviaRoundTripNestedUnnamedInput()

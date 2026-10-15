@@ -18,7 +18,9 @@ class ParseLimitsTest extends TestCase
     public function testLongLiteralStopsAtWorkLimitBeforeCommittingEffects()
     {
         $calls = 0;
-        $parser = (new Text(str_repeat('a', 100)))->onCommit(function () use (&$calls) { ++$calls; });
+        $parser = (new Text(str_repeat('a', 100)))->onCommit(function () use (&$calls) {
+            ++$calls;
+        });
         try {
             $parser->parseAll(new Utf8Source(str_repeat('a', 100)), limits: new ParseLimits(maxWork: 10));
             $this->fail('Expected budget exhaustion');

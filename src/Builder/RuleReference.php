@@ -18,7 +18,7 @@ final class RuleReference extends Parser
     public function __construct(
         private ?AbstractRuleset $rules,
         private readonly string $rule,
-        private readonly array $arguments = []
+        private readonly array $arguments = [],
     ) {
         $this->scopeIdentity = $rules->graphIdentity();
         $this->name($rule, $rules->groupName());

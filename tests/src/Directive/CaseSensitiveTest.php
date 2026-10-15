@@ -6,6 +6,7 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Directive\CaseSensitive;
+
 /**
  * @group directive
  */

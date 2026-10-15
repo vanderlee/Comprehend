@@ -19,7 +19,7 @@ final class SyntaxException extends InvalidArgumentException
 
         parent::__construct(
             'ABNF: ' . $reason . ' at line ' . $location['line']
-            . ', column ' . $location['column'] . ' (byte ' . $byteOffset . ')'
+            . ', column ' . $location['column'] . ' (byte ' . $byteOffset . ')',
         );
     }
 }
