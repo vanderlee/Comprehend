@@ -282,7 +282,18 @@ final class Catalog
      */
     private static function choice(array $items): Choice
     {
-        $pending = array_reverse(array_map(self::parser(...), $items));
+        $parsers = array_map(self::parser(...), $items);
+
+        return new Choice(...self::flattenChoices($parsers));
+    }
+
+    /**
+     * @param array<array-key, Parser> $parsers Detached operands in insertion order.
+     * @return list<Parser>
+     */
+    private static function flattenChoices(array $parsers): array
+    {
+        $pending = array_reverse($parsers);
         $children = [];
         $expanded = new SplObjectStorage();
         while ($pending !== []) {
@@ -303,7 +314,7 @@ final class Catalog
             array_push($pending, ...array_reverse($alternatives));
         }
 
-        return new Choice(...$children);
+        return $children;
     }
 
     /**
@@ -313,6 +324,16 @@ final class Catalog
     private static function sequence(array $items): Sequence
     {
         $parsers = array_values(array_map(self::parser(...), $items));
+
+        return new Sequence(...self::flattenSequencePrefix($parsers));
+    }
+
+    /**
+     * @param list<Parser> $parsers Detached operands in insertion order.
+     * @return list<Parser>
+     */
+    private static function flattenSequencePrefix(array $parsers): array
+    {
         $seen = new SplObjectStorage();
         while (($parsers[0] ?? null) instanceof Sequence && $parsers[0]->canFlattenPrefix()) {
             $prefix = $parsers[0];
@@ -327,7 +348,7 @@ final class Catalog
             $parsers = [...$children, ...array_slice($parsers, 1)];
         }
 
-        return new Sequence(...$parsers);
+        return $parsers;
     }
 
     /** Detach caller-owned graphs before composing syntax. */
@@ -372,6 +393,7 @@ final class Catalog
         if (!preg_match('/\A[a-z][a-z0-9_]*\z/', $name)) {
             throw new InvalidArgumentException('Syntax names must be method identifiers');
         }
+        // Keep all declared facade/vocabulary names reserved, including private helpers.
         if (
             in_array($name, self::builtinNames(), true)
             || method_exists(Comprehend::class, $name)
@@ -385,12 +407,22 @@ final class Catalog
 
     public function static(string $name): ?Closure
     {
-        return self::builtinStatic($name) ?? $this->statics[self::canonicalName($name)] ?? null;
+        $builtin = self::builtinStatic($name);
+        if ($builtin !== null) {
+            return $builtin;
+        }
+
+        return $this->statics[self::canonicalName($name)] ?? null;
     }
 
     public function fluent(string $name): ?Closure
     {
-        return self::builtinFluent($name) ?? $this->fluents[self::canonicalName($name)] ?? null;
+        $builtin = self::builtinFluent($name);
+        if ($builtin !== null) {
+            return $builtin;
+        }
+
+        return $this->fluents[self::canonicalName($name)] ?? null;
     }
 
     /**

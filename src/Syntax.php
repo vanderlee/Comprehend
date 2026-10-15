@@ -32,12 +32,16 @@ final class Syntax
         return new self($this->catalog->defineFluent($name, $factory));
     }
 
-    /** @param array<array-key, mixed> $arguments */
+    /**
+     * Start an expression through static factory lookup, including when a fluent shares its name.
+     * @param array<array-key, mixed> $arguments
+     */
     public function __call(string $name, array $arguments): Comprehend
     {
         return Comprehend::callSyntax($name, $arguments, $this);
     }
 
+    /** Explicit-name equivalent of magic factory dispatch; argument keys are retained. */
     public function call(string $name, mixed ...$arguments): Comprehend
     {
         return Comprehend::callSyntax($name, $arguments, $this);

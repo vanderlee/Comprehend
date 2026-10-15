@@ -112,10 +112,15 @@ final class Comprehend
             ? Catalog::builtinFluent($name)
             : $this->syntax->fluent($name);
         if ($fluent !== null) {
-            return self::syntaxExpression(self::invoke($fluent, [$this, ...$arguments]), $name, $this->syntax);
+            $result = self::invoke($fluent, [$this, ...$arguments]);
+
+            return self::syntaxExpression($result, $name, $this->syntax);
         }
 
-        return $this->then(self::callSyntax($name, $arguments, $this->syntax));
+        // A static-only factory appends syntax; a fluent factory transforms this expression.
+        $next = self::callSyntax($name, $arguments, $this->syntax);
+
+        return $this->then($next);
     }
 
     /**
@@ -136,12 +141,17 @@ final class Comprehend
 
     private static function syntaxExpression(mixed $result, string $name, ?Syntax $syntax): self
     {
-        if (!$result instanceof self && !$result instanceof Parser && !$result instanceof Definition) {
+        if (
+            !$result instanceof self
+            && !$result instanceof Parser
+            && !$result instanceof Definition
+        ) {
             throw new UnexpectedValueException(
                 'Syntax factories must return Comprehend, Parser or Definition: ' . $name,
             );
         }
         $expression = self::of($result);
+        // Unscoped calls retain a returned expression's vocabulary. Scoped calls supply their own.
         if ($syntax === null || $syntax === $expression->syntax) {
             return $expression;
         }
@@ -155,6 +165,8 @@ final class Comprehend
     private static function invoke(Closure $factory, array $arguments): mixed
     {
         $signature = new ReflectionFunction($factory);
+        // PHP permits surplus positional arguments to user functions; authoring rejects them.
+        // Unpacking below retains PHP's own named-argument and type checks.
         if (!$signature->isVariadic() && count($arguments) > $signature->getNumberOfParameters()) {
             throw new ArgumentCountError('Too many syntax arguments');
         }

@@ -80,6 +80,21 @@ class SyntaxDispatchTest extends TestCase
         $this->assertTrue($syntax->call('LITERAL', value: 'a')->defined()->parse('ax')->success);
     }
 
+    public function testFactoryResultsUseTheCallingVocabularyWhileUnscopedRepetitionRetainsTheirOwn(): void
+    {
+        $original = C::syntax()->define('suffix', static fn(): C => C::text('!'));
+        $returned = $original->text('a');
+        $caller = C::syntax()
+            ->define('suffix', static fn(): C => C::text('?'))
+            ->define('borrowed', static fn(): C => $returned)
+            ->defineFluent('borrow', static fn(C $item): C => $returned);
+
+        $this->assertTrue($caller->borrowed()->suffix()->parse('a?')->success);
+        $this->assertTrue($caller->text('unused')->borrow()->suffix()->parse('a?')->success);
+        $this->assertTrue(C::some($returned)->suffix()->parse('aa!')->success);
+        $this->assertTrue($returned->suffix()->parse('a!')->success);
+    }
+
     public function testCustomFluentsCanWrapTheCurrentExpression(): void
     {
         $syntax = C::syntax()->defineFluent(

@@ -109,6 +109,9 @@ final class CatalogTest extends TestCase
 
     public static function reservedNames(): array
     {
-        return [['text'], ['parse'], ['define'], ['plus'], ['not-a-method'], ['']];
+        return [
+            ['text'], ['parse'], ['define'], ['plus'], ['invoke'], ['expression'],
+            ['syntaxExpression'], ['not-a-method'], [''],
+        ];
     }
 }
