@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Runtime;
 
 use Vanderlee\Comprehend\Parser\Parser;
+use InvalidArgumentException;
 
 /**
  * Collects bounded profiling counts for parser visits and source positions. ParseSession can
@@ -22,7 +23,7 @@ final class ParseMetrics
     public function __construct(private readonly int $maxTrackedPositions = 4096)
     {
         if ($maxTrackedPositions < 1) {
-            throw new \InvalidArgumentException('Profile capacity must be positive');
+            throw new InvalidArgumentException('Profile capacity must be positive');
         }
     }
 

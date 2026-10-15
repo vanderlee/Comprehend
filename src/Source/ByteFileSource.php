@@ -7,6 +7,7 @@ namespace Vanderlee\Comprehend\Source;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
+use Throwable;
 
 /**
  * Provides arbitrary source bytes from an owned stable disk snapshot. Uses a bounded read page
@@ -57,7 +58,7 @@ class ByteFileSource implements Source
 
             $this->handle = $snapshot;
             $this->validateContent();
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             if (is_resource($snapshot)) {
                 fclose($snapshot);
             }

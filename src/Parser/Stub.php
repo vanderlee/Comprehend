@@ -12,6 +12,7 @@ use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use LogicException;
 
 /**
  * Provides an explicitly bound placeholder for recursive object grammars. Delegates to its
@@ -61,7 +62,7 @@ class Stub extends Parser implements AnalyzableParser
 
     protected function analysisTarget(): Parser
     {
-        return $this->parser ?? throw new \LogicException('Unresolved stub');
+        return $this->parser ?? throw new LogicException('Unresolved stub');
     }
 
     public function __toString(): string

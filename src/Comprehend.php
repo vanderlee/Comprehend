@@ -18,6 +18,7 @@ use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Syntax\Catalog;
+use BadMethodCallException;
 
 /**
  * Provides immutable fluent grammar authoring over the shared Parser graph. Magic calls use
@@ -126,7 +127,7 @@ final class Comprehend
         $name = strtolower($name);
         $factory = $syntax === null ? Catalog::builtinStatic($name) : $syntax->factory($name);
         if ($factory === null) {
-            throw new \BadMethodCallException('Unknown syntax: ' . $name);
+            throw new BadMethodCallException('Unknown syntax: ' . $name);
         }
         $result = self::invoke($factory, $arguments);
 

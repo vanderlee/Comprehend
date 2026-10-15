@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend\Builder;
 
 use SplObjectStorage;
 use Vanderlee\Comprehend\Parser\Parser;
+use LogicException;
 
 /**
  * Copies parser graphs to isolate fluent expressions and frozen grammars from mutable builders.
@@ -51,16 +52,16 @@ final class GraphSnapshot
     public function registerCopy(Parser|Definition $original, Parser|Definition $copy): void
     {
         if ($original === $copy) {
-            throw new \LogicException('Snapshot copy must be detached from its original');
+            throw new LogicException('Snapshot copy must be detached from its original');
         }
         if (($original instanceof Parser) !== ($copy instanceof Parser)) {
-            throw new \LogicException('Snapshot copy must preserve the parser or definition category');
+            throw new LogicException('Snapshot copy must preserve the parser or definition category');
         }
         if (
             isset($this->copies[$original])
             && $this->copies[$original] !== $copy
         ) {
-            throw new \LogicException('Snapshot object already has a different copy');
+            throw new LogicException('Snapshot object already has a different copy');
         }
         $this->copies[$original] = $copy;
         $this->copies[$copy] = $copy;
@@ -103,13 +104,13 @@ final class GraphSnapshot
         if (isset($this->copies[$object])) {
             $copy = $this->copies[$object];
             if (($object instanceof Parser) !== ($copy instanceof Parser)) {
-                throw new \LogicException('Snapshot copy must preserve the parser or definition category');
+                throw new LogicException('Snapshot copy must preserve the parser or definition category');
             }
 
             return $copy;
         }
         if (isset($this->preparing[$object])) {
-            throw new \LogicException('Snapshot participant must register its copy before copying dependencies');
+            throw new LogicException('Snapshot participant must register its copy before copying dependencies');
         }
 
         $this->preparing[$object] = true;
@@ -119,7 +120,7 @@ final class GraphSnapshot
                 !isset($this->copies[$object])
                 || $this->copies[$object] !== $copy
             ) {
-                throw new \LogicException('Snapshot participant must return its registered copy');
+                throw new LogicException('Snapshot participant must return its registered copy');
             }
 
             return $copy;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Runtime\Scope;
 
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
+use LogicException;
 
 /**
  * Maintains ParseSession's stack of validated choice preferences. Lets Choice and Prefer share
@@ -32,7 +33,7 @@ trait PreferContextTrait
     {
         $preference = end($this->preference);
         if ($preference === false) {
-            throw new \LogicException('Choice preference scope is empty');
+            throw new LogicException('Choice preference scope is empty');
         }
 
         return $preference;

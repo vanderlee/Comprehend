@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Match\Output;
 
 use Vanderlee\Comprehend\Match\Success;
+use Throwable;
 
 /**
  * Executes selected Success effects once during explicit commit. Preserves preceding-match and
@@ -22,7 +23,7 @@ trait CallbackTrait
     private array $precedingMatches = [];
     private bool $effectsProcessed = false;
     private bool $effectsProcessing = false;
-    private ?\Throwable $effectError = null;
+    private ?Throwable $effectError = null;
 
     /**
      * Retain accepted effects before this match's callbacks, without adding
@@ -80,7 +81,7 @@ trait CallbackTrait
             foreach ($this->customCallbacks as $callback) {
                 $callback();
             }
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $this->effectError = $error;
             throw $error;
         } finally {

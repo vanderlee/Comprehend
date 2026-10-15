@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Source;
 
 use InvalidArgumentException;
+use LogicException;
 
 /**
  * Provides validated UTF-8 code-point access over ByteFileSource's stable disk snapshot.
@@ -75,7 +76,7 @@ final class Utf8FileSource extends ByteFileSource
         for ($index = 0; $index < $position; ++$index) {
             $unit = $this->readUnit($offset);
             if ($unit === null) {
-                throw new \LogicException('Unexpected end of UTF-8 source');
+                throw new LogicException('Unexpected end of UTF-8 source');
             }
             $offset = $unit->end;
         }
@@ -93,7 +94,7 @@ final class Utf8FileSource extends ByteFileSource
         while ($offset < $byteOffset) {
             $unit = $this->readUnit($offset);
             if ($unit === null) {
-                throw new \LogicException('Unexpected end of UTF-8 source');
+                throw new LogicException('Unexpected end of UTF-8 source');
             }
             $offset = $unit->end;
             ++$position;

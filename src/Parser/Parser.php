@@ -19,6 +19,7 @@ use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use Closure;
 
 /**
  * Defines the shared source-based recognition contract for terminals, combinators and
@@ -46,7 +47,7 @@ abstract class Parser implements SnapshotParticipant
      * @var list<callable>
      */
     private array $semanticValidators = [];
-    private string|int|\Closure|null $nodeName = null;
+    private string|int|Closure|null $nodeName = null;
     /**
      * @var list<string>
      */
@@ -111,7 +112,7 @@ abstract class Parser implements SnapshotParticipant
 
     public function name(string|int|callable $name, ?string $group = null, bool $leaf = false): static
     {
-        $this->nodeName = is_string($name) || is_int($name) ? $name : \Closure::fromCallable($name);
+        $this->nodeName = is_string($name) || is_int($name) ? $name : Closure::fromCallable($name);
         $this->nodeGroup = $group;
         $this->semanticLeaf = $leaf;
 

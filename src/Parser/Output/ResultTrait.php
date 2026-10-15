@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Output;
 
 use Vanderlee\Comprehend\Source\Span;
+use Stringable;
+use Throwable;
+use UnexpectedValueException;
 
 /**
  * Configures named collection operations on Parser for later semantic reads. Selected Success
@@ -42,7 +45,7 @@ trait ResultTrait
                     $evaluated = true;
                     try {
                         $mapped = is_callable($value) ? $value($span->rawText()) : $value ?? $span->rawText();
-                    } catch (\Throwable $failure) {
+                    } catch (Throwable $failure) {
                         $error = $failure;
                     }
                 }
@@ -90,12 +93,12 @@ trait ResultTrait
             is_scalar($value)
             || $value === null
             || is_resource($value)
-            || $value instanceof \Stringable
+            || $value instanceof Stringable
         ) {
             return (string) $value;
         }
 
-        throw new \UnexpectedValueException('Concatenated results must be scalar, null, resources or Stringable');
+        throw new UnexpectedValueException('Concatenated results must be scalar, null, resources or Stringable');
     }
 
     public function concatResult(?string $key = null, mixed $value = null): static

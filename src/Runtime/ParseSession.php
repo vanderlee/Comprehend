@@ -11,6 +11,8 @@ use Vanderlee\Comprehend\Runtime\Scope\PreferContextTrait;
 use Vanderlee\Comprehend\Runtime\Scope\SpacingContextTrait;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Span;
+use InvalidArgumentException;
+use LogicException;
 
 /**
  * Owns the context of one recognition run over a Source. Coordinates scoped policies,
@@ -74,7 +76,7 @@ final class ParseSession
     {
         $key = spl_object_id($parser) . ':' . $offset;
         if (isset($this->activeParsers[$key])) {
-            throw new \LogicException(
+            throw new LogicException(
                 'Left recursion at byte ' . $offset . ': ' . implode(' -> ', $this->path)
                 . ' -> ' . $parser->graphLabel(),
             );
@@ -98,7 +100,7 @@ final class ParseSession
     public function consumeWork(int $amount = 1, int $byteOffset = 0): void
     {
         if ($amount < 0) {
-            throw new \InvalidArgumentException('Work increment must not be negative');
+            throw new InvalidArgumentException('Work increment must not be negative');
         }
         if ($this->limits->maxWork !== null && $amount > $this->limits->maxWork - $this->work) {
             throw new ParseLimitException('work', $byteOffset, $this->path, $this->limits->maxWork);

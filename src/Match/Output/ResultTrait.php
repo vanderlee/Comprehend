@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Match\Output;
 
+use LogicException;
+use Throwable;
+
 /**
  * Evaluates and caches named result collections for Success. Combines selected child operations
  * with local callbacks, retaining evaluation errors and detecting recursive reads.
@@ -16,7 +19,7 @@ trait ResultTrait
      * @var array<array-key, mixed>|null
      */
     private ?array $resultCache = null;
-    private ?\Throwable $resultError = null;
+    private ?Throwable $resultError = null;
     private bool $evaluatingResults = false;
     /**
      * List of partial-resolvable result callbacks.
@@ -62,7 +65,7 @@ trait ResultTrait
             return $this->resultCache;
         }
         if ($this->evaluatingResults) {
-            throw new \LogicException('Recursive named result evaluation');
+            throw new LogicException('Recursive named result evaluation');
         }
         $this->evaluatingResults = true;
         try {
@@ -70,7 +73,7 @@ trait ResultTrait
             $this->processResultCallbacks($results);
 
             return $this->resultCache = $results;
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $this->resultError = $error;
             throw $error;
         } finally {

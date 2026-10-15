@@ -15,6 +15,7 @@ use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Result\SemanticProjection;
 use Vanderlee\Comprehend\Result\ValidationResult;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
+use Throwable;
 
 /**
  * Retains selected child matches, concrete syntax and lazy semantic operations. Supplies
@@ -49,8 +50,8 @@ class Success extends AbstractMatch
     private array $semanticValidators = [];
     private ?ValidationResult $validation = null;
     private bool $validating = false;
-    private ?\Throwable $validationError = null;
-    private ?\Throwable $commitError = null;
+    private ?Throwable $validationError = null;
+    private ?Throwable $commitError = null;
     private bool $committing = false;
     private ?SemanticProjection $semanticProjection = null;
     private ?self $valueChild = null;
@@ -183,7 +184,7 @@ class Success extends AbstractMatch
         $this->committing = true;
         try {
             $this->getCallback();
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $this->commitError = $error;
             throw $error;
         } finally {
@@ -208,7 +209,7 @@ class Success extends AbstractMatch
             $errors = array_merge($errors, $this->localValidationErrors());
 
             return $this->validation = new ValidationResult($errors === [], $errors);
-        } catch (\Throwable $error) {
+        } catch (Throwable $error) {
             $this->validationError = $error;
             throw $error;
         } finally {

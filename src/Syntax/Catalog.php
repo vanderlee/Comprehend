@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend\Syntax;
 
 use Closure;
 use InvalidArgumentException;
+use SplObjectStorage;
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Comprehend;
@@ -277,7 +278,7 @@ final class Catalog
     {
         $pending = array_reverse(array_map(self::parser(...), $items));
         $children = [];
-        $expanded = new \SplObjectStorage();
+        $expanded = new SplObjectStorage();
         while ($pending !== []) {
             $parser = array_pop($pending);
             if ($parser instanceof Choice && $parser->canFlatten() && !isset($expanded[$parser])) {
@@ -301,7 +302,7 @@ final class Catalog
     private static function sequence(array $items): Sequence
     {
         $parsers = array_values(array_map(self::parser(...), $items));
-        $seen = new \SplObjectStorage();
+        $seen = new SplObjectStorage();
         while (($parsers[0] ?? null) instanceof Sequence && $parsers[0]->canFlattenPrefix()) {
             $prefix = $parsers[0];
             if (isset($seen[$prefix])) {

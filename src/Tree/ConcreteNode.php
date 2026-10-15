@@ -6,12 +6,13 @@ namespace Vanderlee\Comprehend\Tree;
 
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Source\Span;
+use JsonSerializable;
 
 /**
  * Retains recognized syntax, selected children, trivia and source spans. Provides the concrete
  * structure used by ParseResult, AstNode projection and shared tree serialization.
  */
-final class ConcreteNode implements \JsonSerializable
+final class ConcreteNode implements JsonSerializable
 {
     use Serialization;
 

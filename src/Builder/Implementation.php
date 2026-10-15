@@ -11,6 +11,7 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use Throwable;
 
 /**
  * Binds a Definition to factory arguments as an executable Parser. Applies its validators and
@@ -132,7 +133,7 @@ final class Implementation extends Parser implements AnalyzableParser
                             foreach ($processors as $name => $processor) {
                                 $values[$name] = $processor($local);
                             }
-                        } catch (\Throwable $failure) {
+                        } catch (Throwable $failure) {
                             $error = $failure;
                         }
                     }

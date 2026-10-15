@@ -12,6 +12,7 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use stdClass;
 
 /**
  * Organizes named rules and parameterized factories on the shared Parser runtime. Resolves
@@ -61,7 +62,7 @@ abstract class AbstractRuleset extends Parser implements AnalyzableParser
 
     public function graphIdentity(): object
     {
-        return $this->graphIdentity ??= new \stdClass();
+        return $this->graphIdentity ??= new stdClass();
     }
 
     public function groupName(): ?string

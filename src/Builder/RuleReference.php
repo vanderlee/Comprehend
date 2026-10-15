@@ -8,6 +8,7 @@ use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use LogicException;
 
 /**
  * Represents a deferred named rule lookup within an AbstractRuleset. Supports forward and
@@ -97,7 +98,7 @@ final class RuleReference extends Parser implements AnalyzableParser
             return $this->target;
         }
         if ($this->rules === null) {
-            throw new \LogicException('Rule reference requires a ruleset or snapshot target');
+            throw new LogicException('Rule reference requires a ruleset or snapshot target');
         }
 
         return $this->rules->resolveRule($this->rule, $this->arguments, $fresh);

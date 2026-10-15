@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Runtime\Scope;
 
 use Vanderlee\Comprehend\Source\SourceMode;
+use LogicException;
 
 /**
  * Maintains ParseSession's nested case-sensitivity policies. Supplies case normalization to
@@ -26,7 +27,7 @@ trait CaseSensitiveContextTrait
     {
         $caseSensitive = array_pop($this->caseSensitivity);
         if ($caseSensitive === null) {
-            throw new \LogicException('Case sensitivity scope is empty');
+            throw new LogicException('Case sensitivity scope is empty');
         }
 
         return $caseSensitive;

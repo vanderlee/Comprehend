@@ -9,6 +9,8 @@ use ArrayIterator;
 use IteratorAggregate;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Parser\Parser;
+use InvalidArgumentException;
+use Traversable;
 
 /**
  * Provides iterable and array-style child storage for composite parsers. Choice and Sequence
@@ -37,7 +39,7 @@ abstract class IterableParser extends Parser implements IteratorAggregate, Array
         return array_values($this->parsers);
     }
 
-    public function getIterator(): \Traversable
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->parsers);
     }
@@ -46,7 +48,7 @@ abstract class IterableParser extends Parser implements IteratorAggregate, Array
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if (!$value instanceof Parser) {
-            throw new \InvalidArgumentException('Children must be Parser instances');
+            throw new InvalidArgumentException('Children must be Parser instances');
         }
         if ($offset === null) {
             $this->parsers[] = $value;

@@ -14,6 +14,7 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\SourceMode;
+use RuntimeException;
 
 /**
  * Recognizes an integer representation with configurable base, digits and bounds. Checks
@@ -104,7 +105,7 @@ class Integer extends Parser implements AnalyzableParser
         $subject = $source->sliceBytes(0, $source->byteLength());
         $status = preg_match($pattern, $subject, $match, 0, $byteOffset);
         if ($status === false) {
-            throw new \RuntimeException('Integer recognition failed: ' . preg_last_error_msg());
+            throw new RuntimeException('Integer recognition failed: ' . preg_last_error_msg());
         }
         if ($status !== 1) {
             return $this->failure($source, $byteOffset);
