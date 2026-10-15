@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Source;
 
-/** Source bytes must remain stable for the lifetime of every referencing span. */
+/**
+ * Defines stable byte access and recognition-unit boundaries for every parser input. Span and
+ * ParseSession depend on source bytes remaining unchanged for the lifetime of retained results.
+ */
 interface Source
 {
     public function mode(): SourceMode;

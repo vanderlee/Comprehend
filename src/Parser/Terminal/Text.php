@@ -13,7 +13,8 @@ use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
 /**
- * Description of TextParser.
+ * Recognizes a literal sequence at the current source offset. Applies the scoped case policy
+ * while preserving matched source bytes and source-unit boundaries.
  *
  * @author Martijn
  */

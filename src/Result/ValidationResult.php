@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Result;
 
-/** Semantic acceptance is separate from syntactic success and diagnostics. */
+/**
+ * Carries semantic acceptance and its validation errors. Allows ParseResult to report
+ * validation separately from syntactic success and recognition diagnostics.
+ */
 final class ValidationResult
 {
     /** @param list<string> $errors */

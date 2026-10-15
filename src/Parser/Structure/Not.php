@@ -10,7 +10,10 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Negative lookahead; a successful probe rejects without consuming input. */
+/**
+ * Implements negative lookahead without consuming input. Rejects when its child matches and
+ * discards probe diagnostics so lookahead does not contaminate ordinary failures.
+ */
 class Not extends Parser
 {
     public function __construct(private Parser $parser) {}

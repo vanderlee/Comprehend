@@ -10,7 +10,8 @@ use IteratorAggregate;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Abstract class indicating a parser that consists of multiple parsers and can be accessed as an array.
+ * Provides iterable and array-style child storage for composite parsers. Choice and Sequence
+ * share this typed Parser container for grammar construction and traversal.
  *
  * @author Martijn
  * @implements IteratorAggregate<array-key, Parser>

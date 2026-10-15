@@ -13,7 +13,8 @@ use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\SourceMode;
 
 /**
- * Matches an integer within the specified range.
+ * Recognizes an integer representation with configurable base, digits and bounds. Checks
+ * leading-zero policy, numeric range and overflow while honoring scoped case sensitivity.
  *
  * @author Martijn
  */

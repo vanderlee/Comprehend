@@ -8,7 +8,10 @@ use InvalidArgumentException;
 use JsonSerializable;
 use Vanderlee\Comprehend\Source\Span;
 
-/** Named structure; raw source remains independent of semantic results. */
+/**
+ * Represents named syntax projected from ConcreteNode with source spans and surrounding gaps.
+ * Offers structural navigation and raw text independently of semantic values.
+ */
 final class AstNode implements JsonSerializable
 {
     use Serialization;

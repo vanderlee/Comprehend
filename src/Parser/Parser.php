@@ -18,7 +18,11 @@ use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Source-based recognition; semantic reads and committed effects are separate. */
+/**
+ * Defines the shared source-based recognition contract for terminals, combinators and
+ * directives. Checks delegated matches, builds source-bound results and separates pure guards
+ * from lazy semantics and explicit effects.
+ */
 abstract class Parser
 {
     use Output\ResultTrait;

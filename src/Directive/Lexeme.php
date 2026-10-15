@@ -9,7 +9,11 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Suppress spacing within a subtree, including local spacing overrides. */
+/**
+ * Treats a subtree as a contiguous lexeme by suppressing automatic spacing. Uses ParseSession
+ * scope to override even nested local spacing policies and restores the previous scope
+ * afterward.
+ */
 class Lexeme extends Parser
 {
     public function __construct(private Parser $parser) {}

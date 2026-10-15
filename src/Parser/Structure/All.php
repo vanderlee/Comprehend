@@ -12,7 +12,8 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Matches if and only if all parsers individually match. Returned length is the shortest length of all matches.
+ * Requires every operand to match at the same source offset. Consumes the shortest successful
+ * length, allowing grammars to intersect recognition constraints.
  *
  * @author Martijn
  */

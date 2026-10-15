@@ -6,7 +6,11 @@ namespace Vanderlee\Comprehend\Source;
 
 use InvalidArgumentException;
 
-/** Incrementally validated UTF-8 over a seekable owned snapshot. */
+/**
+ * Provides validated UTF-8 code-point access over ByteFileSource's stable disk snapshot.
+ * Validates incrementally and keeps canonical byte offsets while offering explicit code-point
+ * conversions.
+ */
 final class Utf8FileSource extends ByteFileSource
 {
     private int $codePoints = 0;

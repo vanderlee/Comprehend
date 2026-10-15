@@ -9,7 +9,10 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Override or disable intervening trivia within a subtree. */
+/**
+ * Configures or disables automatic intervening trivia for a parser subtree. Scopes the spacer
+ * in ParseSession so enclosing grammars retain their own spacing policy.
+ */
 class Space extends Parser
 {
     public function __construct(private ?Parser $spacer, private Parser $parser) {}

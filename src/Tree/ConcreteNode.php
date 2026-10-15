@@ -7,7 +7,10 @@ namespace Vanderlee\Comprehend\Tree;
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Source\Span;
 
-/** Immutable recognition structure, independent of semantic projections. */
+/**
+ * Retains recognized syntax, selected children, trivia and source spans. Provides the concrete
+ * structure used by ParseResult, AstNode projection and shared tree serialization.
+ */
 final class ConcreteNode implements \JsonSerializable
 {
     use Serialization;

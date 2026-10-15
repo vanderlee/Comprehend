@@ -13,7 +13,9 @@ use Vanderlee\Comprehend\Result\ValidationResult;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 /**
- * Successful match of a parser.
+ * Retains selected child matches, concrete syntax and lazy semantic operations. Supplies
+ * ParseResult with cached values, validation and explicitly committed effects after recognition
+ * succeeds.
  *
  * @author Martijn
  */

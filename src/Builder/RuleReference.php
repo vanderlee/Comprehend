@@ -9,7 +9,10 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Explicit deferred lookup, bound to a detached target when frozen. */
+/**
+ * Represents a deferred named rule lookup within an AbstractRuleset. Supports forward and
+ * recursive references and binds to a detached target when GraphSnapshot freezes the grammar.
+ */
 final class RuleReference extends Parser
 {
     private ?Parser $target = null;

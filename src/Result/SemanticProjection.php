@@ -8,7 +8,10 @@ use Closure;
 use LogicException;
 use Throwable;
 
-/** One recognition-owned mapping; cache null, objects and failures as well as scalars. */
+/**
+ * Caches one recognition-owned semantic mapping for ParseResult. Retains nulls, objects and
+ * thrown errors and guards against recursive evaluation so repeated value reads remain stable.
+ */
 final class SemanticProjection
 {
     private readonly ?Closure $mapper;

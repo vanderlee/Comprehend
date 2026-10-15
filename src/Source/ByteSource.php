@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Source;
 
-/** Arbitrary octets, with no decoding or implicit character conversions. */
+/**
+ * Provides in-memory arbitrary octets without decoding. Specializes InMemorySource so every
+ * byte is a recognition unit and every valid byte offset is a unit boundary.
+ */
 final class ByteSource extends InMemorySource
 {
     public function mode(): SourceMode

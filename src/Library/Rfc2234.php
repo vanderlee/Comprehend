@@ -18,6 +18,8 @@ use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
+ * Provides reusable ABNF core and grammar-syntax rules from RFC 2234. Builds named rules
+ * through the shared authoring API and serves as the base for later ABNF ruleset revisions.
  */
 class Rfc2234 extends AbstractRuleset
 {

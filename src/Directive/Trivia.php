@@ -9,7 +9,10 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Mark explicitly recognized whitespace/comments with independent raw source access. */
+/**
+ * Marks explicitly recognized whitespace or comments as concrete-tree trivia. Keeps their
+ * source text and selected lifecycle operations while excluding them from named AST structure.
+ */
 class Trivia extends Parser
 {
     public function __construct(private Parser $parser) {}

@@ -16,6 +16,8 @@ use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
+ * Provides named URI components and complete URI rules from RFC 3986. Composes reusable
+ * terminals and address rules for applications that need structured URI recognition.
  */
 class Rfc3986 extends AbstractRuleset
 {

@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Library;
 
 /**
- * BNF is identical to RFC 4234.
+ * Exposes the RFC 5234 ABNF rules under their own ruleset name. Reuses the identical grammar
+ * inherited from Rfc4234 and supplies core rules to the ABNF compiler.
  */
 class Rfc5234 extends Rfc4234
 {

@@ -14,7 +14,8 @@ use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
 /**
- * Description of SetParser.
+ * Recognizes one source unit included in or excluded from a supplied character set. Splits the
+ * set according to source mode and applies the scoped case policy.
  *
  * @author Martijn
  */

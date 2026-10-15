@@ -12,7 +12,10 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Repeat consuming children with optional bounds and intervening trivia. */
+/**
+ * Greedily recognizes a child within repetition bounds, with optional intervening trivia.
+ * Rejects non-progressing matches to prevent nullable children from causing unbounded loops.
+ */
 class Repeat extends Parser
 {
     use SpacingTrait;

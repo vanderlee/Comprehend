@@ -13,7 +13,8 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Match one of the provided parsers.
+ * Selects one alternative using first, longest or shortest match policy. Reads scoped
+ * preferences from ParseSession and retains only the selected attempt for result semantics.
  *
  * @author Martijn
  */

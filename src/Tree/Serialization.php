@@ -9,7 +9,10 @@ use DOMElement;
 use LogicException;
 use Vanderlee\Comprehend\Source\Span;
 
-/** The same explicit source-span schema for concrete and named trees. */
+/**
+ * Shares array, JSON and XML serialization between ConcreteNode and AstNode. Encodes source
+ * spans explicitly and preserves arbitrary bytes without relying on semantic output.
+ */
 trait Serialization
 {
     /**

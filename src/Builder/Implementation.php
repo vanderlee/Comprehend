@@ -12,7 +12,10 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** A parameterized definition instance using the canonical lifecycle. */
+/**
+ * Binds a Definition to factory arguments as an executable Parser. Applies its validators and
+ * collection processors through the canonical recognition and semantic lifecycle.
+ */
 final class Implementation extends Parser
 {
     private ?Parser $parser = null;

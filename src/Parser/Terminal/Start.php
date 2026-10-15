@@ -10,7 +10,8 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Matches (with length 0) if the offset is at the very start of the input.
+ * Asserts the absolute start of the source without consuming input. Lets grammars require a
+ * source boundary even when parsing can begin at an explicit offset.
  *
  * @author Martijn
  */

@@ -29,7 +29,10 @@ use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Start;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
-/** Conservative structural analysis: opaque custom recognizers remain runtime guarded. */
+/**
+ * Checks parser graphs for known left recursion and nullable repetition before freezing. Uses
+ * GraphState to inspect structure conservatively; opaque custom parsers retain runtime guards.
+ */
 final class GraphAnalysis
 {
     /**

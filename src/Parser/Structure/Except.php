@@ -12,8 +12,8 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Match the first parser but not the second.
- * Essentially the same as (A - B) = (A + !B).
+ * Matches a positive operand only when an excluded operand fails at the same offset. Enables
+ * grammar subtraction while keeping exclusion-probe diagnostics out of the selected result.
  *
  * @author Martijn
  */

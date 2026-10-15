@@ -13,7 +13,8 @@ use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
 /**
- * Description of CharParser.
+ * Recognizes one specified source unit or its complement. Uses the source mode and scoped case
+ * policy to compare octets or UTF-8 code points.
  *
  * @author Martijn
  */

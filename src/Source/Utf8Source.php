@@ -6,7 +6,10 @@ namespace Vanderlee\Comprehend\Source;
 
 use InvalidArgumentException;
 
-/** Validated UTF-8 with canonical byte offsets and explicit code-point access. */
+/**
+ * Provides validated in-memory UTF-8 with explicit code-point access and conversions. Extends
+ * InMemorySource while keeping parser positions and spans in canonical byte coordinates.
+ */
 final class Utf8Source extends InMemorySource
 {
     private readonly int $codePointLength;

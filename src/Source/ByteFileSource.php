@@ -8,7 +8,10 @@ use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
 
-/** Owns an immutable disk snapshot, with one bounded read page. */
+/**
+ * Provides arbitrary source bytes from an owned stable disk snapshot. Uses a bounded read page
+ * so file-backed recognition need not retain the full input in memory.
+ */
 class ByteFileSource implements Source
 {
     /** @var resource|null */

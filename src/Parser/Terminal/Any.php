@@ -10,7 +10,8 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Matches any single symbol.
+ * Consumes one available source unit without constraining its value. ParseSession supplies an
+ * octet in byte mode or a code point in UTF-8 mode.
  *
  * @author Martijn
  */

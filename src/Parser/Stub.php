@@ -11,7 +11,8 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Description of StubParser.
+ * Provides an explicitly bound placeholder for recursive object grammars. Delegates to its
+ * assigned Parser; graph freezing rejects stubs that have no target.
  *
  * @author Martijn
  */

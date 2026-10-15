@@ -6,7 +6,10 @@ namespace Vanderlee\Comprehend\Source;
 
 use InvalidArgumentException;
 
-/** Immutable half-open byte span retaining its original source. */
+/**
+ * Retains a source-bound half-open byte interval for exact text access. Trees and results use
+ * spans to preserve original input independently of semantic transformations.
+ */
 final class Span
 {
     public function __construct(public readonly Source $source, public readonly int $start, public readonly int $end)

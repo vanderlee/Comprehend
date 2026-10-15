@@ -8,7 +8,11 @@ use ReflectionObject;
 use SplObjectStorage;
 use Vanderlee\Comprehend\Parser\Parser;
 
-/** Resolve factories and detach owned state while preserving sharing and cycles. */
+/**
+ * Copies parser graphs to isolate fluent expressions and frozen grammars from mutable builders.
+ * Preserves sharing and cycles while optionally resolving RuleReference and Implementation
+ * targets.
+ */
 final class GraphSnapshot
 {
     /**

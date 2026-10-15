@@ -6,7 +6,10 @@ namespace Vanderlee\Comprehend\Parser\Output;
 
 use Vanderlee\Comprehend\Source\Span;
 
-/** Named collection operations; transformed values are cached per recognition. */
+/**
+ * Configures named collection operations on Parser for later semantic reads. Selected Success
+ * records apply set, concatenation and push operations with cached transformed values.
+ */
 trait ResultTrait
 {
     /**

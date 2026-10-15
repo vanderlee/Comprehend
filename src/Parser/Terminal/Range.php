@@ -13,7 +13,8 @@ use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
 /**
- * Description of RangeParser.
+ * Recognizes one source unit inside or outside an inclusive character range. Interprets
+ * endpoints according to source mode and compares with the scoped case policy.
  *
  * @author Martijn
  */

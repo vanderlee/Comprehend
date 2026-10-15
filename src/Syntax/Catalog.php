@@ -32,7 +32,11 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Syntax;
 
-/** Coordinates built-in dispatch and immutable custom vocabularies. */
+/**
+ * Maps built-in and custom syntax names to typed grammar factories and fluent operations.
+ * Supports immutable Syntax vocabularies and Comprehend dispatch without adding a recognition
+ * runtime.
+ */
 final class Catalog
 {
     private const BUILTINS = [

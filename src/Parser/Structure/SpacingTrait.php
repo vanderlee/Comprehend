@@ -7,7 +7,10 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 
-/** Explicit scoped policy for intervening trivia; null disables it. */
+/**
+ * Adds an explicit intervening-trivia policy to Sequence and Repeat. Pushes the configured
+ * spacer into ParseSession; null disables spacing and an unset policy inherits its scope.
+ */
 trait SpacingTrait
 {
     private ?Parser $spacer = null;

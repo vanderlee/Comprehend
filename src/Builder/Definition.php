@@ -8,7 +8,10 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Result\ParseResult;
 
-/** Facade, custom parser or factory, with selected-scope validation and processors. */
+/**
+ * Packages a grammar generator with semantic validators and collection processors.
+ * Implementation binds arguments and applies this metadata to selected recognition results.
+ */
 final class Definition
 {
     /** @var Comprehend|Parser|(callable(mixed...): (Comprehend|Parser)) */

@@ -11,7 +11,10 @@ use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
-/** A reusable resolved snapshot; no mutable parser graph is exposed. */
+/**
+ * Provides reusable parsing over a detached, resolved grammar snapshot. GraphSnapshot isolates
+ * builder state and GraphAnalysis checks structural hazards before execution.
+ */
 final class FrozenGrammar
 {
     /**

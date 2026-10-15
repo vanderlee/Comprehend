@@ -12,7 +12,8 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Description of SequenceParser.
+ * Recognizes child parsers in order to build a compound match. Applies scoped intervening
+ * spacing and retains selected children and trivia for the concrete tree.
  *
  * @author Martijn
  */

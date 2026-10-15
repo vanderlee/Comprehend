@@ -7,7 +7,10 @@ namespace Vanderlee\Comprehend\Source;
 use InvalidArgumentException;
 use RuntimeException;
 
-/** Explicit transcoding into a stable UTF-8 disk snapshot; offsets refer to UTF-8. */
+/**
+ * Transcodes a declared input encoding into a stable UTF-8 file snapshot. Delegates recognition
+ * to Utf8FileSource; all exposed offsets refer to converted UTF-8 bytes.
+ */
 final class EncodedFileSource implements Source
 {
     private readonly Utf8FileSource $source;

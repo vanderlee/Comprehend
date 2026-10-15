@@ -8,7 +8,10 @@ use ReflectionObject;
 use ReflectionProperty;
 use Vanderlee\Comprehend\Parser\Parser;
 
-/** Inspect owned parser state without invoking getters, closures or magic access. */
+/**
+ * Inspects parser-owned state for GraphSnapshot and GraphAnalysis. Reflection exposes
+ * initialized properties and child parsers without executing getters or authoring callbacks.
+ */
 final class GraphState
 {
     public static function value(Parser $parser, string $name): mixed

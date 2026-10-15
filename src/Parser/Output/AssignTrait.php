@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Output;
 
 /**
+ * Registers assignments of matched source text to caller variables on Parser. Assignments
+ * become selected-match effects and run only during explicit commit.
+ *
  * @author Martijn
  */
 trait AssignTrait

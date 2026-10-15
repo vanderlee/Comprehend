@@ -8,6 +8,11 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Source\Source;
 
+/**
+ * Maintains ParseSession's nested automatic-trivia policies. Recognizes spacing with recursive
+ * automatic spacing suppressed and returns accepted trivia matches for tree and lifecycle
+ * retention.
+ */
 trait SpacingContextTrait
 {
     /** @var list<Parser|null> Intervening trivia only; boundaries are explicit parsers. */

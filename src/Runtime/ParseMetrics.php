@@ -6,7 +6,10 @@ namespace Vanderlee\Comprehend\Runtime;
 
 use Vanderlee\Comprehend\Parser\Parser;
 
-/** Optional bounded profiling, not a recognition-result cache. */
+/**
+ * Collects bounded profiling counts for parser visits and source positions. ParseSession can
+ * record repeated work without introducing recognition memoization.
+ */
 final class ParseMetrics
 {
     private int $entries = 0;

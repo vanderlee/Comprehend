@@ -6,6 +6,10 @@ namespace Vanderlee\Comprehend\Match\Output;
 
 use Vanderlee\Comprehend\Match\Success;
 
+/**
+ * Executes selected Success effects once during explicit commit. Preserves preceding-match and
+ * child ordering and retains thrown errors to prevent effects from being retried.
+ */
 trait CallbackTrait
 {
     /**

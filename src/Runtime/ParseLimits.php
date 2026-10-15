@@ -6,7 +6,10 @@ namespace Vanderlee\Comprehend\Runtime;
 
 use InvalidArgumentException;
 
-/** Null disables a limit; work counts parser entries, unit reads and regex subject bytes. */
+/**
+ * Defines optional depth and work budgets for ParseSession. Null disables a budget; work
+ * accounts for parser entries, source-unit reads and regex subject bytes.
+ */
 final class ParseLimits
 {
     public function __construct(public readonly ?int $maxDepth = null, public readonly ?int $maxWork = null)

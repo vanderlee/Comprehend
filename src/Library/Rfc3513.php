@@ -19,13 +19,8 @@ use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * IPv6 address
- * Supports formats:
- *  1234:0:0:0:0:0:200C:417A
- *  1234::200C:417A,
- *  1234:0:0:0:0:0:12.34.56.78
- *  1234::12.34.56.78.
- *
+ * Provides reusable IPv6 address rules, including compressed and embedded IPv4 forms. Composes
+ * named parser rules so address syntax can be embedded in larger grammars.
  */
 class Rfc3513 extends AbstractRuleset
 {

@@ -16,7 +16,10 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 
-/** Recursive descent for authoring syntax only; emitted parsers share one runtime. */
+/**
+ * Reads ABNF definitions into a Ruleset for Compiler. Recursive descent handles grammar
+ * authoring only; the emitted Parser graph performs input recognition.
+ */
 final class Reader
 {
     private int $position = 0;

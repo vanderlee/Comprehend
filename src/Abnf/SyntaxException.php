@@ -8,6 +8,10 @@ use InvalidArgumentException;
 use Vanderlee\Comprehend\Result\Diagnostic;
 use Vanderlee\Comprehend\Source\Source;
 
+/**
+ * Reports invalid ABNF with a source-bound Diagnostic. Gives Reader failures a byte offset and
+ * a readable line and column for grammar authors.
+ */
 final class SyntaxException extends InvalidArgumentException
 {
     public readonly Diagnostic $diagnostic;

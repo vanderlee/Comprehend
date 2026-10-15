@@ -6,7 +6,10 @@ namespace Vanderlee\Comprehend\Parser\Terminal;
 
 use Vanderlee\Comprehend\Runtime\ParseSession;
 
-/** A local case policy; null inherits the session policy. */
+/**
+ * Adds an optional local case policy to text-comparing terminals. Scopes the override in
+ * ParseSession so unset terminals inherit the enclosing grammar policy.
+ */
 trait CaseSensitiveTrait
 {
     private ?bool $caseSensitivity = null;

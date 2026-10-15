@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Match\Output;
 
+/**
+ * Evaluates and caches named result collections for Success. Combines selected child operations
+ * with local callbacks, retaining evaluation errors and detecting recursive reads.
+ */
 trait ResultTrait
 {
     /**

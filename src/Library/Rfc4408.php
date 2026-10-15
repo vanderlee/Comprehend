@@ -19,11 +19,9 @@ use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * Class Rfc4408.
- *
- * ABNF in official RFC specs does not take into account left hand recursion issues.
- * Instances are fixed manually where appropriate.
- *
+ * Provides named SPF record and related syntax rules from RFC 4408. Rewrites left-recursive
+ * productions for the shared combinator runtime so they can be composed into application
+ * grammars.
  */
 class Rfc4408 extends AbstractRuleset
 {

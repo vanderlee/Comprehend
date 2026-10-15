@@ -7,7 +7,10 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 
-/** A local choice preference; null inherits the session policy. */
+/**
+ * Adds a local choice-selection policy to composite parsers such as Choice. Pushes an explicit
+ * preference into ParseSession or inherits the enclosing policy when unset.
+ */
 trait PreferTrait
 {
     private ?string $preference = null;

@@ -10,9 +10,8 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Matches always, with length zero.
- * This serves as a placeholder for badly written BNF specifications and should not be used in normal situations.
- * Do NOT use this within repetitions!
+ * Always succeeds without consuming input, representing an empty production. Useful for
+ * explicit nullable grammar branches; unbounded repetition must not rely on it for progress.
  *
  * @author Martijn
  */

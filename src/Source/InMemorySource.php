@@ -6,6 +6,10 @@ namespace Vanderlee\Comprehend\Source;
 
 use InvalidArgumentException;
 
+/**
+ * Shares stable byte storage, checked slicing and span construction for memory sources.
+ * ByteSource and Utf8Source supply their own recognition-unit and boundary rules.
+ */
 abstract class InMemorySource implements Source
 {
     protected readonly string $bytes;

@@ -14,7 +14,8 @@ use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
 /**
- * Matches regular expressions.
+ * Recognizes a PCRE pattern anchored at the current source offset. Integrates source-mode and
+ * boundary checks; literalWindow offers a bounded subject for known literals.
  *
  * @author Martijn
  */

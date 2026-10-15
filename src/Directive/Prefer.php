@@ -10,7 +10,10 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Override choice ranking within a subtree. */
+/**
+ * Overrides first, longest or shortest choice selection within a subtree. Scopes the
+ * ParseSession preference consumed by Choice and restores it after recognition.
+ */
 class Prefer extends Parser
 {
     public const FIRST = 'first';

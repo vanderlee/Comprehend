@@ -14,7 +14,9 @@ use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Span;
 
 /**
- * Maintains the current context of the parser chain.
+ * Owns the context of one recognition run over a Source. Coordinates scoped policies,
+ * diagnostics, recursion protection, optional budgets and metrics for all participating
+ * parsers.
  *
  * @author Martijn
  */

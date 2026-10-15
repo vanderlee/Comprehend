@@ -11,7 +11,10 @@ use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Tree\AstNode;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 
-/** Canonical source-bound result; all outputs derive from its CST and selected execution. */
+/**
+ * Exposes the canonical source-bound outcome of recognition. Wraps an internal match to provide
+ * diagnostics, concrete and named trees, cached semantics, validation and explicit commit.
+ */
 final class ParseResult
 {
     public readonly bool $success;

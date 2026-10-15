@@ -10,7 +10,8 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Matches (with length 0) if the offset is at the very end of the input.
+ * Asserts the absolute end of the source without consuming input. Lets grammars express an end
+ * boundary within ordinary parser composition.
  *
  * @author Martijn
  */

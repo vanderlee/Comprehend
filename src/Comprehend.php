@@ -20,9 +20,8 @@ use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Syntax\Catalog;
 
 /**
- * Immutable syntax authoring; magic calls only construct the existing parser graph.
- * Factory methods append syntax when called fluently. Repetition dispatch has
- * distinct static (item first) and fluent (current expression) signatures.
+ * Provides immutable fluent grammar authoring over the shared Parser graph. Magic calls use
+ * Syntax and Catalog to construct parsers; FrozenGrammar handles reusable execution.
  *
  * @method static self text(string $text)
  * @method static self char(string $character, bool $include = true)

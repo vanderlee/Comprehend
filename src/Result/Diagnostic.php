@@ -7,7 +7,11 @@ namespace Vanderlee\Comprehend\Result;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\SourceMode;
 
-/** Immutable recognition facts with lazily indexed, one-based locations. */
+/**
+ * Describes a recognition failure with expectations, rule paths and a byte offset. Lazily
+ * indexes source lines to provide readable locations and excerpts for ParseResult and grammar
+ * errors.
+ */
 final class Diagnostic
 {
     /**

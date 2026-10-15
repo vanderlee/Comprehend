@@ -9,7 +9,12 @@ use Vanderlee\Comprehend\Result\Diagnostic;
 use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 
-/** @internal Execution record, not a public result or serialization model. */
+/**
+ * Carries source metadata and observed progress between recognition operations. ParseResult
+ * wraps these internal execution records as the public result API.
+ *
+ * @internal Execution record, not a public result or serialization model.
+ */
 abstract class AbstractMatch
 {
     public readonly bool $accepted;

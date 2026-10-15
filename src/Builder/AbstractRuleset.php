@@ -13,7 +13,11 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Named rules and parameterized factories, directly on the source runtime. */
+/**
+ * Organizes named rules and parameterized factories on the shared Parser runtime. Resolves
+ * RuleReference targets and wraps Definition instances while keeping registrations local to
+ * each ruleset.
+ */
 abstract class AbstractRuleset extends Parser
 {
     public const ROOT = 'ROOT';

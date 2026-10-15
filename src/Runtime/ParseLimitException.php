@@ -6,7 +6,11 @@ namespace Vanderlee\Comprehend\Runtime;
 
 use RuntimeException;
 
-/** Budget exhaustion is distinct from ordinary grammar failure. */
+/**
+ * Signals cooperative parse-budget exhaustion separately from grammar mismatch. Carries the
+ * exhausted limit and source position so callers can distinguish resource limits from rejected
+ * input.
+ */
 final class ParseLimitException extends RuntimeException
 {
     /**

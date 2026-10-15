@@ -9,7 +9,10 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Override case sensitivity within a subtree. */
+/**
+ * Overrides case sensitivity for a parser subtree. Pushes a ParseSession policy and restores it
+ * even when recognition fails or throws.
+ */
 class CaseSensitive extends Parser
 {
     public function __construct(private readonly bool $sensitivity, private readonly Parser $parser) {}

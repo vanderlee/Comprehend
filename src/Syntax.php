@@ -7,7 +7,10 @@ namespace Vanderlee\Comprehend;
 use Closure;
 use Vanderlee\Comprehend\Syntax\Catalog;
 
-/** An immutable vocabulary of static and fluent callbacks. */
+/**
+ * Defines an immutable vocabulary of custom grammar factories and fluent operations. Delegates
+ * authoring calls through Catalog to Comprehend so extensions use the same parser runtime.
+ */
 final class Syntax
 {
     private function __construct(private readonly Catalog $catalog) {}

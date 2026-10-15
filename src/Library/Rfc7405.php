@@ -17,6 +17,8 @@ use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
+ * Extends Rfc5234 with explicit case-sensitive and case-insensitive ABNF string syntax.
+ * Overrides string productions while retaining the inherited core and grammar rules.
  */
 class Rfc7405 extends Rfc5234
 {

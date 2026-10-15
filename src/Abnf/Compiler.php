@@ -11,7 +11,10 @@ use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Library\Rfc5234;
 use Vanderlee\Comprehend\Source\SourceMode;
 
-/** Translate the documented ABNF subset into the existing, analyzed runtime graph. */
+/**
+ * Compiles the supported ABNF subset into a reusable FrozenGrammar. Seeds a Ruleset with core
+ * rules, delegates syntax reading to Reader, then freezes and analyzes the graph.
+ */
 final class Compiler
 {
     private const CORE_RULES = [

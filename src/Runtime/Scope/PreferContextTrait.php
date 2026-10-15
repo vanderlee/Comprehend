@@ -7,6 +7,10 @@ namespace Vanderlee\Comprehend\Runtime\Scope;
 use DomainException;
 use Vanderlee\Comprehend\Directive\Prefer;
 
+/**
+ * Maintains ParseSession's stack of validated choice preferences. Lets Choice and Prefer share
+ * first, longest and shortest selection policies across nested scopes.
+ */
 trait PreferContextTrait
 {
     /**

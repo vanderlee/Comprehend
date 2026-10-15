@@ -6,6 +6,10 @@ namespace Vanderlee\Comprehend\Runtime\Scope;
 
 use Vanderlee\Comprehend\Source\SourceMode;
 
+/**
+ * Maintains ParseSession's nested case-sensitivity policies. Supplies case normalization to
+ * terminals while allowing directives to restore the enclosing policy.
+ */
 trait CaseSensitiveContextTrait
 {
     /**
