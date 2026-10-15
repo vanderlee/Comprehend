@@ -10,14 +10,34 @@ MIT licensed. Requires DOM, JSON and mbstring.
 require 'vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Result\ParseResult;
 
-$grammar = C::sequence('hello', ' world');
-$result = $grammar->parse('hello world');
+// Build a parser and describe the value to extract.
+$age = C::integer(0, 150)
+    ->named('age')
+    ->mapValue(static fn(ParseResult $r): int => (int) $r->rawText());
+
+// Parse complete input, then extract the typed value.
+$result = $age->parse('42');
 if ($result->success) {
-    echo $result->rawText();
-    echo $result->node->toJson();
+    echo $result->value();   // 42 (int)
+    echo $result->rawText(); // '42' (original text)
 }
 ```
+
+For spaced syntax, pass an optional outer spacing policy for one facade call:
+
+```php
+$declaration = C::text('age')->text(':')->then($age);
+$result = $declaration->parse('age : 42', spacing: C::text(' ')->many());
+if ($result->success) {
+    echo $result->ast()->firstNamed('age')->rawText(); // '42'
+}
+```
+
+Per-call spacing applies between items; it does not trim leading/trailing text.
+Local `spacing()` and `lexeme()` directives take precedence. The grammar remains
+unchanged. Run `php docs/examples/quick-start.php` for checked examples.
 
 `matchPrefix(Source, int $byteOffset = 0)` allows remaining input.
 `parseAll(Source, int $byteOffset = 0)` requires the entire remainder to match.

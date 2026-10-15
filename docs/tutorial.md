@@ -1,18 +1,53 @@
 # Tutorial
 
-Start with the [README example](../README.md#quick-start). Construct explicit
-terminal objects, combine them in Sequence/Choice/Repeat, and pass Utf8Source or
-ByteSource to `parseAll()` (complete input) or `matchPrefix()` (prefix input).
-Inspect `success`, `diagnostic`, `node`, `ast()`, `value()` or `results()` as needed.
+Build a grammar, parse input, then extract the result. Start with the
+[README quick start](../README.md#quick-start), or run
+`php docs/examples/quick-start.php`.
 
-Add names for AST structure, pure guards for recognition rejection and semantic
-validators for selected meaning. Use `onCommit()` and explicit `commit()` for
-effects. Configure [trivia](trivia.md) at boundaries and between items explicitly.
-Use [Rulesets](builder.md) for named rules/factories and
-[RFC imports](libraries.md) for reusable protocol syntax.
+For a typed value, attach a pure mapping before parsing:
 
-Run `php docs/examples/execution.php` for verified runtime examples. The
-[grammar-authoring guide](grammar-authoring.md) covers the immutable facade and
-frozen graphs, with checked arithmetic/RFC equivalence examples. Use the
-[ABNF subset](abnf.md) to compile supported authoring text into that same runtime.
-See the [breaking-release guide](breaking-release.md) for complete caller changes.
+~~~php
+use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Result\ParseResult;
+
+$age = C::integer(0, 150)
+    ->named('age')
+    ->mapValue(static fn(ParseResult $r): int => (int) $r->rawText());
+
+$result = $age->parse('42');
+if ($result->success) {
+    $value = $result->value(); // 42, cached
+    $text = $result->rawText(); // '42', unchanged source
+}
+~~~
+
+Combine parsers to recognize larger syntax. Strings in composition are literals:
+
+~~~php
+$declaration = C::sequence('age', ':', $age);
+$result = $declaration->parse('age : 42', spacing: C::text(' ')->many());
+if ($result->success) {
+    $ageText = $result->ast()->firstNamed('age')->rawText(); // '42'
+}
+~~~
+
+`parse()` requires complete input. Use `matchPrefix()` to allow
+a remainder. Both accept UTF-8 strings or explicit Source objects; use ByteSource
+for arbitrary bytes. Check `success` before extracting values; inspect
+`diagnostic` on failure.
+
+Per-call spacing supplies a default between items without changing the grammar.
+It does not trim input, and local `spacing()` or `lexeme()`
+directives take precedence. For repeated parsing, configure spacing before calling
+`freeze()` once, then reuse that frozen grammar.
+
+Names select AST structure. Mappings compute values lazily; they do not change
+source text. Add pure `guard()` predicates for recognition rejection and
+`validateSemantic()` for selected meaning. Use `onCommit()` and
+explicit `commit()` only when effects are needed.
+See [trivia](trivia.md) for boundary whitespace, [Rulesets](builder.md) for named
+rules, and [RFC imports](libraries.md) for protocols.
+
+The [grammar-authoring guide](grammar-authoring.md) explains immutable composition,
+scoped syntax extensions and freezing. The [ABNF subset](abnf.md) compiles to the
+same runtime. Run `php docs/examples/execution.php` for execution semantics.

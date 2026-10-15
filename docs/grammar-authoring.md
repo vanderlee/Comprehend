@@ -146,7 +146,7 @@ containers; forward references still consult their builder until freezing.
 Exporting via `parser()` does not expose the facade's internal containers.
 Mutable object builders remain available: migrate shared `add()`/array edits to
 facade `then()`/`or()`, or freeze a graph before changing its builders. Composition
-retains nested container structure rather than silently flattening named groups.
+flattens anonymous sequence prefixes while retaining named and decorated groups.
 
 `then()` and `or()` accept any number of facade values, Parser objects or strings. With no
 arguments they return the unchanged facade; supplied object parsers are detached.
@@ -154,8 +154,14 @@ String arguments become Text literals in sequence, choice, chaining, intersectio
 exclusion and negative lookahead. Empty strings retain Text's rejection; use
 `nothing()` for a zero-width match. Object constructors remain Parser-only, and
 rule lookup still requires explicit names. One variadic call groups
-its supplied children together; successive calls retain the preceding expression
-as a nested child, preserving names and scoped directives.
+its supplied children together. Successive sequence calls flatten an anonymous
+sequence prefix, reducing nesting in chains such as `text('a')->text('b')->text('c')`.
+Names, tags, semantic callbacks, result operations, assignments, diagnostic labels,
+explicit sequence spacing and subclass boundaries prevent flattening. Directive
+wrappers remain intact. Non-prefix nested sequences are retained because nullable
+items can otherwise change how often spacing is consumed. Empty prefixes and
+recursive boundaries are retained as well. Anonymous CST grouping and recognition
+depth/work counts can therefore differ; source spans and named semantic boundaries remain.
 
 ```php
 $digits = Comprehend::range('0', '9')->some()->named('digits');
@@ -256,6 +262,14 @@ the current graph on each call, so deferred definitions and factories are resolv
 using their current state. Retain `freeze()` once for repeated parsing with stable
 definitions. Strings always mean validated UTF-8, never automatic encoding detection;
 pass ByteSource for arbitrary bytes. Offsets and limits keep their canonical contracts.
+
+Facade `parse()`, `parseAll()` and `matchPrefix()` also accept a fourth optional
+`spacing: Comprehend|Parser|null` argument. A non-null value supplies an outer
+spacing policy for that call, without modifying the grammar. Local `spacing()`
+and `lexeme()` directives take precedence. Null or omission leaves the grammar's
+spacing unchanged. This consumes intervening trivia only, not leading/trailing
+material. For repeated parsing, configure `spacing()` before `freeze()`; frozen
+entry points retain their existing signatures.
 
 ```php
 $hex = Comprehend::hexadecimal(0, 255, allowLeadingZeros: true)->caseSensitive(false);

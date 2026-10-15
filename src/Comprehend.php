@@ -173,18 +173,32 @@ final readonly class Comprehend
     }
 
     /** Complete-input parsing; strings are validated UTF-8. Freeze explicitly for reuse. */
-    public function parse(string|Source $source, int $byteOffset = 0, ?ParseLimits $limits = null): ParseResult
-    {
-        return $this->parseAll($source, $byteOffset, $limits);
+    public function parse(
+        string|Source $source,
+        int $byteOffset = 0,
+        ?ParseLimits $limits = null,
+        self|Parser|null $spacing = null,
+    ): ParseResult {
+        return $this->parseAll($source, $byteOffset, $limits, $spacing);
     }
 
-    public function parseAll(string|Source $source, int $byteOffset = 0, ?ParseLimits $limits = null): ParseResult
-    {
-        return $this->freeze()->parseAll($source, $byteOffset, $limits);
+    public function parseAll(
+        string|Source $source,
+        int $byteOffset = 0,
+        ?ParseLimits $limits = null,
+        self|Parser|null $spacing = null,
+    ): ParseResult {
+        $grammar = $spacing === null ? $this : $this->spacing($spacing);
+        return $grammar->freeze()->parseAll($source, $byteOffset, $limits);
     }
 
-    public function matchPrefix(string|Source $source, int $byteOffset = 0, ?ParseLimits $limits = null): ParseResult
-    {
-        return $this->freeze()->matchPrefix($source, $byteOffset, $limits);
+    public function matchPrefix(
+        string|Source $source,
+        int $byteOffset = 0,
+        ?ParseLimits $limits = null,
+        self|Parser|null $spacing = null,
+    ): ParseResult {
+        $grammar = $spacing === null ? $this : $this->spacing($spacing);
+        return $grammar->freeze()->matchPrefix($source, $byteOffset, $limits);
     }
 }

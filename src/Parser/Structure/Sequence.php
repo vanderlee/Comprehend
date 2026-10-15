@@ -28,6 +28,12 @@ class Sequence extends IterableParser
         $this->parsers = $arguments;
     }
 
+    /** @internal Subclasses and explicit spacing policies retain their boundary. */
+    public function canFlattenPrefix(): bool
+    {
+        return static::class === self::class && !$this->hasCompositionMetadata() && !$this->hasSpacingPolicy;
+    }
+
     /**
      * Add one or more parsers to the end of this sequence.
      *

@@ -92,9 +92,7 @@ final readonly class Catalog
         'optional' => 'maybe',
     ];
 
-    public function __construct(private array $starts = [], private array $continuations = [])
-    {
-    }
+    public function __construct(private array $starts = [], private array $continuations = []) {}
 
     public static function canonicalName(string $name): string
     {
@@ -110,7 +108,9 @@ final readonly class Catalog
             'char' => static fn(string $character, bool $include = true): Parser => new Char($character, $include),
             'set' => static fn(string $characters, bool $include = true): Parser => new Set($characters, $include),
             'range' => static fn(?string $first, ?string $last, bool $in = true): Parser => new Range(
-                $first, $last, $in
+                $first,
+                $last,
+                $in,
             ),
             'any' => static fn(): Parser => new Any(),
             'nothing' => static fn(): Parser => new Nothing(),
@@ -126,62 +126,63 @@ final readonly class Catalog
             'binary' => static fn(
                 ?int $minimum = 0,
                 ?int $maximum = null,
-                bool $allowLeadingZeros = false
+                bool $allowLeadingZeros = false,
             ): Parser => new Integer($minimum, $maximum, 2, $allowLeadingZeros),
             'octal' => static fn(
                 ?int $minimum = 0,
                 ?int $maximum = null,
-                bool $allowLeadingZeros = false
+                bool $allowLeadingZeros = false,
             ): Parser => new Integer($minimum, $maximum, 8, $allowLeadingZeros),
             'hexadecimal' => static fn(
                 ?int $minimum = 0,
                 ?int $maximum = null,
-                bool $allowLeadingZeros = false
+                bool $allowLeadingZeros = false,
             ): Parser => new Integer($minimum, $maximum, 16, $allowLeadingZeros),
             'octet' => static fn(bool $allowLeadingZeros = false): Parser => new Integer(
-                0, 255, 10, $allowLeadingZeros
+                0,
+                255,
+                10,
+                $allowLeadingZeros,
             ),
             'literalwindow' => static fn(string $literal): Parser => Regex::literalWindow($literal),
-            'sequence' => static fn(Comprehend|Parser|string ...$parsers): Parser => new Sequence(
-                ...
-                array_map(self::parser(...), $parsers)
-            ),
+            'sequence' => static fn(Comprehend|Parser|string ...$parsers): Parser => self::sequence($parsers),
             'choice', 'or' => static fn(Comprehend|Parser|string ...$parsers): Parser => new Choice(
                 ...
-                array_map(self::parser(...), $parsers)
+                array_map(self::parser(...), $parsers),
             ),
             'first' => static fn(Comprehend|Parser|string ...$parsers): Parser => Choice::first(
                 ...
-                array_map(self::parser(...), $parsers)
+                array_map(self::parser(...), $parsers),
             ),
             'longest' => static fn(Comprehend|Parser|string ...$parsers): Parser => Choice::longest(
                 ...
-                array_map(self::parser(...), $parsers)
+                array_map(self::parser(...), $parsers),
             ),
             'shortest' => static fn(Comprehend|Parser|string ...$parsers): Parser => Choice::shortest(
                 ...
-                array_map(self::parser(...), $parsers)
+                array_map(self::parser(...), $parsers),
             ),
             'all' => static fn(Comprehend|Parser|string ...$parsers): Parser => new All(
                 ...
-                array_map(self::parser(...), $parsers)
+                array_map(self::parser(...), $parsers),
             ),
             'except' => static fn(Comprehend|Parser|string $match, Comprehend|Parser|string $not): Parser => new Except(
-                self::parser($match), self::parser($not)
+                self::parser($match),
+                self::parser($not),
             ),
             'not' => static fn(Comprehend|Parser|string $parser): Parser => new Not(self::parser($parser)),
             'ref' => static fn(AbstractRuleset $rules, string $name, mixed ...$arguments): Parser => $rules->ref(
                 $name,
                 ...
-                $arguments
+                $arguments,
             ),
             'repeat' => static fn(
                 Comprehend|Parser|string $parser,
                 int $min = 0,
-                ?int $max = null
+                ?int $max = null,
             ): Comprehend => ($parser instanceof Comprehend ? $parser : Comprehend::of(self::parser($parser)))->repeat(
                 $min,
-                $max
+                $max,
             ),
             'some' => static fn(Comprehend|Parser|string $parser): Comprehend => Comprehend::repeat($parser, 1),
             'many' => static fn(Comprehend|Parser|string $parser): Comprehend => Comprehend::repeat($parser),
@@ -195,22 +196,20 @@ final readonly class Catalog
         return match (self::canonicalName($name)) {
             'then' => static fn(
                 Comprehend $item,
-                Comprehend|Parser|string ...$next
-            ): Comprehend|Parser => $next === [] ? $item : new Sequence(
-                $item->parser(),
-                ...
-                array_map(self::parser(...), $next)
-            ),
+                Comprehend|Parser|string ...$next,
+            ): Comprehend|Parser => $next === [] ? $item : self::sequence([$item, ...$next]),
             'or' => static fn(
                 Comprehend $item,
-                Comprehend|Parser|string ...$next
+                Comprehend|Parser|string ...$next,
             ): Comprehend|Parser => $next === [] ? $item : new Choice(
                 $item->parser(),
                 ...
-                array_map(self::parser(...), $next)
+                array_map(self::parser(...), $next),
             ),
             'repeat' => static fn(Comprehend $item, int $min = 0, ?int $max = null): Parser => new Repeat(
-                $item->parser(), $min, $max
+                $item->parser(),
+                $min,
+                $max,
             ),
             'some' => static fn(Comprehend $item): Comprehend => $item->repeat(1),
             'many' => static fn(Comprehend $item): Comprehend => $item->repeat(),
@@ -226,41 +225,63 @@ final readonly class Catalog
             'guard' => static fn(Comprehend $item, callable $predicate): Parser => $item->parser()->guard($predicate),
             'validatesemantic' => static fn(
                 Comprehend $item,
-                callable $validator
+                callable $validator,
             ): Parser => $item->parser()->validateSemantic($validator),
             'oncommit' => static fn(Comprehend $item, callable $effect): Parser => $item->parser()->onCommit($effect),
             'setresult' => static fn(
                 Comprehend $item,
                 ?string $key = null,
-                mixed $value = null
+                mixed $value = null,
             ): Parser => $item->parser()->setResult($key, $value),
             'concatresult' => static fn(
                 Comprehend $item,
                 ?string $key = null,
-                mixed $value = null
+                mixed $value = null,
             ): Parser => $item->parser()->concatResult($key, $value),
             'pushresult' => static fn(
                 Comprehend $item,
                 ?string $key = null,
-                mixed $value = null
+                mixed $value = null,
             ): Parser => $item->parser()->pushResult($key, $value),
             'diagnosticrule' => static fn(Comprehend $item, string $name): Parser => $item->parser()->diagnosticRule(
-                $name
+                $name,
             ),
             'casesensitive' => static fn(Comprehend $item, bool $sensitivity = true): Parser => new CaseSensitive(
-                $sensitivity, $item->parser()
+                $sensitivity,
+                $item->parser(),
             ),
             'prefer' => static fn(Comprehend $item, string $preference): Parser => new Prefer(
                 $preference,
-                $item->parser()
+                $item->parser(),
             ),
             'spacing' => static fn(Comprehend $item, Comprehend|Parser|null $trivia): Parser => new Space(
-                $trivia === null ? null : self::parser($trivia), $item->parser()
+                $trivia === null ? null : self::parser($trivia),
+                $item->parser(),
             ),
             'lexeme' => static fn(Comprehend $item): Parser => $item->parser()->lexeme(),
             'trivia' => static fn(Comprehend $item): Parser => $item->parser()->trivia(),
             default => null,
         };
+    }
+
+    /** Flatten only prefixes: other positions can introduce extra spacing boundaries. */
+    private static function sequence(array $items): Sequence
+    {
+        $parsers = array_map(self::parser(...), $items);
+        $seen = new \SplObjectStorage();
+        while (($parsers[0] ?? null) instanceof Sequence && $parsers[0]->canFlattenPrefix()) {
+            $prefix = $parsers[0];
+            if (isset($seen[$prefix])) {
+                break;
+            }
+            $seen[$prefix] = true;
+            $children = iterator_to_array($prefix, false);
+            if ($children === []) {
+                break;
+            }
+            $parsers = [...$children, ...array_slice($parsers, 1)];
+        }
+        return new Sequence(...$parsers);
     }
 
     /** Detach caller-owned graphs before composing syntax. */

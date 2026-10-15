@@ -85,6 +85,15 @@ abstract class Parser
         return $this->nodeName !== null;
     }
 
+    /** @internal Metadata makes a parser an observable composition boundary. */
+    public function hasCompositionMetadata(): bool
+    {
+        return $this->nodeName !== null || $this->nodeTags !== [] || $this->nodeGroup !== null
+            || $this->semanticLeaf || $this->ruleName !== null || $this->valueMapper !== null
+            || $this->guards !== [] || $this->semanticValidators !== [] || $this->effects !== []
+            || $this->resultCallbacks !== [] || $this->assignCallbacks !== [];
+    }
+
     public function diagnosticRule(string $name): static
     {
         $this->ruleName = $name;
