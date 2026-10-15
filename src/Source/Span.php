@@ -14,7 +14,11 @@ final class Span
 {
     public function __construct(public readonly Source $source, public readonly int $start, public readonly int $end)
     {
-        if ($start < 0 || $end < $start || $end > $source->byteLength()) {
+        if (
+            $start < 0
+            || $end < $start
+            || $end > $source->byteLength()
+        ) {
             throw new InvalidArgumentException('Span must satisfy 0 <= start <= end <= source byte length');
         }
     }
@@ -36,6 +40,10 @@ final class Span
             throw new InvalidArgumentException('Cannot combine spans from different sources');
         }
 
-        return new self($this->source, min($this->start, $other->start), max($this->end, $other->end));
+        return new self(
+            $this->source,
+            min($this->start, $other->start),
+            max($this->end, $other->end),
+        );
     }
 }

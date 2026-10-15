@@ -17,6 +17,7 @@ interface Source
     /** Slice the half-open byte interval [start, end), even inside a code point. */
     public function sliceBytes(int $start, int $end): string;
 
+    /** Bind a half-open byte interval to this source; unit-boundary checks belong to recognition. */
     public function span(int $start, int $end): Span;
 
     /** Recognition units are octets in byte mode and code points in UTF-8 mode. */

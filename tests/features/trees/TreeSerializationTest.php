@@ -10,6 +10,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 class TreeSerializationTest extends ParserTestCase
 {
@@ -57,5 +58,28 @@ class TreeSerializationTest extends ParserTestCase
         $this->assertSame($raw, base64_decode($xml->getElementsByTagName('text')[0]->textContent));
         $this->assertSame('base64', $xml->getElementsByTagName('text')[0]->getAttribute('encoding'));
         $this->assertSame($raw, $node->rawText());
+    }
+
+    public function testAstSurroundingBytesRetainTheirEncodingAndXmlOrder(): void
+    {
+        $raw = "\xffA\x00";
+        $source = new ByteSource($raw);
+        $root = new ConcreteNode('sequence', $source->span(0, 3), [
+            new ConcreteNode('text', $source->span(1, 2), name: 'letter'),
+        ]);
+        $ast = $root->ast();
+        $child = $ast->toArray()['children'][0];
+
+        $this->assertSame('base64', $child['preamble'][0]['textEncoding']);
+        $this->assertSame("\xff", base64_decode($child['preamble'][0]['text']));
+        $this->assertSame('utf8', $child['postamble'][0]['textEncoding']);
+        $this->assertSame("\x00", $child['postamble'][0]['text']);
+
+        $texts = [];
+        foreach ($ast->toXml()->getElementsByTagName('text') as $text) {
+            $this->assertSame('base64', $text->getAttribute('encoding'));
+            $texts[] = base64_decode($text->textContent);
+        }
+        $this->assertSame([$raw, 'A', "\xff", "\x00"], $texts);
     }
 }

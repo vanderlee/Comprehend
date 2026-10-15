@@ -109,10 +109,7 @@ trait Serialization
         }
         // Bytes are valid parser data even when they cannot be XML text.
         $raw = $this->rawText();
-        $text = $document->createElement('text');
-        $text->setAttribute('encoding', 'base64');
-        $text->appendChild($document->createTextNode(base64_encode($raw)));
-        $element->appendChild($text);
+        self::appendXmlText($document, $element, $raw);
         $this->appendXmlTags($document, $element);
         $this->appendXmlSurroundings($document, $element);
         foreach ($this->children as $child) {
@@ -120,6 +117,14 @@ trait Serialization
         }
 
         return $element;
+    }
+
+    private static function appendXmlText(DOMDocument $document, DOMElement $element, string $raw): void
+    {
+        $text = $document->createElement('text');
+        $text->setAttribute('encoding', 'base64');
+        $text->appendChild($document->createTextNode(base64_encode($raw)));
+        $element->appendChild($text);
     }
 
     private static function appendConcreteAttributes(DOMElement $element, ConcreteNode $node): void
@@ -160,10 +165,7 @@ trait Serialization
                 $fragment = $document->createElement('span');
                 $fragment->setAttribute('start', (string) $span->start);
                 $fragment->setAttribute('end', (string) $span->end);
-                $raw = $document->createElement('text');
-                $raw->setAttribute('encoding', 'base64');
-                $raw->appendChild($document->createTextNode(base64_encode($span->rawText())));
-                $fragment->appendChild($raw);
+                self::appendXmlText($document, $fragment, $span->rawText());
                 $container->appendChild($fragment);
             }
             $element->appendChild($container);

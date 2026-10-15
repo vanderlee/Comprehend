@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Tree\AstNode;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 final class AstNodeTest extends TestCase
 {
@@ -36,5 +37,24 @@ final class AstNodeTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         new AstNode('item', null, $source->span(0, 1), preamble: [$foreign->span(0, 1)]);
+    }
+
+    public function testOverlappingChildrenDoNotAssignAlreadyCoveredBytesToLaterGaps(): void
+    {
+        $source = new ByteSource('(abcd)');
+        $root = new ConcreteNode('intersection', $source->span(0, 6), [
+            new ConcreteNode('text', $source->span(1, 4), name: 'wide'),
+            new ConcreteNode('text', $source->span(2, 3), name: 'overlap'),
+            new ConcreteNode('empty', $source->span(5, 5), name: 'empty'),
+        ], name: 'root');
+
+        $ast = $root->ast();
+        $this->assertSame('(abc', $ast->firstNamed('wide')->surroundedText());
+        $this->assertSame('b', $ast->firstNamed('overlap')->surroundedText());
+        $empty = $ast->firstNamed('empty');
+        $this->assertSame('d', $empty->preambleText());
+        $this->assertSame(')', $empty->postambleText());
+        $this->assertSame([4, 5], [$empty->preamble[0]->start, $empty->preamble[0]->end]);
+        $this->assertSame([5, 6], [$empty->postamble[0]->start, $empty->postamble[0]->end]);
     }
 }

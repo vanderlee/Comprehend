@@ -93,13 +93,18 @@ final class AstNode implements JsonSerializable
         $children = [];
         $tags = array_values(array_unique([...$inheritedTags, ...$node->tags]));
         if (!$node->semanticLeaf) {
+            // Tags cross unnamed wrappers, but a named node starts a new inheritance boundary.
+            $childTags = $node->name === null ? $tags : [];
             foreach ($node->children as $child) {
-                array_push($children, ...self::project($child, $node->name === null ? $tags : []));
+                array_push($children, ...self::project($child, $childTags));
             }
         }
 
-        return $node->name === null ? $children
-            : [new self($node->name, $node->group, $node->span, self::surround($children, $node->span), $tags)];
+        if ($node->name === null) {
+            return $children;
+        }
+
+        return [new self($node->name, $node->group, $node->span, self::surround($children, $node->span), $tags)];
     }
 
     /**
@@ -109,14 +114,20 @@ final class AstNode implements JsonSerializable
      */
     private static function surround(array $nodes, Span $parent): array
     {
-        $cursor = $parent->start;
+        $coveredByteEnd = $parent->start;
         $last = count($nodes) - 1;
         foreach ($nodes as $index => $node) {
-            $preamble = $node->span->start > $cursor && $node->span->start <= $parent->end
-                ? [$parent->source->span($cursor, $node->span->start)] : [];
-            $cursor = max($cursor, $node->span->end);
-            $postamble = $index === $last && $cursor < $parent->end
-                ? [$parent->source->span($cursor, $parent->end)] : [];
+            $preamble = [];
+            if ($node->span->start > $coveredByteEnd && $node->span->start <= $parent->end) {
+                $preamble[] = $parent->source->span($coveredByteEnd, $node->span->start);
+            }
+
+            // Intersection children can overlap; already-covered bytes never become gaps again.
+            $coveredByteEnd = max($coveredByteEnd, $node->span->end);
+            $postamble = [];
+            if ($index === $last && $coveredByteEnd < $parent->end) {
+                $postamble[] = $parent->source->span($coveredByteEnd, $parent->end);
+            }
             $nodes[$index] = new self(
                 $node->name,
                 $node->group,
