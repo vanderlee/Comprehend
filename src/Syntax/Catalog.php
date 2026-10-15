@@ -31,6 +31,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Start;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Syntax;
 
 /**
@@ -253,7 +254,7 @@ final class Catalog
                 $sensitivity,
                 $item->parser(),
             ),
-            'prefer' => static fn(Comprehend $item, string $preference): Parser => new Prefer(
+            'prefer' => static fn(Comprehend $item, ChoicePolicy $preference): Parser => new Prefer(
                 $preference,
                 $item->parser(),
             ),

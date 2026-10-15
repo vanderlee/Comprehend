@@ -53,7 +53,8 @@ Recognize input whitespace explicitly with rules such as WSP.
 
 ABNF declaratively describes alternatives; this runtime selects locally and
 does not revisit a successful choice after a later suffix failure. Default
-`choice` is `ChoicePolicy::FIRST`, with explicit LONGEST/SHORTEST policies available.
+`choice` is `ChoicePolicy::FIRST`, with explicit LONGEST/SHORTEST enum cases available.
+Pass a `ChoicePolicy` case; string policies are rejected.
 
 ```php
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;

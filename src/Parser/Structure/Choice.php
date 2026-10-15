@@ -111,8 +111,12 @@ class Choice extends IterableParser implements AnalyzableParser
         }
     }
 
-    private function parseRanked(Source $source, int $offset, ParseSession $session, string $preference): AbstractMatch
-    {
+    private function parseRanked(
+        Source $source,
+        int $offset,
+        ParseSession $session,
+        ChoicePolicy $preference,
+    ): AbstractMatch {
         $selected = null;
         foreach ($this->parsers as $parser) {
             $attempt = $parser->recognizeInSession($source, $offset, $session);
@@ -126,7 +130,7 @@ class Choice extends IterableParser implements AnalyzableParser
             : $this->failure($source, $offset, $selected->length ?? 0);
     }
 
-    private static function outranks(AbstractMatch $attempt, AbstractMatch $selected, string $preference): bool
+    private static function outranks(AbstractMatch $attempt, AbstractMatch $selected, ChoicePolicy $preference): bool
     {
         if ($attempt->accepted !== $selected->accepted) {
             return $attempt instanceof Success;

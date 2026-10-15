@@ -10,7 +10,7 @@ use InvalidArgumentException;
  * Provides validated in-memory UTF-8 with explicit code-point access and conversions. Extends
  * InMemorySource while keeping parser positions and spans in canonical byte coordinates.
  */
-final class Utf8Source extends InMemorySource
+final class Utf8Source extends InMemorySource implements CodePointSource
 {
     private readonly int $codePointLength;
 

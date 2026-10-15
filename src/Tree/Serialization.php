@@ -16,6 +16,18 @@ use Vanderlee\Comprehend\Source\Span;
 trait Serialization
 {
     /**
+     * @return array{name: string|int|null, group: ?string, span: Span,
+     *     children: list<self>, tags: list<string>}
+     */
+    abstract protected function serializationData(): array;
+
+    /** @return array<string, string|bool> Node-specific array fields and XML attributes. */
+    abstract protected function serializationFields(): array;
+
+    /** @return array<string, list<Span>> */
+    abstract protected function serializationSurroundings(): array;
+
+    /**
      * @return array<string, mixed>
      */
     public function jsonSerialize(): array
@@ -28,35 +40,24 @@ trait Serialization
      */
     public function toArray(): array
     {
+        $node = $this->serializationData();
         $data = [
-            'name' => $this->name,
-            'group' => $this->group,
-            ...self::spanArray($this->span),
-            'children' => array_map(static fn($child) => $child->toArray(), $this->children),
+            'name' => $node['name'],
+            'group' => $node['group'],
+            ...self::spanArray($node['span']),
+            'children' => array_map(static fn(self $child): array => $child->toArray(), $node['children']),
+            ...$this->serializationFields(),
         ];
-        if ($this instanceof ConcreteNode) {
-            $data['kind'] = $this->kind;
-            $data['trivia'] = $this->isTrivia;
-            $data['semanticLeaf'] = $this->semanticLeaf;
+        if ($node['tags'] !== []) {
+            $data['tags'] = $node['tags'];
         }
-        if ($this->tags !== []) {
-            $data['tags'] = $this->tags;
-        }
-        if ($this instanceof AstNode) {
-            foreach (self::surroundings($this) as $side => $spans) {
-                if ($spans !== []) {
-                    $data[$side] = array_map(self::spanArray(...), $spans);
-                }
+        foreach ($this->serializationSurroundings() as $side => $spans) {
+            if ($spans !== []) {
+                $data[$side] = array_map(self::spanArray(...), $spans);
             }
         }
 
         return $data;
-    }
-
-    /** @return array{preamble: list<Span>, postamble: list<Span>} */
-    private static function surroundings(AstNode $node): array
-    {
-        return ['preamble' => $node->preamble, 'postamble' => $node->postamble];
     }
 
     /**
@@ -95,24 +96,25 @@ trait Serialization
 
     private function xmlNode(DOMDocument $document): DOMElement
     {
+        $node = $this->serializationData();
         $element = $document->createElement('node');
-        if ($this->name !== null) {
-            $element->setAttribute('name', (string) $this->name);
+        if ($node['name'] !== null) {
+            $element->setAttribute('name', (string) $node['name']);
         }
-        if ($this->group !== null) {
-            $element->setAttribute('group', $this->group);
+        if ($node['group'] !== null) {
+            $element->setAttribute('group', $node['group']);
         }
-        $element->setAttribute('start', (string) $this->span->start);
-        $element->setAttribute('end', (string) $this->span->end);
-        if ($this instanceof ConcreteNode) {
-            self::appendConcreteAttributes($element, $this);
+        $element->setAttribute('start', (string) $node['span']->start);
+        $element->setAttribute('end', (string) $node['span']->end);
+        foreach ($this->serializationFields() as $name => $value) {
+            $element->setAttribute($name, is_bool($value) ? ($value ? 'true' : 'false') : $value);
         }
         // Bytes are valid parser data even when they cannot be XML text.
-        $raw = $this->rawText();
+        $raw = $node['span']->rawText();
         self::appendXmlText($document, $element, $raw);
         $this->appendXmlTags($document, $element);
         $this->appendXmlSurroundings($document, $element);
-        foreach ($this->children as $child) {
+        foreach ($node['children'] as $child) {
             $element->appendChild($child->xmlNode($document));
         }
 
@@ -127,21 +129,15 @@ trait Serialization
         $element->appendChild($text);
     }
 
-    private static function appendConcreteAttributes(DOMElement $element, ConcreteNode $node): void
-    {
-        $element->setAttribute('kind', $node->kind);
-        $element->setAttribute('trivia', $node->isTrivia ? 'true' : 'false');
-        $element->setAttribute('semanticLeaf', $node->semanticLeaf ? 'true' : 'false');
-    }
-
     private function appendXmlTags(DOMDocument $document, DOMElement $element): void
     {
-        if ($this->tags === []) {
+        $tagsData = $this->serializationData()['tags'];
+        if ($tagsData === []) {
             return;
         }
 
         $tags = $document->createElement('tags');
-        foreach ($this->tags as $tag) {
+        foreach ($tagsData as $tag) {
             $entry = $document->createElement('tag');
             $entry->appendChild($document->createTextNode($tag));
             $tags->appendChild($entry);
@@ -151,11 +147,7 @@ trait Serialization
 
     private function appendXmlSurroundings(DOMDocument $document, DOMElement $element): void
     {
-        if (!$this instanceof AstNode) {
-            return;
-        }
-
-        foreach (self::surroundings($this) as $side => $spans) {
+        foreach ($this->serializationSurroundings() as $side => $spans) {
             if ($spans === []) {
                 continue;
             }

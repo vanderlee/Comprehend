@@ -218,9 +218,13 @@ See [Lifecycle](lifecycle.md) for validation and commit behavior. Nested case or
 preference directives use the innermost applicable override.
 
 Choice ranking values live in `Vanderlee\Comprehend\Runtime\ChoicePolicy`:
-`FIRST`, `LONGEST` and `SHORTEST`. They retain the string values `first`, `longest`
-and `shortest`. Import `ChoicePolicy` wherever a policy is selected; the `Prefer`
-directive applies the policy to a subtree and no longer owns these constants.
+`FIRST`, `LONGEST` and `SHORTEST` are backed enum cases. Pass a case to `prefer()`,
+`Choice::setPreference()`, `Prefer`, `ParseSession` and the ABNF compiler's `choice`
+option. Strings are rejected with TypeError. At a configuration boundary, use
+`ChoicePolicy::from($value)` to validate a string, or `tryFrom()` to handle invalid
+input explicitly. Read `->value` for the strings `first`, `longest` and `shortest`.
+`setPreference(null)` restores inherited policy. The `Prefer` directive applies
+the policy to a subtree.
 
 ### Terminal chaining and static repetition
 

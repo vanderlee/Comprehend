@@ -3,6 +3,7 @@
 namespace Tests\Src\Parser\Structure;
 
 use Tests\ParserTestCase;
+use TypeError;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
@@ -16,6 +17,31 @@ use Vanderlee\Comprehend\Source\ByteSource;
  */
 class ChoiceTest extends ParserTestCase
 {
+    public function testStringPolicyIsRejectedWithoutChangingTheSelectedPolicy(): void
+    {
+        $choice = Choice::longest(new Text('a'), new Text('ab'));
+        try {
+            $choice->setPreference('first');
+            $this->fail('Choice policies must be enum cases');
+        } catch (TypeError $error) {
+            $this->assertStringContainsString(ChoicePolicy::class, $error->getMessage());
+        }
+        $this->assertSame('ab', $choice->matchPrefix(new ByteSource('ab'))->rawText());
+    }
+
+    public function testClearingLocalPolicyInheritsTheSessionPolicy(): void
+    {
+        $source = new ByteSource('ab');
+        $session = new ParseSession($source, preference: ChoicePolicy::LONGEST);
+        $choice = Choice::first(new Text('a'), new Text('ab'));
+        $this->assertSame(1, $choice->recognizeInSession($source, 0, $session)->length);
+
+        $choice->setPreference(null);
+
+        $this->assertSame(2, $choice->recognizeInSession($source, 0, $session)->length);
+        $this->assertSame(ChoicePolicy::LONGEST, $session->getPreference());
+    }
+
     public function testRankedChoicesFailWhenAllAlternativesAreRemoved(): void
     {
         foreach ([Choice::longest(new Text('a')), Choice::shortest(new Text('a'))] as $choice) {
@@ -203,7 +229,7 @@ class ChoiceTest extends ParserTestCase
     }
 
     /** @dataProvider preferenceData */
-    public function testEqualLengthAlternativesRetainFirstOutputAndEffects(string $preference): void
+    public function testEqualLengthAlternativesRetainFirstOutputAndEffects(ChoicePolicy $preference): void
     {
         $events = [];
         $first = (new Text('a'))->name('first')->setResult('first')->onCommit(
@@ -228,7 +254,7 @@ class ChoiceTest extends ParserTestCase
     }
 
     /** @dataProvider preferenceData */
-    public function testSuccessOutranksLongerFailedAttemptInEitherOrder(string $preference): void
+    public function testSuccessOutranksLongerFailedAttemptInEitherOrder(ChoicePolicy $preference): void
     {
         foreach ([false, true] as $failureFirst) {
             foreach ([new Text('a'), new Nothing()] as $success) {
@@ -244,7 +270,7 @@ class ChoiceTest extends ParserTestCase
     }
 
     /** @dataProvider preferenceData */
-    public function testFailureProgressIsDistinctFromFarthestDiagnostic(string $preference): void
+    public function testFailureProgressIsDistinctFromFarthestDiagnostic(ChoicePolicy $preference): void
     {
         foreach ([false, true] as $longerFirst) {
             $alternatives = [new Text('aaa'), new Text('abc')];

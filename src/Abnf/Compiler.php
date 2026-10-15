@@ -41,7 +41,7 @@ final class Compiler
         string $grammar,
         string $root,
         SourceMode $numericEncoding = SourceMode::BYTES,
-        string $choice = ChoicePolicy::FIRST,
+        ChoicePolicy $choice = ChoicePolicy::FIRST,
     ): FrozenGrammar {
         if (preg_match('/^[A-Za-z][A-Za-z0-9-]*$/D', $root) !== 1) {
             throw new InvalidArgumentException('ABNF root must be a rule name');

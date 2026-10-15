@@ -55,7 +55,7 @@ final class ParseSession
         Source $source,
         ?Parser $trivia = null,
         bool $caseSensitive = true,
-        string $preference = ChoicePolicy::FIRST,
+        ChoicePolicy $preference = ChoicePolicy::FIRST,
         ?ParseLimits $limits = null,
         private readonly ?ParseMetrics $metrics = null,
     ) {

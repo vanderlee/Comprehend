@@ -11,7 +11,7 @@ use RuntimeException;
  * Transcodes a declared input encoding into a stable UTF-8 file snapshot. Delegates recognition
  * to Utf8FileSource; all exposed offsets refer to converted UTF-8 bytes.
  */
-final class EncodedFileSource implements Source
+final class EncodedFileSource implements CodePointSource
 {
     private readonly Utf8FileSource $source;
     public readonly string $inputEncoding;

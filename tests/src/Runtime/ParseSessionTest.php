@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Src\Runtime;
 
-use DomainException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use TypeError;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
@@ -51,8 +51,8 @@ final class ParseSessionTest extends TestCase
         try {
             $session->pushPreference('invalid');
             $this->fail('Expected an invalid choice policy');
-        } catch (DomainException $error) {
-            $this->assertSame('Invalid preference `invalid`', $error->getMessage());
+        } catch (TypeError $error) {
+            $this->assertStringContainsString(ChoicePolicy::class, $error->getMessage());
         }
 
         $this->assertSame(ChoicePolicy::LONGEST, $session->getPreference());

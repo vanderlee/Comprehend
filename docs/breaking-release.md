@@ -19,6 +19,7 @@ The changelog remains marked Unreleased until publication is ready.
 | Declared facade factories | Shared static/fluent names now use authoring-only magic dispatch with typed factories; instance terminal calls append syntax instead of constructing standalone terminals |
 | Facade `thenText()` and other terminal helpers; static repetition `someOf/manyOf/maybeOf/repeatOf()` | Fluent `text/char/set/range/...()` and static `some/many/maybe/repeat()`; metadata and directive operations dispatch directly to typed catalog callbacks |
 | Integer character arguments | `chr()` for octets or explicit Unicode strings |
+| String choice policies and `ChoicePolicy::assertValid()` | `ChoicePolicy::FIRST`, `LONGEST` or `SHORTEST` enum cases; convert configuration strings with `ChoicePolicy::from()` and use `->value` to export strings |
 | Token naming/output tree | `name()`, immutable CST, optional named AST and direct serialization |
 | Automatic callbacks and multi-argument callback coordinates | `onCommit(callable(ParseResult))` and explicit `commit()` |
 | Validation used to reject speculative alternatives | Pure CST `guard()`; selected-scope `validateSemantic()` for meaning |

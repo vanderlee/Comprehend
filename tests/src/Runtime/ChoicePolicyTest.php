@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Src\Runtime;
 
-use DomainException;
 use PHPUnit\Framework\TestCase;
+use ValueError;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 
 final class ChoicePolicyTest extends TestCase
 {
     /** @dataProvider supportedPolicies */
-    public function testSupportedPoliciesKeepTheirPublicStringValues(string $policy, string $expected): void
+    public function testSupportedPoliciesKeepTheirPublicStringValues(ChoicePolicy $policy, string $expected): void
     {
-        ChoicePolicy::assertValid($policy);
-
-        $this->assertSame($expected, $policy);
+        $this->assertSame($expected, $policy->value);
+        $this->assertSame($policy, ChoicePolicy::from($expected));
     }
 
-    /** @return iterable<string, array{string, string}> */
+    /** @return iterable<string, array{ChoicePolicy, string}> */
     public static function supportedPolicies(): iterable
     {
         yield 'first' => [ChoicePolicy::FIRST, 'first'];
@@ -29,10 +28,9 @@ final class ChoicePolicyTest extends TestCase
     /** @dataProvider unsupportedPolicies */
     public function testUnsupportedPoliciesAreRejected(string $policy): void
     {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Invalid preference `' . $policy . '`');
+        $this->expectException(ValueError::class);
 
-        ChoicePolicy::assertValid($policy);
+        ChoicePolicy::from($policy);
     }
 
     /** @return iterable<string, array{string}> */

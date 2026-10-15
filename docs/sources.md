@@ -38,3 +38,12 @@ allow interior UTF-8 bytes; recognition positions and consumed endpoints do not.
 Sources may be in memory or seekable disk snapshots. UTF-8 validation/counting scans the input;
 position conversions scan prefixes. Regex matching and diagnostic indexing may
 access the full input. No constant-memory streaming guarantee is made.
+
+## Code-point capability
+
+`CodePointSource extends Source` is implemented by `Utf8Source`, `Utf8FileSource`
+and `EncodedFileSource`. Consumers that need code-point counts, reads or coordinate
+conversions can accept this interface independently of storage. Recognition still
+uses the `Source` contract; all offsets and spans remain byte based. Out-of-range
+positions and reads inside a code point throw; boundary queries return false for
+interior bytes. File-backed implementations retain their explicit close lifecycle.

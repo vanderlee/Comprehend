@@ -13,14 +13,14 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
  */
 trait PreferTrait
 {
-    private ?string $preference = null;
+    private ?ChoicePolicy $preference = null;
 
     /**
-     * @param string|null $preference
+     * @param ChoicePolicy|null $preference
      *
      * @return $this
      */
-    public function setPreference(?string $preference): static
+    public function setPreference(?ChoicePolicy $preference): static
     {
         $this->preference = $preference;
 
@@ -50,14 +50,14 @@ trait PreferTrait
 
     private function pushPreferenceToContext(ParseSession $context): void
     {
-        if ($this->preference) {
+        if ($this->preference !== null) {
             $context->pushPreference($this->preference);
         }
     }
 
     private function popPreferenceFromContext(ParseSession $context): void
     {
-        if ($this->preference) {
+        if ($this->preference !== null) {
             $context->popPreference();
         }
     }

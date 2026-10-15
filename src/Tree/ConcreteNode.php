@@ -64,6 +64,33 @@ final class ConcreteNode implements JsonSerializable
         }
     }
 
+    /**
+     * @return array{name: string|int|null, group: ?string, span: Span,
+     *     children: list<self>, tags: list<string>}
+     */
+    protected function serializationData(): array
+    {
+        return [
+            'name' => $this->name,
+            'group' => $this->group,
+            'span' => $this->span,
+            'children' => $this->children,
+            'tags' => $this->tags,
+        ];
+    }
+
+    /** @return array<string, string|bool> */
+    protected function serializationFields(): array
+    {
+        return ['kind' => $this->kind, 'trivia' => $this->isTrivia, 'semanticLeaf' => $this->semanticLeaf];
+    }
+
+    /** @return array<string, list<Span>> */
+    protected function serializationSurroundings(): array
+    {
+        return [];
+    }
+
     public function rawText(): string
     {
         return $this->span->rawText();

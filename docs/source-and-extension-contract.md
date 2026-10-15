@@ -272,3 +272,12 @@ Existing custom composites that previously relied on reflected fields must add
 Built-in participants retain their distinct rules: RuleReference owns parameterized
 identity and target binding; Implementation resets cached targets before fresh
 materialization; AbstractRuleset keeps only its freshly resolved root when freezing.
+
+## Directive operands
+
+`Directive\UnaryDirective` owns one parser operand and provides `getParser()`,
+`children()`, detached snapshot copying and forwarding structural analysis. A
+subclass implements recognition and its diagnostic string. Scoped policies must
+still be restored with `try/finally`. Directives with additional parser dependencies
+must expose them in `children()` and copy them in `copyDependencies()`, calling the
+parent implementation first; `Space` demonstrates this for its spacer.

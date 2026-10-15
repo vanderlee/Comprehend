@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Directive;
 
-use Vanderlee\Comprehend\Builder\AnalyzableParser;
-use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -16,22 +14,16 @@ use Vanderlee\Comprehend\Source\Source;
  * Configures or disables automatic intervening trivia for a parser subtree. Scopes the spacer
  * in ParseSession so enclosing grammars retain their own spacing policy.
  */
-class Space extends Parser implements AnalyzableParser
+class Space extends UnaryDirective
 {
-    use ForwardingAnalysisTrait;
-
-    public function __construct(private ?Parser $spacer, private Parser $parser) {}
-
-    /** @internal Structural operand for graph analysis. */
-    public function getParser(): Parser
+    public function __construct(private ?Parser $spacer, Parser $parser)
     {
-        return $this->parser;
+        parent::__construct($parser);
     }
 
     protected function copyDependencies(GraphSnapshot $context): void
     {
         parent::copyDependencies($context);
-        $this->parser = $context->copy($this->parser);
         if ($this->spacer !== null) {
             $this->spacer = $context->copy($this->spacer);
         }
@@ -45,11 +37,6 @@ class Space extends Parser implements AnalyzableParser
         }
 
         return [$this->spacer, $this->parser];
-    }
-
-    protected function analysisTarget(): Parser
-    {
-        return $this->getParser();
     }
 
     public function __toString(): string

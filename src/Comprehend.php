@@ -15,6 +15,7 @@ use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Integer;
 use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Syntax\Catalog;
@@ -71,7 +72,7 @@ use BadMethodCallException;
  * @method self pushResult(?string $key = null, mixed $value = null)
  * @method self diagnosticRule(string $name)
  * @method self caseSensitive(bool $sensitivity = true)
- * @method self prefer(string $preference)
+ * @method self prefer(ChoicePolicy $preference)
  * @method self spacing(self|Parser|null $trivia)
  * @method self lexeme()
  * @method self trivia()

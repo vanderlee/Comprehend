@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\features\authoring;
 
 use PHPUnit\Framework\TestCase;
+use TypeError;
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
@@ -13,6 +14,13 @@ use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 
 class ChoiceConvenienceTest extends TestCase
 {
+    public function testFluentPolicyRequiresAnEnumCase(): void
+    {
+        $this->expectException(TypeError::class);
+
+        C::choice('a', 'ab')->prefer('longest');
+    }
+
     public function testChainedAndNestedAnonymousChoicesFlattenWithoutMutation(): void
     {
         $base = C::text('a')->or('b');

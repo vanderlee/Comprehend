@@ -142,6 +142,33 @@ final class AstNode implements JsonSerializable
         return $nodes;
     }
 
+    /**
+     * @return array{name: string|int|null, group: ?string, span: Span,
+     *     children: list<self>, tags: list<string>}
+     */
+    protected function serializationData(): array
+    {
+        return [
+            'name' => $this->name,
+            'group' => $this->group,
+            'span' => $this->span,
+            'children' => $this->children,
+            'tags' => $this->tags,
+        ];
+    }
+
+    /** @return array<string, string|bool> */
+    protected function serializationFields(): array
+    {
+        return [];
+    }
+
+    /** @return array<string, list<Span>> */
+    protected function serializationSurroundings(): array
+    {
+        return ['preamble' => $this->preamble, 'postamble' => $this->postamble];
+    }
+
     public function rawText(): string
     {
         return $this->span->rawText();

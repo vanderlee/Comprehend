@@ -12,7 +12,7 @@ use LogicException;
  * Validates incrementally and keeps canonical byte offsets while offering explicit code-point
  * conversions.
  */
-final class Utf8FileSource extends ByteFileSource
+final class Utf8FileSource extends ByteFileSource implements CodePointSource
 {
     private int $codePoints = 0;
 

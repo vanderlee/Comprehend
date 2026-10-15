@@ -14,14 +14,12 @@ use LogicException;
 trait PreferContextTrait
 {
     /**
-     * @var list<string>
+     * @var list<ChoicePolicy>
      */
     private array $preferenceStack = [];
 
-    public function pushPreference(string $preference): void
+    public function pushPreference(ChoicePolicy $preference): void
     {
-        // Invalid policies must leave the enclosing scope unchanged.
-        ChoicePolicy::assertValid($preference);
         $this->preferenceStack[] = $preference;
     }
 
@@ -30,7 +28,7 @@ trait PreferContextTrait
         array_pop($this->preferenceStack);
     }
 
-    public function getPreference(): string
+    public function getPreference(): ChoicePolicy
     {
         $preference = end($this->preferenceStack);
         if ($preference === false) {
