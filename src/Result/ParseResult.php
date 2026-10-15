@@ -47,7 +47,11 @@ final class ParseResult
 
     public function ast(): ?AstNode
     {
-        return $this->node === null ? null : $this->ast ??= $this->node->ast();
+        if ($this->node === null) {
+            return null;
+        }
+
+        return $this->ast ??= $this->node->ast();
     }
 
     public function rawText(): string
@@ -80,9 +84,11 @@ final class ParseResult
 
     public function validate(): ValidationResult
     {
-        return $this->match instanceof Success
-            ? $this->match->validateSemantic()
-            : new ValidationResult(false, ['Syntax was not accepted']);
+        if (!$this->match instanceof Success) {
+            return new ValidationResult(false, ['Syntax was not accepted']);
+        }
+
+        return $this->match->validateSemantic();
     }
 
     public function isCommitted(): bool

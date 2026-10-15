@@ -56,4 +56,22 @@ final class SuccessTest extends TestCase
         $this->assertSame(1, $calls);
         $this->assertTrue($success->isCommitted());
     }
+
+    public function testParentCollectionsApplyChildOperationsEvenWhenChildResultsAreCached(): void
+    {
+        $first = new Success();
+        $first->addResultCallback(static function (array &$results): void {
+            $results['text'] = 'first';
+        });
+        $second = new Success();
+        $second->addResultCallback(static function (array &$results): void {
+            $results['text'] = ($results['text'] ?? '') . ' second';
+        });
+        $parent = new Success(0, [$first, $second]);
+
+        $this->assertSame(['text' => ' second'], $second->getResults());
+        $this->assertSame(['text' => 'first second'], $parent->getResults());
+        $this->assertSame(['text' => ' second'], $second->getResults());
+        $this->assertSame(['text' => 'first second'], $parent->getResults());
+    }
 }

@@ -37,8 +37,7 @@ trait CallbackTrait
     }
 
     /**
-     * Add a callback to this match, to be called after parsing is finished and
-     * only if this match was part of the matched rules.
+     * Register a local effect for explicit commit of the selected match.
      *
      * @param callable $callback
      *
@@ -57,8 +56,7 @@ trait CallbackTrait
     }
 
     /**
-     * Handle all registered custom callbacks for this match and any matches
-     * at deeper levels of this match.
+     * Retain completion or failure for this match's entire selected effect sequence.
      */
     private function processCustomCallbacks(): void
     {
@@ -71,21 +69,27 @@ trait CallbackTrait
         $this->effectsProcessed = true;
         $this->effectsProcessing = true;
         try {
-            foreach ($this->precedingMatches as $match) {
-                $match->processCustomCallbacks();
-            }
-            /** @var self $success */
-            foreach ($this->successes as $success) {
-                $success->processCustomCallbacks();
-            }
-            foreach ($this->customCallbacks as $callback) {
-                $callback();
-            }
+            $this->runSelectedEffects();
         } catch (Throwable $error) {
             $this->effectError = $error;
             throw $error;
         } finally {
             $this->effectsProcessing = false;
+        }
+    }
+
+    private function runSelectedEffects(): void
+    {
+        // Preceding matches retain trivia and processed-rule effects outside the collection graph.
+        foreach ($this->precedingMatches as $match) {
+            $match->processCustomCallbacks();
+        }
+        /** @var self $success */
+        foreach ($this->successes as $success) {
+            $success->processCustomCallbacks();
+        }
+        foreach ($this->customCallbacks as $callback) {
+            $callback();
         }
     }
 }

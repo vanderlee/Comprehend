@@ -207,6 +207,40 @@ class LifecycleTest extends ParserTestCase
         $this->assertFalse($result->isCommitted());
     }
 
+    public function testFailingTriviaEffectStopsLaterEffectsWithoutReplayingEarlierEffects(): void
+    {
+        $events = [];
+        $failure = new RuntimeException('trivia effect failed');
+        $first = (new Text('a'))->onCommit(static function () use (&$events): void {
+            $events[] = 'first';
+        });
+        $second = (new Text('b'))->onCommit(static function () use (&$events): void {
+            $events[] = 'second';
+        });
+        $trivia = (new Text(' '))->onCommit(static function () use (&$events, $failure): void {
+            $events[] = 'trivia';
+            throw $failure;
+        });
+        $parser = (new Sequence($first, $second))->spacing($trivia)
+            ->onCommit(static function () use (&$events): void {
+                $events[] = 'parent';
+            });
+        $result = $parser->parseAll(new Utf8Source('a b'));
+
+        $this->assertSame([], $events);
+        for ($attempt = 0; $attempt < 2; ++$attempt) {
+            try {
+                $result->commit();
+                $this->fail('Expected the retained trivia effect failure');
+            } catch (RuntimeException $error) {
+                $this->assertSame($failure, $error);
+            }
+        }
+
+        $this->assertSame(['first', 'trivia'], $events);
+        $this->assertFalse($result->isCommitted());
+    }
+
     public function testRequiredIntersectionValidationIsRetained()
     {
         $result = (new All(

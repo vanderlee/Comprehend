@@ -31,20 +31,26 @@ final class SemanticProjection
             throw new LogicException('Recursive semantic value evaluation');
         }
         if (!$this->evaluated) {
-            $this->evaluating = true;
-            try {
-                $this->cached = $this->mapper === null ? $result->rawText() : ($this->mapper)($result);
-            } catch (Throwable $error) {
-                $this->error = $error;
-            } finally {
-                $this->evaluating = false;
-                $this->evaluated = true;
-            }
+            $this->evaluate($result);
         }
         if ($this->error !== null) {
             throw $this->error;
         }
 
         return $this->cached;
+    }
+
+    private function evaluate(ParseResult $result): void
+    {
+        $this->evaluating = true;
+        try {
+            $this->cached = $this->mapper === null ? $result->rawText() : ($this->mapper)($result);
+        } catch (Throwable $error) {
+            $this->error = $error;
+        } finally {
+            $this->evaluating = false;
+            // Null values and thrown errors both complete this recognition's evaluation.
+            $this->evaluated = true;
+        }
     }
 }

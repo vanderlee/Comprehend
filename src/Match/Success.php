@@ -192,6 +192,7 @@ class Success extends AbstractMatch
         if (!$this->validateSemantic()->valid) {
             throw new LogicException('Semantic validation rejected commit');
         }
+        // Mark the attempt before effects run; a partial failure must never replay them.
         $this->commitStarted = true;
         $this->committing = true;
         try {
@@ -217,6 +218,7 @@ class Success extends AbstractMatch
         }
         $this->validating = true;
         try {
+            // Retain child-before-parent order even when a child reports rejection.
             $errors = $this->childValidationErrors();
             $errors = array_merge($errors, $this->localValidationErrors());
 

@@ -14,7 +14,7 @@ use Throwable;
 trait ResultTrait
 {
     /**
-     * Map of resolved result callbacks.
+     * Completed collection, including an empty collection; null means it has not been cached.
      *
      * @var array<array-key, mixed>|null
      */
@@ -22,15 +22,14 @@ trait ResultTrait
     private ?Throwable $resultError = null;
     private bool $evaluatingResults = false;
     /**
-     * List of partial-resolvable result callbacks.
+     * Ordered operations that update a collection shared with selected children.
      *
      * @var callable[]
      */
     private array $resultCallbacks = [];
 
     /**
-     * Add a callback to this match, to be called after parsing is finished and
-     * only if this match was part of the matched rules.
+     * Register a collection operation for lazy result reads, independently of commit.
      *
      * @param callable $callback
      *
@@ -52,7 +51,7 @@ trait ResultTrait
     }
 
     /**
-     * Pre-calculate results.
+     * Evaluate once, retaining either the completed collection or the thrown error.
      *
      * @return array<array-key, mixed>
      */
@@ -70,7 +69,7 @@ trait ResultTrait
         $this->evaluatingResults = true;
         try {
             $results = [];
-            $this->processResultCallbacks($results);
+            $this->applyResultOperations($results);
 
             return $this->resultCache = $results;
         } catch (Throwable $error) {
@@ -82,16 +81,17 @@ trait ResultTrait
     }
 
     /**
-     * Handle all registered result callbacks for this match and any matches
-     * at deeper levels of this match.
+     * Apply child operations before local operations to the same accumulator.
+     * Child collection caches cannot replace these operations: concatenation and push
+     * depend on the values already accumulated by earlier siblings.
      *
      * @param array<array-key, mixed> $results map of result-key => value
      */
-    private function processResultCallbacks(array &$results): void
+    private function applyResultOperations(array &$results): void
     {
         /** @var self $success */
         foreach ($this->successes as $success) {
-            $success->processResultCallbacks($results);
+            $success->applyResultOperations($results);
         }
         foreach ($this->resultCallbacks as $callback) {
             $callback($results);
