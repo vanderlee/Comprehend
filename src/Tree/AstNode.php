@@ -28,6 +28,16 @@ final class AstNode implements JsonSerializable
         public readonly array $preamble = [],
         public readonly array $postamble = [],
     ) {
+        self::validateStructure($span, $children, $tags, $preamble, $postamble);
+    }
+
+    private static function validateStructure(
+        Span $span,
+        array $children,
+        array $tags,
+        array $preamble,
+        array $postamble,
+    ): void {
         if (!array_is_list($tags) || !array_is_list($preamble) || !array_is_list($postamble)) {
             throw new InvalidArgumentException('Tags and surrounding spans must be lists');
         }

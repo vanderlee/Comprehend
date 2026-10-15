@@ -31,17 +31,16 @@ trait ResultTrait
                 &$mapped,
                 &$error
             ) {
-                if ($error !== null) {
-                    throw $error;
-                }
                 if (!$evaluated) {
                     $evaluated = true;
                     try {
                         $mapped = is_callable($value) ? $value($span->rawText()) : $value ?? $span->rawText();
                     } catch (\Throwable $failure) {
                         $error = $failure;
-                        throw $failure;
                     }
+                }
+                if ($error !== null) {
+                    throw $error;
                 }
                 $name = $key ?? '';
                 if ($operation === 'set') {

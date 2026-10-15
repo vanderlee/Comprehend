@@ -23,6 +23,11 @@ final class ConcreteNode implements \JsonSerializable
         public readonly bool $semanticLeaf = false,
         public readonly array $tags = [],
     ) {
+        self::validateStructure($span, $children, $tags);
+    }
+
+    private static function validateStructure(Span $span, array $children, array $tags): void
+    {
         if (!array_is_list($tags)) {
             throw new InvalidArgumentException('Node tags must be a list');
         }

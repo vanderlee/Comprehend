@@ -32,15 +32,20 @@ final class Implementation extends Parser
             $parser = $generator instanceof Parser || $generator instanceof Comprehend
                 ? $generator
                 : $generator(...$this->arguments);
-            if ($parser instanceof Comprehend) {
-                $parser = $parser->parser();
-            }
-            if (!$parser instanceof Parser) {
-                throw new LogicException('Definition factory must return Comprehend or Parser');
-            }
-            $this->parser = $parser;
+            $this->parser = $this->requireParser($parser);
         }
         return $this->parser;
+    }
+
+    private function requireParser(mixed $parser): Parser
+    {
+        if ($parser instanceof Comprehend) {
+            return $parser->parser();
+        }
+        if (!$parser instanceof Parser) {
+            throw new LogicException('Definition factory must return Comprehend or Parser');
+        }
+        return $parser;
     }
 
     public function bindSnapshotTarget(Parser $parser): void
@@ -74,9 +79,6 @@ final class Implementation extends Parser
             $error = null;
             $success->addResultCallback(
                 static function (array &$output) use ($processors, $match, &$evaluated, &$values, &$error) {
-                    if ($error !== null) {
-                        throw $error;
-                    }
                     if (!$evaluated) {
                         $evaluated = true;
                         try {
@@ -86,8 +88,10 @@ final class Implementation extends Parser
                             }
                         } catch (\Throwable $failure) {
                             $error = $failure;
-                            throw $failure;
                         }
+                    }
+                    if ($error !== null) {
+                        throw $error;
                     }
                     foreach ($values as $name => $value) {
                         $output[$name] = $value;

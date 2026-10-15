@@ -278,6 +278,7 @@ final class Reader
         return $parser;
     }
 
+    /** @param 'b'|'d'|'x' $prefix */
     private function numeric(string $prefix): Parser
     {
         [$base, $pattern] = match ($prefix) {
