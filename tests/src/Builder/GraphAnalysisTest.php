@@ -14,6 +14,7 @@ use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 
 final class GraphAnalysisTest extends TestCase
 {
@@ -44,7 +45,7 @@ final class GraphAnalysisTest extends TestCase
         $empty = new Nothing();
         $wrappers = [
             new Directive\CaseSensitive(true, $empty),
-            new Directive\Prefer(Directive\Prefer::FIRST, $empty),
+            new Directive\Prefer(ChoicePolicy::FIRST, $empty),
             new Directive\Space(new Text(' '), $empty),
             new Directive\Lexeme($empty),
             new Directive\Trivia($empty),

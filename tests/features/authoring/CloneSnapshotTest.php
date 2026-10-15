@@ -19,6 +19,7 @@ use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Source\ByteSource;
 
 final class CloneSnapshotTest extends TestCase
@@ -30,7 +31,7 @@ final class CloneSnapshotTest extends TestCase
         $spacer = new Text(' ');
         $parsers = [
             new Directive\CaseSensitive(true, $a),
-            new Directive\Prefer(Directive\Prefer::FIRST, $a),
+            new Directive\Prefer(ChoicePolicy::FIRST, $a),
             new Directive\Lexeme($a),
             new Directive\Trivia($a),
             new Directive\Space($spacer, $a),

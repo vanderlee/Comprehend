@@ -9,6 +9,7 @@ use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Library\Rfc5234;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Source\SourceMode;
 
 /**
@@ -40,7 +41,7 @@ final class Compiler
         string $grammar,
         string $root,
         SourceMode $numericEncoding = SourceMode::BYTES,
-        string $choice = Prefer::FIRST,
+        string $choice = ChoicePolicy::FIRST,
     ): FrozenGrammar {
         if (preg_match('/^[A-Za-z][A-Za-z0-9-]*$/D', $root) !== 1) {
             throw new InvalidArgumentException('ABNF root must be a rule name');

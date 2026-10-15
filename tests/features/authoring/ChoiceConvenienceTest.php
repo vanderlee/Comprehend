@@ -6,10 +6,10 @@ namespace Tests\features\authoring;
 
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 
 class ChoiceConvenienceTest extends TestCase
 {
@@ -31,8 +31,8 @@ class ChoiceConvenienceTest extends TestCase
     {
         $grammar = C::choice(C::choice('a', 'ab'), C::choice('abc', 'abcd'));
         $this->assertSame('a', $grammar->matchPrefix('abcd')->output());
-        $this->assertSame('abcd', $grammar->prefer(Prefer::LONGEST)->matchPrefix('abcd')->output());
-        $this->assertSame('a', $grammar->prefer(Prefer::SHORTEST)->matchPrefix('abcd')->output());
+        $this->assertSame('abcd', $grammar->prefer(ChoicePolicy::LONGEST)->matchPrefix('abcd')->output());
+        $this->assertSame('a', $grammar->prefer(ChoicePolicy::SHORTEST)->matchPrefix('abcd')->output());
         $left = C::text('ab')->named('left');
         $right = C::text('ab')->named('right');
         $selected = C::longest(C::choice($left, $right), 'a')->parse('ab')->ast();
@@ -42,13 +42,13 @@ class ChoiceConvenienceTest extends TestCase
 
     public function testExplicitChoiceAndWrapperPoliciesRetainTheirBoundaries(): void
     {
-        $first = C::first('a', 'ab')->or('abc')->prefer(Prefer::LONGEST);
+        $first = C::first('a', 'ab')->or('abc')->prefer(ChoicePolicy::LONGEST);
         $this->assertSame('a', $first->matchPrefix('ab')->rawText());
-        $longest = C::longest('ab', 'a')->or('abc')->prefer(Prefer::SHORTEST);
+        $longest = C::longest('ab', 'a')->or('abc')->prefer(ChoicePolicy::SHORTEST);
         $this->assertSame('ab', $longest->matchPrefix('ab')->rawText());
-        $shortest = C::shortest('ab', 'a')->or('abc')->prefer(Prefer::LONGEST);
+        $shortest = C::shortest('ab', 'a')->or('abc')->prefer(ChoicePolicy::LONGEST);
         $this->assertSame('a', $shortest->matchPrefix('ab')->rawText());
-        $wrapped = C::choice('a', 'ab')->prefer(Prefer::FIRST)->or('abc')->prefer(Prefer::LONGEST);
+        $wrapped = C::choice('a', 'ab')->prefer(ChoicePolicy::FIRST)->or('abc')->prefer(ChoicePolicy::LONGEST);
         $this->assertSame('a', $wrapped->matchPrefix('ab')->rawText());
         $this->assertCount(2, iterator_to_array(C::first('a', 'b')->or('c')->parser()));
     }
@@ -86,7 +86,7 @@ class ChoiceConvenienceTest extends TestCase
     {
         $nested = C::of(new Choice(new Choice(new Text('éx'), new Text('éy')), new Text('éz')));
         $flat = C::choice($nested);
-        foreach ([Prefer::FIRST, Prefer::LONGEST, Prefer::SHORTEST] as $policy) {
+        foreach ([ChoicePolicy::FIRST, ChoicePolicy::LONGEST, ChoicePolicy::SHORTEST] as $policy) {
             $expected = $nested->prefer($policy)->parse('é!');
             $actual = $flat->prefer($policy)->parse('é!');
             $this->assertFalse($actual->ok);

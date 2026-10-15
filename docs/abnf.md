@@ -53,14 +53,14 @@ Recognize input whitespace explicitly with rules such as WSP.
 
 ABNF declaratively describes alternatives; this runtime selects locally and
 does not revisit a successful choice after a later suffix failure. Default
-`choice` is `Prefer::FIRST`, with explicit LONGEST/SHORTEST policies available.
+`choice` is `ChoicePolicy::FIRST`, with explicit LONGEST/SHORTEST policies available.
 
 ```php
-use Vanderlee\Comprehend\Directive\Prefer;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 
 $text = 'root = ("a" / "ab") "c"';
 Compiler::compile($text, 'root')->parseAll(new ByteSource('abc'))->success; // false
-Compiler::compile($text, 'root', choice: Prefer::LONGEST)
+Compiler::compile($text, 'root', choice: ChoicePolicy::LONGEST)
     ->parseAll(new ByteSource('abc'))->success; // true
 ```
 

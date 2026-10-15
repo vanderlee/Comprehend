@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Runtime;
 
-use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Result\Diagnostic;
 use Vanderlee\Comprehend\Runtime\Scope\CaseSensitiveContextTrait;
@@ -54,7 +53,7 @@ final class ParseSession
         Source $source,
         ?Parser $trivia = null,
         bool $caseSensitive = true,
-        string $preference = Prefer::FIRST,
+        string $preference = ChoicePolicy::FIRST,
         ?ParseLimits $limits = null,
         private readonly ?ParseMetrics $metrics = null,
     ) {

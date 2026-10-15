@@ -4,26 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\features\sources;
 
-use Vanderlee\Comprehend\Result\ParseResult;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\Ruleset;
-use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Directive\CaseSensitive;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Directive\Space;
 use Vanderlee\Comprehend\Library\Rfc2234;
 use Vanderlee\Comprehend\Library\Rfc3986;
-use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Structure\All;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Except;
 use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
 use Vanderlee\Comprehend\Parser\Terminal\End;
@@ -34,6 +32,9 @@ use Vanderlee\Comprehend\Parser\Terminal\Regex;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Start;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
@@ -171,7 +172,7 @@ class SourceMatchingTest extends ParserTestCase
         $this->assertResult(true, 2, (new All(new Any(), new Text($letter)))->matchPrefix(new Utf8Source($letter)));
         $this->assertResult(true, 2, (new Except(new Any(), new Text('a')))->matchPrefix(new Utf8Source($letter)));
         $this->assertResult(true, 0, (new Not(new Text('a')))->matchPrefix(new Utf8Source($letter)));
-        $choice = new Prefer(Prefer::LONGEST, new Choice(new Text($letter), new Text($letter . 'a')));
+        $choice = new Prefer(ChoicePolicy::LONGEST, new Choice(new Text($letter), new Text($letter . 'a')));
         $this->assertResult(true, 3, $choice->matchPrefix(new Utf8Source($letter . 'a')));
         $stub = new Stub();
         $stub->setParser(Choice::first(new Text('x'), new Sequence(new Text('('), $stub, new Text(')'))));

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Src\Runtime;
 
+use DomainException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -13,6 +15,23 @@ use Vanderlee\Comprehend\Source\ByteSource;
 
 final class ParseSessionTest extends TestCase
 {
+    public function testInvalidChoicePolicyDoesNotChangeTheActiveScope(): void
+    {
+        $session = new ParseSession(new ByteSource(''));
+        $session->pushPreference(ChoicePolicy::LONGEST);
+
+        try {
+            $session->pushPreference('invalid');
+            $this->fail('Expected an invalid choice policy');
+        } catch (DomainException $error) {
+            $this->assertSame('Invalid preference `invalid`', $error->getMessage());
+        }
+
+        $this->assertSame(ChoicePolicy::LONGEST, $session->getPreference());
+        $session->popPreference();
+        $this->assertSame(ChoicePolicy::FIRST, $session->getPreference());
+    }
+
     public function testPoppingAnExhaustedCaseScopeIsRejected(): void
     {
         $session = new ParseSession(new ByteSource(''));

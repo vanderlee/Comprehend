@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Runtime\Scope;
 
-use DomainException;
-use Vanderlee\Comprehend\Directive\Prefer;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 
 /**
  * Maintains ParseSession's stack of validated choice preferences. Lets Choice and Prefer share
@@ -20,18 +19,8 @@ trait PreferContextTrait
 
     public function pushPreference(string $preference): void
     {
-        self::assertPreference($preference);
+        ChoicePolicy::assertValid($preference);
         $this->preference[] = $preference;
-    }
-
-    /**
-     * @throws DomainException
-     */
-    private static function assertPreference(string $preference): void
-    {
-        if (!in_array($preference, [Prefer::FIRST, Prefer::LONGEST, Prefer::SHORTEST], true)) {
-            throw new DomainException('Invalid preference `' . $preference . '`');
-        }
     }
 
     public function popPreference(): void

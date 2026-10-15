@@ -8,10 +8,10 @@ use InvalidArgumentException;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
-use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
@@ -83,8 +83,8 @@ class Choice extends IterableParser implements AnalyzableParser
     public function __toString(): string
     {
         $prefix = match ($this->preference) {
-            Prefer::LONGEST => 'longest-of',
-            Prefer::SHORTEST => 'shortest-of',
+            ChoicePolicy::LONGEST => 'longest-of',
+            ChoicePolicy::SHORTEST => 'shortest-of',
             default => '',
         };
 
@@ -98,7 +98,12 @@ class Choice extends IterableParser implements AnalyzableParser
             $preference = $session->getPreference();
 
             return match ($preference) {
-                Prefer::LONGEST, Prefer::SHORTEST => $this->parseRanked($source, $byteOffset, $session, $preference),
+                ChoicePolicy::LONGEST, ChoicePolicy::SHORTEST => $this->parseRanked(
+                    $source,
+                    $byteOffset,
+                    $session,
+                    $preference,
+                ),
                 default => $this->parseFirst($source, $byteOffset, $session),
             };
         } finally {
@@ -129,7 +134,7 @@ class Choice extends IterableParser implements AnalyzableParser
 
         // Strict comparisons preserve the earlier alternative on equal lengths.
         // Failure progress follows this policy too; farthest diagnostics are separate.
-        return $preference === Prefer::LONGEST
+        return $preference === ChoicePolicy::LONGEST
             ? $attempt->length > $selected->length
             : $attempt->length < $selected->length;
     }

@@ -14,6 +14,7 @@ use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Tree\AstNode;
 
@@ -22,7 +23,7 @@ IPv4address = dec-octet "." dec-octet "." dec-octet "." dec-octet
 dec-octet = DIGIT / %x31-39 DIGIT / "1" 2DIGIT
  / "2" %x30-34 DIGIT / "25" %x30-35
 ABNF;
-$compiled = Compiler::compile($abnf, 'IPv4address', choice: Prefer::LONGEST);
+$compiled = Compiler::compile($abnf, 'IPv4address', choice: ChoicePolicy::LONGEST);
 
 $rules = new Ruleset();
 $rules->define('digit', (new Rfc5234())->ref('DIGIT'));
@@ -42,8 +43,8 @@ $address = new Sequence(
     new Text('.'),
     $rules->ref('dec-octet'),
 );
-$rules->define('ipv4address', $address)->root(new Prefer(Prefer::LONGEST, $rules->ref('ipv4address')));
-$object = (new Prefer(Prefer::LONGEST, $rules->ref('ipv4address')))->freeze();
+$rules->define('ipv4address', $address)->root(new Prefer(ChoicePolicy::LONGEST, $rules->ref('ipv4address')));
+$object = (new Prefer(ChoicePolicy::LONGEST, $rules->ref('ipv4address')))->freeze();
 $named = $rules->freeze();
 $bundled = (new Rfc3986())->ref('IPv4address')->freeze();
 

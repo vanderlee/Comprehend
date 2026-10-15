@@ -2,11 +2,12 @@
 
 namespace Tests\Src\Directive;
 
-use Vanderlee\Comprehend\Source\ByteSource;
-use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
+use Vanderlee\Comprehend\Source\ByteSource;
 
 /**
  * @group directive
@@ -16,7 +17,7 @@ class PreferTest extends ParserTestCase
     public function testConstructor()
     {
         /* @noinspection PhpParamsInspection */
-        $this->assertInstanceOf(Prefer::class, new Prefer(Prefer::FIRST, new Text('a')));
+        $this->assertInstanceOf(Prefer::class, new Prefer(ChoicePolicy::FIRST, new Text('a')));
     }
 
     public function testEmpty()
@@ -42,12 +43,12 @@ class PreferTest extends ParserTestCase
     public function preferData()
     {
         return [
-            [new Prefer(Prefer::FIRST, new Choice(new Text('a'), new Text('aa'))), 'aa', 0, true, 1],
-            [new Prefer(Prefer::FIRST, new Choice(new Text('aa'), new Text('a'))), 'aa', 0, true, 2],
-            [new Prefer(Prefer::LONGEST, new Choice(new Text('a'), new Text('aa'))), 'aa', 0, true, 2],
-            [new Prefer(Prefer::LONGEST, new Choice(new Text('aa'), new Text('a'))), 'aa', 0, true, 2],
-            [new Prefer(Prefer::SHORTEST, new Choice(new Text('a'), new Text('aa'))), 'aa', 0, true, 1],
-            [new Prefer(Prefer::SHORTEST, new Choice(new Text('aa'), new Text('a'))), 'aa', 0, true, 1],
+            [new Prefer(ChoicePolicy::FIRST, new Choice(new Text('a'), new Text('aa'))), 'aa', 0, true, 1],
+            [new Prefer(ChoicePolicy::FIRST, new Choice(new Text('aa'), new Text('a'))), 'aa', 0, true, 2],
+            [new Prefer(ChoicePolicy::LONGEST, new Choice(new Text('a'), new Text('aa'))), 'aa', 0, true, 2],
+            [new Prefer(ChoicePolicy::LONGEST, new Choice(new Text('aa'), new Text('a'))), 'aa', 0, true, 2],
+            [new Prefer(ChoicePolicy::SHORTEST, new Choice(new Text('a'), new Text('aa'))), 'aa', 0, true, 1],
+            [new Prefer(ChoicePolicy::SHORTEST, new Choice(new Text('aa'), new Text('a'))), 'aa', 0, true, 1],
         ];
     }
 }

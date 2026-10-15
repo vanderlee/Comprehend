@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Directive\Prefer;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 
 /**
@@ -29,21 +29,21 @@ trait PreferTrait
 
     public function preferShortest(): static
     {
-        $this->preference = Prefer::SHORTEST;
+        $this->preference = ChoicePolicy::SHORTEST;
 
         return $this;
     }
 
     public function preferLongest(): static
     {
-        $this->preference = Prefer::LONGEST;
+        $this->preference = ChoicePolicy::LONGEST;
 
         return $this;
     }
 
     public function preferFirst(): static
     {
-        $this->preference = Prefer::FIRST;
+        $this->preference = ChoicePolicy::FIRST;
 
         return $this;
     }

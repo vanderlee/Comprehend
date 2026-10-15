@@ -8,7 +8,7 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Abnf\Compiler;
 use Vanderlee\Comprehend\Abnf\SyntaxException;
-use Vanderlee\Comprehend\Directive\Prefer;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Utf8Source;
@@ -83,7 +83,7 @@ class AbnfTest extends TestCase
     {
         $text = 'root = ("a" / "ab") "c"';
         $first = Compiler::compile($text, 'root');
-        $longest = Compiler::compile($text, 'root', choice: Prefer::LONGEST);
+        $longest = Compiler::compile($text, 'root', choice: ChoicePolicy::LONGEST);
 
         $this->assertFalse($first->parseAll(new ByteSource('abc'))->success);
         $this->assertTrue($longest->parseAll(new ByteSource('abc'))->success);

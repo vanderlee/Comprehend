@@ -2,13 +2,13 @@
 
 namespace Tests\Src\Parser\Structure;
 
-use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
-use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
-use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\ByteSource;
 
 /**
  * @group structure
@@ -87,21 +87,21 @@ class ChoiceTest extends ParserTestCase
             [(new Choice(new Text('abc'), new Text('aaa')))->preferShortest(), 'ab', 0, false, 1],
             [(new Choice(new Text('aaa'), new Text('abc')))->preferShortest(), 'ab', 0, false, 1],
             [
-                (new Choice(new Text('ab'), new Text('a'), new Text('abc')))->setPreference(Prefer::FIRST),
+                (new Choice(new Text('ab'), new Text('a'), new Text('abc')))->setPreference(ChoicePolicy::FIRST),
                 'abc',
                 0,
                 true,
                 2,
             ],
             [
-                (new Choice(new Text('ab'), new Text('a'), new Text('abc')))->setPreference(Prefer::SHORTEST),
+                (new Choice(new Text('ab'), new Text('a'), new Text('abc')))->setPreference(ChoicePolicy::SHORTEST),
                 'abc',
                 0,
                 true,
                 1,
             ],
             [
-                (new Choice(new Text('ab'), new Text('a'), new Text('abc')))->setPreference(Prefer::LONGEST),
+                (new Choice(new Text('ab'), new Text('a'), new Text('abc')))->setPreference(ChoicePolicy::LONGEST),
                 'abc',
                 0,
                 true,
@@ -181,11 +181,11 @@ class ChoiceTest extends ParserTestCase
 
     public function testSetPreference()
     {
-        $c = (new Choice(new Text('aa'), new Text('a'), new Text('aaa')))->setPreference(Prefer::FIRST);
+        $c = (new Choice(new Text('aa'), new Text('a'), new Text('aaa')))->setPreference(ChoicePolicy::FIRST);
         $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aaa')));
-        $c = (new Choice(new Text('aa'), new Text('a'), new Text('aaa')))->setPreference(Prefer::LONGEST);
+        $c = (new Choice(new Text('aa'), new Text('a'), new Text('aaa')))->setPreference(ChoicePolicy::LONGEST);
         $this->assertResult(true, 3, $c->matchPrefix(new ByteSource('aaa')));
-        $c = (new Choice(new Text('aa'), new Text('a'), new Text('aaa')))->setPreference(Prefer::SHORTEST);
+        $c = (new Choice(new Text('aa'), new Text('a'), new Text('aaa')))->setPreference(ChoicePolicy::SHORTEST);
         $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('aaa')));
     }
 
@@ -199,7 +199,7 @@ class ChoiceTest extends ParserTestCase
 
     public function preferenceData(): array
     {
-        return [[Prefer::FIRST], [Prefer::LONGEST], [Prefer::SHORTEST]];
+        return [[ChoicePolicy::FIRST], [ChoicePolicy::LONGEST], [ChoicePolicy::SHORTEST]];
     }
 
     /** @dataProvider preferenceData */
@@ -259,7 +259,7 @@ class ChoiceTest extends ParserTestCase
             );
 
             $this->assertFalse($match->accepted);
-            $this->assertSame($preference === Prefer::SHORTEST ? 1 : 2, $match->length);
+            $this->assertSame($preference === ChoicePolicy::SHORTEST ? 1 : 2, $match->length);
             $this->assertSame(2, $match->diagnostic->byteOffset);
             $this->assertSame(0, $match->span->byteLength());
         }

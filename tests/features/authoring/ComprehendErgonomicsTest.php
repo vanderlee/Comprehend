@@ -8,10 +8,10 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Source\Utf8Source;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 
@@ -113,8 +113,14 @@ class ComprehendErgonomicsTest extends TestCase
         $this->assertSame('a', C::first($a, $ab)->freeze()->matchPrefix($source)->rawText());
         $this->assertSame('ab', C::longest($a, $ab)->freeze()->matchPrefix($source)->rawText());
         $this->assertSame('a', C::shortest($ab, $a)->freeze()->matchPrefix($source)->rawText());
-        $this->assertSame('a', C::first($a, $ab)->prefer(Prefer::LONGEST)->freeze()->matchPrefix($source)->rawText());
-        $this->assertSame('ab', C::choice($a, $ab)->prefer(Prefer::LONGEST)->freeze()->matchPrefix($source)->rawText());
+        $this->assertSame(
+            'a',
+            C::first($a, $ab)->prefer(ChoicePolicy::LONGEST)->freeze()->matchPrefix($source)->rawText(),
+        );
+        $this->assertSame(
+            'ab',
+            C::choice($a, $ab)->prefer(ChoicePolicy::LONGEST)->freeze()->matchPrefix($source)->rawText(),
+        );
         $sensitive = C::text('a')->caseSensitive();
         $insensitive = $sensitive->caseSensitive(false);
         // The inner override remains authoritative; use an unwrapped base for a different scope.

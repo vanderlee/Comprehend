@@ -148,7 +148,7 @@ The bundled RFC grammars import the facade as `C` with
 | `guard()`, `validateSemantic()`, `onCommit()`, `assignTo()` | Pure recognition predicate, selected semantic validation, explicit committed effects and assignments |
 | `setResult()`, `concatResult()`, `pushResult()` | Cached named result collections, independent of source text |
 | `diagnosticRule(name)` | A readable rule label for failures |
-| `caseSensitive(bool)`, `prefer(preference)` | Scoped case and choice policy; preference uses the `Prefer::FIRST`, `LONGEST`, or `SHORTEST` constants |
+| `caseSensitive(bool)`, `prefer(preference)` | Scoped case and choice policy; preference uses `Runtime\ChoicePolicy::FIRST`, `LONGEST`, or `SHORTEST` |
 | `spacing()`, `lexeme()`, `trivia()` | Existing scoped directives |
 | `parser()` | Detached object graph for low-level integration |
 | `freeze()` | Resolved, analyzed reusable snapshot |
@@ -216,6 +216,11 @@ including optional repetition. Lifecycle operations retain their distinct timing
 and `onCommit()` receive ParseResult. Reading values does not commit effects.
 See [Lifecycle](lifecycle.md) for validation and commit behavior. Nested case or
 preference directives use the innermost applicable override.
+
+Choice ranking values live in `Vanderlee\Comprehend\Runtime\ChoicePolicy`:
+`FIRST`, `LONGEST` and `SHORTEST`. They retain the string values `first`, `longest`
+and `shortest`. Import `ChoicePolicy` wherever a policy is selected; the `Prefer`
+directive applies the policy to a subtree and no longer owns these constants.
 
 ### Terminal chaining and static repetition
 

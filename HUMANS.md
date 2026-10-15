@@ -6,6 +6,5 @@ AI AGENTS MUST NOT USE THIS FILE!
 - Benchmark and improve performance
 - Move out custom knowledge of classes into interfaces/traits
   - trivia classification
-  - terminal diagnostic classification
   - moving choice-policy constants out of Prefer
 - Implement some known languages as examples?

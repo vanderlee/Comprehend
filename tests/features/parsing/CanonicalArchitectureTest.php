@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\features\parsing;
 
-use Vanderlee\Comprehend\Parser\Structure\All;
 use LogicException;
 use RuntimeException;
 use Tests\ParserTestCase;
@@ -15,14 +14,16 @@ use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Directive\Space;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
-use Vanderlee\Comprehend\Parser\Stub;
+use Vanderlee\Comprehend\Parser\Structure\All;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Source;
@@ -350,7 +351,10 @@ class CanonicalArchitectureTest extends ParserTestCase
                 return 'thrower';
             }
         };
-        $scoped = new Prefer(Prefer::LONGEST, new CaseSensitive(false, new Space(new Text(' '), $thrower->lexeme())));
+        $scoped = new Prefer(
+            ChoicePolicy::LONGEST,
+            new CaseSensitive(false, new Space(new Text(' '), $thrower->lexeme())),
+        );
         try {
             $scoped->recognizeInSession($source, 0, $session);
             $this->fail('Expected exception');
@@ -358,7 +362,7 @@ class CanonicalArchitectureTest extends ParserTestCase
             $this->assertSame('scope', $error->getMessage());
         }
         $this->assertTrue($session->isCaseSensitive());
-        $this->assertSame(Prefer::FIRST, $session->getPreference());
+        $this->assertSame(ChoicePolicy::FIRST, $session->getPreference());
         $this->assertFalse($session->isLexeme());
         $this->assertSame(0, $session->skipSpacing($source, 0));
         $this->assertSame([], $session->diagnosticState()[2]);

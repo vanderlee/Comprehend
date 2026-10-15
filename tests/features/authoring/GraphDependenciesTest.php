@@ -20,6 +20,7 @@ use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 
 final class GraphDependenciesTest extends TestCase
 {
@@ -31,7 +32,7 @@ final class GraphDependenciesTest extends TestCase
         });
         $wrappers = [
             new Directive\CaseSensitive(true, $child),
-            new Directive\Prefer(Directive\Prefer::FIRST, $child),
+            new Directive\Prefer(ChoicePolicy::FIRST, $child),
             new Directive\Lexeme($child),
             new Directive\Trivia($child),
             new Directive\Space(null, $child),
