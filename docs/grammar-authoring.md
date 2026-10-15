@@ -4,6 +4,10 @@ All authoring styles compose the same Parser objects and use the canonical
 Source/ParseSession/ParseResult runtime. No grammar text compiler or second
 recognition engine is introduced.
 
+Facade `sequence()` arguments retain insertion order, including named variadic
+arguments. An unannotated sequence prefix is flattened with either calling style;
+named nodes and explicit spacing policies preserve their composition boundaries.
+
 ## Explicit names and roots
 
 ```php
@@ -244,20 +248,20 @@ parameters and variadic arguments follow the factory's typed signature. There
 is no implicit conversion of invalid scalar arguments or fallback to rule names.
 Unknown syntax, surplus nonvariadic arguments and reserved names raise explicit errors.
 
-For transformations of the current expression, `defineContinuation(name, callable)`
+For transformations of the current expression, `defineFluent(name, callable)`
 registers a callback receiving the current Comprehend as its first parameter,
-followed by user arguments. A continuation-only name cannot start syntax. A name
-may have separate start and continuation definitions in the same vocabulary.
-Without a custom continuation, calling a registered start fluently appends it.
+followed by user arguments. A fluent-only name cannot start syntax. A name
+may have separate static and fluent definitions in the same vocabulary.
+Without a custom fluent, calling a registered static factory fluently appends it.
 
 ```php
-$syntax = $syntax->defineContinuation('between',
+$syntax = $syntax->defineFluent('between',
     static fn(Comprehend $item, string $left, string $right): Comprehend =>
         Comprehend::sequence($left, $item, $right));
 $grammar = $syntax->word()->between('(', ')');
 ```
 
-Custom syntax works for starts and continuations within that vocabulary. Facade
+Custom syntax works for static and fluent factories within that vocabulary. Facade
 metadata/composition operations retain their scope; define a replacement in a
 new vocabulary without changing existing expressions. No global registration
 affects `Comprehend::word()` or other vocabularies. Build through `$syntax` to
@@ -266,7 +270,7 @@ method name is data. `names()` lists built-in and registered factory names.
 Freezing retains the constructed parser graph and performs no syntax dispatch.
 
 Built-in static calls such as `Comprehend::text()` resolve directly from a fixed
-catalog. That catalog coordinates typed start/continuation callbacks, aliases,
+catalog. That catalog coordinates typed static/fluent callbacks, aliases,
 name discovery and reserved names. Scoped Syntax vocabularies resolve callbacks
 directly through their immutable catalog, without registries or resolution caches.
 Factories run for every authoring call and parser expressions are never cached.

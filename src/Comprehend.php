@@ -99,11 +99,11 @@ final class Comprehend
     public function __call(string $name, array $arguments): self
     {
         $name = strtolower($name);
-        $continuation = $this->syntax === null
-            ? Catalog::builtinContinuation($name)
-            : $this->syntax->continuation($name);
-        if ($continuation !== null) {
-            return self::syntaxExpression(self::invoke($continuation, [$this, ...$arguments]), $name, $this->syntax);
+        $fluent = $this->syntax === null
+            ? Catalog::builtinFluent($name)
+            : $this->syntax->fluent($name);
+        if ($fluent !== null) {
+            return self::syntaxExpression(self::invoke($fluent, [$this, ...$arguments]), $name, $this->syntax);
         }
         return $this->then(self::callSyntax($name, $arguments, $this->syntax));
     }
@@ -112,7 +112,7 @@ final class Comprehend
     public static function callSyntax(string $name, array $arguments, ?Syntax $syntax = null): self
     {
         $name = strtolower($name);
-        $factory = $syntax === null ? Catalog::builtinStart($name) : $syntax->factory($name);
+        $factory = $syntax === null ? Catalog::builtinStatic($name) : $syntax->factory($name);
         if ($factory === null) {
             throw new \BadMethodCallException('Unknown syntax: ' . $name);
         }

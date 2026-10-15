@@ -67,7 +67,7 @@ final class Catalog
         'maybe',
     ];
 
-    private const CONTINUATIONS = [
+    private const FLUENTS = [
         'then',
         'prepend',
         'named',
@@ -95,7 +95,7 @@ final class Catalog
         'optional' => 'maybe',
     ];
 
-    public function __construct(private readonly array $starts = [], private readonly array $continuations = []) {}
+    public function __construct(private readonly array $statics = [], private readonly array $fluents = []) {}
 
     public static function canonicalName(string $name): string
     {
@@ -103,7 +103,7 @@ final class Catalog
         return self::ALIASES[$name] ?? $name;
     }
 
-    public static function builtinStart(string $name): ?Closure
+    public static function builtinStatic(string $name): ?Closure
     {
         return match (self::canonicalName($name)) {
             'text' => static fn(string $text): Parser => new Text($text),
@@ -184,7 +184,7 @@ final class Catalog
         };
     }
 
-    public static function builtinContinuation(string $name): ?Closure
+    public static function builtinFluent(string $name): ?Closure
     {
         return match (self::canonicalName($name)) {
             'then' => static fn(
@@ -284,7 +284,7 @@ final class Catalog
     /** Flatten only prefixes: other positions can introduce extra spacing boundaries. */
     private static function sequence(array $items): Sequence
     {
-        $parsers = array_map(self::parser(...), $items);
+        $parsers = array_values(array_map(self::parser(...), $items));
         $seen = new \SplObjectStorage();
         while (($parsers[0] ?? null) instanceof Sequence && $parsers[0]->canFlattenPrefix()) {
             $prefix = $parsers[0];
@@ -312,19 +312,19 @@ final class Catalog
 
     public static function builtinNames(): array
     {
-        return [...self::BUILTINS, ...self::CONTINUATIONS, ...array_keys(self::ALIASES)];
+        return [...self::BUILTINS, ...self::FLUENTS, ...array_keys(self::ALIASES)];
     }
 
     public function define(string $name, callable $factory): self
     {
         $name = self::validateName($name);
-        return new self([...$this->starts, $name => Closure::fromCallable($factory)], $this->continuations);
+        return new self([...$this->statics, $name => Closure::fromCallable($factory)], $this->fluents);
     }
 
-    public function defineContinuation(string $name, callable $factory): self
+    public function defineFluent(string $name, callable $factory): self
     {
         $name = self::validateName($name);
-        return new self($this->starts, [...$this->continuations, $name => Closure::fromCallable($factory)]);
+        return new self($this->statics, [...$this->fluents, $name => Closure::fromCallable($factory)]);
     }
 
     private static function validateName(string $name): string
@@ -343,22 +343,22 @@ final class Catalog
         return $name;
     }
 
-    public function start(string $name): ?Closure
+    public function static(string $name): ?Closure
     {
-        return self::builtinStart($name) ?? $this->starts[self::canonicalName($name)] ?? null;
+        return self::builtinStatic($name) ?? $this->statics[self::canonicalName($name)] ?? null;
     }
 
-    public function continuation(string $name): ?Closure
+    public function fluent(string $name): ?Closure
     {
-        return self::builtinContinuation($name) ?? $this->continuations[self::canonicalName($name)] ?? null;
+        return self::builtinFluent($name) ?? $this->fluents[self::canonicalName($name)] ?? null;
     }
 
     public function names(): array
     {
         return array_values(array_unique([
             ...self::builtinNames(),
-            ...array_keys($this->starts),
-            ...array_keys($this->continuations),
+            ...array_keys($this->statics),
+            ...array_keys($this->fluents),
         ]));
     }
 }

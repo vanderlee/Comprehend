@@ -73,9 +73,9 @@ class SyntaxDispatchTest extends TestCase
         $this->assertTrue($syntax->call('LITERAL', value: 'a')->defined()->parse('ax')->success);
     }
 
-    public function testCustomContinuationsCanWrapTheCurrentExpression(): void
+    public function testCustomFluentsCanWrapTheCurrentExpression(): void
     {
-        $syntax = C::syntax()->defineContinuation('between', static fn(C $item, string $left, string $right): C => C::sequence($left, $item, $right));
+        $syntax = C::syntax()->defineFluent('between', static fn(C $item, string $left, string $right): C => C::sequence($left, $item, $right));
         $base = $syntax->range('0', '9')->some()->named('number');
         $wrapped = $base->between(right: ']', left: '[')->between('(', ')');
         $result = $wrapped->parse('([12])');
@@ -102,14 +102,14 @@ class SyntaxDispatchTest extends TestCase
         $this->assertSame(2, $calls);
     }
 
-    public function testStartsAndContinuationsWithTheSameNameRemainIndependent(): void
+    public function testStaticsAndFluentsWithTheSameNameRemainIndependent(): void
     {
         $syntax = C::syntax()
             ->define('token', static fn(string $value): C => C::text($value))
-            ->defineContinuation('token', static fn(C $item, string $value): C => C::sequence('[', $item, $value, ']'));
+            ->defineFluent('token', static fn(C $item, string $value): C => C::sequence('[', $item, $value, ']'));
         $original = $syntax->token('a');
         $this->assertTrue($original->token('b')->parse('[ab]')->success);
-        $changed = $syntax->defineContinuation(
+        $changed = $syntax->defineFluent(
             'token',
             static fn(C $item, string $value): C => C::sequence('(', $item, $value, ')'),
         );

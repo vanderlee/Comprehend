@@ -7,7 +7,7 @@ namespace Vanderlee\Comprehend;
 use Closure;
 use Vanderlee\Comprehend\Syntax\Catalog;
 
-/** An immutable vocabulary of start and continuation callbacks. */
+/** An immutable vocabulary of static and fluent callbacks. */
 final class Syntax
 {
     private function __construct(private readonly Catalog $catalog) {}
@@ -24,9 +24,9 @@ final class Syntax
     }
 
     /** Callbacks receive the current facade before user arguments. */
-    public function defineContinuation(string $name, callable $factory): self
+    public function defineFluent(string $name, callable $factory): self
     {
-        return new self($this->catalog->defineContinuation($name, $factory));
+        return new self($this->catalog->defineFluent($name, $factory));
     }
 
     public function __call(string $name, array $arguments): Comprehend
@@ -47,12 +47,12 @@ final class Syntax
     /** @internal Authoring dispatch only. */
     public function factory(string $name): ?Closure
     {
-        return $this->catalog->start($name);
+        return $this->catalog->static($name);
     }
 
     /** @internal Authoring dispatch only. */
-    public function continuation(string $name): ?Closure
+    public function fluent(string $name): ?Closure
     {
-        return $this->catalog->continuation($name);
+        return $this->catalog->fluent($name);
     }
 }

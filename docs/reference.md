@@ -20,7 +20,7 @@
 | Named operations | `define(string, Comprehend\|Parser\|Definition\|callable)`, `ref(string, ...args)`, `root(string\|Comprehend\|Parser)` |
 | Frozen graphs | `freeze()` returning FrozenGrammar with syntax checks and analysisWarnings |
 | Immutable facade | Comprehend text/char/set/range/regex/ref, sequence/choice, then/or/repeat, naming and scoped policy |
-| Expandable syntax | `Comprehend::syntax()->define(name, factory)`; immutable scoped starts/continuations, `call()`, `names()` |
+| Expandable syntax | `Comprehend::syntax()->define(name, factory)`; immutable scoped static/fluent factories, `call()`, `names()` |
 | ABNF authoring | `Abnf\Compiler::compile(string, root, numericEncoding, choice)` returning FrozenGrammar |
 | Naming | `name(string|int, ?string = null, bool $leaf = false)` |
 | Meaning | `mapValue(callable)`, named set/concat/push collection operations |
