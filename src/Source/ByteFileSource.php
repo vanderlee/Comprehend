@@ -160,7 +160,11 @@ class ByteFileSource implements Source
 
     private function loadPage(int $pageStart): void
     {
-        if (fseek($this->handle, $pageStart) !== 0) {
+        $handle = $this->handle;
+        if (!is_resource($handle)) {
+            throw new LogicException('File source is closed');
+        }
+        if (fseek($handle, $pageStart) !== 0) {
             throw new RuntimeException('Cannot seek file source');
         }
 
@@ -168,7 +172,7 @@ class ByteFileSource implements Source
         $bytes = '';
         $remaining = $expected;
         while ($remaining > 0) {
-            $part = fread($this->handle, $remaining);
+            $part = fread($handle, $remaining);
             if ($part === false || $part === '') {
                 throw new RuntimeException('Cannot read file source snapshot');
             }

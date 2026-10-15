@@ -11,6 +11,15 @@ use Vanderlee\Comprehend\Source\ByteSource;
 
 final class SuccessTest extends TestCase
 {
+    public function testConcreteNodesRequireSourceMetadata(): void
+    {
+        $success = new Success(1);
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Concrete nodes require source-bound recognition');
+
+        $success->buildConcreteNode('test');
+    }
+
     public function testValueMappingIsLazyAndCachedIndependentlyOfCommit(): void
     {
         $success = new Success(1);

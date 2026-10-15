@@ -98,7 +98,7 @@ class Choice extends IterableParser
         }
         return $selected instanceof Success
             ? $this->success($source, $offset, $selected->length, $selected)
-            : $this->failure($source, $offset, $selected->length);
+            : $this->failure($source, $offset, $selected->length ?? 0);
     }
 
     private static function outranks(AbstractMatch $attempt, AbstractMatch $selected, string $preference): bool

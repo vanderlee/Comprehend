@@ -13,6 +13,16 @@ use Vanderlee\Comprehend\Source\ByteSource;
 
 final class ParseSessionTest extends TestCase
 {
+    public function testPoppingAnExhaustedCaseScopeIsRejected(): void
+    {
+        $session = new ParseSession(new ByteSource(''));
+        $this->assertTrue($session->popCaseSensitivity());
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Case sensitivity scope is empty');
+
+        $session->popCaseSensitivity();
+    }
+
     public function testReadingAnExhaustedPreferenceScopeIsRejected(): void
     {
         $session = new ParseSession(new ByteSource(''));

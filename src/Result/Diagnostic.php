@@ -11,7 +11,7 @@ use Vanderlee\Comprehend\Source\SourceMode;
 final class Diagnostic
 {
     /**
-     * @var list<int>|null
+     * @var non-empty-list<int>|null
      */
     private ?array $lineStarts = null;
 
@@ -32,8 +32,9 @@ final class Diagnostic
     public function excerpt(): string
     {
         $line = $this->location()['line'] - 1;
-        $start = $this->lineStarts[$line];
-        $end = $this->lineStarts[$line + 1] ?? $this->source->byteLength();
+        $lineStarts = $this->indexLines();
+        $start = $lineStarts[$line];
+        $end = $lineStarts[$line + 1] ?? $this->source->byteLength();
         return rtrim($this->source->sliceBytes($start, $end), "\r\n");
     }
 
@@ -43,20 +44,20 @@ final class Diagnostic
      */
     public function location(): array
     {
-        $this->indexLines();
+        $lineStarts = $this->indexLines();
 
         $low = 0;
-        $high = count($this->lineStarts);
+        $high = count($lineStarts);
         while ($low + 1 < $high) {
             $middle = intdiv($low + $high, 2);
-            if ($this->lineStarts[$middle] <= $this->byteOffset) {
+            if ($lineStarts[$middle] <= $this->byteOffset) {
                 $low = $middle;
             } else {
                 $high = $middle;
             }
         }
 
-        $prefix = $this->source->sliceBytes($this->lineStarts[$low], $this->byteOffset);
+        $prefix = $this->source->sliceBytes($lineStarts[$low], $this->byteOffset);
         $length = $this->source->mode() === SourceMode::UTF8 ? mb_strlen($prefix, 'UTF-8') : strlen($prefix);
         return ['line' => $low + 1, 'column' => $length + 1];
     }
@@ -69,10 +70,11 @@ final class Diagnostic
             . ', column ' . $location['column'] . ' (byte ' . $this->byteOffset . ')';
     }
 
-    private function indexLines(): void
+    /** @return non-empty-list<int> */
+    private function indexLines(): array
     {
         if ($this->lineStarts !== null) {
-            return;
+            return $this->lineStarts;
         }
 
         $this->lineStarts = [0];
@@ -99,5 +101,6 @@ final class Diagnostic
         if ($pendingCr) {
             $this->lineStarts[] = $this->source->byteLength();
         }
+        return $this->lineStarts;
     }
 }

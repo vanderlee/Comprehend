@@ -14,15 +14,17 @@ final class RuleReference extends Parser
 {
     private ?Parser $target = null;
     private readonly object $scopeIdentity;
+    private ?AbstractRuleset $rules;
 
     /**
      * @param array<array-key, mixed> $arguments
      */
     public function __construct(
-        private ?AbstractRuleset $rules,
+        AbstractRuleset $rules,
         private readonly string $rule,
         private readonly array $arguments = [],
     ) {
+        $this->rules = $rules;
         $this->scopeIdentity = $rules->graphIdentity();
         $this->name($rule, $rules->groupName());
         $this->diagnosticRule($rule);
@@ -56,6 +58,12 @@ final class RuleReference extends Parser
     /** @internal Resolve factories once for each parameterized reference in a snapshot. */
     public function graphTarget(bool $fresh = false): Parser
     {
-        return $this->target ?? $this->rules->resolveRule($this->rule, $this->arguments, $fresh);
+        if ($this->target !== null) {
+            return $this->target;
+        }
+        if ($this->rules === null) {
+            throw new \LogicException('Rule reference requires a ruleset or snapshot target');
+        }
+        return $this->rules->resolveRule($this->rule, $this->arguments, $fresh);
     }
 }

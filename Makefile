@@ -7,7 +7,7 @@ COMPOSER ?= composer
 help:
 	@echo "install   Install development dependencies"
 	@echo "test      Run PHPUnit"
-	@echo "phpstan   Run static analysis at level 7"
+	@echo "phpstan   Run static analysis at level 8"
 	@echo "cs        Check coding standards with PHP_CodeSniffer"
 	@echo "cs-check  Check formatting with PHP-CS-Fixer (no changes)"
 	@echo "cs-fix    Apply formatting with PHP-CS-Fixer"

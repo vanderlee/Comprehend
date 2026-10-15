@@ -45,6 +45,7 @@ for selected validation, `mapValue(callable(ParseResult): mixed)` for lazy typed
 meaning and `onCommit(callable(ParseResult): void)` for effects. Restore every
 session scope in `finally`, including trivia, case, preference and lexeme scopes.
 Reading a preference after popping every preference scope throws `LogicException`.
+Popping an empty case-sensitivity scope also throws `LogicException`.
 Nullable repeated success throws at runtime; custom parsers must report real
 byte consumption rather than character counts.
 

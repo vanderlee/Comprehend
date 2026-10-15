@@ -324,7 +324,7 @@ abstract class Parser
         ?ParseLimits $limits = null,
     ): ParseResult {
         $match = $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits));
-        if (!$match->accepted || $match->span->end === $source->byteLength()) {
+        if (!$match->accepted || $byteOffset + $match->length === $source->byteLength()) {
             return new ParseResult($match);
         }
         return new ParseResult($this->trailingInputFailure($source, $byteOffset, $match));
@@ -332,9 +332,10 @@ abstract class Parser
 
     private function trailingInputFailure(Source $source, int $byteOffset, AbstractMatch $match): Failure
     {
-        $position = max($match->farthestFailure ?? $match->span->end, $match->span->end);
+        $end = $byteOffset + $match->length;
+        $position = max($match->farthestFailure ?? $end, $end);
         $previous = $match->diagnostic;
-        $expected = $position === $match->span->end ? ['end'] : [];
+        $expected = $position === $end ? ['end'] : [];
         if ($previous !== null && $previous->byteOffset === $position) {
             $expected = array_values(array_unique(array_merge($previous->expected, $expected)));
         }

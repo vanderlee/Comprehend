@@ -16,6 +16,17 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
  */
 class ChoiceTest extends ParserTestCase
 {
+    public function testRankedChoicesFailWhenAllAlternativesAreRemoved(): void
+    {
+        foreach ([Choice::longest(new Text('a')), Choice::shortest(new Text('a'))] as $choice) {
+            unset($choice[0]);
+            $result = $choice->matchPrefix(new ByteSource('a'));
+
+            $this->assertFalse($result->success);
+            $this->assertSame(0, $result->consumedByteLength);
+        }
+    }
+
     public function testEmpty()
     {
         $this->expectExceptionMessage('No arguments');

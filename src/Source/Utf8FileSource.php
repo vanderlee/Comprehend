@@ -67,7 +67,11 @@ final class Utf8FileSource extends ByteFileSource
         }
         $offset = 0;
         for ($index = 0; $index < $position; ++$index) {
-            $offset = $this->readUnit($offset)->end;
+            $unit = $this->readUnit($offset);
+            if ($unit === null) {
+                throw new \LogicException('Unexpected end of UTF-8 source');
+            }
+            $offset = $unit->end;
         }
         return $offset;
     }
@@ -78,7 +82,13 @@ final class Utf8FileSource extends ByteFileSource
             throw new InvalidArgumentException('Byte offset is inside a UTF-8 code point');
         }
         $position = 0;
-        for ($offset = 0; $offset < $byteOffset; $offset = $this->readUnit($offset)->end) {
+        $offset = 0;
+        while ($offset < $byteOffset) {
+            $unit = $this->readUnit($offset);
+            if ($unit === null) {
+                throw new \LogicException('Unexpected end of UTF-8 source');
+            }
+            $offset = $unit->end;
             ++$position;
         }
         return $position;

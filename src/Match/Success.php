@@ -82,6 +82,10 @@ class Success extends AbstractMatch
         bool $leaf = false,
         array $tags = [],
     ): void {
+        $span = $this->span;
+        if ($span === null) {
+            throw new \LogicException('Concrete nodes require source-bound recognition');
+        }
         $children = [];
         foreach ($this->concreteMatches as $match) {
             if ($match->node === null) {
@@ -90,12 +94,30 @@ class Success extends AbstractMatch
             $children[] = $match->node;
         }
         if ($name instanceof \Closure) {
-            $name = $name(new ConcreteNode($kind, $this->span, $children, $kind === Trivia::class, null, $group, $leaf, $tags));
+            $name = $name(new ConcreteNode(
+                $kind,
+                $span,
+                $children,
+                $kind === Trivia::class,
+                null,
+                $group,
+                $leaf,
+                $tags,
+            ));
             if ($name !== null && !is_string($name) && !is_int($name)) {
                 throw new \UnexpectedValueException('Dynamic names must return string, int or null');
             }
         }
-        $this->setConcreteNode(new ConcreteNode($kind, $this->span, $children, $kind === Trivia::class, $name, $group, $leaf, $tags));
+        $this->setConcreteNode(new ConcreteNode(
+            $kind,
+            $span,
+            $children,
+            $kind === Trivia::class,
+            $name,
+            $group,
+            $leaf,
+            $tags,
+        ));
     }
 
     public function inheritValueFrom(self $child): void

@@ -20,7 +20,11 @@ trait CaseSensitiveContextTrait
 
     public function popCaseSensitivity(): bool
     {
-        return array_pop($this->caseSensitivity);
+        $caseSensitive = array_pop($this->caseSensitivity);
+        if ($caseSensitive === null) {
+            throw new \LogicException('Case sensitivity scope is empty');
+        }
+        return $caseSensitive;
     }
 
     public function handleCase(string $text): string

@@ -56,7 +56,7 @@ reviewed 2.0.0 tag, a dated changelog and a passing required matrix. See
 
 Install development tools with `make install` (or `composer install`). GNU Make
 and PHP must be on your PATH. Use `make test` for PHPUnit and `make phpstan` for
-static analysis, configured at level 7 for `src` in `phpstan.neon`.
+static analysis, configured at level 8 for `src` in `phpstan.neon`.
 CI runs both on pull requests and pushes to `master`; the release workflow also
 reuses these checks.
 
