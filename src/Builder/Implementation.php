@@ -36,15 +36,16 @@ final class Implementation extends Parser implements AnalyzableParser
 
     private function parser(): Parser
     {
-        if ($this->parser === null) {
-            $generator = $this->definition->generator;
-            $parser = $generator instanceof Parser || $generator instanceof Comprehend
-                ? $generator
-                : $generator(...$this->arguments);
-            $this->parser = $this->requireParser($parser);
+        if ($this->parser !== null) {
+            return $this->parser;
         }
 
-        return $this->parser;
+        $generator = $this->definition->generator;
+        $parser = $generator instanceof Parser || $generator instanceof Comprehend
+            ? $generator
+            : $generator(...$this->arguments);
+
+        return $this->parser = $this->requireParser($parser);
     }
 
     private function requireParser(mixed $parser): Parser
@@ -80,6 +81,7 @@ final class Implementation extends Parser implements AnalyzableParser
     {
         parent::copyDependencies($context);
         if ($context->resolvesReferences()) {
+            // A freeze regenerates the target from the copied definition and arguments.
             $this->parser = null;
         }
         $this->definition = $context->copyDefinition($this->definition);
@@ -121,32 +123,38 @@ final class Implementation extends Parser implements AnalyzableParser
             // Processed collections replace local collections while retaining
             // the concrete tree and selected effect/validation graph.
             $success->addPrecedingMatch($match);
-            $evaluated = false;
-            $values = [];
-            $error = null;
-            $success->addResultCallback(
-                static function (array &$output) use ($processors, $match, &$evaluated, &$values, &$error) {
-                    if (!$evaluated) {
-                        $evaluated = true;
-                        try {
-                            $local = $match->getResults();
-                            foreach ($processors as $name => $processor) {
-                                $values[$name] = $processor($local);
-                            }
-                        } catch (Throwable $failure) {
-                            $error = $failure;
-                        }
-                    }
-                    if ($error !== null) {
-                        throw $error;
-                    }
-                    foreach ($values as $name => $value) {
-                        $output[$name] = $value;
-                    }
-                },
-            );
+            $this->bindProcessors($success, $match, $processors);
         }
 
         return $success;
+    }
+
+    /** @param array<string, callable(array<array-key, mixed>): mixed> $processors */
+    private function bindProcessors(Success $success, Success $match, array $processors): void
+    {
+        $evaluated = false;
+        $values = [];
+        $error = null;
+        $success->addResultCallback(
+            static function (array &$output) use ($processors, $match, &$evaluated, &$values, &$error) {
+                if (!$evaluated) {
+                    $evaluated = true;
+                    try {
+                        $local = $match->getResults();
+                        foreach ($processors as $name => $processor) {
+                            $values[$name] = $processor($local);
+                        }
+                    } catch (Throwable $failure) {
+                        $error = $failure;
+                    }
+                }
+                if ($error !== null) {
+                    throw $error;
+                }
+                foreach ($values as $name => $value) {
+                    $output[$name] = $value;
+                }
+            },
+        );
     }
 }

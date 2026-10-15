@@ -40,6 +40,7 @@ final class Definition implements SnapshotParticipant
     {
         $copy = clone $this;
         $context->registerCopy($this, $copy);
+        // Parser generators are owned grammar state; callable captures remain caller-owned.
         if ($this->generator instanceof Parser) {
             $copy->generator = $context->copy($this->generator);
         }

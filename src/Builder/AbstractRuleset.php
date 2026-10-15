@@ -173,6 +173,19 @@ abstract class AbstractRuleset extends Parser implements AnalyzableParser
         if (!$fresh && $arguments === [] && isset($this->implementations[$name])) {
             return $this->implementations[$name];
         }
+
+        $parser = $this->createRuleParser($name, $arguments);
+        $parser->diagnosticRule($name);
+        if (!$fresh && $arguments === []) {
+            $this->implementations[$name] = $parser;
+        }
+
+        return $parser;
+    }
+
+    /** @param array<array-key, mixed> $arguments */
+    private function createRuleParser(string $name, array $arguments): Parser
+    {
         $definition = $this->instanceRules[$name];
         if ($definition instanceof Parser && $arguments !== []) {
             throw new LogicException('Only rule factories accept arguments: ' . $name);
@@ -188,11 +201,6 @@ abstract class AbstractRuleset extends Parser implements AnalyzableParser
         if (!$parser instanceof Parser) {
             throw new LogicException('Rule factory must return Comprehend or Parser: ' . $name);
         }
-        $parser->diagnosticRule($name);
-        if (!$fresh && $arguments === []) {
-            $this->implementations[$name] = $parser;
-        }
-
         return $parser;
     }
 }

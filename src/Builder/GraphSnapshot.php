@@ -23,13 +23,13 @@ final class GraphSnapshot
      * @var array<string, Parser>
      */
     private array $identities = [];
-    /** @var SplObjectStorage<Parser|Definition, true> */
-    private SplObjectStorage $preparing;
+    /** @var SplObjectStorage<Parser|Definition, true> Participants whose snapshot() has not returned. */
+    private SplObjectStorage $snapshotting;
 
     public function __construct(private readonly bool $resolveReferences = true)
     {
         $this->copies = new SplObjectStorage();
-        $this->preparing = new SplObjectStorage();
+        $this->snapshotting = new SplObjectStorage();
     }
 
     public function copy(Parser $parser): Parser
@@ -64,6 +64,7 @@ final class GraphSnapshot
             throw new LogicException('Snapshot object already has a different copy');
         }
         $this->copies[$original] = $copy;
+        // Already-copied dependencies may be revisited by specialized snapshot methods.
         $this->copies[$copy] = $copy;
     }
 
@@ -109,11 +110,11 @@ final class GraphSnapshot
 
             return $copy;
         }
-        if (isset($this->preparing[$object])) {
+        if (isset($this->snapshotting[$object])) {
             throw new LogicException('Snapshot participant must register its copy before copying dependencies');
         }
 
-        $this->preparing[$object] = true;
+        $this->snapshotting[$object] = true;
         try {
             $copy = $object->snapshot($this);
             if (
@@ -125,7 +126,7 @@ final class GraphSnapshot
 
             return $copy;
         } finally {
-            unset($this->preparing[$object]);
+            unset($this->snapshotting[$object]);
         }
     }
 

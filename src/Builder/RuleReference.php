@@ -55,11 +55,13 @@ final class RuleReference extends Parser implements AnalyzableParser
     {
         $copy = clone $this;
         if (!$context->resolvesReferences()) {
+            // Authoring copies retain their builder so forward definitions remain visible.
             $context->registerCopy($this, $copy);
 
             return $copy;
         }
 
+        // Register before resolving the factory so recursive references find this destination.
         $shared = $context->registerIdentity($this, $copy, [self::class, $this->graphKey()]);
         if ($shared !== $copy) {
             return $shared;

@@ -78,30 +78,38 @@ final class GraphAnalysis
         // Read one stable set of estimates per iteration. Monotone estimates over
         // false < unknown < true can increase at most twice per node.
         do {
-            $changed = false;
             $lookup = new NullabilityLookup($this->nullable);
-            foreach ($this->nodes as $id => $node) {
-                if (!$node instanceof AnalyzableParser) {
-                    continue;
-                }
-                $nullable = $node->analysisNullability($lookup);
-                $previous = $this->nullable[$id];
-                if ($nullable === $previous) {
-                    continue;
-                }
-                if (
-                    $previous === true
-                    || (
-                        $previous === null
-                        && $nullable === false
-                    )
-                ) {
-                    throw new LogicException('Non-monotone nullability: ' . implode(' -> ', $this->paths[$id]));
-                }
-                $this->nullable[$id] = $nullable;
-                $changed = true;
-            }
+            $changed = $this->updateNullability($lookup);
         } while ($changed);
+    }
+
+    /** Return whether this pass changed any estimate. */
+    private function updateNullability(NullabilityLookup $lookup): bool
+    {
+        $changed = false;
+        foreach ($this->nodes as $id => $node) {
+            if (!$node instanceof AnalyzableParser) {
+                continue;
+            }
+            $nullable = $node->analysisNullability($lookup);
+            $previous = $this->nullable[$id];
+            if ($nullable === $previous) {
+                continue;
+            }
+            if (
+                $previous === true
+                || (
+                    $previous === null
+                    && $nullable === false
+                )
+            ) {
+                throw new LogicException('Non-monotone nullability: ' . implode(' -> ', $this->paths[$id]));
+            }
+            $this->nullable[$id] = $nullable;
+            $changed = true;
+        }
+
+        return $changed;
     }
 
     private function rejectNullableProgress(NullabilityLookup $lookup): void

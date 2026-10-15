@@ -7,6 +7,7 @@ namespace Tests\Src\Builder;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
+use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 final class AbstractRulesetTest extends TestCase
@@ -32,5 +33,23 @@ final class AbstractRulesetTest extends TestCase
         $this->assertFalse($rules->defined('item'));
         $this->expectException(LogicException::class);
         $rules->resolveRule('item');
+    }
+
+    public function testFreshResolutionDoesNotReplaceTheCachedImplementation(): void
+    {
+        $calls = 0;
+        $rules = $this->getMockForAbstractClass(AbstractRuleset::class);
+        $rules->define('item', static function () use (&$calls): Parser {
+            ++$calls;
+
+            return new Text((string) $calls);
+        });
+
+        $cached = $rules->resolveRule('item');
+        $fresh = $rules->resolveRule('item', fresh: true);
+
+        $this->assertNotSame($cached, $fresh);
+        $this->assertSame($cached, $rules->resolveRule('item'));
+        $this->assertSame(2, $calls);
     }
 }

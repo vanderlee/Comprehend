@@ -6,9 +6,11 @@ namespace Tests\Src\Builder;
 
 use PHPUnit\Framework\TestCase;
 use LogicException;
+use RuntimeException;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\Implementation;
+use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\All;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
@@ -100,5 +102,35 @@ final class GraphSnapshotTest extends TestCase
         $this->assertSame($children[0], $children[1]);
         $this->assertTrue($copy->parseAll(new ByteSource('aa'))->success);
         $this->assertFalse($original->parseAll(new ByteSource('aa'))->success);
+    }
+
+    public function testFailedParticipantCanRetryWhenItHasNotRegisteredACopy(): void
+    {
+        $parser = new class ('a') extends Text {
+            private bool $failNextSnapshot = true;
+
+            public function snapshot(GraphSnapshot $context): Parser
+            {
+                if ($this->failNextSnapshot) {
+                    $this->failNextSnapshot = false;
+                    throw new RuntimeException('Snapshot preparation failed');
+                }
+
+                return parent::snapshot($context);
+            }
+        };
+        $context = new GraphSnapshot();
+
+        try {
+            $context->copy($parser);
+            $this->fail('Expected snapshot preparation failure');
+        } catch (RuntimeException $error) {
+            $this->assertSame('Snapshot preparation failed', $error->getMessage());
+        }
+
+        $copy = $context->copy($parser);
+        $this->assertNotSame($parser, $copy);
+        $this->assertSame($copy, $context->copy($parser));
+        $this->assertTrue($copy->parseAll(new ByteSource('a'))->success);
     }
 }
