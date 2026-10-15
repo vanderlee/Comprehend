@@ -14,6 +14,7 @@ use Vanderlee\Comprehend\Tree\ConcreteNode;
 final class ParseResult
 {
     public readonly bool $success;
+    public readonly bool $ok;
     public readonly Span $span;
     public readonly int $start;
     public readonly int $end;
@@ -30,6 +31,7 @@ final class ParseResult
             throw new InvalidArgumentException('ParseResult requires a source-bound recognition');
         }
         $this->success = $match->accepted;
+        $this->ok = $this->success;
         $this->span = $span;
         $this->start = $span->start;
         $this->end = $span->end;
@@ -53,6 +55,12 @@ final class ParseResult
     public function value(): mixed
     {
         return $this->success ? $this->match->getValue() : null;
+    }
+
+    /** Short value access: original text by default, mapped value when configured. */
+    public function output(): mixed
+    {
+        return $this->value();
     }
 
     /** False means syntax or semantic validation rejected commit. */

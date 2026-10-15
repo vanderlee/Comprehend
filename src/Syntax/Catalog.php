@@ -146,22 +146,12 @@ final readonly class Catalog
             ),
             'literalwindow' => static fn(string $literal): Parser => Regex::literalWindow($literal),
             'sequence' => static fn(Comprehend|Parser|string ...$parsers): Parser => self::sequence($parsers),
-            'choice', 'or' => static fn(Comprehend|Parser|string ...$parsers): Parser => new Choice(
-                ...
-                array_map(self::parser(...), $parsers),
-            ),
-            'first' => static fn(Comprehend|Parser|string ...$parsers): Parser => Choice::first(
-                ...
-                array_map(self::parser(...), $parsers),
-            ),
-            'longest' => static fn(Comprehend|Parser|string ...$parsers): Parser => Choice::longest(
-                ...
-                array_map(self::parser(...), $parsers),
-            ),
-            'shortest' => static fn(Comprehend|Parser|string ...$parsers): Parser => Choice::shortest(
-                ...
-                array_map(self::parser(...), $parsers),
-            ),
+            'choice', 'or' => static fn(Comprehend|Parser|string ...$parsers): Parser => self::choice($parsers),
+            'first' => static fn(Comprehend|Parser|string ...$parsers): Parser => self::choice($parsers)->preferFirst(),
+            'longest' => static fn(Comprehend|Parser|string ...$parsers): Parser
+                => self::choice($parsers)->preferLongest(),
+            'shortest' => static fn(Comprehend|Parser|string ...$parsers): Parser
+                => self::choice($parsers)->preferShortest(),
             'all' => static fn(Comprehend|Parser|string ...$parsers): Parser => new All(
                 ...
                 array_map(self::parser(...), $parsers),
@@ -201,11 +191,7 @@ final readonly class Catalog
             'or' => static fn(
                 Comprehend $item,
                 Comprehend|Parser|string ...$next,
-            ): Comprehend|Parser => $next === [] ? $item : new Choice(
-                $item->parser(),
-                ...
-                array_map(self::parser(...), $next),
-            ),
+            ): Comprehend|Parser => $next === [] ? $item : self::choice([$item, ...$next]),
             'repeat' => static fn(Comprehend $item, int $min = 0, ?int $max = null): Parser => new Repeat(
                 $item->parser(),
                 $min,
@@ -262,6 +248,27 @@ final readonly class Catalog
             'trivia' => static fn(Comprehend $item): Parser => $item->parser()->trivia(),
             default => null,
         };
+    }
+
+    /** Inherited choice policies are associative; explicit policies remain nested. */
+    private static function choice(array $items): Choice
+    {
+        $pending = array_reverse(array_map(self::parser(...), $items));
+        $children = [];
+        $expanded = new \SplObjectStorage();
+        while ($pending !== []) {
+            $parser = array_pop($pending);
+            if ($parser instanceof Choice && $parser->canFlatten() && !isset($expanded[$parser])) {
+                $alternatives = iterator_to_array($parser, false);
+                if ($alternatives !== []) {
+                    $expanded[$parser] = true;
+                    array_push($pending, ...array_reverse($alternatives));
+                    continue;
+                }
+            }
+            $children[] = $parser;
+        }
+        return new Choice(...$children);
     }
 
     /** Flatten only prefixes: other positions can introduce extra spacing boundaries. */

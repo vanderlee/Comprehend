@@ -19,11 +19,15 @@ $age = C::integer(0, 150)
 
 // Parse complete input, then extract the typed value.
 $result = $age->parse('42');
-if ($result->success) {
-    echo $result->value();   // 42 (int)
+if ($result->ok) {
+    echo $result->output();  // 42 (int)
     echo $result->rawText(); // '42' (original text)
 }
 ```
+
+`ok` is a short alias for `success`; `output()` returns `value()` (original text
+unless mapped). Failed results yield null output. Value access stays lazy and
+does not validate or commit effects. Use `rawText()` whenever you need the source text.
 
 For spaced syntax, pass an optional outer spacing policy for one facade call:
 

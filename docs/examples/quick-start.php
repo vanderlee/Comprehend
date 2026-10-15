@@ -11,7 +11,7 @@ $age = C::integer(0, 150)
     ->named('age')
     ->mapValue(static fn(ParseResult $r): int => (int) $r->rawText());
 $result = $age->parse('42');
-if (!$result->success || $result->value() !== 42 || $result->rawText() !== '42') {
+if (!$result->ok || $result->output() !== 42 || $result->value() !== 42 || $result->rawText() !== '42') {
     throw new RuntimeException('Build, parse and extract failed');
 }
 if ($age->parse('151')->success || $age->parse('42!')->success) {

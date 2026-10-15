@@ -34,6 +34,12 @@ class Choice extends IterableParser
         return (new self(...$arguments))->preferFirst();
     }
 
+    /** @internal Explicit policies, metadata and subclasses retain their boundary. */
+    public function canFlatten(): bool
+    {
+        return static::class === self::class && !$this->hasCompositionMetadata() && $this->preference === null;
+    }
+
     public static function shortest(Parser ...$arguments): self
     {
         return (new self(...$arguments))->preferShortest();

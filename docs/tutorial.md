@@ -15,11 +15,15 @@ $age = C::integer(0, 150)
     ->mapValue(static fn(ParseResult $r): int => (int) $r->rawText());
 
 $result = $age->parse('42');
-if ($result->success) {
-    $value = $result->value(); // 42, cached
+if ($result->ok) {
+    $value = $result->output(); // 42, cached
     $text = $result->rawText(); // '42', unchanged source
 }
 ~~~
+
+`ok` and `output()` are short forms of `success` and `value()`. Output is original
+text unless a mapping is configured, and null on failure. Successful mappings may
+also return null, so check `ok` rather than using output as a success flag.
 
 Combine parsers to recognize larger syntax. Strings in composition are literals:
 

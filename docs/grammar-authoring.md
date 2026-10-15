@@ -163,6 +163,13 @@ items can otherwise change how often spacing is consumed. Empty prefixes and
 recursive boundaries are retained as well. Anonymous CST grouping and recognition
 depth/work counts can therefore differ; source spans and named semantic boundaries remain.
 
+Anonymous choices that inherit their policy also flatten during `choice()`,
+`or()` and explicit ranked-factory composition. Chained `text('a')->or('b')->or('c')`
+therefore has one choice container. Explicit first/longest/shortest policies,
+metadata, subclasses and directive wrappers retain their boundaries. Alternative
+order and ranking ties remain unchanged. As with sequences, anonymous CST nesting
+and recognition work/depth counts may change; reused expressions remain immutable.
+
 ```php
 $digits = Comprehend::range('0', '9')->some()->named('digits');
 $bracketed = Comprehend::sequence('[', $digits, ']');
