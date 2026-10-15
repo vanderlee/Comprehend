@@ -55,9 +55,10 @@ Discovery must not recognize input or run semantic callbacks. Deferred reference
 return their resolved target, materializing grammar factories when necessary.
 
 Graph analysis traverses this method rather than reflecting over parser fields.
-Snapshot copying still uses declared Parser/Definition fields and arrays. Exposing
-children from a collection object enables discovery, but does not make snapshot
-copying detach that collection or its contents.
+Snapshot copying uses cloning and explicit dependency copying. Composite extensions
+must also override `copyDependencies(GraphSnapshot)` to detach their owned operands
+and policies. `children()` exposes graph edges; it does not assign copied edges
+back into parser fields. Custom collection storage must be copied explicitly too.
 
 Recognition must be pure. Attach `guard(callable(ConcreteNode): bool)` for
 speculative rejection, `validateSemantic(callable(ParseResult): bool|string)`
@@ -126,6 +127,7 @@ the parser still implements its nullability calculation. For transparent wrapper
 ```php
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -140,6 +142,12 @@ final class Wrapper extends Parser implements AnalyzableParser
     public function children(): array
     {
         return [$this->child];
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        $this->child = $context->copy($this->child);
     }
 
     protected function analysisTarget(): Parser
@@ -159,8 +167,8 @@ final class Wrapper extends Parser implements AnalyzableParser
 }
 ```
 
-Keep operands in declared Parser fields or arrays so graph snapshots copy them,
-and expose them through `children()` for discovery. Analysis operands must belong
+Copy owned operands in `copyDependencies()` and expose them through `children()`
+for discovery. Analysis operands must belong
 to the collected graph; returning or looking up an undiscovered operand raises
 `LogicException`. Discovery also includes
 stored policy parsers, such as spacing, which need not be leading operands.
@@ -170,3 +178,90 @@ the inherited analysis methods too. To opt out while extending a participating
 built-in, return null from `analysisNullability()` and empty leading/progress
 lists; this explicitly declares unknown behavior, without an opaque-parser warning.
 Analysis must never run recognition, guards, semantic callbacks or commit effects.
+
+## Snapshot copying
+
+`Parser` and `Definition` implement `Builder\SnapshotParticipant`. The context owns
+graph identity, shared copies and recursive traversal. `Parser::snapshot()` clones
+the parser, registers the destination, calls `copyDependencies()` on the clone and
+returns it. The base hook has no owned grammar dependencies; terminals inherit it.
+
+Composite parsers override the protected `copyDependencies(GraphSnapshot): void`
+hook, call the parent implementation first and replace every owned dependency with
+its copied counterpart. Keep this in sync with `children()`, including stored
+spacing policies. A wrapper uses `$this->child = $context->copy($this->child)`;
+a container uses `array_map($context->copy(...), $this->parsers)`. Registration has
+already happened when the hook runs, so recursive edges reuse the existing clone.
+
+Owned Parser/Definition fields must be assignable on the clone. They remain
+encapsulated by private/protected visibility; readonly scalar configuration may
+remain readonly. Cloning preserves inherited metadata, and arrays use PHP's
+copy-on-write behavior. Callback closures and external service/value objects stay
+shared deliberately. Definition explicitly copies parser-valued generators;
+factory callable dependencies stay caller-owned.
+
+Cloning invokes custom `__clone()` hooks without invoking constructors. Clone
+hooks must not recognize input, execute semantic callbacks or perform application
+effects, and must not mutate original or shared dependencies. Use
+`copyDependencies()` for graph copying rather than recursively
+copying children inside `__clone()`, which runs before registration.
+
+Register a detached destination **before** copying dependencies, then return that
+same registered object. This closes cycles without duplicating nodes. Specialized
+preparation may override `snapshot()` itself. For example, a custom Stub can
+explicitly copy its bound operand:
+
+```php
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
+use Vanderlee\Comprehend\Builder\SnapshotParticipant;
+use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Parser\Stub;
+
+final class SnapshotStub extends Stub implements SnapshotParticipant
+{
+    public function snapshot(GraphSnapshot $context): Parser
+    {
+        $copy = clone $this;
+        $context->registerCopy($this, $copy);
+        $child = $this->getParser();
+        if ($child !== null) {
+            $copy->setParser($context->copy($child));
+        }
+
+        return $copy;
+    }
+}
+```
+
+The context provides these operations:
+
+- `copy(Parser): Parser` applies the parser's snapshot behavior, reusing
+  previously registered destinations.
+- `copyDefinition(Definition): Definition` copies a definition with the same
+  identity tracking, including parser-valued generators and recursive dependencies.
+- `copyValue(mixed): mixed` recursively copies Parser/Definition values and arrays,
+  retaining other caller-owned values. Use it to copy the contents of custom storage.
+- `registerCopy($original, $copy)` records a detached destination. Replacing an
+  existing destination or changing the Parser/Definition category is an error.
+- `registerIdentity($original, $candidate, $identity): Parser` registers a candidate
+  or returns the destination already associated with that identity. Include a
+  participant-specific namespace in the identity. Register before resolving its
+  dependencies; if an existing destination is returned, reuse it immediately.
+  Scalar/array identity components compare by value; objects and resources use
+  identity without invoking object serialization.
+- `resolvesReferences(): bool` distinguishes resolving freezes from non-resolving
+  facade copies. A non-resolving copy must keep deferred lookup deferred.
+
+The context rejects recursive re-entry before registration and participants that
+return an unregistered destination. Discard the context if preparation throws.
+Preparation may materialize grammar factories but must not recognize input, run
+semantic callbacks or commit effects. Subclasses inherit snapshot behavior and
+must maintain it when adding state requiring isolation.
+
+There is no reflection-based copying or automatic discovery of fields to copy.
+Existing custom composites that previously relied on reflected fields must add
+`copyDependencies()`; returning those fields from `children()` alone is insufficient.
+
+Built-in participants retain their distinct rules: RuleReference owns parameterized
+identity and target binding; Implementation resets cached targets before fresh
+materialization; AbstractRuleset keeps only its freshly resolved root when freezing.

@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use LogicException;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
@@ -84,6 +85,15 @@ class Repeat extends Parser implements AnalyzableParser
     public function analysisNullability(NullabilityLookup $lookup): ?bool
     {
         return $this->min === 0 ? true : $lookup->get($this->parser);
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        $this->parser = $context->copy($this->parser);
+        if ($this->spacer !== null) {
+            $this->spacer = $context->copy($this->spacer);
+        }
     }
 
     /** @return list<Parser> */

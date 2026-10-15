@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Failure;
@@ -59,6 +60,13 @@ class Except extends Parser implements AnalyzableParser, FailureDiagnosticAtStar
     public function analysisNullability(NullabilityLookup $lookup): ?bool
     {
         return $lookup->get($this->parserMatch);
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        $this->parserMatch = $context->copy($this->parserMatch);
+        $this->parserNot = $context->copy($this->parserNot);
     }
 
     /** @return list<Parser> */

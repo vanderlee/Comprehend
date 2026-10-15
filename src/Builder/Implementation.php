@@ -25,7 +25,7 @@ final class Implementation extends Parser implements AnalyzableParser
     /**
      * @param array<array-key, mixed> $arguments
      */
-    public function __construct(private readonly Definition $definition, private readonly array $arguments = []) {}
+    public function __construct(private Definition $definition, private array $arguments = []) {}
 
     /** @internal Materialize this parameterized definition before snapshotting. */
     public function graphTarget(): Parser
@@ -61,6 +61,31 @@ final class Implementation extends Parser implements AnalyzableParser
     public function bindSnapshotTarget(Parser $parser): void
     {
         $this->parser = $parser;
+    }
+
+    public function snapshot(GraphSnapshot $context): Parser
+    {
+        $copy = clone $this;
+        $context->registerCopy($this, $copy);
+        $copy->copyDependencies($context);
+        if ($context->resolvesReferences()) {
+            $copy->bindSnapshotTarget($context->copy($copy->graphTarget()));
+        }
+
+        return $copy;
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        if ($context->resolvesReferences()) {
+            $this->parser = null;
+        }
+        $this->definition = $context->copyDefinition($this->definition);
+        $this->arguments = array_map($context->copyValue(...), $this->arguments);
+        if ($this->parser !== null) {
+            $this->parser = $context->copy($this->parser);
+        }
     }
 
     /** @return list<Parser> */

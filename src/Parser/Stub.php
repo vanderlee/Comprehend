@@ -7,6 +7,7 @@ namespace Vanderlee\Comprehend\Parser;
 use UnexpectedValueException;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -42,6 +43,14 @@ class Stub extends Parser implements AnalyzableParser
     public function analysisError(): ?string
     {
         return $this->parser === null ? 'Unresolved stub' : null;
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        if ($this->parser !== null) {
+            $this->parser = $context->copy($this->parser);
+        }
     }
 
     /** @return list<Parser> */

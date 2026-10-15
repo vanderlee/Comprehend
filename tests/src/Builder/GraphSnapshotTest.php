@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Src\Builder;
 
 use PHPUnit\Framework\TestCase;
+use LogicException;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\Implementation;
@@ -15,6 +16,48 @@ use Vanderlee\Comprehend\Source\ByteSource;
 
 final class GraphSnapshotTest extends TestCase
 {
+    public function testValueCopiesPreserveSharingAndCallerOwnedDependencies(): void
+    {
+        $parser = new Text('a');
+        $definition = new Definition($parser);
+        $service = new \stdClass();
+        $copy = (new GraphSnapshot())->copyValue([$parser, ['definition' => $definition], $service]);
+
+        $this->assertNotSame($parser, $copy[0]);
+        $this->assertNotSame($definition, $copy[1]['definition']);
+        $this->assertSame($copy[0], $copy[1]['definition']->generator);
+        $this->assertSame($service, $copy[2]);
+    }
+
+    public function testCopyRegistrationRejectsChangingAnExistingDestination(): void
+    {
+        $parser = new Text('a');
+        $context = new GraphSnapshot();
+        $context->copy($parser);
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('already has a different copy');
+
+        $context->registerCopy($parser, new Text('b'));
+    }
+
+    public function testCopyRegistrationPreservesObjectCategory(): void
+    {
+        $parser = new Text('a');
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('must preserve the parser or definition category');
+
+        (new GraphSnapshot())->registerCopy($parser, new Definition($parser));
+    }
+
+    public function testCopyRegistrationRejectsRetainingTheOriginal(): void
+    {
+        $parser = new Text('a');
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('must be detached from its original');
+
+        (new GraphSnapshot())->registerCopy($parser, $parser);
+    }
+
     public function testCopyingOwnedStateDoesNotExecuteSemanticCallbacks(): void
     {
         $calls = 0;

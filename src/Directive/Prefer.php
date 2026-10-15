@@ -7,6 +7,7 @@ namespace Vanderlee\Comprehend\Directive;
 use DomainException;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -35,6 +36,12 @@ class Prefer extends Parser implements AnalyzableParser
     public function getParser(): Parser
     {
         return $this->parser;
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        $this->parser = $context->copy($this->parser);
     }
 
     /** @return list<Parser> */

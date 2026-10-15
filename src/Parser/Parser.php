@@ -7,6 +7,8 @@ namespace Vanderlee\Comprehend\Parser;
 use InvalidArgumentException;
 use LogicException;
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
+use Vanderlee\Comprehend\Builder\SnapshotParticipant;
 use Vanderlee\Comprehend\Directive\Lexeme;
 use Vanderlee\Comprehend\Directive\Trivia;
 use Vanderlee\Comprehend\Match\AbstractMatch;
@@ -23,7 +25,7 @@ use Vanderlee\Comprehend\Source\Source;
  * directives. Checks delegated matches, builds source-bound results and separates pure guards
  * from lazy semantics and explicit effects.
  */
-abstract class Parser
+abstract class Parser implements SnapshotParticipant
 {
     use Output\ResultTrait;
     use Output\AssignTrait;
@@ -68,6 +70,21 @@ abstract class Parser
     public function freeze(): FrozenGrammar
     {
         return FrozenGrammar::from($this);
+    }
+
+    public function snapshot(GraphSnapshot $context): Parser
+    {
+        $copy = clone $this;
+        $context->registerCopy($this, $copy);
+        $copy->copyDependencies($context);
+
+        return $copy;
+    }
+
+    /** Override to detach owned grammar dependencies; call the parent implementation first. */
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        // Base metadata contains no owned grammar dependencies.
     }
 
     public function graphLabel(): string

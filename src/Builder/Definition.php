@@ -12,7 +12,7 @@ use Vanderlee\Comprehend\Result\ParseResult;
  * Packages a grammar generator with semantic validators and collection processors.
  * Implementation binds arguments and applies this metadata to selected recognition results.
  */
-final class Definition
+final class Definition implements SnapshotParticipant
 {
     /** @var Comprehend|Parser|(callable(mixed...): (Comprehend|Parser)) */
     public $generator;
@@ -34,6 +34,17 @@ final class Definition
         $this->generator = $generator instanceof Comprehend ? $generator->parser() : $generator;
 
         return $this;
+    }
+
+    public function snapshot(GraphSnapshot $context): Definition
+    {
+        $copy = clone $this;
+        $context->registerCopy($this, $copy);
+        if ($this->generator instanceof Parser) {
+            $copy->generator = $context->copy($this->generator);
+        }
+
+        return $copy;
     }
 
     public function clearValidators(): self

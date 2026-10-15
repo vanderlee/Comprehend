@@ -50,6 +50,25 @@ final class RuleReference extends Parser implements AnalyzableParser
         $this->rules = null;
     }
 
+    public function snapshot(GraphSnapshot $context): Parser
+    {
+        $copy = clone $this;
+        if (!$context->resolvesReferences()) {
+            $context->registerCopy($this, $copy);
+
+            return $copy;
+        }
+
+        $shared = $context->registerIdentity($this, $copy, [self::class, $this->graphKey()]);
+        if ($shared !== $copy) {
+            return $shared;
+        }
+
+        $copy->bindSnapshotTarget($context->copy($this->graphTarget(true)));
+
+        return $copy;
+    }
+
     /** @return list<Parser> */
     public function children(): array
     {

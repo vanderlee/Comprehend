@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend\Directive;
 
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -19,12 +20,18 @@ class CaseSensitive extends Parser implements AnalyzableParser
 {
     use ForwardingAnalysisTrait;
 
-    public function __construct(private readonly bool $sensitivity, private readonly Parser $parser) {}
+    public function __construct(private readonly bool $sensitivity, private Parser $parser) {}
 
     /** @internal Structural operand for graph analysis. */
     public function getParser(): Parser
     {
         return $this->parser;
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        $this->parser = $context->copy($this->parser);
     }
 
     /** @return list<Parser> */

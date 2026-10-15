@@ -91,6 +91,33 @@ abstract class AbstractRuleset extends Parser implements AnalyzableParser
         $this->implementations = [self::ROOT => $root];
     }
 
+    public function snapshot(GraphSnapshot $context): Parser
+    {
+        if (!$context->resolvesReferences()) {
+            return parent::snapshot($context);
+        }
+
+        $copy = clone $this;
+        $context->registerCopy($this, $copy);
+        $copy->bindSnapshotRoot($context->copy($this->resolveRule(self::ROOT, [], true)));
+        $copy->copyDependencies($context);
+
+        return $copy;
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        foreach ($this->instanceRules as $name => $definition) {
+            if ($definition instanceof Parser) {
+                $this->instanceRules[$name] = $context->copy($definition);
+            } elseif ($definition instanceof Definition) {
+                $this->instanceRules[$name] = $context->copyDefinition($definition);
+            }
+        }
+        $this->implementations = array_map($context->copy(...), $this->implementations);
+    }
+
     public function undefine(string $name): void
     {
         unset($this->instanceRules[$name]);

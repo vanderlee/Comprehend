@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend\Directive;
 
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -25,6 +26,15 @@ class Space extends Parser implements AnalyzableParser
     public function getParser(): Parser
     {
         return $this->parser;
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        $this->parser = $context->copy($this->parser);
+        if ($this->spacer !== null) {
+            $this->spacer = $context->copy($this->spacer);
+        }
     }
 
     /** @return list<Parser> */

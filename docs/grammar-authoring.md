@@ -89,13 +89,20 @@ $rfc->define('scheme', new Text('changed'));
 $scheme->parseAll(new Utf8Source('https'))->success; // still true
 ```
 
-Snapshots copy declared Parser/Definition fields and arrays, including readonly
-fields, without invoking constructors. Closures and non-parser service/value
-objects remain caller-owned dependencies; freeze does not deep-freeze external
-objects or variables captured by reference. Custom recognizers should keep their
-grammar structure in declared Parser fields, expose dependencies through
-`children()`, and keep external dependencies pure.
-Dynamic child construction remains opaque to static analysis.
+Snapshots clone Parser/Definition objects and register each clone before copying
+its owned grammar dependencies. Constructors do not run; custom `__clone()` hooks
+do run and must not perform application effects. Metadata arrays use PHP's
+copy-on-write behavior. Closures and non-parser service/value objects remain
+caller-owned dependencies; freeze does not deep-freeze external objects or
+variables captured by reference.
+
+Custom composite recognizers must expose dependencies through `children()` and
+copy them in `copyDependencies(GraphSnapshot)`, calling the parent hook first.
+Owned dependency fields must permit replacement on the clone; scalar readonly
+fields can stay readonly. See the [snapshot copying contract](source-and-extension-contract.md#snapshot-copying).
+Dynamic child construction remains opaque to static analysis. Rulesets, deferred
+references and factory implementations retain specialized snapshot methods for
+resolution, pruning and cache refresh.
 
 ## Immutable fluent composition
 

@@ -7,6 +7,7 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 use ArrayAccess;
 use ArrayIterator;
 use IteratorAggregate;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
@@ -23,6 +24,12 @@ abstract class IterableParser extends Parser implements IteratorAggregate, Array
      * @var Parser[]
      */
     protected $parsers = [];
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        $this->parsers = array_map($context->copy(...), $this->parsers);
+    }
 
     /** @return list<Parser> */
     public function children(): array

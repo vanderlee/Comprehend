@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
 use Vanderlee\Comprehend\Builder\GraphAnalysis;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -97,6 +98,12 @@ final class AnalysisContractTest extends TestCase
             public function children(): array
             {
                 return [$this->child];
+            }
+
+            protected function copyDependencies(GraphSnapshot $context): void
+            {
+                parent::copyDependencies($context);
+                $this->child = $context->copy($this->child);
             }
         };
         $this->expectException(LogicException::class);
@@ -212,6 +219,12 @@ final class AnalysisContractTest extends TestCase
             protected function analysisTarget(): Parser
             {
                 return $this->child;
+            }
+
+            protected function copyDependencies(GraphSnapshot $context): void
+            {
+                parent::copyDependencies($context);
+                $this->child = $context->copy($this->child);
             }
 
             public function children(): array

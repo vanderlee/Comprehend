@@ -7,6 +7,7 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
@@ -70,6 +71,14 @@ class Sequence extends IterableParser implements AnalyzableParser
     public function analysisNullability(NullabilityLookup $lookup): ?bool
     {
         return $lookup->every(array_values($this->parsers));
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        if ($this->spacer !== null) {
+            $this->spacer = $context->copy($this->spacer);
+        }
     }
 
     /** @return list<Parser> */

@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Builder;
 
-use ReflectionObject;
-use ReflectionProperty;
 use SplObjectStorage;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
  * Copies parser graphs to isolate fluent expressions and frozen grammars from mutable builders.
- * Preserves sharing and cycles while optionally resolving RuleReference and Implementation
- * targets.
+ * Preserves sharing and cycles; SnapshotParticipant behavior owns dependency copying and
+ * deferred resolution.
  */
 final class GraphSnapshot
 {
@@ -21,13 +19,16 @@ final class GraphSnapshot
      */
     private SplObjectStorage $copies;
     /**
-     * @var array<string, RuleReference>
+     * @var array<string, Parser>
      */
-    private array $references = [];
+    private array $identities = [];
+    /** @var SplObjectStorage<Parser|Definition, true> */
+    private SplObjectStorage $preparing;
 
     public function __construct(private readonly bool $resolveReferences = true)
     {
         $this->copies = new SplObjectStorage();
+        $this->preparing = new SplObjectStorage();
     }
 
     public function copy(Parser $parser): Parser
@@ -35,107 +36,99 @@ final class GraphSnapshot
         return $this->copyObject($parser);
     }
 
+    public function copyDefinition(Definition $definition): Definition
+    {
+        return $this->copyObject($definition);
+    }
+
+    /** Whether deferred grammar targets should be freshly resolved in this snapshot. */
+    public function resolvesReferences(): bool
+    {
+        return $this->resolveReferences;
+    }
+
+    /** Register before descending so shared and recursive dependencies reuse this destination. */
+    public function registerCopy(Parser|Definition $original, Parser|Definition $copy): void
+    {
+        if ($original === $copy) {
+            throw new \LogicException('Snapshot copy must be detached from its original');
+        }
+        if (($original instanceof Parser) !== ($copy instanceof Parser)) {
+            throw new \LogicException('Snapshot copy must preserve the parser or definition category');
+        }
+        if (
+            isset($this->copies[$original])
+            && $this->copies[$original] !== $copy
+        ) {
+            throw new \LogicException('Snapshot object already has a different copy');
+        }
+        $this->copies[$original] = $copy;
+        $this->copies[$copy] = $copy;
+    }
+
     /**
-     * @return ($object is Parser ? Parser : Definition)
+     * Register a candidate or reuse the parser already registered for this identity.
+     * Include a participant-specific namespace in the identity to avoid unrelated collisions.
      */
+    public function registerIdentity(Parser $original, Parser $candidate, mixed $identity): Parser
+    {
+        $key = $this->identityKey($identity);
+        $copy = $this->identities[$key] ?? $candidate;
+        $this->registerCopy($original, $copy);
+        $this->identities[$key] = $copy;
+
+        return $copy;
+    }
+
+    /** Recursively copy parser/definition values and arrays; retain caller-owned dependencies. */
+    public function copyValue(mixed $value): mixed
+    {
+        if (
+            $value instanceof Parser
+            || $value instanceof Definition
+        ) {
+            return $this->copyObject($value);
+        }
+        if (is_array($value)) {
+            return array_map(fn($item) => $this->copyValue($item), $value);
+        }
+
+        // Closures, external services and value objects are caller-owned dependencies.
+        return $value;
+    }
+
+    /** @return ($object is Parser ? Parser : Definition) */
     private function copyObject(Parser|Definition $object): Parser|Definition
     {
         if (isset($this->copies[$object])) {
             $copy = $this->copies[$object];
-            if (
-                $object instanceof Parser
-                && $copy instanceof Parser
-            ) {
-                return $copy;
+            if (($object instanceof Parser) !== ($copy instanceof Parser)) {
+                throw new \LogicException('Snapshot copy must preserve the parser or definition category');
             }
-            if (
-                $object instanceof Definition
-                && $copy instanceof Definition
-            ) {
-                return $copy;
-            }
-            throw new \LogicException('Snapshot copy must preserve the parser or definition category');
-        }
-        if ($object instanceof RuleReference) {
-            return $this->copyReference($object);
-        }
-        if (
-            $object instanceof AbstractRuleset
-            && $this->resolveReferences
-        ) {
-            $copy = clone $object;
-            $this->copies[$object] = $copy;
-            $copy->bindSnapshotRoot($this->copy($object->resolveRule(AbstractRuleset::ROOT, [], true)));
 
             return $copy;
         }
-        $copy = (new ReflectionObject($object))->newInstanceWithoutConstructor();
-        $this->copies[$object] = $copy;
-        $this->copies[$copy] = $copy;
-        foreach ($this->properties($object) as $property) {
+        if (isset($this->preparing[$object])) {
+            throw new \LogicException('Snapshot participant must register its copy before copying dependencies');
+        }
+
+        $this->preparing[$object] = true;
+        try {
+            $copy = $object->snapshot($this);
             if (
-                $object instanceof Implementation
-                && $this->resolveReferences
-                && $property->getDeclaringClass()->getName() === Implementation::class
-                && $property->getName() === 'parser'
+                !isset($this->copies[$object])
+                || $this->copies[$object] !== $copy
             ) {
-                $property->setValue($copy, null);
-                continue;
+                throw new \LogicException('Snapshot participant must return its registered copy');
             }
-            $property->setValue($copy, $this->copyValue($property->getValue($object)));
-        }
-        if (
-            $copy instanceof Implementation
-            && $this->resolveReferences
-        ) {
-            $copy->bindSnapshotTarget($this->copy($copy->graphTarget()));
-        }
 
-        return $copy;
-    }
-
-    /** @return list<ReflectionProperty> Initialized instance properties, including inherited private state. */
-    private function properties(object $object): array
-    {
-        $properties = [];
-        for ($class = new ReflectionObject($object); $class !== false; $class = $class->getParentClass()) {
-            foreach ($class->getProperties() as $property) {
-                if (
-                    $property->isStatic()
-                    || $property->getDeclaringClass()->getName() !== $class->getName()
-                ) {
-                    continue;
-                }
-                if ($property->isInitialized($object)) {
-                    $properties[] = $property;
-                }
-            }
-        }
-
-        return $properties;
-    }
-
-    private function copyReference(RuleReference $reference): RuleReference
-    {
-        $copy = clone $reference;
-        $this->copies[$reference] = $copy;
-        if (!$this->resolveReferences) {
             return $copy;
+        } finally {
+            unset($this->preparing[$object]);
         }
-
-        $key = $this->parameterKey($reference->graphKey());
-        if (isset($this->references[$key])) {
-            return $this->copies[$reference] = $this->references[$key];
-        }
-
-        // Register before resolving so recursive references reuse this node.
-        $this->references[$key] = $copy;
-        $copy->bindSnapshotTarget($this->copy($reference->graphTarget(true)));
-
-        return $copy;
     }
 
-    private function parameterKey(mixed $value): string
+    private function identityKey(mixed $value): string
     {
         if (is_object($value)) {
             return 'object:' . spl_object_id($value);
@@ -146,25 +139,12 @@ final class GraphSnapshot
         if (is_array($value)) {
             $parts = [];
             foreach ($value as $key => $item) {
-                $parts[] = [$this->parameterKey($key), $this->parameterKey($item)];
+                $parts[] = [$this->identityKey($key), $this->identityKey($item)];
             }
 
             return serialize($parts);
         }
 
         return serialize($value);
-    }
-
-    private function copyValue(mixed $value): mixed
-    {
-        if ($value instanceof Parser || $value instanceof Definition) {
-            return $this->copyObject($value);
-        }
-        if (is_array($value)) {
-            return array_map(fn($item) => $this->copyValue($item), $value);
-        }
-
-        // Closures, external services and value objects are caller-owned dependencies.
-        return $value;
     }
 }
