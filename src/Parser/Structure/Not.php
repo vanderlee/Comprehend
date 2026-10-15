@@ -68,8 +68,10 @@ class Not extends Parser implements AnalyzableParser, FailureDiagnosticAtStart
             $session->restoreDiagnostics($diagnostics);
         }
 
-        return $match instanceof Success
-            ? $this->failure($source, $byteOffset, $match->length)
-            : $this->success($source, $byteOffset);
+        if ($match instanceof Success) {
+            return $this->failure($source, $byteOffset, $match->length);
+        }
+
+        return $this->success($source, $byteOffset);
     }
 }

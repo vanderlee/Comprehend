@@ -103,20 +103,21 @@ class Sequence extends IterableParser implements AnalyzableParser
         $concreteMatches = [];
         $this->pushSpacer($session);
         try {
-            $total = 0;
+            $progressByteLength = 0;
             foreach ($this->parsers as $parser) {
                 $spacingMatch = null;
                 if ($childMatches !== []) {
-                    $skip = $session->skipSpacing($source, $byteOffset + $total, $spacingMatch);
+                    $skip = $session->skipSpacing($source, $byteOffset + $progressByteLength, $spacingMatch);
                     if ($skip === false) {
-                        return $this->failure($source, $byteOffset, $total);
+                        return $this->failure($source, $byteOffset, $progressByteLength);
                     }
-                    $total += $skip;
+                    $progressByteLength += $skip;
                 }
-                $match = $parser->recognizeInSession($source, $byteOffset + $total, $session);
-                $total += $match->length;
+                $match = $parser->recognizeInSession($source, $byteOffset + $progressByteLength, $session);
+                // Sequence reports observed progress, including a failed child's partial match.
+                $progressByteLength += $match->length;
                 if (!$match instanceof Success) {
-                    return $this->failure($source, $byteOffset, $total);
+                    return $this->failure($source, $byteOffset, $progressByteLength);
                 }
                 if ($spacingMatch !== null) {
                     $match->addPrecedingMatch($spacingMatch);
@@ -128,7 +129,7 @@ class Sequence extends IterableParser implements AnalyzableParser
         } finally {
             $this->popSpacer($session);
         }
-        $success = $this->success($source, $byteOffset, $total, $childMatches);
+        $success = $this->success($source, $byteOffset, $progressByteLength, $childMatches);
         $success->setConcreteMatches($concreteMatches);
 
         return $success;

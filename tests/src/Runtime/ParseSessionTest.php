@@ -7,6 +7,8 @@ namespace Tests\Src\Runtime;
 use DomainException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
+use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
@@ -16,6 +18,31 @@ use Vanderlee\Comprehend\Source\ByteSource;
 
 final class ParseSessionTest extends TestCase
 {
+    public function testThrowingTriviaClearsTheOutputMatchAndRestoresLexemeScope(): void
+    {
+        $source = new ByteSource(' ');
+        $failure = new RuntimeException('Trivia guard failed');
+        $trivia = (new Text(' '))->guard(static function () use ($failure): never {
+            throw $failure;
+        });
+        $session = new ParseSession($source, $trivia);
+        $match = new Success();
+
+        try {
+            $session->skipSpacing($source, 0, $match);
+            $this->fail('Expected trivia recognition to throw');
+        } catch (RuntimeException $error) {
+            $this->assertSame($failure, $error);
+        }
+
+        $this->assertNull($match);
+        $this->assertFalse($session->isLexeme());
+        $session->pushSpacer(new Text(' '));
+        $this->assertSame(1, $session->skipSpacing($source, 0, $match));
+        $this->assertSame(' ', $match->node->rawText());
+        $this->assertTrue($match->node->isTrivia);
+    }
+
     public function testInvalidChoicePolicyDoesNotChangeTheActiveScope(): void
     {
         $session = new ParseSession(new ByteSource(''));

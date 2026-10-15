@@ -117,17 +117,24 @@ class Repeat extends Parser implements AnalyzableParser
         $concreteMatches = [];
         $this->pushSpacer($session);
         try {
-            $length = 0;
+            $acceptedByteLength = 0;
             while ($this->max === null || count($childMatches) < $this->max) {
                 $diagnostics = $session->diagnosticState();
                 $spacingMatch = null;
-                $skip = $length > 0 ? $session->skipSpacing($source, $byteOffset + $length, $spacingMatch) : 0;
-                $match = $skip !== false ? $this->parser->recognizeInSession(
-                    $source,
-                    $byteOffset + $length + $skip,
-                    $session,
-                ) : null;
+                $skip = $acceptedByteLength > 0
+                    ? $session->skipSpacing($source, $byteOffset + $acceptedByteLength, $spacingMatch)
+                    : 0;
+                $match = null;
+                if ($skip !== false) {
+                    $match = $this->parser->recognizeInSession(
+                        $source,
+                        $byteOffset + $acceptedByteLength + $skip,
+                        $session,
+                    );
+                }
                 if (!$match instanceof Success) {
+                    // Once the minimum is met, a failed extension ends the repeat silently.
+                    // Its spacing and child progress are not part of the accepted prefix.
                     if (count($childMatches) >= $this->min) {
                         $session->restoreDiagnostics($diagnostics);
                     }
@@ -137,11 +144,12 @@ class Repeat extends Parser implements AnalyzableParser
                 if ($match->length === 0) {
                     throw new LogicException('Repeat child matched successfully without consuming input');
                 }
+                // Retain trivia only after the following child has consumed input successfully.
                 if ($spacingMatch !== null) {
                     $match->addPrecedingMatch($spacingMatch);
                     $concreteMatches[] = $spacingMatch;
                 }
-                $length += $skip + $match->length;
+                $acceptedByteLength += $skip + $match->length;
                 $childMatches[] = $match;
                 $concreteMatches[] = $match;
             }
@@ -149,9 +157,9 @@ class Repeat extends Parser implements AnalyzableParser
             $this->popSpacer($session);
         }
         if (count($childMatches) < $this->min) {
-            return $this->failure($source, $byteOffset, $length);
+            return $this->failure($source, $byteOffset, $acceptedByteLength);
         }
-        $success = $this->success($source, $byteOffset, $length, $childMatches);
+        $success = $this->success($source, $byteOffset, $acceptedByteLength, $childMatches);
         $success->setConcreteMatches($concreteMatches);
 
         return $success;

@@ -40,7 +40,11 @@ class Space extends Parser implements AnalyzableParser
     /** @return list<Parser> */
     public function children(): array
     {
-        return $this->spacer === null ? [$this->parser] : [$this->spacer, $this->parser];
+        if ($this->spacer === null) {
+            return [$this->parser];
+        }
+
+        return [$this->spacer, $this->parser];
     }
 
     protected function analysisTarget(): Parser

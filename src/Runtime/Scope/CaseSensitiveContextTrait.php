@@ -16,16 +16,16 @@ trait CaseSensitiveContextTrait
     /**
      * @var list<bool>
      */
-    private array $caseSensitivity = [];
+    private array $caseSensitivityStack = [];
 
     public function pushCaseSensitivity(bool $caseSensitive = true): void
     {
-        $this->caseSensitivity[] = $caseSensitive;
+        $this->caseSensitivityStack[] = $caseSensitive;
     }
 
     public function popCaseSensitivity(): bool
     {
-        $caseSensitive = array_pop($this->caseSensitivity);
+        $caseSensitive = array_pop($this->caseSensitivityStack);
         if ($caseSensitive === null) {
             throw new LogicException('Case sensitivity scope is empty');
         }
@@ -45,10 +45,8 @@ trait CaseSensitiveContextTrait
         return strtolower($text);
     }
 
-    // Helper
-
     public function isCaseSensitive(): bool
     {
-        return end($this->caseSensitivity);
+        return end($this->caseSensitivityStack);
     }
 }

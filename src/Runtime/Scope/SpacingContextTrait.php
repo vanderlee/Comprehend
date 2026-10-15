@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Runtime\Scope;
 
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Source\Source;
@@ -28,6 +29,7 @@ trait SpacingContextTrait
         array_pop($this->spacers);
     }
 
+    /** Zero means no spacing was consumed; false means the active trivia parser rejected input. */
     public function skipSpacing(Source $source, int $offset, ?Success &$match = null): int|false
     {
         $match = null;
@@ -35,19 +37,25 @@ trait SpacingContextTrait
         if ($this->isLexeme() || !$trivia instanceof Parser) {
             return 0;
         }
-        // Trivia shares case, choice and diagnostics with the owning session,
-        // but cannot recursively insert itself inside its own grammar.
-        $this->pushLexeme();
-        try {
-            $attempt = $trivia->trivia()->recognizeInSession($source, $offset, $this);
-        } finally {
-            $this->popLexeme();
-        }
+
+        $attempt = $this->recognizeTrivia($trivia, $source, $offset);
         if (!$attempt instanceof Success) {
             return false;
         }
         $match = $attempt;
 
         return $match->length;
+    }
+
+    private function recognizeTrivia(Parser $trivia, Source $source, int $byteOffset): AbstractMatch
+    {
+        // Trivia shares case, choice and diagnostics with the owning session,
+        // but cannot recursively insert itself inside its own grammar.
+        $this->pushLexeme();
+        try {
+            return $trivia->trivia()->recognizeInSession($source, $byteOffset, $this);
+        } finally {
+            $this->popLexeme();
+        }
     }
 }

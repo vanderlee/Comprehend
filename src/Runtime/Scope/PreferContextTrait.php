@@ -16,22 +16,23 @@ trait PreferContextTrait
     /**
      * @var list<string>
      */
-    private array $preference = [];
+    private array $preferenceStack = [];
 
     public function pushPreference(string $preference): void
     {
+        // Invalid policies must leave the enclosing scope unchanged.
         ChoicePolicy::assertValid($preference);
-        $this->preference[] = $preference;
+        $this->preferenceStack[] = $preference;
     }
 
     public function popPreference(): void
     {
-        array_pop($this->preference);
+        array_pop($this->preferenceStack);
     }
 
     public function getPreference(): string
     {
-        $preference = end($this->preference);
+        $preference = end($this->preferenceStack);
         if ($preference === false) {
             throw new LogicException('Choice preference scope is empty');
         }

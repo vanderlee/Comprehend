@@ -140,6 +140,24 @@ class TriviaTest extends ParserTestCase
         $this->assertSame(0, $calls);
     }
 
+    public function testFailedRepeatExtensionKeepsDiagnosticsOnlyWhenMinimumIsUnmet(): void
+    {
+        $source = new ByteSource('ab ac');
+        $optionalExtension = (new Repeat(new Text('ab'), 1))->spacing(new Text(' '));
+        $requiredExtension = (new Repeat(new Text('ab'), 2))->spacing(new Text(' '));
+
+        $accepted = $optionalExtension->matchPrefix($source);
+        $this->assertTrue($accepted->success);
+        $this->assertSame('ab', $accepted->rawText());
+        $this->assertCount(1, $accepted->node->children);
+        $this->assertNull($accepted->diagnostic);
+
+        $rejected = $requiredExtension->matchPrefix($source);
+        $this->assertFalse($rejected->success);
+        $this->assertSame(0, $rejected->consumedByteLength);
+        $this->assertSame(4, $rejected->diagnostic->byteOffset);
+    }
+
     public function testAutomaticTriviaIsConcreteAndOmittedFromNamedAstAndResults()
     {
         $spacer = (new Text(' '))->name('space')->setResult('space');
