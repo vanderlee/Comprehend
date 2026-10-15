@@ -2,6 +2,6 @@
 AI AGENTS MUST NOT USE THIS FILE!
 
 ## To do
-- Move functional tests to a separate directory.
-- Remove Reflection
-- Cleanup migration traces
+- Replace Reflection
+- Make DOM optional for XML output, similar to Grasp
+- Move tests to Pest

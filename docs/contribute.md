@@ -65,3 +65,25 @@ formatting cleanup, so style checks are local targets rather than CI gates.
 On systems without Make, run the commands from the corresponding Makefile
 recipes directly. Override the executables with
 `make PHP=/path/to/php COMPOSER=/path/to/composer qa` when necessary.
+
+## Test layout
+
+Keep tests focused on a single class or trait in `tests/src/`. Put feature tests
+that cover interactions across classes, runtime contracts, or complete grammars
+in `tests/features/`. Shared test infrastructure stays in `tests/`. PHPUnit
+discovers both directories recursively.
+
+Every class under `Vanderlee\Comprehend` must have a focused unit test at the
+matching path in `tests/src/` (for example, `src/Source/ByteSource.php` has
+`tests/src/Source/ByteSourceTest.php`). Test abstract classes through concrete
+test doubles and cover their shared contracts. Keep cross-class scenarios in
+the feature suite rather than replacing them with class tests.
+
+Group feature tests by behavior:
+
+- `authoring/`: grammar construction, facade composition, syntax dispatch, and ABNF.
+- `parsing/`: runtime contracts, consumption, diagnostics, limits, and trivia.
+- `sources/`: source coordinates, file input, source modes, and regex windows.
+- `trees/`: concrete trees, ASTs, navigation, metadata, and serialization.
+- `semantics/`: lazy values, validation, and explicit commit effects.
+- `examples/`: complete example grammars and their local helpers.
