@@ -30,13 +30,6 @@ class Success extends AbstractMatch
     use CallbackTrait;
 
     /**
-     * Whether the selected effect sequence has started.
-     * A failed or completed sequence is never replayed.
-     *
-     * @var bool
-     */
-    private bool $commitStarted = false;
-    /**
      * Selected children used for named collections and effect traversal.
      *
      * @var Success[]
@@ -55,8 +48,6 @@ class Success extends AbstractMatch
     private ?ValidationResult $validation = null;
     private bool $validating = false;
     private ?Throwable $validationError = null;
-    private ?Throwable $commitError = null;
-    private bool $committing = false;
     private ?SemanticProjection $semanticProjection = null;
     private ?self $valueChild = null;
 
@@ -97,6 +88,7 @@ class Success extends AbstractMatch
         if ($span === null) {
             throw new LogicException('Concrete nodes require source-bound recognition');
         }
+
         $kind = $parser::class;
         $isTrivia = $parser instanceof Trivia;
         $children = $this->concreteChildNodes();
@@ -119,6 +111,7 @@ class Success extends AbstractMatch
                 throw new UnexpectedValueException('Dynamic names must return string, int or null');
             }
         }
+
         $this->setConcreteNode(new ConcreteNode(
             $kind,
             $span,
@@ -139,6 +132,7 @@ class Success extends AbstractMatch
             if ($match->node === null) {
                 throw new LogicException('Concrete children require source-bound recognition');
             }
+
             $children[] = $match->node;
         }
 
@@ -156,6 +150,7 @@ class Success extends AbstractMatch
         if ($mapper !== null) {
             $this->valueChild = null;
         }
+
         $this->semanticProjection = new SemanticProjection($mapper);
     }
 
@@ -164,6 +159,7 @@ class Success extends AbstractMatch
         if ($this->valueChild !== null) {
             return $this->valueChild->getValue();
         }
+
         $this->semanticProjection ??= new SemanticProjection(null);
 
         return $this->semanticProjection->value(new ParseResult($this));
@@ -180,29 +176,12 @@ class Success extends AbstractMatch
     /** Explicit commits are idempotent; a failed effect sequence is never retried. */
     public function commit(): void
     {
-        if ($this->committing || $this->effectsProcessing) {
-            throw new LogicException('Recursive effect commit');
-        }
-        if ($this->commitError !== null) {
-            throw $this->commitError;
-        }
-        if ($this->commitStarted) {
-            return;
-        }
+        $this->effectExecution()->assertNotRunning();
         if (!$this->validateSemantic()->valid) {
             throw new LogicException('Semantic validation rejected commit');
         }
-        // Mark the attempt before effects run; a partial failure must never replay them.
-        $this->commitStarted = true;
-        $this->committing = true;
-        try {
-            $this->getCallback();
-        } catch (Throwable $error) {
-            $this->commitError = $error;
-            throw $error;
-        } finally {
-            $this->committing = false;
-        }
+
+        $this->getCallback();
     }
 
     public function validateSemantic(): ValidationResult
@@ -210,12 +189,15 @@ class Success extends AbstractMatch
         if ($this->validationError !== null) {
             throw $this->validationError;
         }
+
         if ($this->validation !== null) {
             return $this->validation;
         }
+
         if ($this->validating) {
             throw new LogicException('Recursive semantic validation');
         }
+
         $this->validating = true;
         try {
             // Retain child-before-parent order even when a child reports rejection.
@@ -244,6 +226,7 @@ class Success extends AbstractMatch
             if (isset($seen[$id])) {
                 continue;
             }
+
             $seen[$id] = true;
             foreach ($child->validateSemantic()->errors as $error) {
                 $errors[] = $error;
@@ -276,10 +259,6 @@ class Success extends AbstractMatch
 
     public function isCommitted(): bool
     {
-        return $this->effectsProcessed
-            && !$this->effectsProcessing
-            && !$this->committing
-            && $this->commitError === null
-            && $this->effectError === null;
+        return $this->effectExecution()->isCompleted();
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Match\Output;
 
 use Vanderlee\Comprehend\Match\Success;
-use Throwable;
+use Vanderlee\Comprehend\Match\EffectExecution;
 
 /**
  * Executes selected Success effects once during explicit commit. Preserves preceding-match and
@@ -21,9 +21,7 @@ trait CallbackTrait
     private array $customCallbacks = [];
     /** @var Success[] */
     private array $precedingMatches = [];
-    private bool $effectsProcessed = false;
-    private bool $effectsProcessing = false;
-    private ?Throwable $effectError = null;
+    private ?EffectExecution $effectExecution = null;
 
     /**
      * Retain accepted effects before this match's callbacks, without adding
@@ -60,22 +58,12 @@ trait CallbackTrait
      */
     private function processCustomCallbacks(): void
     {
-        if ($this->effectError !== null) {
-            throw $this->effectError;
-        }
-        if ($this->effectsProcessed) {
-            return;
-        }
-        $this->effectsProcessed = true;
-        $this->effectsProcessing = true;
-        try {
-            $this->runSelectedEffects();
-        } catch (Throwable $error) {
-            $this->effectError = $error;
-            throw $error;
-        } finally {
-            $this->effectsProcessing = false;
-        }
+        $this->effectExecution()->run($this->runSelectedEffects(...));
+    }
+
+    private function effectExecution(): EffectExecution
+    {
+        return $this->effectExecution ??= new EffectExecution();
     }
 
     private function runSelectedEffects(): void
@@ -84,10 +72,12 @@ trait CallbackTrait
         foreach ($this->precedingMatches as $match) {
             $match->processCustomCallbacks();
         }
+
         /** @var self $success */
         foreach ($this->successes as $success) {
             $success->processCustomCallbacks();
         }
+
         foreach ($this->customCallbacks as $callback) {
             $callback();
         }

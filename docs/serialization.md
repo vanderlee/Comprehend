@@ -4,6 +4,13 @@ ConcreteNode and AstNode implement JsonSerializable and expose `toArray()`,
 `toJson()` and `toXml()`. No Token projection, namespace-layout adapter or
 coordinate conversion is involved.
 
+Format traversal lives in array and XML visitors. `accept(NodeVisitor)` dispatches
+to `visitConcrete()` or `visitAst()` and returns the visitor's result, allowing
+new tree operations without changing the immutable nodes. Visitors control child
+traversal. The `Serialization` trait retains its explicit data, field and
+surroundings hooks for custom node types; its default `accept()` uses `visitData()`.
+JSON uses the array visitor and preserves the same schema.
+
 Array/JSON nodes contain `name`, `group`, `start`, `end`, `text`, `textEncoding`
 and `children`. CST nodes additionally contain `kind`, `trivia` and `semanticLeaf`.
 Start/end are canonical bytes. Valid UTF-8 text is emitted directly with

@@ -20,6 +20,11 @@ cached and rethrown; a partially executed effect sequence is never retried or
 reported as committed. External effects cannot be rolled back automatically.
 Recursive value reads, named-result evaluation, validation and commit are errors.
 
+Internally, each selected match owns an effect execution with pending, running,
+completed and failed states. Shared child traversal executes effects once;
+explicit commit during running effects is rejected. A failed execution retains
+the original exception and never transitions back to pending.
+
 Grammar callbacks/validators/mappings/names are snapshotted per recognition.
 Discarded alternative callbacks and speculative trivia produce no committed
 effects. A semantic rejection does not retry a syntactically selected choice;

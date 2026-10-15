@@ -169,6 +169,16 @@ final class AstNode implements JsonSerializable
         return ['preamble' => $this->preamble, 'postamble' => $this->postamble];
     }
 
+    /**
+     * @template T
+     * @param NodeVisitor<T> $visitor
+     * @return T
+     */
+    public function accept(NodeVisitor $visitor): mixed
+    {
+        return $visitor->visitAst($this);
+    }
+
     public function rawText(): string
     {
         return $this->span->rawText();

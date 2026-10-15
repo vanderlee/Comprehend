@@ -91,6 +91,16 @@ final class ConcreteNode implements JsonSerializable
         return [];
     }
 
+    /**
+     * @template T
+     * @param NodeVisitor<T> $visitor
+     * @return T
+     */
+    public function accept(NodeVisitor $visitor): mixed
+    {
+        return $visitor->visitConcrete($this);
+    }
+
     public function rawText(): string
     {
         return $this->span->rawText();
