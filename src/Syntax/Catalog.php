@@ -183,10 +183,7 @@ final class Catalog
                 Comprehend|Parser|string $parser,
                 int $min = 0,
                 ?int $max = null,
-            ): Comprehend => ($parser instanceof Comprehend ? $parser : Comprehend::of(self::parser($parser)))->repeat(
-                $min,
-                $max,
-            ),
+            ): Comprehend => Comprehend::repeat($parser, $min, $max),
             'some' => static fn(Comprehend|Parser|string $parser): Comprehend => Comprehend::repeat($parser, 1),
             'many' => static fn(Comprehend|Parser|string $parser): Comprehend => Comprehend::repeat($parser),
             'maybe' => static fn(Comprehend|Parser|string $parser): Comprehend => Comprehend::repeat($parser, 0, 1),

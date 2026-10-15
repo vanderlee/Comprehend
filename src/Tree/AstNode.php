@@ -26,7 +26,7 @@ final class AstNode implements JsonSerializable
         public readonly string|int|null $name,
         public readonly ?string $group,
         public readonly Span $span,
-        public array $children = [],
+        public readonly array $children = [],
         public readonly array $tags = [],
         public readonly array $preamble = [],
         public readonly array $postamble = [],

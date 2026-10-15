@@ -21,9 +21,9 @@ final class ConcreteNode implements JsonSerializable
      * @param list<string> $tags
      */
     public function __construct(
-        public string $kind,
+        public readonly string $kind,
         public readonly Span $span,
-        public array $children = [],
+        public readonly array $children = [],
         public readonly bool $isTrivia = false,
         public readonly string|int|null $name = null,
         public readonly ?string $group = null,

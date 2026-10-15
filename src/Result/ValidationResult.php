@@ -11,5 +11,5 @@ namespace Vanderlee\Comprehend\Result;
 final class ValidationResult
 {
     /** @param list<string> $errors */
-    public function __construct(public readonly bool $valid, public array $errors = []) {}
+    public function __construct(public readonly bool $valid, public readonly array $errors = []) {}
 }
