@@ -1,11 +1,8 @@
 # Canonical runtime and Phase 2A removal inventory
 
-Phase 2A implements the mandatory cleanup before Phase 3. The runtime adopts
-'s separation of source access, recognition, concrete trees and named ASTs
-as independently implemented ideas. It uses stricter byte-coordinate, immutable
-snapshot, cached semantic and explicit-commit contracts. 's mutable fluent
-aliasing, unresolved literal fallback and transformed/lossy AST content are not
-part of this design.
+Phase 2A implements the mandatory cleanup before Phase 3. The runtime separates
+source access, recognition, concrete trees and named ASTs. It uses byte-coordinate,
+immutable snapshot, cached semantic and explicit-commit contracts.
 
 ```text
 typed objects / Ruleset factories / RFC imports

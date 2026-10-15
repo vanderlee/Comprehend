@@ -33,8 +33,7 @@ Source lives in `src/`, PHPUnit tests in `tests/`, runnable examples in
 - Do not reintroduce removed matching entry points, compatibility adapters, magic
   Ruleset lookup, coercion, automatic callbacks, or Token output models. Consult
   `docs/canonical-runtime.md` and the canonical API gate for the removal inventory.
-- Implement ideas independently; do not copy source from the supplied `-main/`
-  snapshot. Do not edit installed dependencies in `vendor/`.
+- Implement ideas independently. Do not edit installed dependencies in `vendor/`.
 - Update relevant documentation and examples when public behavior changes. Add
   meaningful regression tests for changes to recognition, diagnostics, source
   round trips, or lifecycle contracts.

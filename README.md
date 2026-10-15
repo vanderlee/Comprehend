@@ -122,7 +122,7 @@ supported PHP versions and the gated publication workflow.
 - [CST](docs/concrete-trees.md), [AST](docs/ast.md), [serialization](docs/serialization.md)
 - [Semantic values](docs/semantic-values.md) and [lifecycle](docs/lifecycle.md)
 - [RFC libraries](docs/libraries.md), [contributing](docs/contribute.md)
-- [Phase 2A removal inventory](docs/canonical-runtime.md) and [evolution plan](docs/comprehend--review.md)
+- [Phase 2A removal inventory](docs/canonical-runtime.md)
 
 Install with Composer, then run:
 

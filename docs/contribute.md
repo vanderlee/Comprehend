@@ -30,8 +30,6 @@ inventory and CI gate make this a breaking canonical API.
 Magic dispatch is intentionally limited to Comprehend/Syntax authoring; it must
 construct the existing typed parser graph and never enter the recognition runtime.
 
-Source code from the supplied  snapshot is not copied. Its architectural
-ideas are implemented independently; the review identifies defects to avoid.
 Named graph authoring, freezing, safety checks and immutable facade composition
 are documented in [Grammar authoring](grammar-authoring.md). File/performance
 work is documented in [File input](file-input.md) and [Performance measurements](performance.md).
@@ -53,7 +51,7 @@ Use `make cs` for PHP_CodeSniffer's PSR-12 checks and `make cs-check` for a
 PHP-CS-Fixer dry run against PHP-FIG PER Coding Style. PSR-12 is a partial style
 check; the fixer uses its current `@PER-CS` preset. Both tools cover `src`,
 `tests`, `tools`, `docs/examples` and the fixer configuration, excluding vendor
-code and the supplied  snapshot. `make cs-fix` applies formatting; review
+code. `make cs-fix` applies formatting; review
 its diff before committing. Existing style violations are left for a separate
 formatting cleanup, so style checks are local targets rather than CI gates.
 `make qa` runs tests, PHPStan and both style checks.
