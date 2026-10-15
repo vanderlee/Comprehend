@@ -14,6 +14,12 @@ class Trivia extends Parser
 {
     public function __construct(private Parser $parser) {}
 
+    /** @internal Structural operand for graph analysis. */
+    public function getParser(): Parser
+    {
+        return $this->parser;
+    }
+
     public function __toString(): string
     {
         return (string) $this->parser;

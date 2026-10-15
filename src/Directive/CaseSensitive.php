@@ -14,6 +14,12 @@ class CaseSensitive extends Parser
 {
     public function __construct(private bool $sensitivity, private Parser $parser) {}
 
+    /** @internal Structural operand for graph analysis. */
+    public function getParser(): Parser
+    {
+        return $this->parser;
+    }
+
     public function __toString(): string
     {
         return ($this->sensitivity ? 'case' : 'no-case') . '( ' . $this->parser . ' )';

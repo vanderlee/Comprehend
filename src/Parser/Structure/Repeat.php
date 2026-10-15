@@ -24,6 +24,24 @@ class Repeat extends Parser
         }
     }
 
+    /** @internal Structural operand for graph analysis. */
+    public function getParser(): Parser
+    {
+        return $this->parser;
+    }
+
+    /** @internal Inclusive minimum for graph analysis. */
+    public function getMinimum(): int
+    {
+        return $this->min;
+    }
+
+    /** @internal Null denotes an unbounded repetition. */
+    public function getMaximum(): ?int
+    {
+        return $this->max;
+    }
+
     public static function plus(Parser $parser)
     {
         return new self($parser, 1, null);

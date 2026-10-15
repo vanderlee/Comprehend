@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Builder;
 
 use LogicException;
-use Vanderlee\Comprehend\Directive;
+use Vanderlee\Comprehend\Directive\CaseSensitive;
+use Vanderlee\Comprehend\Directive\Lexeme;
+use Vanderlee\Comprehend\Directive\Prefer;
+use Vanderlee\Comprehend\Directive\Space;
+use Vanderlee\Comprehend\Directive\Trivia;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\All;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
@@ -14,7 +18,16 @@ use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Stub;
-use Vanderlee\Comprehend\Parser\Terminal;
+use Vanderlee\Comprehend\Parser\Terminal\Any;
+use Vanderlee\Comprehend\Parser\Terminal\Char;
+use Vanderlee\Comprehend\Parser\Terminal\End;
+use Vanderlee\Comprehend\Parser\Terminal\Integer;
+use Vanderlee\Comprehend\Parser\Terminal\Nothing;
+use Vanderlee\Comprehend\Parser\Terminal\Range;
+use Vanderlee\Comprehend\Parser\Terminal\Regex;
+use Vanderlee\Comprehend\Parser\Terminal\Set;
+use Vanderlee\Comprehend\Parser\Terminal\Start;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /** Conservative structural analysis: opaque custom recognizers remain runtime guarded. */
 final class GraphAnalysis
@@ -47,7 +60,10 @@ final class GraphAnalysis
 
         $this->nodes[$id] = $node;
         $this->paths[$id] = [...$path, $node->graphLabel()];
-        if ($node instanceof Stub && $node->getParser() === null) {
+        if (
+            $node instanceof Stub
+            && $node->getParser() === null
+        ) {
             throw new LogicException('Unresolved stub: ' . implode(' -> ', $this->paths[$id]));
         }
         foreach (GraphState::children($node) as $child) {
@@ -71,7 +87,11 @@ final class GraphAnalysis
 
     private function isKnown(Parser $node): bool
     {
-        if ($node instanceof AbstractRuleset || $node instanceof RuleReference || $node instanceof Implementation) {
+        if (
+            $node instanceof AbstractRuleset
+            || $node instanceof RuleReference
+            || $node instanceof Implementation
+        ) {
             return true;
         }
 
@@ -83,21 +103,21 @@ final class GraphAnalysis
             All::class,
             Except::class,
             Not::class,
-            Directive\CaseSensitive::class,
-            Directive\Prefer::class,
-            Directive\Space::class,
-            Directive\Lexeme::class,
-            Directive\Trivia::class,
-            Terminal\Any::class,
-            Terminal\Char::class,
-            Terminal\Text::class,
-            Terminal\Range::class,
-            Terminal\Set::class,
-            Terminal\Regex::class,
-            Terminal\Integer::class,
-            Terminal\Nothing::class,
-            Terminal\Start::class,
-            Terminal\End::class,
+            CaseSensitive::class,
+            Prefer::class,
+            Space::class,
+            Lexeme::class,
+            Trivia::class,
+            Any::class,
+            Char::class,
+            Text::class,
+            Range::class,
+            Set::class,
+            Regex::class,
+            Integer::class,
+            Nothing::class,
+            Start::class,
+            End::class,
         ], true);
     }
 
@@ -123,26 +143,29 @@ final class GraphAnalysis
         }
         if (
             $node instanceof Not
-            || $node instanceof Terminal\Nothing
-            || $node instanceof Terminal\Start
-            || $node instanceof Terminal\End
+            || $node instanceof Nothing
+            || $node instanceof Start
+            || $node instanceof End
         ) {
             return true;
         }
 
         $children = $this->grammarChildren($node);
-        if ($node instanceof Repeat && GraphState::value($node, 'min') === 0) {
+        if ($node instanceof Repeat && $node->getMinimum() === 0) {
             return true;
         }
         if ($node instanceof Except) {
-            return $this->nullable[spl_object_id(GraphState::value($node, 'parserMatch'))];
+            return $this->nullable[spl_object_id($node->getMatchParser())];
         }
         if ($children === []) {
             return false;
         }
 
         $values = array_map(fn($child) => $this->nullable[spl_object_id($child)], $children);
-        if ($node instanceof Choice || $node instanceof All) {
+        if (
+            $node instanceof Choice
+            || $node instanceof All
+        ) {
             if (in_array(true, $values, true)) {
                 return true;
             }
@@ -164,28 +187,47 @@ final class GraphAnalysis
         if ($node instanceof AbstractRuleset) {
             return [$node->resolveRule(AbstractRuleset::ROOT)];
         }
-        if ($node instanceof Sequence || $node instanceof Choice) {
+        if (
+            $node instanceof Sequence
+            || $node instanceof Choice
+        ) {
             return array_values(iterator_to_array($node));
         }
         if ($node instanceof All) {
-            return GraphState::value($node, 'parsers');
+            return $node->getParsers();
         }
         if ($node instanceof Except) {
-            return [GraphState::value($node, 'parserMatch'), GraphState::value($node, 'parserNot')];
+            return [$node->getMatchParser(), $node->getExcludedParser()];
         }
 
-        $child = GraphState::value($node, 'parser');
-        return $child instanceof Parser ? [$child] : [];
+        if (
+            $node instanceof Repeat
+            || $node instanceof Not
+            || $node instanceof Stub
+            || $node instanceof CaseSensitive
+            || $node instanceof Prefer
+            || $node instanceof Space
+            || $node instanceof Lexeme
+            || $node instanceof Trivia
+        ) {
+            $child = $node->getParser();
+            return $child === null ? [] : [$child];
+        }
+
+        return [];
     }
 
     private function rejectNullableRepetition(): void
     {
         foreach ($this->nodes as $id => $node) {
-            if ($node::class !== Repeat::class || GraphState::value($node, 'max') === 0) {
+            if (
+                $node::class !== Repeat::class
+                || $node->getMaximum() === 0
+            ) {
                 continue;
             }
 
-            $child = GraphState::value($node, 'parser');
+            $child = $node->getParser();
             if ($this->nullable[spl_object_id($child)] === true) {
                 throw new LogicException(
                     'Nullable repetition: ' . implode(' -> ', $this->paths[$id]) . ' -> ' . $child->graphLabel(),
@@ -219,7 +261,7 @@ final class GraphAnalysis
         if (!$this->isKnown($node)) {
             return [];
         }
-        if ($node instanceof Repeat && GraphState::value($node, 'max') === 0) {
+        if ($node instanceof Repeat && $node->getMaximum() === 0) {
             return [];
         }
 

@@ -31,6 +31,15 @@ class All extends Parser
         $this->parsers = $arguments;
     }
 
+    /**
+     * @internal
+     * @return array<array-key, Parser> Structural operands in declaration order.
+     */
+    public function getParsers(): array
+    {
+        return $this->parsers;
+    }
+
     public function __toString(): string
     {
         return '( ' . implode(' + ', $this->parsers) . ' )';

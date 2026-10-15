@@ -24,6 +24,12 @@ class Prefer extends Parser
         }
     }
 
+    /** @internal Structural operand for graph analysis. */
+    public function getParser(): Parser
+    {
+        return $this->parser;
+    }
+
     public function __toString(): string
     {
         return match ($this->preference) {

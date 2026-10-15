@@ -32,6 +32,18 @@ class Except extends Parser
         $this->parserNot = $not;
     }
 
+    /** @internal Positive operand for graph analysis. */
+    public function getMatchParser(): Parser
+    {
+        return $this->parserMatch;
+    }
+
+    /** @internal Excluded operand for graph analysis. */
+    public function getExcludedParser(): Parser
+    {
+        return $this->parserNot;
+    }
+
     public function __toString(): string
     {
         return '( ' . $this->parserMatch . ' - ' . $this->parserNot . ' )';
