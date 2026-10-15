@@ -21,6 +21,7 @@ use Vanderlee\Comprehend\Source\Source;
 class Start extends Parser implements AnalyzableParser
 {
     use DefaultAnalysisTrait;
+    use DiagnosticExpectationTrait;
 
     public function analysisNullability(NullabilityLookup $lookup): ?bool
     {

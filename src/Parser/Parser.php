@@ -267,7 +267,7 @@ abstract class Parser implements SnapshotParticipant
 
     protected function diagnosticExpectation(): string
     {
-        return str_contains(static::class, '\Terminal\\') ? (string) $this : $this->diagnosticName();
+        return $this->diagnosticName();
     }
 
     private function assertReturnedMatch(Source $source, int $offset, AbstractMatch $match): void

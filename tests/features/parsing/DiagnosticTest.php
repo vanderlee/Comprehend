@@ -17,6 +17,23 @@ use Vanderlee\Comprehend\Source\Utf8Source;
 
 class DiagnosticTest extends ParserTestCase
 {
+    public function testTerminalSubclassOutsideTerminalNamespaceRetainsStringExpectation(): void
+    {
+        $parser = new class ('abc') extends Text {
+            public function __toString(): string
+            {
+                return 'custom literal';
+            }
+        };
+        $parser->diagnosticRule('word');
+        $result = $parser->parseAll(new ByteSource('abx'));
+
+        $this->assertFalse($result->success);
+        $this->assertSame(2, $result->diagnostic->byteOffset);
+        $this->assertSame(['custom literal'], $result->diagnostic->expected);
+        $this->assertSame([['word']], $result->diagnostic->rulePaths);
+    }
+
     public function testUtf8FailureAndLazyLocation()
     {
         $result = (new Text("éa"))->parseAll(new Utf8Source("éb"));

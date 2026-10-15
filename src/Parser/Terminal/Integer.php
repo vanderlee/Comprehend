@@ -24,6 +24,7 @@ use Vanderlee\Comprehend\Source\SourceMode;
 class Integer extends Parser implements AnalyzableParser
 {
     use DefaultAnalysisTrait;
+    use DiagnosticExpectationTrait;
     use CaseSensitiveTrait;
 
     /**

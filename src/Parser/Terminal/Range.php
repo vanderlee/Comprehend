@@ -24,6 +24,7 @@ use Vanderlee\Comprehend\Source\Utf8Source;
 class Range extends Parser implements AnalyzableParser
 {
     use DefaultAnalysisTrait;
+    use DiagnosticExpectationTrait;
     use CaseSensitiveTrait;
 
     private ?string $first;

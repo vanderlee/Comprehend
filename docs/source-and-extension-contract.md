@@ -46,6 +46,13 @@ marker. Other parsers default to entry offset plus observed failure progress.
 The marker does not change the failure length or consumption, and does not replace
 diagnostics explicitly recorded during recognition.
 
+Fallback expectations use the parser's diagnostic name by default. Override
+`diagnosticExpectation(): string` to provide a different expectation, or use
+`Parser\Terminal\DiagnosticExpectationTrait` to return the parser's `__toString()`
+description. Built-in terminals use this trait; their subclasses inherit that
+behavior regardless of namespace. Namespace names do not classify parsers.
+Named rule paths remain independent of expectation formatting.
+
 `Parser::children(): array` returns a list of all direct parser dependencies.
 The default returns an empty list for terminals. Composite extensions must override
 it to expose operands and stored policies, including spacing parsers, even when

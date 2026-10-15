@@ -25,6 +25,7 @@ use Vanderlee\Comprehend\Source\Utf8Source;
 class Regex extends Parser implements AnalyzableParser
 {
     use DefaultAnalysisTrait;
+    use DiagnosticExpectationTrait;
     use CaseSensitiveTrait;
 
     private string $pattern;

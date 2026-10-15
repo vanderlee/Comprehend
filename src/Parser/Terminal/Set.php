@@ -25,6 +25,7 @@ use Vanderlee\Comprehend\Source\Utf8Source;
 class Set extends Parser implements AnalyzableParser
 {
     use DefaultAnalysisTrait;
+    use DiagnosticExpectationTrait;
     use CaseSensitiveTrait;
 
     private string $set;

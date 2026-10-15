@@ -24,6 +24,7 @@ use Vanderlee\Comprehend\Source\Utf8Source;
 class Char extends Parser implements AnalyzableParser
 {
     use DefaultAnalysisTrait;
+    use DiagnosticExpectationTrait;
     use CaseSensitiveTrait;
 
     private string $character;
