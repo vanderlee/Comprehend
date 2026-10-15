@@ -29,6 +29,10 @@ class Text extends Parser implements AnalyzableParser
 
     private string $text;
     private int $length;
+    /** @var list<string>|null */
+    private ?array $byteCharacters = null;
+    /** @var list<string>|null */
+    private ?array $utf8Characters = null;
 
     public function __construct(string $text)
     {
@@ -53,11 +57,23 @@ class Text extends Parser implements AnalyzableParser
     {
         $this->pushCaseSensitivityToContext($session);
         try {
-            $literal = $session->source()->mode() === SourceMode::UTF8 ? mb_str_split(
-                (new Utf8Source($this->text))->sliceBytes(0, strlen($this->text)),
-                1,
-                'UTF-8',
-            ) : str_split($this->text);
+            $literal = $this->characters($source->mode());
+            if (
+                $session->isCaseSensitive()
+                && $this->length <= $source->byteLength() - $byteOffset
+                && $source->sliceBytes($byteOffset, $byteOffset + $this->length) === $this->text
+            ) {
+                // Charge the same reads at the same byte positions as the unit path,
+                // including the position reported when a work budget is exhausted.
+                $position = $byteOffset;
+                foreach ($literal as $character) {
+                    $session->consumeWork(1, $position);
+                    $position += strlen($character);
+                }
+
+                return $this->success($source, $byteOffset, $this->length);
+            }
+
             $position = $byteOffset;
             foreach ($literal as $character) {
                 $unit = $session->readSourceUnit($position);
@@ -71,5 +87,21 @@ class Text extends Parser implements AnalyzableParser
         } finally {
             $this->popCaseSensitivityFromContext($session);
         }
+    }
+
+    /** @return list<string> */
+    private function characters(SourceMode $mode): array
+    {
+        if ($mode === SourceMode::BYTES) {
+            return $this->byteCharacters ??= str_split($this->text);
+        }
+
+        if ($this->utf8Characters === null) {
+            // Keep UTF-8 validation lazy: arbitrary octets remain valid byte literals.
+            new Utf8Source($this->text);
+            $this->utf8Characters = mb_str_split($this->text, 1, 'UTF-8');
+        }
+
+        return $this->utf8Characters;
     }
 }

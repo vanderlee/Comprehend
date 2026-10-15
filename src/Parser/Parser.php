@@ -314,6 +314,10 @@ abstract class Parser implements SnapshotParticipant
 
     private function bindResultCallbacks(Success $success, Span $span): void
     {
+        if ($this->resultCallbacks === []) {
+            return;
+        }
+
         $resultCallbacks = array_map(static fn($factory) => $factory($span), $this->resultCallbacks);
         $success->addResultCallback(
             static function (&$results) use ($resultCallbacks) {
@@ -326,6 +330,10 @@ abstract class Parser implements SnapshotParticipant
 
     private function bindCommitEffects(Success $success, Span $span): void
     {
+        if ($this->effects === [] && $this->assignCallbacks === []) {
+            return;
+        }
+
         // Snapshot registrations now; assignments and effects remain deferred until commit.
         $effects = $this->effects;
         $assignments = $this->assignCallbacks;

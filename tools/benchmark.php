@@ -21,7 +21,7 @@ $sourceType = $options['source'] ?? 'memory';
 if (!in_array($sourceType, ['memory', 'memory-byte', 'file-byte', 'file-utf8'], true)) {
     throw new InvalidArgumentException('Unknown benchmark source');
 }
-$cases = ['text', 'unicode', 'rfc-uri', 'recursive', 'shared-prefix', 'malformed', 'large', 'regex'];
+$cases = ['text', 'text-chunked', 'unicode', 'rfc-uri', 'recursive', 'shared-prefix', 'malformed', 'large', 'regex'];
 $modes = ['recognition', 'cst', 'ast', 'semantic'];
 if (method_exists(Regex::class, 'literalWindow')) {
     $cases[] = 'regex-window';
@@ -36,7 +36,9 @@ if (isset($options['worker'])) {
     $text = str_repeat('a', $size);
     $parser = Repeat::exact(new Text('a'), $size);
     $expected = true;
-    if ($case === 'unicode') {
+    if ($case === 'text-chunked') {
+        $parser = Repeat::plus(new Regex('/a{1,64}/A'));
+    } elseif ($case === 'unicode') {
         $text = str_repeat('é', $size);
         $parser = Repeat::exact(new Text('é'), $size);
     } elseif ($case === 'rfc-uri') {

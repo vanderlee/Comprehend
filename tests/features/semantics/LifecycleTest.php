@@ -18,6 +18,34 @@ use Vanderlee\Comprehend\Match\Success;
 
 uses(ParserTestCase::class);
 
+test('plain parent matches retain child collections and effects without local registrations', function () {
+    $events = [];
+    $assigned = null;
+    $child = (new Text('a'))->setResult('letter')->assignTo($assigned)->onCommit(
+        function () use (&$events) {
+            $events[] = 'child';
+        },
+    );
+    $parser = new Sequence(new Text('('), $child, new Text(')'));
+    $plain = $parser->parseAll(new Utf8Source('(a)'));
+    // Later registrations must not affect a result already recognized.
+    $parser->setResult('later')->onCommit(function () use (&$events) {
+        $events[] = 'parent';
+    });
+    $this->assertSame(['letter' => 'a'], $plain->results());
+    $this->assertNull($assigned);
+    $this->assertSame([], $events);
+    $this->assertTrue($plain->commit());
+    $this->assertTrue($plain->commit());
+    $this->assertSame('a', $assigned);
+    $this->assertSame(['child'], $events);
+
+    $registered = $parser->parseAll(new Utf8Source('(a)'));
+    $this->assertSame(['letter' => 'a', 'later' => '(a)'], $registered->results());
+    $this->assertTrue($registered->commit());
+    $this->assertSame(['child', 'child', 'parent'], $events);
+});
+
 test('guard rejects candidate without semantic or committed effects', function () {
     $events = [];
     $maps = 0;

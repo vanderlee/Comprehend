@@ -36,6 +36,56 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Literal and callback allocation improvements (2026-10-15)
+
+On Windows, PHP 8.2.10 and PCRE 10.40, seven samples per case produced the
+following local medians. Source setup is excluded; recognition includes the CST.
+The before measurements use revision `7c0f17b`; after measurements include the
+literal preparation/comparison and empty callback registration optimizations.
+
+| Workload | Before | After | Allocated peak before / after |
+| --- | ---: | ---: | ---: |
+| 2 KiB UTF-8 memory, one Text per byte | 19.91 ms | 15.34 ms | 10 / 4 MiB |
+| 64 KiB UTF-8 memory, 64-byte Text chunks | 108.82 ms | 18.01 ms | 6 / 4 MiB |
+| 2 KiB UTF-8 file, 64-byte Text chunks | 8.49 ms | 0.67 ms | 4 / 4 MiB |
+
+These are combined changes, not isolated attribution of either optimization.
+Text caches its immutable literal units separately for byte and UTF-8 sources.
+Successful case-sensitive literals use one bounded byte comparison; mismatch and
+case-insensitive recognition retain the unit path. Work charges and limit error
+positions remain per unit. Empty local collection/effect registrations no longer
+allocate closures, while registered callbacks still bind to each recognition.
+
+The new `text-chunked` benchmark chooses runs of 1–64 `a` characters instead of
+one node per character. At 64 KiB in UTF-8 memory, it took 9.58 ms and 4 MiB peak,
+versus 557.96 ms and 62 MiB for the optimized character-node grammar. The latter
+had a 536.48–2085.63 ms range, so its timing remains noisy. Before these changes,
+the character-node case exhausted the default 128 MiB limit.
+
+Coarser terminals are an explicit application grammar choice: they change CST
+children and diagnostic expectations. The runtime never merges existing nodes.
+Use them only when individual characters do not need names, guards, mappings or
+effects. [The runnable example](examples/chunked-text.php) checks short and partial
+final runs, malformed input, node counts and CST/AST source round trips:
+
+```sh
+php docs/examples/chunked-text.php
+php tools/benchmark.php --case=text-chunked --mode=recognition --iterations=7 --size=65536
+```
+
+This example uses general regex over in-memory input. Its bounded match length
+does not bound file subject reads; arbitrary regex still uses the complete source.
+The acceptance language matches nonempty repeated `Text('a')`, but the CST shape
+and mismatch expectations deliberately differ. Root-only AST and byte-length
+semantic projections in the harness are inexpensive and do not model rich outputs.
+
+[Raw before/after reports](benchmarks/literal-callback-2026-10-15.json) retain
+commands, ranges, peaks and source setup times. Samples share a worker process,
+have no explicit warmup and include allocator retention and fixture storage.
+These results are workload-specific baselines, not latency guarantees.
+
+### Earlier file-window comparisons
+
 | Case and source | Median parse + CST | PHP process peak |
 | --- | ---: | ---: |
 | 2 KiB text, in-memory, pre-change | 19.28 ms | 8 MiB |

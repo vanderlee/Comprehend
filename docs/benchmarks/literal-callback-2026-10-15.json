@@ -1,0 +1,203 @@
+{
+    "measured_on":  "2026-10-15",
+    "before_revision":  "7c0f17b",
+    "after_description":  "Working tree: literal preparation/comparison, empty callback registrations, explicit chunked benchmark",
+    "php":  "8.2.10",
+    "os":  "Windows",
+    "pcre":  "10.40 2022-04-14",
+    "recognition_includes_cst":  true,
+    "notes":  [
+                  "Source setup excluded from parse time.",
+                  "Seven sequential samples per worker; no explicit warmup.",
+                  "Process peak is PHP allocated memory including fixtures and allocator retention.",
+                  "Before and after runs were collected separately; timing variance is not controlled."
+              ],
+    "before":  [
+                   {
+                       "command":  "php tools/benchmark.php --source=memory --iterations=7 --size=2048",
+                       "result":  {
+                                      "case":  "text",
+                                      "mode":  "recognition",
+                                      "source":  "memory",
+                                      "input_bytes":  2048,
+                                      "accepted":  true,
+                                      "iterations":  7,
+                                      "median_ms":  19.9135,
+                                      "min_ms":  19.157,
+                                      "max_ms":  33.7971,
+                                      "source_median_ms":  0.0132,
+                                      "process_peak_bytes":  10485760,
+                                      "profile":  null
+                                  }
+                   },
+                   {
+                       "command":  "php tools/benchmark.php --source=file-utf8 --iterations=7 --size=2048",
+                       "result":  {
+                                      "case":  "large",
+                                      "mode":  "recognition",
+                                      "source":  "file-utf8",
+                                      "input_bytes":  2048,
+                                      "accepted":  true,
+                                      "iterations":  7,
+                                      "median_ms":  8.4858,
+                                      "min_ms":  7.0397,
+                                      "max_ms":  10.8277,
+                                      "source_median_ms":  4.324,
+                                      "process_peak_bytes":  4194304,
+                                      "profile":  null
+                                  }
+                   },
+                   {
+                       "php":  "8.2.10",
+                       "os":  "Windows",
+                       "pcre":  "10.40 2022-04-14",
+                       "size":  65536,
+                       "recognition_includes_cst":  true,
+                       "file_fixture_included_in_source_time":  false,
+                       "command":  "php tools/benchmark.php --source=memory --iterations=7 --size=65536 --case=large --mode=recognition",
+                       "results":  [
+                                       {
+                                           "case":  "large",
+                                           "mode":  "recognition",
+                                           "source":  "memory",
+                                           "input_bytes":  65536,
+                                           "accepted":  true,
+                                           "iterations":  7,
+                                           "median_ms":  108.8239,
+                                           "min_ms":  102.8602,
+                                           "max_ms":  113.22,
+                                           "source_median_ms":  0.3148,
+                                           "process_peak_bytes":  6291456,
+                                           "profile":  null
+                                       }
+                                   ]
+                   }
+               ],
+    "after":  [
+                  {
+                      "php":  "8.2.10",
+                      "os":  "Windows",
+                      "pcre":  "10.40 2022-04-14",
+                      "size":  65536,
+                      "recognition_includes_cst":  true,
+                      "file_fixture_included_in_source_time":  false,
+                      "command":  "php tools/benchmark.php --source=memory --iterations=7 --size=65536 --case=text-chunked --mode=recognition",
+                      "results":  [
+                                      {
+                                          "case":  "text-chunked",
+                                          "mode":  "recognition",
+                                          "source":  "memory",
+                                          "input_bytes":  65536,
+                                          "accepted":  true,
+                                          "iterations":  7,
+                                          "median_ms":  9.5792,
+                                          "min_ms":  9.4865,
+                                          "max_ms":  13.5078,
+                                          "source_median_ms":  0.3068,
+                                          "process_peak_bytes":  4194304,
+                                          "profile":  null
+                                      }
+                                  ]
+                  },
+                  {
+                      "php":  "8.2.10",
+                      "os":  "Windows",
+                      "pcre":  "10.40 2022-04-14",
+                      "size":  2048,
+                      "recognition_includes_cst":  true,
+                      "file_fixture_included_in_source_time":  true,
+                      "command":  "php tools/benchmark.php --source=file-utf8 --iterations=7 --size=2048 --case=large --mode=recognition",
+                      "results":  [
+                                      {
+                                          "case":  "large",
+                                          "mode":  "recognition",
+                                          "source":  "file-utf8",
+                                          "input_bytes":  2048,
+                                          "accepted":  true,
+                                          "iterations":  7,
+                                          "median_ms":  0.6652,
+                                          "min_ms":  0.6373,
+                                          "max_ms":  3.9811,
+                                          "source_median_ms":  2.8603,
+                                          "process_peak_bytes":  4194304,
+                                          "profile":  null
+                                      }
+                                  ]
+                  },
+                  {
+                      "php":  "8.2.10",
+                      "os":  "Windows",
+                      "pcre":  "10.40 2022-04-14",
+                      "size":  65536,
+                      "recognition_includes_cst":  true,
+                      "file_fixture_included_in_source_time":  false,
+                      "command":  "php tools/benchmark.php --source=memory --iterations=7 --size=65536 --case=large --mode=recognition",
+                      "results":  [
+                                      {
+                                          "case":  "large",
+                                          "mode":  "recognition",
+                                          "source":  "memory",
+                                          "input_bytes":  65536,
+                                          "accepted":  true,
+                                          "iterations":  7,
+                                          "median_ms":  18.0087,
+                                          "min_ms":  17.0795,
+                                          "max_ms":  22.6274,
+                                          "source_median_ms":  0.3413,
+                                          "process_peak_bytes":  4194304,
+                                          "profile":  null
+                                      }
+                                  ]
+                  },
+                  {
+                      "php":  "8.2.10",
+                      "os":  "Windows",
+                      "pcre":  "10.40 2022-04-14",
+                      "size":  2048,
+                      "recognition_includes_cst":  true,
+                      "file_fixture_included_in_source_time":  false,
+                      "command":  "php tools/benchmark.php --source=memory --iterations=7 --size=2048 --case=text --mode=recognition",
+                      "results":  [
+                                      {
+                                          "case":  "text",
+                                          "mode":  "recognition",
+                                          "source":  "memory",
+                                          "input_bytes":  2048,
+                                          "accepted":  true,
+                                          "iterations":  7,
+                                          "median_ms":  15.3372,
+                                          "min_ms":  14.7498,
+                                          "max_ms":  18.9834,
+                                          "source_median_ms":  0.0141,
+                                          "process_peak_bytes":  4194304,
+                                          "profile":  null
+                                      }
+                                  ]
+                  },
+                  {
+                      "php":  "8.2.10",
+                      "os":  "Windows",
+                      "pcre":  "10.40 2022-04-14",
+                      "size":  65536,
+                      "recognition_includes_cst":  true,
+                      "file_fixture_included_in_source_time":  false,
+                      "command":  "php tools/benchmark.php --source=memory --iterations=7 --size=65536 --case=text --mode=recognition",
+                      "results":  [
+                                      {
+                                          "case":  "text",
+                                          "mode":  "recognition",
+                                          "source":  "memory",
+                                          "input_bytes":  65536,
+                                          "accepted":  true,
+                                          "iterations":  7,
+                                          "median_ms":  557.9625,
+                                          "min_ms":  536.4847,
+                                          "max_ms":  2085.6256,
+                                          "source_median_ms":  0.387,
+                                          "process_peak_bytes":  65011712,
+                                          "profile":  null
+                                      }
+                                  ]
+                  }
+              ]
+}
