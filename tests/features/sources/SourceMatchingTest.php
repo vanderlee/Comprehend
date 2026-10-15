@@ -38,24 +38,9 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
-class SourceMatchingTest extends ParserTestCase
+abstract class SourceMatchingTest extends ParserTestCase
 {
-    /** @dataProvider terminalData */
-    public function testTextTerminalsConsumeWholeCodePoints($parser, $text, $offset, $accepted, $length): void
-    {
-        $source = new Utf8Source($text);
-        $result = $parser->matchPrefix($source, $offset);
-        $this->assertResult($accepted, $length, $result);
-        $this->assertSame($source, $result->span->source);
-        $this->assertSame($offset, $result->start);
-        if ($accepted) {
-            $this->assertSame(substr($text, $offset, $length), $result->rawText());
-            $this->assertSame($result->rawText(), $result->node->rawText());
-            $this->assertTrue(mb_check_encoding($result->rawText(), 'UTF-8'));
-        }
-    }
-
-    public function terminalData()
+    public static function terminalData()
     {
         return [
             [new Text("éa"), "éb", 0, false, 2],
@@ -88,170 +73,12 @@ class SourceMatchingTest extends ParserTestCase
         ];
     }
 
-    public function testNestedOutputsAndCommittedCallbacksUseOriginalBytes(): void
-    {
-        $events = [];
-        $letter = (new Char('é'))->name('letter')->setResult('letter')
-            ->onCommit(static function (ParseResult $result) use (&$events) {
-                $events[] = [$result->rawText(), $result->start, $result->consumedByteLength];
-            });
-        $result = (new Sequence($letter, (new Any())->name('emoji')->setResult('emoji'), new End()))
-            ->parseAll(new Utf8Source('zé😀'), 1);
-        $this->assertResult(true, 6, $result);
-        $this->assertSame([], $events);
-        $this->assertSame(['letter' => 'é', 'emoji' => '😀'], $result->results());
-        $this->assertSame([1, 3, 7], array_map(static fn($node) => $node->span->start, $result->node->children));
-        $this->assertSame([2, 4, 0], array_map(static fn($node) => $node->span->byteLength(), $result->node->children));
-        $this->assertTrue($result->commit());
-        $this->assertSame([['é', 1, 2]], $events);
-    }
-
-    public function testByteModePreservesOctetsAcrossTerminalFamilies(): void
-    {
-        $source = new ByteSource("\xFF");
-        foreach (
-            [new Text("\xFF"), new Char("\xFF"), new Any(), new Set("\0\xFF"),
-                new Range("\x80", "\xFF"), new Regex('/./s')] as $parser
-        ) {
-            $result = $parser->parseAll($source);
-            $this->assertResult(true, 1, $result);
-            $this->assertSame("\xFF", $result->node->rawText());
-        }
-        $abnf = new Rfc2234();
-        $this->assertTrue($abnf->ref('OCTET')->parseAll($source)->success);
-    }
-
-    public function testCasePolicyDoesNotDependOnAmbientEncoding(): void
-    {
-        $previous = mb_internal_encoding();
-        try {
-            mb_internal_encoding('ISO-8859-1');
-            foreach (
-                [(new Text('É'))->caseInsensitive(), (new Char('É'))->caseInsensitive(),
-                    (new Set('É'))->caseInsensitive(), (new Range('É', 'Ê'))->caseInsensitive()] as $parser
-            ) {
-                $this->assertResult(true, 2, $parser->parseAll(new Utf8Source('é')));
-            }
-        } finally {
-            mb_internal_encoding($previous);
-        }
-    }
-
-    public function testWrongUnicodeSuffixIsRejectedByCompleteGrammar()
-    {
-        $parser = new Sequence(new Text("éa"), new End());
-        $this->assertResult(false, 2, $parser->matchPrefix(new Utf8Source("éb")));
-        $this->assertResult(true, 3, $parser->matchPrefix(new Utf8Source("éa")));
-    }
-
-    public function testMultibyteSpacingRetainsModeAndDeferredEffects()
-    {
-        $offsets = [];
-        $spacer = (new Char(" "))->onCommit(
-            function (ParseResult $result) use (&$offsets) {
-                $offsets[] = [$result->start, $result->consumedByteLength];
-            },
-        );
-        $parser = (new Repeat(new Char("é")))->spacing($spacer);
-        $result = $parser->matchPrefix(new Utf8Source("é é x"));
-        $this->assertResult(true, 6, $result);
-        $this->assertSame([], $offsets);
-        $result->commit();
-        $this->assertSame([[2, 2]], $offsets);
-        $offsets = [];
-        $sequence = new Space($spacer, new Sequence(new Text("é"), new Text('a')));
-        $this->assertFalse($sequence->parseAll(new Utf8Source("é b"))->commit());
-        $this->assertSame([], $offsets);
-        $this->assertTrue($sequence->parseAll(new Utf8Source("é a"))->commit());
-        $this->assertSame([[2, 2]], $offsets);
-    }
-
-    public function testCombinatorsAndRulesetsPropagateSourceMode()
-    {
-        $letter = "é";
-        $this->assertResult(true, 2, (new All(new Any(), new Text($letter)))->matchPrefix(new Utf8Source($letter)));
-        $this->assertResult(true, 2, (new Except(new Any(), new Text('a')))->matchPrefix(new Utf8Source($letter)));
-        $this->assertResult(true, 0, (new Not(new Text('a')))->matchPrefix(new Utf8Source($letter)));
-        $choice = new Prefer(ChoicePolicy::LONGEST, new Choice(new Text($letter), new Text($letter . 'a')));
-        $this->assertResult(true, 3, $choice->matchPrefix(new Utf8Source($letter . 'a')));
-        $stub = new Stub();
-        $stub->setParser(Choice::first(new Text('x'), new Sequence(new Text('('), $stub, new Text(')'))));
-        $rules = new Ruleset([Ruleset::ROOT => new Sequence(new Text($letter), $stub, new End())]);
-        $this->assertResult(true, 5, $rules->matchPrefix(new Utf8Source($letter . '(x)')));
-    }
-
-    public function testDefinitionsValidateAndProcessWholeUtf8Text()
-    {
-        $text = "é";
-        $calls = 0;
-        $definition = new Definition(
-            (new Text($text))->setResult('text')->onCommit(
-                function () use (&$calls) {
-                    $calls++;
-                },
-            ),
-        );
-        $definition->addValidator(
-            function (ParseResult $result) use ($text) {
-                return $result->rawText() === $text && $result->result('value') === $text;
-            },
-        );
-        $definition->addProcessor(
-            'value',
-            function ($results) {
-                return $results['text'];
-            },
-        );
-        $result = $definition->build()->matchPrefix(new Utf8Source($text));
-        $this->assertResult(true, 2, $result);
-        $this->assertSame($text, $result->result('value'));
-        $this->assertSame(0, $calls);
-        $this->assertTrue($result->commit());
-        $this->assertSame(1, $calls);
-    }
-
-    public function testExistingRfcFixturesAgreeInBothSourceModes()
-    {
-        $providers = [
-            ['Rfc2234Test', 'rfc2234Data'],
-            ['Rfc4234Test', 'rfc2234Data'],
-            ['Rfc5234Test', 'rfc2234Data'],
-            ['Rfc3513Test', 'rfc3513Data'],
-            ['Rfc3986Test', 'rulesData'],
-            ['Rfc4408Test', 'rulesData'],
-            ['Rfc7405Test', 'rfc7405Data'],
-        ];
-        foreach ($providers as [$name, $provider]) {
-            require_once __DIR__ . '/../../src/Library/' . $name . '.php';
-            $class = 'Tests\Src\Library\\' . $name;
-            foreach ((new $class())->{$provider}() as [$parser, $input, $accepted, $length]) {
-                foreach ([new ByteSource($input), new Utf8Source($input)] as $source) {
-                    $this->assertResult($accepted, $length, $parser->matchPrefix($source), $name . ': ' . $input);
-                }
-            }
-        }
-    }
-
-    /** @dataProvider invalidEntryData */
-    public function testInvalidTextEntryPositionsAreRejected($offset)
-    {
-        $this->expectException(InvalidArgumentException::class);
-        (new Nothing())->matchPrefix(new Utf8Source("é"), $offset);
-    }
-
-    public function invalidEntryData()
+    public static function invalidEntryData()
     {
         return [[-1], [1], [3]];
     }
 
-    /** @dataProvider mismatchData */
-    public function testModeMismatchesAreErrors($parser, $source)
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $parser->matchPrefix($source);
-    }
-
-    public function mismatchData()
+    public static function mismatchData()
     {
         return [
             [new Char("é"), new ByteSource('a')],
@@ -269,16 +96,175 @@ class SourceMatchingTest extends ParserTestCase
             [(new Range('a', 'z'))->caseInsensitive(), new Utf8Source("İ")],
         ];
     }
+}
 
-    public function testRegexErrorsAreNotOrdinaryFailures()
-    {
-        $limit = ini_get('pcre.backtrack_limit');
-        try {
-            ini_set('pcre.backtrack_limit', '1');
-            $this->expectException(RuntimeException::class);
-            (new Regex('/(?:a+)+$/'))->matchPrefix(new Utf8Source('aaaaab'));
-        } finally {
-            ini_set('pcre.backtrack_limit', $limit);
+uses(SourceMatchingTest::class);
+
+test('text terminals consume whole code points', function ($parser, $text, $offset, $accepted, $length): void {
+    $source = new Utf8Source($text);
+    $result = $parser->matchPrefix($source, $offset);
+    $this->assertResult($accepted, $length, $result);
+    $this->assertSame($source, $result->span->source);
+    $this->assertSame($offset, $result->start);
+    if ($accepted) {
+        $this->assertSame(substr($text, $offset, $length), $result->rawText());
+        $this->assertSame($result->rawText(), $result->node->rawText());
+        $this->assertTrue(mb_check_encoding($result->rawText(), 'UTF-8'));
+    }
+})->with(SourceMatchingTest::terminalData());
+
+test('nested outputs and committed callbacks use original bytes', function (): void {
+    $events = [];
+    $letter = (new Char('é'))->name('letter')->setResult('letter')
+        ->onCommit(static function (ParseResult $result) use (&$events) {
+            $events[] = [$result->rawText(), $result->start, $result->consumedByteLength];
+        });
+    $result = (new Sequence($letter, (new Any())->name('emoji')->setResult('emoji'), new End()))
+        ->parseAll(new Utf8Source('zé😀'), 1);
+    $this->assertResult(true, 6, $result);
+    $this->assertSame([], $events);
+    $this->assertSame(['letter' => 'é', 'emoji' => '😀'], $result->results());
+    $this->assertSame([1, 3, 7], array_map(static fn($node) => $node->span->start, $result->node->children));
+    $this->assertSame([2, 4, 0], array_map(static fn($node) => $node->span->byteLength(), $result->node->children));
+    $this->assertTrue($result->commit());
+    $this->assertSame([['é', 1, 2]], $events);
+});
+
+test('byte mode preserves octets across terminal families', function (): void {
+    $source = new ByteSource("\xFF");
+    foreach (
+        [new Text("\xFF"), new Char("\xFF"), new Any(), new Set("\0\xFF"),
+            new Range("\x80", "\xFF"), new Regex('/./s')] as $parser
+    ) {
+        $result = $parser->parseAll($source);
+        $this->assertResult(true, 1, $result);
+        $this->assertSame("\xFF", $result->node->rawText());
+    }
+    $abnf = new Rfc2234();
+    $this->assertTrue($abnf->ref('OCTET')->parseAll($source)->success);
+});
+
+test('case policy does not depend on ambient encoding', function (): void {
+    $previous = mb_internal_encoding();
+    try {
+        mb_internal_encoding('ISO-8859-1');
+        foreach (
+            [(new Text('É'))->caseInsensitive(), (new Char('É'))->caseInsensitive(),
+                (new Set('É'))->caseInsensitive(), (new Range('É', 'Ê'))->caseInsensitive()] as $parser
+        ) {
+            $this->assertResult(true, 2, $parser->parseAll(new Utf8Source('é')));
+        }
+    } finally {
+        mb_internal_encoding($previous);
+    }
+});
+
+test('wrong unicode suffix is rejected by complete grammar', function () {
+    $parser = new Sequence(new Text("éa"), new End());
+    $this->assertResult(false, 2, $parser->matchPrefix(new Utf8Source("éb")));
+    $this->assertResult(true, 3, $parser->matchPrefix(new Utf8Source("éa")));
+});
+
+test('multibyte spacing retains mode and deferred effects', function () {
+    $offsets = [];
+    $spacer = (new Char(" "))->onCommit(
+        function (ParseResult $result) use (&$offsets) {
+            $offsets[] = [$result->start, $result->consumedByteLength];
+        },
+    );
+    $parser = (new Repeat(new Char("é")))->spacing($spacer);
+    $result = $parser->matchPrefix(new Utf8Source("é é x"));
+    $this->assertResult(true, 6, $result);
+    $this->assertSame([], $offsets);
+    $result->commit();
+    $this->assertSame([[2, 2]], $offsets);
+    $offsets = [];
+    $sequence = new Space($spacer, new Sequence(new Text("é"), new Text('a')));
+    $this->assertFalse($sequence->parseAll(new Utf8Source("é b"))->commit());
+    $this->assertSame([], $offsets);
+    $this->assertTrue($sequence->parseAll(new Utf8Source("é a"))->commit());
+    $this->assertSame([[2, 2]], $offsets);
+});
+
+test('combinators and rulesets propagate source mode', function () {
+    $letter = "é";
+    $this->assertResult(true, 2, (new All(new Any(), new Text($letter)))->matchPrefix(new Utf8Source($letter)));
+    $this->assertResult(true, 2, (new Except(new Any(), new Text('a')))->matchPrefix(new Utf8Source($letter)));
+    $this->assertResult(true, 0, (new Not(new Text('a')))->matchPrefix(new Utf8Source($letter)));
+    $choice = new Prefer(ChoicePolicy::LONGEST, new Choice(new Text($letter), new Text($letter . 'a')));
+    $this->assertResult(true, 3, $choice->matchPrefix(new Utf8Source($letter . 'a')));
+    $stub = new Stub();
+    $stub->setParser(Choice::first(new Text('x'), new Sequence(new Text('('), $stub, new Text(')'))));
+    $rules = new Ruleset([Ruleset::ROOT => new Sequence(new Text($letter), $stub, new End())]);
+    $this->assertResult(true, 5, $rules->matchPrefix(new Utf8Source($letter . '(x)')));
+});
+
+test('definitions validate and process whole utf8 text', function () {
+    $text = "é";
+    $calls = 0;
+    $definition = new Definition(
+        (new Text($text))->setResult('text')->onCommit(
+            function () use (&$calls) {
+                $calls++;
+            },
+        ),
+    );
+    $definition->addValidator(
+        function (ParseResult $result) use ($text) {
+            return $result->rawText() === $text && $result->result('value') === $text;
+        },
+    );
+    $definition->addProcessor(
+        'value',
+        function ($results) {
+            return $results['text'];
+        },
+    );
+    $result = $definition->build()->matchPrefix(new Utf8Source($text));
+    $this->assertResult(true, 2, $result);
+    $this->assertSame($text, $result->result('value'));
+    $this->assertSame(0, $calls);
+    $this->assertTrue($result->commit());
+    $this->assertSame(1, $calls);
+});
+
+test('existing rfc fixtures agree in both source modes', function () {
+    $providers = [
+        ['Rfc2234TestCase', 'rfc2234Data'],
+        ['Rfc4234TestCase', 'rfc2234Data'],
+        ['Rfc5234TestCase', 'rfc2234Data'],
+        ['Rfc3513TestCase', 'rfc3513Data'],
+        ['Rfc3986TestCase', 'rulesData'],
+        ['Rfc4408TestCase', 'rulesData'],
+        ['Rfc7405TestCase', 'rfc7405Data'],
+    ];
+    foreach ($providers as [$name, $provider]) {
+        $class = 'Tests\Fixtures\\' . $name;
+        foreach ($class::{$provider}() as [$parser, $input, $accepted, $length]) {
+            foreach ([new ByteSource($input), new Utf8Source($input)] as $source) {
+                $this->assertResult($accepted, $length, $parser->matchPrefix($source), $name . ': ' . $input);
+            }
         }
     }
-}
+});
+
+test('invalid text entry positions are rejected', function ($offset) {
+    $this->expectException(InvalidArgumentException::class);
+    (new Nothing())->matchPrefix(new Utf8Source("é"), $offset);
+})->with(SourceMatchingTest::invalidEntryData());
+
+test('mode mismatches are errors', function ($parser, $source) {
+    $this->expectException(InvalidArgumentException::class);
+    $parser->matchPrefix($source);
+})->with(SourceMatchingTest::mismatchData());
+
+test('regex errors are not ordinary failures', function () {
+    $limit = ini_get('pcre.backtrack_limit');
+    try {
+        ini_set('pcre.backtrack_limit', '1');
+        $this->expectException(RuntimeException::class);
+        (new Regex('/(?:a+)+$/'))->matchPrefix(new Utf8Source('aaaaab'));
+    } finally {
+        ini_set('pcre.backtrack_limit', $limit);
+    }
+});

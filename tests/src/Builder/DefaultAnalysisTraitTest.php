@@ -8,16 +8,14 @@ use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
 
-final class DefaultAnalysisTraitTest extends TestCase
-{
-    public function testDefaultsDeclareNoEdgesOrStructuralErrors(): void
-    {
-        $analysis = new class {
-            use DefaultAnalysisTrait;
-        };
+uses(TestCase::class);
 
-        $this->assertSame([], $analysis->analysisLeadingParsers(new NullabilityLookup([])));
-        $this->assertSame([], $analysis->analysisProgressParsers());
-        $this->assertNull($analysis->analysisError());
-    }
-}
+test('defaults declare no edges or structural errors', function (): void {
+    $analysis = new class {
+        use DefaultAnalysisTrait;
+    };
+
+    $this->assertSame([], $analysis->analysisLeadingParsers(new NullabilityLookup([])));
+    $this->assertSame([], $analysis->analysisProgressParsers());
+    $this->assertNull($analysis->analysisError());
+});

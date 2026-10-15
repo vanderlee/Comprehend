@@ -7,51 +7,14 @@ use Exception;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
 
-/**
- * @group terminal
- * @group parser
- */
-class SetTest extends ParserTestCase
+abstract class SetTest extends ParserTestCase
 {
-    /**
-     * @throws Exception
-     */
-    public function testConstruction()
-    {
-        $this->assertInstanceOf(Set::class, new Set('abc'));
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testEmpty()
-    {
-        $this->expectExceptionMessage('Empty set');
-        new Set('');
-    }
-
-    /**
-     * @dataProvider setData
-     *
-     * @param Set $parser
-     * @param     $input
-     * @param     $offset
-     * @param     $match
-     * @param     $length
-     */
-    public function testSet(Set $parser, $input, $offset, $match, $length)
-    {
-        $result = $parser->matchPrefix(new ByteSource($input), $offset);
-        $this->assertSame($match, $result->success, (string) $parser);
-        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
-    }
-
     /**
      * @return array
      * @throws Exception
      *
      */
-    public function setData()
+    public static function setCases()
     {
         return [
             [new Set('a'), 'abc', 0, true, 1],
@@ -75,3 +38,20 @@ class SetTest extends ParserTestCase
         ];
     }
 }
+
+uses(SetTest::class)->group('terminal', 'parser');
+
+test('construction', function () {
+    $this->assertInstanceOf(Set::class, new Set('abc'));
+});
+
+test('empty', function () {
+    $this->expectExceptionMessage('Empty set');
+    new Set('');
+});
+
+test('set', function (Set $parser, $input, $offset, $match, $length) {
+    $result = $parser->matchPrefix(new ByteSource($input), $offset);
+    $this->assertSame($match, $result->success, (string) $parser);
+    $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
+})->with(SetTest::setCases());

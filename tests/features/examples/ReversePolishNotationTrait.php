@@ -11,7 +11,7 @@ trait ReversePolishNotationTrait
      *
      * @return float|int
      */
-    private function solveRpn(array $tokens): float|int
+    protected function solveRpn(array $tokens): float|int
     {
         $stack = [];
         foreach ($tokens as $token) {
@@ -29,25 +29,25 @@ trait ReversePolishNotationTrait
     }
 
     /** @noinspection PhpUnusedPrivateMethodInspection */
-    private function solveRpnOperatorAdd($operand_1, $operand_2)
+    protected function solveRpnOperatorAdd($operand_1, $operand_2)
     {
         return $operand_1 + $operand_2;
     }
 
     /** @noinspection PhpUnusedPrivateMethodInspection */
-    private function solveRpnOperatorSubtract($operand_1, $operand_2)
+    protected function solveRpnOperatorSubtract($operand_1, $operand_2)
     {
         return $operand_1 - $operand_2;
     }
 
     /** @noinspection PhpUnusedPrivateMethodInspection */
-    private function solveRpnOperatorMultiply($operand_1, $operand_2): float|int
+    protected function solveRpnOperatorMultiply($operand_1, $operand_2): float|int
     {
         return $operand_1 * $operand_2;
     }
 
     /** @noinspection PhpUnusedPrivateMethodInspection */
-    private function solveRpnOperatorDivide($operand_1, $operand_2): float|int
+    protected function solveRpnOperatorDivide($operand_1, $operand_2): float|int
     {
         return $operand_1 / $operand_2;
     }

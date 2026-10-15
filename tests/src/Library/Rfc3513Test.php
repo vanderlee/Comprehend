@@ -4,58 +4,22 @@
 
 namespace Tests\Src\Library;
 
+use Tests\Fixtures\Rfc3513TestCase;
 use Vanderlee\Comprehend\Source\ByteSource;
-use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Library\Rfc3513;
 use Vanderlee\Comprehend\Parser\Parser;
 
-/**
- * @group library
- * @group rfc
- */
-class Rfc3513Test extends ParserTestCase
-{
-    protected function getRfc()
-    {
-        return new Rfc3513();
-    }
+uses(Rfc3513TestCase::class)->group('library', 'rfc');
 
-    public function testConstruct()
-    {
-        $this->assertNotNull($this->getRfc());
-    }
+test('construct', function () {
+    $this->assertNotNull(static::getRfc());
+});
 
-    /**
-     * @dataProvider rfc3513Data
-     *
-     * @param Parser $parser
-     * @param        $input
-     * @param        $match
-     * @param        $length
-     */
-    public function testRfc3513(Parser $parser, $input, $match, $length)
-    {
-        $this->assertResult(
-            $match,
-            $length,
-            $parser->matchPrefix(new ByteSource($input)),
-            $parser . ' == `' . $input . '`',
-        );
-    }
-
-    public function rfc3513Data()
-    {
-        $ipv6 = $this->getRfc();
-
-        return [
-            // Core rules
-            [$ipv6->ref('ipv6_address'), '::1', true, 3],
-            [$ipv6->ref('ipv6_address'), '::1/1', true, 3],
-            [$ipv6->ref('ipv6_address'), '::0.0.0.1', true, 9],
-            [$ipv6->ref('ipv6_address'), 'FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF', false, 34],
-            [$ipv6->ref('ipv6_address'), 'FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF', true, 39],
-            [$ipv6->ref('ipv6_address'), 'FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF', true, 39],
-            [$ipv6->ref('ipv6'), '::1/1', true, 5],
-        ];
-    }
-}
+test('rfc3513', function (Parser $parser, $input, $match, $length) {
+    $this->assertResult(
+        $match,
+        $length,
+        $parser->matchPrefix(new ByteSource($input)),
+        $parser . ' == `' . $input . '`',
+    );
+})->with(Rfc3513TestCase::rfc3513Data());

@@ -8,22 +8,19 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 
-final class AbstractMatchTest extends TestCase
-{
-    public function testBaseRecordHasNoAcceptanceOrSemanticResults(): void
-    {
-        $match = $this->getMockForAbstractClass(AbstractMatch::class, [2]);
+uses(TestCase::class);
 
-        $this->assertFalse($match->accepted);
-        $this->assertSame(2, $match->length);
-        $this->assertSame([], $match->getResults());
-        $this->assertSame('fallback', $match->getResult('missing', 'fallback'));
-    }
+test('base record has no acceptance or semantic results', function (): void {
+    $match = $this->getMockForAbstractClass(AbstractMatch::class, [2]);
 
-    public function testNegativeProgressIsRejected(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
+    $this->assertFalse($match->accepted);
+    $this->assertSame(2, $match->length);
+    $this->assertSame([], $match->getResults());
+    $this->assertSame('fallback', $match->getResult('missing', 'fallback'));
+});
 
-        $this->getMockForAbstractClass(AbstractMatch::class, [-1]);
-    }
-}
+test('negative progress is rejected', function (): void {
+    $this->expectException(InvalidArgumentException::class);
+
+    $this->getMockForAbstractClass(AbstractMatch::class, [-1]);
+});

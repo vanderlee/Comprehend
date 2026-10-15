@@ -7,34 +7,9 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Structure\Not;
 
-/**
- * @group structure
- * @group parser
- */
-class NotTest extends ParserTestCase
+abstract class NotTest extends ParserTestCase
 {
-    public function testConstructor()
-    {
-        $this->assertInstanceOf(Not::class, new Not(new Text('a')));
-    }
-
-    /**
-     * @dataProvider notData
-     *
-     * @param Not $parser
-     * @param     $input
-     * @param     $offset
-     * @param     $match
-     * @param     $length
-     */
-    public function testNot(Not $parser, $input, $offset, $match, $length)
-    {
-        $result = $parser->matchPrefix(new ByteSource($input), $offset);
-        $this->assertSame($match, $result->success, (string) $parser);
-        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
-    }
-
-    public function notData()
+    public static function notData()
     {
         return [
             [new Not(new Text('a')), 'a', 0, false, 1],
@@ -46,3 +21,15 @@ class NotTest extends ParserTestCase
         ];
     }
 }
+
+uses(NotTest::class)->group('structure', 'parser');
+
+test('constructor', function () {
+    $this->assertInstanceOf(Not::class, new Not(new Text('a')));
+});
+
+test('not', function (Not $parser, $input, $offset, $match, $length) {
+    $result = $parser->matchPrefix(new ByteSource($input), $offset);
+    $this->assertSame($match, $result->success, (string) $parser);
+    $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
+})->with(NotTest::notData());

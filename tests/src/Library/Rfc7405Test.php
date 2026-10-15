@@ -4,52 +4,21 @@
 
 namespace Tests\Src\Library;
 
+use Tests\Fixtures\Rfc7405TestCase;
 use Vanderlee\Comprehend\Source\ByteSource;
-
-require_once 'Rfc5234Test.php';
 use Vanderlee\Comprehend\Library\Rfc7405;
 use Vanderlee\Comprehend\Parser\Parser;
 
-/**
- * @group library
- * @group rfc
- */
-class Rfc7405Test extends Rfc5234Test
-{
-    protected function getRfc()
-    {
-        return new Rfc7405();
-    }
+uses(Rfc7405TestCase::class)->group('library', 'rfc');
 
-    /**
-     * @dataProvider rfc7405Data
-     *
-     * @param Parser $parser
-     * @param        $input
-     * @param        $match
-     * @param        $length
-     */
-    public function testRfc7405(Parser $parser, $input, $match, $length)
-    {
-        $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input)), (string) $parser);
-    }
+test('rfc7405', function (Parser $parser, $input, $match, $length) {
+    $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input)), (string) $parser);
+})->with(Rfc7405TestCase::rfc7405Data());
 
-    public function rfc7405Data()
-    {
-        $abnf = $this->getRfc();
+test('construct', function () {
+    $this->assertNotNull(static::getRfc());
+});
 
-        return [
-            [$abnf->ref('case_sensitive_string'), '%s"SenSiTive"', true, 13],
-            [$abnf->ref('case_sensitive_string'), '%s""', true, 4],
-            [$abnf->ref('case_sensitive_string'), '%s', false, 2],
-            [$abnf->ref('case_sensitive_string'), '%sSenSiTive', false, 2],
-            [$abnf->ref('case_sensitive_string'), '"SenSiTive"', false, 0],
-            [$abnf->ref('case_insensitive_string'), '%i"SenSiTive"', true, 13],
-            [$abnf->ref('case_insensitive_string'), '%i""', true, 4],
-            [$abnf->ref('case_insensitive_string'), '%i', false, 2],
-            [$abnf->ref('case_insensitive_string'), '%iSenSiTive', false, 2],
-            [$abnf->ref('case_insensitive_string'), '"SenSiTive"', true, 11],
-            [$abnf->ref('case_insensitive_string'), 'SenSiTive', false, 0],
-        ];
-    }
-}
+test('rfc2234', function (Parser $parser, $input, $match, $length) {
+    $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input)), (string) $parser);
+})->with(Rfc7405TestCase::rfc2234Data());

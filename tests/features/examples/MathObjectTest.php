@@ -14,17 +14,7 @@ use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
 
-/**
- * Example of a simple maths parser, constructed using basic objects.
- *
- * expression    ::= term '+' expression | term '-' expression | term
- * term            ::= factor '*' term | factor '/' term | factor
- * factor        ::= '(' expression ')' | integer
- * integer        ::= '-'? [0-9]+
- *
- * @author Martijn
- */
-class MathObjectTest extends ParserTestCase
+abstract class MathObjectTest extends ParserTestCase
 {
     use ReversePolishNotationTrait;
 
@@ -33,7 +23,7 @@ class MathObjectTest extends ParserTestCase
      *
      * @var Parser
      */
-    private static $math;
+    protected static $math;
 
     public static function setUpBeforeClass(): void
     {
@@ -58,22 +48,7 @@ class MathObjectTest extends ParserTestCase
         self::$math = $expression;
     }
 
-    /**
-     * @dataProvider dataExpression
-     *
-     * @param $expression
-     * @param $expected
-     * @param $result
-     */
-    public function testExpression($expression, $expected, $result)
-    {
-        $match = self::$math->matchPrefix(new ByteSource($expression));
-        $this->assertResult(true, strlen($expression), $match);
-        $this->assertEquals($expected, $match->result());
-        $this->assertEquals($result, $this->solveRpn($match->result()));
-    }
-
-    public function dataExpression()
+    public static function dataExpression()
     {
         return [
             'Addition' => ['6+2', [6, 2, 'add'], 8],
@@ -88,3 +63,12 @@ class MathObjectTest extends ParserTestCase
         ];
     }
 }
+
+uses(MathObjectTest::class);
+
+test('expression', function ($expression, $expected, $result) {
+    $match = self::$math->matchPrefix(new ByteSource($expression));
+    $this->assertResult(true, strlen($expression), $match);
+    $this->assertEquals($expected, $match->result());
+    $this->assertEquals($result, $this->solveRpn($match->result()));
+})->with(MathObjectTest::dataExpression());

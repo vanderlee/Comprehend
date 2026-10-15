@@ -11,25 +11,22 @@ use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\SourceMode;
 
-final class ReaderTest extends TestCase
-{
-    public function testIncrementalDefinitionsExtendTheSuppliedRuleset(): void
-    {
-        $rules = new Ruleset();
-        $reader = new Reader("token = %s\"a\"\ntoken =/ %s\"b\"", $rules, SourceMode::BYTES);
-        $reader->readRules();
+uses(TestCase::class);
 
-        $this->assertTrue($rules->ref('token')->parseAll(new ByteSource('a'))->success);
-        $this->assertTrue($rules->ref('token')->parseAll(new ByteSource('b'))->success);
-        $this->assertFalse($rules->ref('token')->parseAll(new ByteSource('B'))->success);
-    }
+test('incremental definitions extend the supplied ruleset', function (): void {
+    $rules = new Ruleset();
+    $reader = new Reader("token = %s\"a\"\ntoken =/ %s\"b\"", $rules, SourceMode::BYTES);
+    $reader->readRules();
 
-    public function testUndefinedReferencesAreRejectedAfterReading(): void
-    {
-        $reader = new Reader('token = missing', new Ruleset(), SourceMode::BYTES);
-        $this->expectException(SyntaxException::class);
-        $this->expectExceptionMessage('Undefined rule: missing');
+    $this->assertTrue($rules->ref('token')->parseAll(new ByteSource('a'))->success);
+    $this->assertTrue($rules->ref('token')->parseAll(new ByteSource('b'))->success);
+    $this->assertFalse($rules->ref('token')->parseAll(new ByteSource('B'))->success);
+});
 
-        $reader->readRules();
-    }
-}
+test('undefined references are rejected after reading', function (): void {
+    $reader = new Reader('token = missing', new Ruleset(), SourceMode::BYTES);
+    $this->expectException(SyntaxException::class);
+    $this->expectExceptionMessage('Undefined rule: missing');
+
+    $reader->readRules();
+});

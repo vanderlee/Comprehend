@@ -59,7 +59,7 @@ disk snapshots; close only after finishing source-dependent reads/effects. See
 ```sh
 composer validate --strict
 composer check-platform-reqs
-php vendor/phpunit/phpunit/phpunit --do-not-cache-result
+php vendor/bin/pest --do-not-cache-result
 php tools/check-canonical.php
 php docs/examples/execution.php
 php docs/examples/authoring.php

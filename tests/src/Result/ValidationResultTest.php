@@ -8,19 +8,17 @@ use Error;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Result\ValidationResult;
 
-final class ValidationResultTest extends TestCase
-{
-    public function testValidationErrorsAreAnImmutableSnapshot(): void
-    {
-        $errors = ['invalid item'];
-        $result = new ValidationResult(false, $errors);
-        $errors[] = 'later error';
+uses(TestCase::class);
 
-        $this->assertFalse($result->valid);
-        $this->assertSame(['invalid item'], $result->errors);
-        $this->assertSame([], (new ValidationResult(true))->errors);
-        $this->expectException(Error::class);
+test('validation errors are an immutable snapshot', function (): void {
+    $errors = ['invalid item'];
+    $result = new ValidationResult(false, $errors);
+    $errors[] = 'later error';
 
-        $result->errors[] = 'mutation';
-    }
-}
+    $this->assertFalse($result->valid);
+    $this->assertSame(['invalid item'], $result->errors);
+    $this->assertSame([], (new ValidationResult(true))->errors);
+    $this->expectException(Error::class);
+
+    $result->errors[] = 'mutation';
+});

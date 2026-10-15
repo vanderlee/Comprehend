@@ -11,30 +11,9 @@ use Vanderlee\Comprehend\Source\EncodedFileSource;
 use Vanderlee\Comprehend\Source\Utf8FileSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
-final class CodePointSourceTest extends TestCase
+abstract class CodePointSourceTest extends TestCase
 {
-    public function testImplementationsShareByteCoordinatesAndSourceIdentity(): void
-    {
-        $stream = tmpfile();
-        fwrite($stream, "a\u{e9}\u{1f642}");
-        $sources = [
-            new Utf8Source("a\u{e9}\u{1f642}"),
-            new Utf8FileSource($stream, 4),
-            new EncodedFileSource($stream, 'UTF-8', 4),
-        ];
-        fclose($stream);
-
-        try {
-            foreach ($sources as $source) {
-                $this->assertCoordinates($source);
-            }
-        } finally {
-            $sources[1]->close();
-            $sources[2]->close();
-        }
-    }
-
-    private function assertCoordinates(CodePointSource $source): void
+    protected function assertCoordinates(CodePointSource $source): void
     {
         $this->assertSame(3, $source->codePointLength());
         foreach ([0, 1, 3, 7] as $position => $offset) {
@@ -55,3 +34,25 @@ final class CodePointSourceTest extends TestCase
         }
     }
 }
+
+uses(CodePointSourceTest::class);
+
+test('implementations share byte coordinates and source identity', function (): void {
+    $stream = tmpfile();
+    fwrite($stream, "a\u{e9}\u{1f642}");
+    $sources = [
+        new Utf8Source("a\u{e9}\u{1f642}"),
+        new Utf8FileSource($stream, 4),
+        new EncodedFileSource($stream, 'UTF-8', 4),
+    ];
+    fclose($stream);
+
+    try {
+        foreach ($sources as $source) {
+            $this->assertCoordinates($source);
+        }
+    } finally {
+        $sources[1]->close();
+        $sources[2]->close();
+    }
+});

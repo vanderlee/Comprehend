@@ -15,10 +15,10 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
-class ParseResultTest extends ParserTestCase
+abstract class ParseResultTest extends ParserTestCase
 {
     /** @dataProvider failureData */
-    public function failureData()
+    public static function failureData()
     {
         return [
             [new Text('abc'), 'zabx', 1, 3],
@@ -29,15 +29,16 @@ class ParseResultTest extends ParserTestCase
             [new Text("éb"), "zéa", 1, 3],
         ];
     }
-
-    public function testSuccessfulResultCanCarrySeparateSpeculativeFailurePosition()
-    {
-        $result = Choice::first(new Text('abcd'), new Text('a'))->matchPrefix(new Utf8Source('abcx'));
-        $this->assertSame([0, 1, 1], [$result->start, $result->end, $result->consumedByteLength]);
-        $this->assertSame(3, $result->farthestFailure);
-        $result = (new Repeat(new Text('a')))->matchPrefix(new Utf8Source('aa'));
-        $this->assertTrue($result->success);
-        $this->assertSame(2, $result->consumedByteLength);
-        $this->assertNull($result->farthestFailure);
-    }
 }
+
+uses(ParseResultTest::class);
+
+test('successful result can carry separate speculative failure position', function () {
+    $result = Choice::first(new Text('abcd'), new Text('a'))->matchPrefix(new Utf8Source('abcx'));
+    $this->assertSame([0, 1, 1], [$result->start, $result->end, $result->consumedByteLength]);
+    $this->assertSame(3, $result->farthestFailure);
+    $result = (new Repeat(new Text('a')))->matchPrefix(new Utf8Source('aa'));
+    $this->assertTrue($result->success);
+    $this->assertSame(2, $result->consumedByteLength);
+    $this->assertNull($result->farthestFailure);
+});

@@ -6,80 +6,9 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
 
-/**
- * @group terminal
- * @group parser
- */
-class RangeTest extends ParserTestCase
+abstract class RangeTest extends ParserTestCase
 {
-    public function testConstruction()
-    {
-        $this->assertInstanceOf(Range::class, new Range('a', 'z'));
-    }
-
-    public function testBothNull()
-    {
-        $this->expectExceptionMessage('Empty arguments');
-        new Range(null, null);
-    }
-
-    public function testNoFirst()
-    {
-        $range = new Range(null, 'd');
-        $this->assertResult(true, 1, $range->matchPrefix(new ByteSource('c')));
-        $this->assertResult(true, 1, $range->matchPrefix(new ByteSource('d')));
-        $this->assertResult(false, 0, $range->matchPrefix(new ByteSource('e')));
-    }
-
-    public function testNoLast()
-    {
-        $range = new Range('d', null);
-        $this->assertResult(false, 0, $range->matchPrefix(new ByteSource('c')));
-        $this->assertResult(true, 1, $range->matchPrefix(new ByteSource('d')));
-        $this->assertResult(true, 1, $range->matchPrefix(new ByteSource('e')));
-    }
-
-    public function testFirstEmpty()
-    {
-        $this->expectExceptionMessage('Empty argument');
-        new Range('', '');
-    }
-
-    public function testLastEmpty()
-    {
-        $this->expectExceptionMessage('Empty argument');
-        new Range('a', '');
-    }
-
-    public function testFirstTooLong()
-    {
-        $this->expectExceptionMessage('Non-character argument');
-        new Range('aa', 'z');
-    }
-
-    public function testLastTooLong()
-    {
-        $this->expectExceptionMessage('Non-character argument');
-        new Range('a', 'zz');
-    }
-
-    /**
-     * @dataProvider rangeData
-     *
-     * @param Range $parser
-     * @param       $input
-     * @param       $offset
-     * @param       $match
-     * @param       $length
-     */
-    public function testRange(Range $parser, $input, $offset, $match, $length)
-    {
-        $result = $parser->matchPrefix(new ByteSource($input), $offset);
-        $this->assertSame($match, $result->success, (string) $parser);
-        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
-    }
-
-    public function rangeData()
+    public static function rangeData()
     {
         return [
             [new Range(null, 'z'), 'foo', 0, true, 1],
@@ -104,3 +33,54 @@ class RangeTest extends ParserTestCase
         ];
     }
 }
+
+uses(RangeTest::class)->group('terminal', 'parser');
+
+test('construction', function () {
+    $this->assertInstanceOf(Range::class, new Range('a', 'z'));
+});
+
+test('both null', function () {
+    $this->expectExceptionMessage('Empty arguments');
+    new Range(null, null);
+});
+
+test('no first', function () {
+    $range = new Range(null, 'd');
+    $this->assertResult(true, 1, $range->matchPrefix(new ByteSource('c')));
+    $this->assertResult(true, 1, $range->matchPrefix(new ByteSource('d')));
+    $this->assertResult(false, 0, $range->matchPrefix(new ByteSource('e')));
+});
+
+test('no last', function () {
+    $range = new Range('d', null);
+    $this->assertResult(false, 0, $range->matchPrefix(new ByteSource('c')));
+    $this->assertResult(true, 1, $range->matchPrefix(new ByteSource('d')));
+    $this->assertResult(true, 1, $range->matchPrefix(new ByteSource('e')));
+});
+
+test('first empty', function () {
+    $this->expectExceptionMessage('Empty argument');
+    new Range('', '');
+});
+
+test('last empty', function () {
+    $this->expectExceptionMessage('Empty argument');
+    new Range('a', '');
+});
+
+test('first too long', function () {
+    $this->expectExceptionMessage('Non-character argument');
+    new Range('aa', 'z');
+});
+
+test('last too long', function () {
+    $this->expectExceptionMessage('Non-character argument');
+    new Range('a', 'zz');
+});
+
+test('range', function (Range $parser, $input, $offset, $match, $length) {
+    $result = $parser->matchPrefix(new ByteSource($input), $offset);
+    $this->assertSame($match, $result->success, (string) $parser);
+    $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
+})->with(RangeTest::rangeData());

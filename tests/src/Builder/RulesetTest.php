@@ -9,23 +9,20 @@ use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
-final class RulesetTest extends TestCase
-{
-    public function testRedefinitionAffectsFutureSnapshots(): void
-    {
-        $rules = (new Ruleset(['item' => new Text('a')]))->root('item');
-        $frozen = $rules->freeze();
-        $rules->define('item', new Text('b'));
+uses(TestCase::class);
 
-        $this->assertTrue($frozen->parse('a')->success);
-        $this->assertFalse($frozen->parse('b')->success);
-        $this->assertTrue($rules->freeze()->parse('b')->success);
-    }
+test('redefinition affects future snapshots', function (): void {
+    $rules = (new Ruleset(['item' => new Text('a')]))->root('item');
+    $frozen = $rules->freeze();
+    $rules->define('item', new Text('b'));
 
-    public function testEmptyRuleNamesAreRejected(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
+    $this->assertTrue($frozen->parse('a')->success);
+    $this->assertFalse($frozen->parse('b')->success);
+    $this->assertTrue($rules->freeze()->parse('b')->success);
+});
 
-        (new Ruleset())->define('', new Text('a'));
-    }
-}
+test('empty rule names are rejected', function (): void {
+    $this->expectException(InvalidArgumentException::class);
+
+    (new Ruleset())->define('', new Text('a'));
+});

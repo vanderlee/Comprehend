@@ -17,30 +17,9 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Source;
 
-final class UnaryDirectiveTest extends TestCase
+abstract class UnaryDirectiveTest extends TestCase
 {
-    public function testSnapshotDetachesTheOperandAndPreservesMetadata(): void
-    {
-        $child = new Text('a');
-        $directive = $this->wrap($child)->name('wrapped');
-        $copy = (new GraphSnapshot())->copy($directive);
-        $child->guard(static fn(): bool => false);
-
-        $this->assertFalse($directive->parseAll(new ByteSource('a'))->success);
-        $result = $copy->parseAll(new ByteSource('a'));
-        $this->assertTrue($result->success);
-        $this->assertSame('wrapped', $result->node->name);
-    }
-
-    public function testForwardedNullabilityRejectsRepeatingAnEmptyOperand(): void
-    {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Nullable repetition');
-
-        Repeat::star($this->wrap(new Nothing()))->freeze();
-    }
-
-    private function wrap(Parser $parser): UnaryDirective
+    protected function wrap(Parser $parser): UnaryDirective
     {
         return new class ($parser) extends UnaryDirective {
             public function __toString(): string
@@ -55,3 +34,24 @@ final class UnaryDirectiveTest extends TestCase
         };
     }
 }
+
+uses(UnaryDirectiveTest::class);
+
+test('snapshot detaches the operand and preserves metadata', function (): void {
+    $child = new Text('a');
+    $directive = $this->wrap($child)->name('wrapped');
+    $copy = (new GraphSnapshot())->copy($directive);
+    $child->guard(static fn(): bool => false);
+
+    $this->assertFalse($directive->parseAll(new ByteSource('a'))->success);
+    $result = $copy->parseAll(new ByteSource('a'));
+    $this->assertTrue($result->success);
+    $this->assertSame('wrapped', $result->node->name);
+});
+
+test('forwarded nullability rejects repeating an empty operand', function (): void {
+    $this->expectException(LogicException::class);
+    $this->expectExceptionMessage('Nullable repetition');
+
+    Repeat::star($this->wrap(new Nothing()))->freeze();
+});

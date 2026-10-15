@@ -16,135 +16,126 @@ use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 
-final class ParseSessionTest extends TestCase
-{
-    public function testThrowingTriviaClearsTheOutputMatchAndRestoresLexemeScope(): void
-    {
-        $source = new ByteSource(' ');
-        $failure = new RuntimeException('Trivia guard failed');
-        $trivia = (new Text(' '))->guard(static function () use ($failure): never {
-            throw $failure;
-        });
-        $session = new ParseSession($source, $trivia);
-        $match = new Success();
+uses(TestCase::class);
 
-        try {
-            $session->skipSpacing($source, 0, $match);
-            $this->fail('Expected trivia recognition to throw');
-        } catch (RuntimeException $error) {
-            $this->assertSame($failure, $error);
-        }
+test('throwing trivia clears the output match and restores lexeme scope', function (): void {
+    $source = new ByteSource(' ');
+    $failure = new RuntimeException('Trivia guard failed');
+    $trivia = (new Text(' '))->guard(static function () use ($failure): never {
+        throw $failure;
+    });
+    $session = new ParseSession($source, $trivia);
+    $match = new Success();
 
-        $this->assertNull($match);
-        $this->assertFalse($session->isLexeme());
-        $session->pushSpacer(new Text(' '));
-        $this->assertSame(1, $session->skipSpacing($source, 0, $match));
-        $this->assertSame(' ', $match->node->rawText());
-        $this->assertTrue($match->node->isTrivia);
+    try {
+        $session->skipSpacing($source, 0, $match);
+        $this->fail('Expected trivia recognition to throw');
+    } catch (RuntimeException $error) {
+        $this->assertSame($failure, $error);
     }
 
-    public function testInvalidChoicePolicyDoesNotChangeTheActiveScope(): void
-    {
-        $session = new ParseSession(new ByteSource(''));
-        $session->pushPreference(ChoicePolicy::LONGEST);
+    $this->assertNull($match);
+    $this->assertFalse($session->isLexeme());
+    $session->pushSpacer(new Text(' '));
+    $this->assertSame(1, $session->skipSpacing($source, 0, $match));
+    $this->assertSame(' ', $match->node->rawText());
+    $this->assertTrue($match->node->isTrivia);
+});
 
-        try {
-            $session->pushPreference('invalid');
-            $this->fail('Expected an invalid choice policy');
-        } catch (TypeError $error) {
-            $this->assertStringContainsString(ChoicePolicy::class, $error->getMessage());
-        }
+test('invalid choice policy does not change the active scope', function (): void {
+    $session = new ParseSession(new ByteSource(''));
+    $session->pushPreference(ChoicePolicy::LONGEST);
 
-        $this->assertSame(ChoicePolicy::LONGEST, $session->getPreference());
-        $session->popPreference();
-        $this->assertSame(ChoicePolicy::FIRST, $session->getPreference());
+    try {
+        $session->pushPreference('invalid');
+        $this->fail('Expected an invalid choice policy');
+    } catch (TypeError $error) {
+        $this->assertStringContainsString(ChoicePolicy::class, $error->getMessage());
     }
 
-    public function testPoppingAnExhaustedCaseScopeIsRejected(): void
-    {
-        $session = new ParseSession(new ByteSource(''));
-        $this->assertTrue($session->popCaseSensitivity());
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Case sensitivity scope is empty');
+    $this->assertSame(ChoicePolicy::LONGEST, $session->getPreference());
+    $session->popPreference();
+    $this->assertSame(ChoicePolicy::FIRST, $session->getPreference());
+});
 
-        $session->popCaseSensitivity();
+test('popping an exhausted case scope is rejected', function (): void {
+    $session = new ParseSession(new ByteSource(''));
+    $this->assertTrue($session->popCaseSensitivity());
+    $this->expectException(LogicException::class);
+    $this->expectExceptionMessage('Case sensitivity scope is empty');
+
+    $session->popCaseSensitivity();
+});
+
+test('reading an exhausted preference scope is rejected', function (): void {
+    $session = new ParseSession(new ByteSource(''));
+    $session->popPreference();
+    $this->expectException(LogicException::class);
+    $this->expectExceptionMessage('Choice preference scope is empty');
+
+    $session->getPreference();
+});
+
+test('diagnostics merge ties and can be restored after a probe', function (): void {
+    $session = new ParseSession(new ByteSource('abc'));
+    $session->pushRule('root');
+    $session->recordFailure(1, 'a');
+    $session->recordFailure(1, 'b');
+    $saved = $session->diagnosticState();
+    $session->recordFailure(2, 'c');
+    $session->restoreDiagnostics($saved);
+    $session->popRule();
+
+    $this->assertSame(1, $session->farthestFailure());
+    $this->assertSame(['a', 'b'], $session->diagnostic()->expected);
+    $this->assertSame([['root']], $session->diagnostic()->rulePaths);
+    $this->assertSame(2, $session->failureRevision());
+});
+
+test('failed work charge does not consume the remaining budget', function (): void {
+    $session = new ParseSession(new ByteSource('a'), limits: new ParseLimits(maxWork: 2));
+    $session->consumeWork(1);
+
+    try {
+        $session->consumeWork(2, 1);
+        $this->fail('Expected work exhaustion');
+    } catch (ParseLimitException $error) {
+        $this->assertSame('work', $error->limit);
+        $this->assertSame(1, $error->byteOffset);
     }
 
-    public function testReadingAnExhaustedPreferenceScopeIsRejected(): void
-    {
-        $session = new ParseSession(new ByteSource(''));
-        $session->popPreference();
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Choice preference scope is empty');
+    $this->assertSame(1, $session->workUsed());
+    $this->assertSame('a', $session->readSourceUnit(0)->rawText());
+    $this->assertSame(2, $session->workUsed());
+});
 
-        $session->getPreference();
-    }
+test('nearer failure advances revision without replacing farthest details', function (): void {
+    $session = new ParseSession(new ByteSource('abc'));
+    $session->recordFailure(2, 'farther', [['root', 'farther']]);
+    $session->recordFailure(1, 'nearer', [['root', 'nearer']]);
 
-    public function testDiagnosticsMergeTiesAndCanBeRestoredAfterAProbe(): void
-    {
-        $session = new ParseSession(new ByteSource('abc'));
-        $session->pushRule('root');
-        $session->recordFailure(1, 'a');
-        $session->recordFailure(1, 'b');
-        $saved = $session->diagnosticState();
-        $session->recordFailure(2, 'c');
-        $session->restoreDiagnostics($saved);
-        $session->popRule();
+    $this->assertSame(2, $session->failureRevision());
+    $this->assertSame(2, $session->farthestFailure());
+    $this->assertSame(['farther'], $session->diagnostic()->expected);
+    $this->assertSame([['root', 'farther']], $session->diagnostic()->rulePaths);
+});
 
-        $this->assertSame(1, $session->farthestFailure());
-        $this->assertSame(['a', 'b'], $session->diagnostic()->expected);
-        $this->assertSame([['root']], $session->diagnostic()->rulePaths);
-        $this->assertSame(2, $session->failureRevision());
-    }
+test('rejected entry does not retain parser or depth state', function (): void {
+    $session = new ParseSession(new ByteSource('a'), limits: new ParseLimits(maxDepth: 1));
+    $outer = new Text('a');
+    $inner = new Text('a');
+    $session->enterParser($outer, 0);
 
-    public function testFailedWorkChargeDoesNotConsumeTheRemainingBudget(): void
-    {
-        $session = new ParseSession(new ByteSource('a'), limits: new ParseLimits(maxWork: 2));
-        $session->consumeWork(1);
-
-        try {
-            $session->consumeWork(2, 1);
-            $this->fail('Expected work exhaustion');
-        } catch (ParseLimitException $error) {
-            $this->assertSame('work', $error->limit);
-            $this->assertSame(1, $error->byteOffset);
-        }
-
-        $this->assertSame(1, $session->workUsed());
-        $this->assertSame('a', $session->readSourceUnit(0)->rawText());
-        $this->assertSame(2, $session->workUsed());
-    }
-
-    public function testNearerFailureAdvancesRevisionWithoutReplacingFarthestDetails(): void
-    {
-        $session = new ParseSession(new ByteSource('abc'));
-        $session->recordFailure(2, 'farther', [['root', 'farther']]);
-        $session->recordFailure(1, 'nearer', [['root', 'nearer']]);
-
-        $this->assertSame(2, $session->failureRevision());
-        $this->assertSame(2, $session->farthestFailure());
-        $this->assertSame(['farther'], $session->diagnostic()->expected);
-        $this->assertSame([['root', 'farther']], $session->diagnostic()->rulePaths);
-    }
-
-    public function testRejectedEntryDoesNotRetainParserOrDepthState(): void
-    {
-        $session = new ParseSession(new ByteSource('a'), limits: new ParseLimits(maxDepth: 1));
-        $outer = new Text('a');
-        $inner = new Text('a');
-        $session->enterParser($outer, 0);
-
-        try {
-            $session->enterParser($inner, 0);
-            $this->fail('Expected depth exhaustion');
-        } catch (ParseLimitException $error) {
-            $this->assertSame('depth', $error->limit);
-        }
-
-        $session->leaveParser($outer, 0);
+    try {
         $session->enterParser($inner, 0);
-        $session->leaveParser($inner, 0);
-
-        $this->assertSame(2, $session->workUsed());
+        $this->fail('Expected depth exhaustion');
+    } catch (ParseLimitException $error) {
+        $this->assertSame('depth', $error->limit);
     }
-}
+
+    $session->leaveParser($outer, 0);
+    $session->enterParser($inner, 0);
+    $session->leaveParser($inner, 0);
+
+    $this->assertSame(2, $session->workUsed());
+});

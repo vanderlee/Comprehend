@@ -12,31 +12,9 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-final class IterableParserTest extends TestCase
+abstract class IterableParserTest extends TestCase
 {
-    public function testArrayOperationsAndIterationUseTheSameChildren(): void
-    {
-        $parser = $this->container();
-        $child = new Text('a');
-        $parser[] = $child;
-        $parser['named'] = $child;
-        unset($parser[0]);
-
-        $this->assertFalse(isset($parser[0]));
-        $this->assertNull($parser[0]);
-        $this->assertSame($child, $parser['named']);
-        $this->assertSame(['named' => $child], iterator_to_array($parser));
-    }
-
-    public function testChildrenMustBeParsers(): void
-    {
-        $parser = $this->container();
-        $this->expectException(InvalidArgumentException::class);
-
-        $parser[] = 'a';
-    }
-
-    private function container(): IterableParser
+    protected function container(): IterableParser
     {
         return new class extends IterableParser {
             protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
@@ -51,3 +29,25 @@ final class IterableParserTest extends TestCase
         };
     }
 }
+
+uses(IterableParserTest::class);
+
+test('array operations and iteration use the same children', function (): void {
+    $parser = $this->container();
+    $child = new Text('a');
+    $parser[] = $child;
+    $parser['named'] = $child;
+    unset($parser[0]);
+
+    $this->assertFalse(isset($parser[0]));
+    $this->assertNull($parser[0]);
+    $this->assertSame($child, $parser['named']);
+    $this->assertSame(['named' => $child], iterator_to_array($parser));
+});
+
+test('children must be parsers', function (): void {
+    $parser = $this->container();
+    $this->expectException(InvalidArgumentException::class);
+
+    $parser[] = 'a';
+});

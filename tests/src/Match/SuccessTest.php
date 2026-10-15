@@ -10,68 +10,63 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Source\ByteSource;
 
-final class SuccessTest extends TestCase
-{
-    public function testConcreteNodesRequireSourceMetadata(): void
-    {
-        $success = new Success(1);
-        $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('Concrete nodes require source-bound recognition');
+uses(TestCase::class);
 
-        $success->buildConcreteNode(new Text('a'));
-    }
+test('concrete nodes require source metadata', function (): void {
+    $success = new Success(1);
+    $this->expectException(\LogicException::class);
+    $this->expectExceptionMessage('Concrete nodes require source-bound recognition');
 
-    public function testValueMappingIsLazyAndCachedIndependentlyOfCommit(): void
-    {
-        $success = new Success(1);
-        $success->setSourceMetadata((new ByteSource('a'))->span(0, 1), null);
-        $success->buildConcreteNode(new Text('a'));
-        $calls = 0;
-        $success->setValueMapper(static function (ParseResult $result) use (&$calls): string {
-            ++$calls;
+    $success->buildConcreteNode(new Text('a'));
+});
 
-            return strtoupper($result->rawText());
-        });
+test('value mapping is lazy and cached independently of commit', function (): void {
+    $success = new Success(1);
+    $success->setSourceMetadata((new ByteSource('a'))->span(0, 1), null);
+    $success->buildConcreteNode(new Text('a'));
+    $calls = 0;
+    $success->setValueMapper(static function (ParseResult $result) use (&$calls): string {
+        ++$calls;
 
-        $this->assertTrue($success->accepted);
-        $this->assertSame(0, $calls);
-        $this->assertSame('A', $success->getValue());
-        $this->assertSame('A', $success->getValue());
-        $this->assertSame(1, $calls);
-        $this->assertFalse($success->isCommitted());
-    }
+        return strtoupper($result->rawText());
+    });
 
-    public function testCommitRunsEffectsOnlyOnce(): void
-    {
-        $success = new Success();
-        $success->setSourceMetadata((new ByteSource(''))->span(0, 0), null);
-        $calls = 0;
-        $success->addCustomCallback(static function () use (&$calls): void {
-            ++$calls;
-        });
+    $this->assertTrue($success->accepted);
+    $this->assertSame(0, $calls);
+    $this->assertSame('A', $success->getValue());
+    $this->assertSame('A', $success->getValue());
+    $this->assertSame(1, $calls);
+    $this->assertFalse($success->isCommitted());
+});
 
-        $success->commit();
-        $success->commit();
+test('commit runs effects only once', function (): void {
+    $success = new Success();
+    $success->setSourceMetadata((new ByteSource(''))->span(0, 0), null);
+    $calls = 0;
+    $success->addCustomCallback(static function () use (&$calls): void {
+        ++$calls;
+    });
 
-        $this->assertSame(1, $calls);
-        $this->assertTrue($success->isCommitted());
-    }
+    $success->commit();
+    $success->commit();
 
-    public function testParentCollectionsApplyChildOperationsEvenWhenChildResultsAreCached(): void
-    {
-        $first = new Success();
-        $first->addResultCallback(static function (array &$results): void {
-            $results['text'] = 'first';
-        });
-        $second = new Success();
-        $second->addResultCallback(static function (array &$results): void {
-            $results['text'] = ($results['text'] ?? '') . ' second';
-        });
-        $parent = new Success(0, [$first, $second]);
+    $this->assertSame(1, $calls);
+    $this->assertTrue($success->isCommitted());
+});
 
-        $this->assertSame(['text' => ' second'], $second->getResults());
-        $this->assertSame(['text' => 'first second'], $parent->getResults());
-        $this->assertSame(['text' => ' second'], $second->getResults());
-        $this->assertSame(['text' => 'first second'], $parent->getResults());
-    }
-}
+test('parent collections apply child operations even when child results are cached', function (): void {
+    $first = new Success();
+    $first->addResultCallback(static function (array &$results): void {
+        $results['text'] = 'first';
+    });
+    $second = new Success();
+    $second->addResultCallback(static function (array &$results): void {
+        $results['text'] = ($results['text'] ?? '') . ' second';
+    });
+    $parent = new Success(0, [$first, $second]);
+
+    $this->assertSame(['text' => ' second'], $second->getResults());
+    $this->assertSame(['text' => 'first second'], $parent->getResults());
+    $this->assertSame(['text' => ' second'], $second->getResults());
+    $this->assertSame(['text' => 'first second'], $parent->getResults());
+});

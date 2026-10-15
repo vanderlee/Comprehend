@@ -16,70 +16,63 @@ use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 
-final class GraphAnalysisTest extends TestCase
-{
-    public function testConsumingRepetitionNeedsNoWarnings(): void
-    {
-        $this->assertSame([], (new GraphAnalysis())->validate(Repeat::star(new Text('a'))));
-    }
+uses(TestCase::class);
 
-    public function testNullableRepetitionIsRejectedBeforeRecognition(): void
-    {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Nullable repetition:');
+test('consuming repetition needs no warnings', function (): void {
+    $this->assertSame([], (new GraphAnalysis())->validate(Repeat::star(new Text('a'))));
+});
 
-        (new GraphAnalysis())->validate(Repeat::star(new Nothing()));
-    }
+test('nullable repetition is rejected before recognition', function (): void {
+    $this->expectException(LogicException::class);
+    $this->expectExceptionMessage('Nullable repetition:');
 
-    public function testZeroMaximumDoesNotFollowRecursiveOperand(): void
-    {
-        $stub = new Stub();
-        $repeat = new Repeat($stub, 0, 0);
-        $stub->setParser($repeat);
+    (new GraphAnalysis())->validate(Repeat::star(new Nothing()));
+});
 
-        $this->assertSame([], (new GraphAnalysis())->validate($repeat));
-    }
+test('zero maximum does not follow recursive operand', function (): void {
+    $stub = new Stub();
+    $repeat = new Repeat($stub, 0, 0);
+    $stub->setParser($repeat);
 
-    public function testNullableWrappedOperandsAreRejected(): void
-    {
-        $empty = new Nothing();
-        $wrappers = [
-            new Directive\CaseSensitive(true, $empty),
-            new Directive\Prefer(ChoicePolicy::FIRST, $empty),
-            new Directive\Space(new Text(' '), $empty),
-            new Directive\Lexeme($empty),
-            new Directive\Trivia($empty),
-            (new Stub())->setParser($empty),
-            new All($empty, new Text('a')),
-            new Except($empty, new Text('a')),
-        ];
+    $this->assertSame([], (new GraphAnalysis())->validate($repeat));
+});
 
-        foreach ($wrappers as $wrapper) {
-            try {
-                (new GraphAnalysis())->validate(Repeat::star($wrapper));
-                $this->fail('Expected nullable repetition for ' . $wrapper::class);
-            } catch (LogicException $exception) {
-                $this->assertStringContainsString('Nullable repetition:', $exception->getMessage());
-            }
+test('nullable wrapped operands are rejected', function (): void {
+    $empty = new Nothing();
+    $wrappers = [
+        new Directive\CaseSensitive(true, $empty),
+        new Directive\Prefer(ChoicePolicy::FIRST, $empty),
+        new Directive\Space(new Text(' '), $empty),
+        new Directive\Lexeme($empty),
+        new Directive\Trivia($empty),
+        (new Stub())->setParser($empty),
+        new All($empty, new Text('a')),
+        new Except($empty, new Text('a')),
+    ];
+
+    foreach ($wrappers as $wrapper) {
+        try {
+            (new GraphAnalysis())->validate(Repeat::star($wrapper));
+            $this->fail('Expected nullable repetition for ' . $wrapper::class);
+        } catch (LogicException $exception) {
+            $this->assertStringContainsString('Nullable repetition:', $exception->getMessage());
         }
     }
+});
 
-    public function testExceptNullabilityUsesPositiveOperandOnly(): void
-    {
-        $parser = Repeat::plus(new Except(new Text('a'), new Nothing()));
+test('except nullability uses positive operand only', function (): void {
+    $parser = Repeat::plus(new Except(new Text('a'), new Nothing()));
 
-        $this->assertSame([], (new GraphAnalysis())->validate($parser));
-    }
+    $this->assertSame([], (new GraphAnalysis())->validate($parser));
+});
 
-    public function testExceptExcludedOperandParticipatesInLeadingCycleChecks(): void
-    {
-        $stub = new Stub();
-        $parser = new Except(new Text('a'), $stub);
-        $stub->setParser($parser);
+test('except excluded operand participates in leading cycle checks', function (): void {
+    $stub = new Stub();
+    $parser = new Except(new Text('a'), $stub);
+    $stub->setParser($parser);
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Left-recursive grammar:');
+    $this->expectException(LogicException::class);
+    $this->expectExceptionMessage('Left-recursive grammar:');
 
-        (new GraphAnalysis())->validate($parser);
-    }
-}
+    (new GraphAnalysis())->validate($parser);
+});

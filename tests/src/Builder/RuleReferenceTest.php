@@ -11,26 +11,23 @@ use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 
-final class RuleReferenceTest extends TestCase
-{
-    public function testBindingATargetDetachesTheReferenceFromRedefinitions(): void
-    {
-        $rules = new Ruleset(['item' => new Text('a')]);
-        $reference = new RuleReference($rules, 'item');
-        $reference->bindSnapshotTarget($reference->graphTarget());
-        $rules->define('item', new Text('b'));
+uses(TestCase::class);
 
-        $this->assertSame('item', (string) $reference);
-        $this->assertTrue($reference->parseAll(new ByteSource('a'))->success);
-        $this->assertFalse($reference->parseAll(new ByteSource('b'))->success);
-    }
+test('binding a target detaches the reference from redefinitions', function (): void {
+    $rules = new Ruleset(['item' => new Text('a')]);
+    $reference = new RuleReference($rules, 'item');
+    $reference->bindSnapshotTarget($reference->graphTarget());
+    $rules->define('item', new Text('b'));
 
-    public function testUnresolvedReferenceReportsItsRuleName(): void
-    {
-        $reference = new RuleReference(new Ruleset(), 'missing');
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Undefined grammar rule: missing');
+    $this->assertSame('item', (string) $reference);
+    $this->assertTrue($reference->parseAll(new ByteSource('a'))->success);
+    $this->assertFalse($reference->parseAll(new ByteSource('b'))->success);
+});
 
-        $reference->graphTarget();
-    }
-}
+test('unresolved reference reports its rule name', function (): void {
+    $reference = new RuleReference(new Ruleset(), 'missing');
+    $this->expectException(LogicException::class);
+    $this->expectExceptionMessage('Undefined grammar rule: missing');
+
+    $reference->graphTarget();
+});

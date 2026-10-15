@@ -9,36 +9,9 @@ use Vanderlee\Comprehend\Directive\Space;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 
-/**
- * @group directive
- */
-class SpaceTest extends ParserTestCase
+abstract class SpaceTest extends ParserTestCase
 {
-    public function testConstructor()
-    {
-        $this->assertInstanceOf(Space::class, new Space(new Text(' '), new Text('x')));
-    }
-
-    public function testConstructorNull()
-    {
-        $this->assertInstanceOf(Space::class, new Space(null, new Text('x')));
-    }
-
-    /**
-     * @dataProvider spaceData
-     *
-     * @param Space $parser
-     * @param       $input
-     * @param       $offset
-     * @param       $match
-     * @param       $length
-     */
-    public function testSpace(Space $parser, $input, $offset, $match, $length)
-    {
-        $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input), $offset), (string) $parser);
-    }
-
-    public function spaceData()
+    public static function spaceData()
     {
         $spacer = new Repeat(new Text('-'), 0, 1);
 
@@ -293,3 +266,17 @@ class SpaceTest extends ParserTestCase
         ];
     }
 }
+
+uses(SpaceTest::class)->group('directive');
+
+test('constructor', function () {
+    $this->assertInstanceOf(Space::class, new Space(new Text(' '), new Text('x')));
+});
+
+test('constructor null', function () {
+    $this->assertInstanceOf(Space::class, new Space(null, new Text('x')));
+});
+
+test('space', function (Space $parser, $input, $offset, $match, $length) {
+    $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input), $offset), (string) $parser);
+})->with(SpaceTest::spaceData());

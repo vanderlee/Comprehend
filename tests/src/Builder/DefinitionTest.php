@@ -9,26 +9,23 @@ use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Result\ParseResult;
 
-final class DefinitionTest extends TestCase
-{
-    public function testBuildForwardsFactoryArgumentsAndProcessors(): void
-    {
-        $definition = new Definition(static fn(string $text): Comprehend => Comprehend::text($text)->setResult('item'));
-        $definition->addProcessor('upper', static fn(array $values): string => strtoupper($values['item']));
+uses(TestCase::class);
 
-        $result = $definition->build('word')->parse('word');
+test('build forwards factory arguments and processors', function (): void {
+    $definition = new Definition(static fn(string $text): Comprehend => Comprehend::text($text)->setResult('item'));
+    $definition->addProcessor('upper', static fn(array $values): string => strtoupper($values['item']));
 
-        $this->assertTrue($result->success);
-        $this->assertSame(['upper' => 'WORD'], $result->results());
-    }
+    $result = $definition->build('word')->parse('word');
 
-    public function testClearingValidatorsAllowsLaterBuilds(): void
-    {
-        $definition = new Definition(Comprehend::text('a'), static fn(ParseResult $result): bool => false);
-        $this->assertFalse($definition->build()->parse('a')->validate()->valid);
+    $this->assertTrue($result->success);
+    $this->assertSame(['upper' => 'WORD'], $result->results());
+});
 
-        $definition->clearValidators();
+test('clearing validators allows later builds', function (): void {
+    $definition = new Definition(Comprehend::text('a'), static fn(ParseResult $result): bool => false);
+    $this->assertFalse($definition->build()->parse('a')->validate()->valid);
 
-        $this->assertTrue($definition->build()->parse('a')->validate()->valid);
-    }
-}
+    $definition->clearValidators();
+
+    $this->assertTrue($definition->build()->parse('a')->validate()->valid);
+});

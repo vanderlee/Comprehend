@@ -6,29 +6,9 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
 
-/**
- * @group terminal
- * @group parser
- */
-class AnyTest extends ParserTestCase
+abstract class AnyTest extends ParserTestCase
 {
-    /**
-     * @dataProvider anyData
-     *
-     * @param Any $parser
-     * @param string $input
-     * @param int $offset
-     * @param bool $match
-     * @param int $length
-     */
-    public function testAny(Any $parser, $input, $offset, $match, $length)
-    {
-        $result = $parser->matchPrefix(new ByteSource($input), $offset);
-        $this->assertSame($match, $result->success, (string) $parser);
-        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
-    }
-
-    public function anyData()
+    public static function anyData()
     {
         return [
             [new Any(), 'a', 0, true, 1],
@@ -39,3 +19,11 @@ class AnyTest extends ParserTestCase
         ];
     }
 }
+
+uses(AnyTest::class)->group('terminal', 'parser');
+
+test('any', function (Any $parser, $input, $offset, $match, $length) {
+    $result = $parser->matchPrefix(new ByteSource($input), $offset);
+    $this->assertSame($match, $result->success, (string) $parser);
+    $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
+})->with(AnyTest::anyData());

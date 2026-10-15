@@ -12,48 +12,45 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Source;
 
-final class DiagnosticExpectationTraitTest extends TestCase
-{
-    public function testStringExpectationKeepsNamedRulePath(): void
-    {
-        $parser = new class extends Parser {
-            use DiagnosticExpectationTrait;
+uses(TestCase::class);
 
-            protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
-            {
-                return $this->failure($source, $byteOffset);
-            }
+test('string expectation keeps named rule path', function (): void {
+    $parser = new class extends Parser {
+        use DiagnosticExpectationTrait;
 
-            public function __toString(): string
-            {
-                return 'expected unit';
-            }
-        };
-        $parser->diagnosticRule('custom');
-        $result = $parser->matchPrefix(new ByteSource('x'), 1);
+        protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
+        {
+            return $this->failure($source, $byteOffset);
+        }
 
-        $this->assertFalse($result->success);
-        $this->assertSame(1, $result->diagnostic->byteOffset);
-        $this->assertSame(['expected unit'], $result->diagnostic->expected);
-        $this->assertSame([['custom']], $result->diagnostic->rulePaths);
-    }
+        public function __toString(): string
+        {
+            return 'expected unit';
+        }
+    };
+    $parser->diagnosticRule('custom');
+    $result = $parser->matchPrefix(new ByteSource('x'), 1);
 
-    public function testNamespaceDoesNotOptParserIntoStringExpectations(): void
-    {
-        $parser = new class extends Parser {
-            protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
-            {
-                return $this->failure($source, $byteOffset);
-            }
+    $this->assertFalse($result->success);
+    $this->assertSame(1, $result->diagnostic->byteOffset);
+    $this->assertSame(['expected unit'], $result->diagnostic->expected);
+    $this->assertSame([['custom']], $result->diagnostic->rulePaths);
+});
 
-            public function __toString(): string
-            {
-                return 'unused description';
-            }
-        };
-        $parser->diagnosticRule('named rule');
-        $result = $parser->matchPrefix(new ByteSource(''));
+test('namespace does not opt parser into string expectations', function (): void {
+    $parser = new class extends Parser {
+        protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
+        {
+            return $this->failure($source, $byteOffset);
+        }
 
-        $this->assertSame(['named rule'], $result->diagnostic->expected);
-    }
-}
+        public function __toString(): string
+        {
+            return 'unused description';
+        }
+    };
+    $parser->diagnosticRule('named rule');
+    $result = $parser->matchPrefix(new ByteSource(''));
+
+    $this->assertSame(['named rule'], $result->diagnostic->expected);
+});

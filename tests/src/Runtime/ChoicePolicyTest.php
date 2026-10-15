@@ -8,29 +8,14 @@ use PHPUnit\Framework\TestCase;
 use ValueError;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 
-final class ChoicePolicyTest extends TestCase
+abstract class ChoicePolicyTest extends TestCase
 {
-    /** @dataProvider supportedPolicies */
-    public function testSupportedPoliciesKeepTheirPublicStringValues(ChoicePolicy $policy, string $expected): void
-    {
-        $this->assertSame($expected, $policy->value);
-        $this->assertSame($policy, ChoicePolicy::from($expected));
-    }
-
     /** @return iterable<string, array{ChoicePolicy, string}> */
     public static function supportedPolicies(): iterable
     {
         yield 'first' => [ChoicePolicy::FIRST, 'first'];
         yield 'longest' => [ChoicePolicy::LONGEST, 'longest'];
         yield 'shortest' => [ChoicePolicy::SHORTEST, 'shortest'];
-    }
-
-    /** @dataProvider unsupportedPolicies */
-    public function testUnsupportedPoliciesAreRejected(string $policy): void
-    {
-        $this->expectException(ValueError::class);
-
-        ChoicePolicy::from($policy);
     }
 
     /** @return iterable<string, array{string}> */
@@ -42,3 +27,16 @@ final class ChoicePolicyTest extends TestCase
         yield 'whitespace' => [' first '];
     }
 }
+
+uses(ChoicePolicyTest::class);
+
+test('supported policies keep their public string values', function (ChoicePolicy $policy, string $expected): void {
+    $this->assertSame($expected, $policy->value);
+    $this->assertSame($policy, ChoicePolicy::from($expected));
+})->with(ChoicePolicyTest::supportedPolicies());
+
+test('unsupported policies are rejected', function (string $policy): void {
+    $this->expectException(ValueError::class);
+
+    ChoicePolicy::from($policy);
+})->with(ChoicePolicyTest::unsupportedPolicies());

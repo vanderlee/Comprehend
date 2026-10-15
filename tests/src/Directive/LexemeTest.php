@@ -11,16 +11,14 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 
-final class LexemeTest extends TestCase
-{
-    public function testSpacingIsSuppressedAndScopeIsRestoredAfterFailure(): void
-    {
-        $parser = new Lexeme((new Sequence(new Text('a'), new Text('b')))->spacing(new Text(' ')));
-        $source = new ByteSource('a b');
-        $session = new ParseSession($source);
+uses(TestCase::class);
 
-        $this->assertFalse($parser->recognizeInSession($source, 0, $session)->accepted);
-        $this->assertFalse($session->isLexeme());
-        $this->assertTrue($parser->parseAll(new ByteSource('ab'))->success);
-    }
-}
+test('spacing is suppressed and scope is restored after failure', function (): void {
+    $parser = new Lexeme((new Sequence(new Text('a'), new Text('b')))->spacing(new Text(' ')));
+    $source = new ByteSource('a b');
+    $session = new ParseSession($source);
+
+    $this->assertFalse($parser->recognizeInSession($source, 0, $session)->accepted);
+    $this->assertFalse($session->isLexeme());
+    $this->assertTrue($parser->parseAll(new ByteSource('ab'))->success);
+});

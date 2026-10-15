@@ -1,13 +1,13 @@
 # Contributing
 
 Use PHP 8.1+ with JSON and mbstring. DOM is optional at runtime, but required for
-the PHPUnit suite and XML serialization tests. Install development dependencies with
-Composer. Run platform checks, PHPUnit, the canonical API/syntax gate and examples:
+the Pest suite and XML serialization tests. Install development dependencies with
+Composer. Run platform checks, Pest, the canonical API/syntax gate and examples:
 
 ```sh
 composer validate --strict
 composer check-platform-reqs
-php vendor/phpunit/phpunit/phpunit --do-not-cache-result
+php vendor/bin/pest --do-not-cache-result
 php tools/check-canonical.php
 php docs/examples/execution.php
 php docs/examples/authoring.php
@@ -55,7 +55,7 @@ reviewed 2.0.0 tag, a dated changelog and a passing required matrix. See
 ## Quality tools
 
 Install development tools with `make install` (or `composer install`). GNU Make
-and PHP must be on your PATH. Use `make test` for PHPUnit and `make phpstan` for
+and PHP must be on your PATH. Use `make test` for Pest and `make phpstan` for
 static analysis, configured at level 10 for `src` in `phpstan.neon`.
 CI runs both on pull requests and pushes to `master`; the release workflow also
 reuses these checks.
@@ -77,8 +77,14 @@ recipes directly. Override the executables with
 
 Keep tests focused on a single class or trait in `tests/src/`. Put feature tests
 that cover interactions across classes, runtime contracts, or complete grammars
-in `tests/features/`. Shared test infrastructure stays in `tests/`. PHPUnit
+in `tests/features/`. Shared test infrastructure stays in `tests/`. Pest
 discovers both directories recursively.
+
+Write tests with Pest's `test()` closures and attach parameterized cases with
+`with()`. Pest 2 preserves the library's PHP 8.1 development baseline. Existing
+shared assertions and stateful fixtures use abstract PHPUnit base classes selected
+with `uses()`; dataset providers are static and run before test setup. Run the
+suite through Pest, including when selecting a single file or using `--filter`.
 
 Every class under `Vanderlee\Comprehend` must have a focused unit test at the
 matching path in `tests/src/` (for example, `src/Source/ByteSource.php` has

@@ -131,7 +131,7 @@ Install with Composer, then run:
 
 ```sh
 composer check-platform-reqs
-php vendor/phpunit/phpunit/phpunit --do-not-cache-result
+php vendor/bin/pest --do-not-cache-result
 php tools/check-canonical.php
 php docs/examples/execution.php
 ```

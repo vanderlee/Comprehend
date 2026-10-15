@@ -8,15 +8,13 @@ use PHPUnit\Framework\TestCase;
 use ValueError;
 use Vanderlee\Comprehend\Source\SourceMode;
 
-final class SourceModeTest extends TestCase
-{
-    public function testSerializedModesRoundTripWithoutImplicitFallback(): void
-    {
-        $this->assertSame(SourceMode::BYTES, SourceMode::from('bytes'));
-        $this->assertSame(SourceMode::UTF8, SourceMode::from('utf8'));
-        $this->assertNull(SourceMode::tryFrom('unknown'));
-        $this->expectException(ValueError::class);
+uses(TestCase::class);
 
-        SourceMode::from('unknown');
-    }
-}
+test('serialized modes round trip without implicit fallback', function (): void {
+    $this->assertSame(SourceMode::BYTES, SourceMode::from('bytes'));
+    $this->assertSame(SourceMode::UTF8, SourceMode::from('utf8'));
+    $this->assertNull(SourceMode::tryFrom('unknown'));
+    $this->expectException(ValueError::class);
+
+    SourceMode::from('unknown');
+});

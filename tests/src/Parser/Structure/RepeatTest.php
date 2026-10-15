@@ -15,28 +15,9 @@ use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
-/**
- * @group structure
- * @group parser
- */
-class RepeatTest extends ParserTestCase
+abstract class RepeatTest extends ParserTestCase
 {
-    public function testConstructor()
-    {
-        $this->assertInstanceOf(Repeat::class, new Repeat(new Text('a')));
-    }
-
-    /**
-     * @dataProvider invalidBoundsData
-     */
-    public function testInvalidBounds($min, $max)
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid repeat range specified');
-        new Repeat(new Text('a'), $min, $max);
-    }
-
-    public function invalidBoundsData()
+    public static function invalidBoundsData()
     {
         return [
             'minimum exceeds maximum' => [2, 1],
@@ -47,47 +28,7 @@ class RepeatTest extends ParserTestCase
         ];
     }
 
-    public function testNegativeExactCount()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        Repeat::exact(new Text('a'), -1);
-    }
-
-    public function testStaticConstructors()
-    {
-        $c = Repeat::plus(new Text('a'));
-        $this->assertResult(false, 0, $c->matchPrefix(new ByteSource('')));
-        $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('a')));
-        $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aa')));
-        $c = Repeat::star(new Text('a'));
-        $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('')));
-        $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('a')));
-        $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aa')));
-        $c = Repeat::optional(new Text('a'));
-        $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('')));
-        $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('a')));
-        $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('aa')));
-        $c = Repeat::exact(new Text('a'), 2);
-        $this->assertResult(false, 0, $c->matchPrefix(new ByteSource('')));
-        $this->assertResult(false, 1, $c->matchPrefix(new ByteSource('a')));
-        $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aa')));
-        $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aaa')));
-        $c = Repeat::exact(new Text('a'), 0);
-        $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('')));
-        $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('a')));
-    }
-
-    /**
-     * @dataProvider zeroLengthChildData
-     */
-    public function testZeroLengthChildThrows(Repeat $parser, $input)
-    {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Repeat child matched successfully without consuming input');
-        $parser->matchPrefix(new ByteSource($input));
-    }
-
-    public function zeroLengthChildData()
+    public static function zeroLengthChildData()
     {
         $cases = [];
         foreach ([1, 3, null] as $max) {
@@ -117,44 +58,7 @@ class RepeatTest extends ParserTestCase
         return $cases;
     }
 
-    public function testZeroMaximumAllowsNullableChild()
-    {
-        $this->assertResult(true, 0, (new Repeat(new Nothing(), 0, 0))->matchPrefix(new ByteSource('a')));
-    }
-
-    public function testZeroLengthChildCallbackIsNotResolved()
-    {
-        $calls = 0;
-        $child = (new Not(new Text('b')))->onCommit(
-            function () use (&$calls) {
-                $calls++;
-            },
-        );
-        try {
-            (new Repeat($child, 0, 1))->matchPrefix(new ByteSource('a'));
-            $this->fail('Expected zero-length repetition to throw');
-        } catch (LogicException $exception) {
-            $this->assertSame(0, $calls);
-        }
-    }
-
-    /**
-     * @dataProvider repeatData
-     *
-     * @param Repeat $parser
-     * @param        $input
-     * @param        $offset
-     * @param        $match
-     * @param        $length
-     */
-    public function testRepeat(Repeat $parser, $input, $offset, $match, $length)
-    {
-        $result = $parser->matchPrefix(new ByteSource($input), $offset);
-        $this->assertSame($match, $result->success, (string) $parser);
-        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
-    }
-
-    public function repeatData()
+    public static function repeatData()
     {
         return [
             [new Repeat(new Text('a'), 0, 0), '', 0, true, 0],
@@ -192,3 +96,74 @@ class RepeatTest extends ParserTestCase
         ];
     }
 }
+
+uses(RepeatTest::class)->group('structure', 'parser');
+
+test('constructor', function () {
+    $this->assertInstanceOf(Repeat::class, new Repeat(new Text('a')));
+});
+
+test('invalid bounds', function ($min, $max) {
+    $this->expectException(InvalidArgumentException::class);
+    $this->expectExceptionMessage('Invalid repeat range specified');
+    new Repeat(new Text('a'), $min, $max);
+})->with(RepeatTest::invalidBoundsData());
+
+test('negative exact count', function () {
+    $this->expectException(InvalidArgumentException::class);
+    Repeat::exact(new Text('a'), -1);
+});
+
+test('static constructors', function () {
+    $c = Repeat::plus(new Text('a'));
+    $this->assertResult(false, 0, $c->matchPrefix(new ByteSource('')));
+    $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('a')));
+    $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aa')));
+    $c = Repeat::star(new Text('a'));
+    $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('')));
+    $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('a')));
+    $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aa')));
+    $c = Repeat::optional(new Text('a'));
+    $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('')));
+    $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('a')));
+    $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('aa')));
+    $c = Repeat::exact(new Text('a'), 2);
+    $this->assertResult(false, 0, $c->matchPrefix(new ByteSource('')));
+    $this->assertResult(false, 1, $c->matchPrefix(new ByteSource('a')));
+    $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aa')));
+    $this->assertResult(true, 2, $c->matchPrefix(new ByteSource('aaa')));
+    $c = Repeat::exact(new Text('a'), 0);
+    $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('')));
+    $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('a')));
+});
+
+test('zero length child throws', function (Repeat $parser, $input) {
+    $this->expectException(LogicException::class);
+    $this->expectExceptionMessage('Repeat child matched successfully without consuming input');
+    $parser->matchPrefix(new ByteSource($input));
+})->with(RepeatTest::zeroLengthChildData());
+
+test('zero maximum allows nullable child', function () {
+    $this->assertResult(true, 0, (new Repeat(new Nothing(), 0, 0))->matchPrefix(new ByteSource('a')));
+});
+
+test('zero length child callback is not resolved', function () {
+    $calls = 0;
+    $child = (new Not(new Text('b')))->onCommit(
+        function () use (&$calls) {
+            $calls++;
+        },
+    );
+    try {
+        (new Repeat($child, 0, 1))->matchPrefix(new ByteSource('a'));
+        $this->fail('Expected zero-length repetition to throw');
+    } catch (LogicException $exception) {
+        $this->assertSame(0, $calls);
+    }
+});
+
+test('repeat', function (Repeat $parser, $input, $offset, $match, $length) {
+    $result = $parser->matchPrefix(new ByteSource($input), $offset);
+    $this->assertSame($match, $result->success, (string) $parser);
+    $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
+})->with(RepeatTest::repeatData());

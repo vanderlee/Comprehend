@@ -6,52 +6,9 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Regex;
 
-/**
- * @group terminal
- * @group parser
- */
-class RegexTest extends ParserTestCase
+abstract class RegexTest extends ParserTestCase
 {
-    public function testConstruction()
-    {
-        $this->assertInstanceOf(Regex::class, new Regex('/a/'));
-    }
-
-    public function testEmpty()
-    {
-        $this->expectExceptionMessage('Empty pattern');
-        new Regex('');
-    }
-
-    public function testInvalidNonAlphanumericDelimiter()
-    {
-        $this->expectExceptionMessage('Invalid pattern');
-        new Regex('a');
-    }
-
-    public function testInvalidNoEndingDelimiter()
-    {
-        $this->expectExceptionMessage('Invalid pattern');
-        new Regex('/');
-    }
-
-    /**
-     * @dataProvider regexData
-     *
-     * @param Regex $parser
-     * @param       $input
-     * @param       $offset
-     * @param       $match
-     * @param       $length
-     */
-    public function testRegex(Regex $parser, $input, $offset, $match, $length)
-    {
-        $result = $parser->matchPrefix(new ByteSource($input), $offset);
-        $this->assertSame($match, $result->success, (string) $parser);
-        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
-    }
-
-    public function regexData()
+    public static function regexData()
     {
         return [
             [new Regex('~[a-f]+~i'), 'abc', 0, true, 3],
@@ -66,3 +23,30 @@ class RegexTest extends ParserTestCase
         ];
     }
 }
+
+uses(RegexTest::class)->group('terminal', 'parser');
+
+test('construction', function () {
+    $this->assertInstanceOf(Regex::class, new Regex('/a/'));
+});
+
+test('empty', function () {
+    $this->expectExceptionMessage('Empty pattern');
+    new Regex('');
+});
+
+test('invalid non alphanumeric delimiter', function () {
+    $this->expectExceptionMessage('Invalid pattern');
+    new Regex('a');
+});
+
+test('invalid no ending delimiter', function () {
+    $this->expectExceptionMessage('Invalid pattern');
+    new Regex('/');
+});
+
+test('regex', function (Regex $parser, $input, $offset, $match, $length) {
+    $result = $parser->matchPrefix(new ByteSource($input), $offset);
+    $this->assertSame($match, $result->success, (string) $parser);
+    $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
+})->with(RegexTest::regexData());

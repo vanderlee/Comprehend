@@ -10,46 +10,42 @@ use Vanderlee\Comprehend\Builder\AbstractRuleset;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
-final class AbstractRulesetTest extends TestCase
-{
-    public function testSubclassGroupAndRootAreUsedForRecognition(): void
-    {
-        $rules = $this->getMockForAbstractClass(AbstractRuleset::class, [['item' => new Text('a')], 'example']);
-        $rules->root('item');
-        $result = $rules->freeze()->parse('a');
+uses(TestCase::class);
 
-        $this->assertTrue($result->success);
-        $this->assertSame('item', $result->ast()->firstChild()->name);
-        $this->assertSame('example', $result->ast()->firstChild()->group);
-        $this->assertSame($rules->graphIdentity(), $rules->graphIdentity());
-    }
+test('subclass group and root are used for recognition', function (): void {
+    $rules = $this->getMockForAbstractClass(AbstractRuleset::class, [['item' => new Text('a')], 'example']);
+    $rules->root('item');
+    $result = $rules->freeze()->parse('a');
 
-    public function testUndefiningARuleInvalidatesItsCachedImplementation(): void
-    {
-        $rules = $this->getMockForAbstractClass(AbstractRuleset::class, [['item' => new Text('a')]]);
-        $rules->resolveRule('item');
-        $rules->undefine('item');
+    $this->assertTrue($result->success);
+    $this->assertSame('item', $result->ast()->firstChild()->name);
+    $this->assertSame('example', $result->ast()->firstChild()->group);
+    $this->assertSame($rules->graphIdentity(), $rules->graphIdentity());
+});
 
-        $this->assertFalse($rules->defined('item'));
-        $this->expectException(LogicException::class);
-        $rules->resolveRule('item');
-    }
+test('undefining a rule invalidates its cached implementation', function (): void {
+    $rules = $this->getMockForAbstractClass(AbstractRuleset::class, [['item' => new Text('a')]]);
+    $rules->resolveRule('item');
+    $rules->undefine('item');
 
-    public function testFreshResolutionDoesNotReplaceTheCachedImplementation(): void
-    {
-        $calls = 0;
-        $rules = $this->getMockForAbstractClass(AbstractRuleset::class);
-        $rules->define('item', static function () use (&$calls): Parser {
-            ++$calls;
+    $this->assertFalse($rules->defined('item'));
+    $this->expectException(LogicException::class);
+    $rules->resolveRule('item');
+});
 
-            return new Text((string) $calls);
-        });
+test('fresh resolution does not replace the cached implementation', function (): void {
+    $calls = 0;
+    $rules = $this->getMockForAbstractClass(AbstractRuleset::class);
+    $rules->define('item', static function () use (&$calls): Parser {
+        ++$calls;
 
-        $cached = $rules->resolveRule('item');
-        $fresh = $rules->resolveRule('item', fresh: true);
+        return new Text((string) $calls);
+    });
 
-        $this->assertNotSame($cached, $fresh);
-        $this->assertSame($cached, $rules->resolveRule('item'));
-        $this->assertSame(2, $calls);
-    }
-}
+    $cached = $rules->resolveRule('item');
+    $fresh = $rules->resolveRule('item', fresh: true);
+
+    $this->assertNotSame($cached, $fresh);
+    $this->assertSame($cached, $rules->resolveRule('item'));
+    $this->assertSame(2, $calls);
+});

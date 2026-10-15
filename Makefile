@@ -6,7 +6,7 @@ COMPOSER ?= composer
 
 help:
 	@echo "install   Install development dependencies"
-	@echo "test      Run PHPUnit"
+	@echo "test      Run Pest"
 	@echo "phpstan   Run static analysis at level 9"
 	@echo "cs        Check coding standards with PHP_CodeSniffer"
 	@echo "cs-check  Check formatting with PHP-CS-Fixer (no changes)"
@@ -17,7 +17,7 @@ install:
 	$(COMPOSER) install --no-interaction --prefer-dist
 
 test:
-	$(PHP) vendor/phpunit/phpunit/phpunit --do-not-cache-result
+	$(PHP) vendor/bin/pest --do-not-cache-result
 
 phpstan:
 	$(PHP) vendor/phpstan/phpstan/phpstan analyse --configuration=phpstan.neon --memory-limit=512M

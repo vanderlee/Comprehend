@@ -15,16 +15,16 @@
     "ext-mbstring": "*"
   },
   "config": {
-    "platform": {"php": "8.1.0"}
+    "platform": {"php": "8.1.0"},
+    "allow-plugins": {"pestphp/pest-plugin": true}
   },
   "suggest": {
     "ext-dom": "Required only for CST/AST XML serialization via toXml()."
   },
   "require-dev": {
-    "codacy/coverage": "dev-master",
     "friendsofphp/php-cs-fixer": "^3.95",
     "phpstan/phpstan": "^2.1",
-    "phpunit/phpunit": "^9.6",
+    "pestphp/pest": "^2.36",
     "phpmd/phpmd": "2.6.0",
     "squizlabs/php_codesniffer": "^4.0"
   },

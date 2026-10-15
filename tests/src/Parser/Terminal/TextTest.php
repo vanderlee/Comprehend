@@ -6,36 +6,9 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
-class TextTest extends ParserTestCase
+abstract class TextTest extends ParserTestCase
 {
-    public function testConstruction()
-    {
-        $this->assertInstanceOf(Text::class, new Text('foo'));
-    }
-
-    public function testEmpty()
-    {
-        $this->expectExceptionMessage('Empty argument');
-        new Text('');
-    }
-
-    /**
-     * @group        terminal
-     * @group        parser
-     * @dataProvider textData
-     *
-     * @param Text $parser
-     * @param string $input
-     * @param int $offset
-     * @param bool $match
-     * @param int $length
-     */
-    public function testText(Text $parser, $input, $offset, $match, $length)
-    {
-        $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input), $offset), (string) $parser);
-    }
-
-    public function textData()
+    public static function textData()
     {
         return [
             [new Text('foo'), 'foo', 0, true, 3],
@@ -53,3 +26,18 @@ class TextTest extends ParserTestCase
         ];
     }
 }
+
+uses(TextTest::class);
+
+test('construction', function () {
+    $this->assertInstanceOf(Text::class, new Text('foo'));
+});
+
+test('empty', function () {
+    $this->expectExceptionMessage('Empty argument');
+    new Text('');
+});
+
+test('text', function (Text $parser, $input, $offset, $match, $length) {
+    $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input), $offset), (string) $parser);
+})->with(TextTest::textData())->group('terminal', 'parser');

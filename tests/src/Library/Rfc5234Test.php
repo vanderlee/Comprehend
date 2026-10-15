@@ -4,22 +4,16 @@
 
 namespace Tests\Src\Library;
 
-require_once 'Rfc4234Test.php';
-use Vanderlee\Comprehend\Library\Rfc5234;
+use Tests\Fixtures\Rfc5234TestCase;
+use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Source\ByteSource;
 
-/**
- * @group library
- * @group rfc
- */
-class Rfc5234Test extends Rfc4234Test
-{
-    public function testConstruct()
-    {
-        $this->assertNotNull($this->getRfc());
-    }
+uses(Rfc5234TestCase::class)->group('library', 'rfc');
 
-    protected function getRfc()
-    {
-        return new Rfc5234();
-    }
-}
+test('construct', function () {
+    $this->assertNotNull(static::getRfc());
+});
+
+test('rfc2234', function (Parser $parser, $input, $match, $length) {
+    $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input)), (string) $parser);
+})->with(Rfc5234TestCase::rfc2234Data());

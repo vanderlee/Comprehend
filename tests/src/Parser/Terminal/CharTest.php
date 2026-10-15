@@ -6,46 +6,9 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
 
-/**
- * @group terminal
- * @group parser
- */
-class CharTest extends ParserTestCase
+abstract class CharTest extends ParserTestCase
 {
-    public function testConstruction()
-    {
-        $this->assertInstanceOf(Char::class, new Char('a'));
-    }
-
-    public function testEmpty()
-    {
-        $this->expectExceptionMessage('Empty argument');
-        new Char('');
-    }
-
-    public function testTooLong()
-    {
-        $this->expectExceptionMessage('Non-character argument');
-        new Char('aa');
-    }
-
-    /**
-     * @dataProvider charData
-     *
-     * @param Char $parser
-     * @param      $input
-     * @param      $offset
-     * @param      $match
-     * @param      $length
-     */
-    public function testChar(Char $parser, $input, $offset, $match, $length)
-    {
-        $result = $parser->matchPrefix(new ByteSource($input), $offset);
-        $this->assertSame($match, $result->success, (string) $parser);
-        $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
-    }
-
-    public function charData()
+    public static function charData()
     {
         return [
             [new Char('a'), 'a', 0, true, 1],
@@ -73,3 +36,25 @@ class CharTest extends ParserTestCase
         ];
     }
 }
+
+uses(CharTest::class)->group('terminal', 'parser');
+
+test('construction', function () {
+    $this->assertInstanceOf(Char::class, new Char('a'));
+});
+
+test('empty', function () {
+    $this->expectExceptionMessage('Empty argument');
+    new Char('');
+});
+
+test('too long', function () {
+    $this->expectExceptionMessage('Non-character argument');
+    new Char('aa');
+});
+
+test('char', function (Char $parser, $input, $offset, $match, $length) {
+    $result = $parser->matchPrefix(new ByteSource($input), $offset);
+    $this->assertSame($match, $result->success, (string) $parser);
+    $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
+})->with(CharTest::charData());
