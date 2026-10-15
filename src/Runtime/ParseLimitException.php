@@ -9,6 +9,9 @@ use RuntimeException;
 /** Budget exhaustion is distinct from ordinary grammar failure. */
 final class ParseLimitException extends RuntimeException
 {
+    /**
+     * @param list<string> $rulePath
+     */
     public function __construct(
         public readonly string $limit,
         public readonly int $byteOffset,

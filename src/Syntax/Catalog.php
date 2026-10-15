@@ -95,6 +95,10 @@ final class Catalog
         'optional' => 'maybe',
     ];
 
+    /**
+     * @param array<string, Closure> $statics
+     * @param array<string, Closure> $fluents
+     */
     public function __construct(private readonly array $statics = [], private readonly array $fluents = []) {}
 
     public static function canonicalName(string $name): string
@@ -260,7 +264,10 @@ final class Catalog
         };
     }
 
-    /** Inherited choice policies are associative; explicit policies remain nested. */
+    /**
+     * Inherited choice policies are associative; explicit policies remain nested.
+     * @param array<array-key, Comprehend|Parser|string> $items
+     */
     private static function choice(array $items): Choice
     {
         $pending = array_reverse(array_map(self::parser(...), $items));
@@ -281,7 +288,10 @@ final class Catalog
         return new Choice(...$children);
     }
 
-    /** Flatten only prefixes: other positions can introduce extra spacing boundaries. */
+    /**
+     * Flatten only prefixes: other positions can introduce extra spacing boundaries.
+     * @param array<array-key, Comprehend|Parser|string> $items
+     */
     private static function sequence(array $items): Sequence
     {
         $parsers = array_values(array_map(self::parser(...), $items));
@@ -310,6 +320,9 @@ final class Catalog
         return $parser instanceof Comprehend ? $parser->parser() : (new GraphSnapshot(false))->copy($parser);
     }
 
+    /**
+     * @return list<string>
+     */
     public static function builtinNames(): array
     {
         return [...self::BUILTINS, ...self::FLUENTS, ...array_keys(self::ALIASES)];
@@ -353,6 +366,9 @@ final class Catalog
         return self::builtinFluent($name) ?? $this->fluents[self::canonicalName($name)] ?? null;
     }
 
+    /**
+     * @return list<string>
+     */
     public function names(): array
     {
         return array_values(array_unique([

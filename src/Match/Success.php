@@ -37,6 +37,9 @@ class Success extends AbstractMatch
     private array $successes;
     /** @var Success[] */
     private array $concreteMatches;
+    /**
+     * @var list<callable>
+     */
     private array $semanticValidators = [];
     private ?ValidationResult $validation = null;
     private bool $validating = false;
@@ -59,13 +62,19 @@ class Success extends AbstractMatch
         $this->concreteMatches = $successes;
     }
 
-    /** @internal Recognition children can differ from semantic output children. */
+    /**
+     * @internal Recognition children can differ from semantic output children.
+     * @param list<Success> $matches
+     */
     public function setConcreteMatches(array $matches): void
     {
         $this->concreteMatches = $matches;
     }
 
-    /** @internal Build without evaluating lazy semantic output or effects. */
+    /**
+     * @internal Build without evaluating lazy semantic output or effects.
+     * @param list<string> $tags
+     */
     public function buildConcreteNode(
         string $kind,
         string|int|\Closure|null $name = null,
@@ -112,6 +121,9 @@ class Success extends AbstractMatch
         return $this->semanticProjection->value(new ParseResult($this));
     }
 
+    /**
+     * @param list<callable> $validators
+     */
     public function addSemanticValidators(array $validators): void
     {
         $this->semanticValidators = array_merge($this->semanticValidators, $validators);
@@ -168,7 +180,10 @@ class Success extends AbstractMatch
         }
     }
 
-    /** A shared execution child contributes its validation errors only once. */
+    /**
+     * A shared execution child contributes its validation errors only once.
+     * @return list<string>
+     */
     private function childValidationErrors(): array
     {
         $errors = [];
@@ -186,6 +201,9 @@ class Success extends AbstractMatch
         return $errors;
     }
 
+    /**
+     * @return list<string>
+     */
     private function localValidationErrors(): array
     {
         $errors = [];

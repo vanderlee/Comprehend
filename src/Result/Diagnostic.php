@@ -10,8 +10,15 @@ use Vanderlee\Comprehend\Source\SourceMode;
 /** Immutable recognition facts with lazily indexed, one-based locations. */
 final class Diagnostic
 {
+    /**
+     * @var list<int>|null
+     */
     private ?array $lineStarts = null;
 
+    /**
+     * @param list<string> $expected
+     * @param list<list<string>> $rulePaths
+     */
     public function __construct(
         public readonly Source $source,
         public readonly int $byteOffset,
@@ -30,7 +37,10 @@ final class Diagnostic
         return rtrim($this->source->sliceBytes($start, $end), "\r\n");
     }
 
-    /** CRLF is one newline; lone CR and LF also start lines. Text columns count code points. */
+    /**
+     * CRLF is one newline; lone CR and LF also start lines. Text columns count code points.
+     * @return array{line: int, column: int}
+     */
     public function location(): array
     {
         $this->indexLines();

@@ -9,6 +9,9 @@ use Vanderlee\Comprehend\Source\Span;
 /** Named collection operations; transformed values are cached per recognition. */
 trait ResultTrait
 {
+    /**
+     * @var list<callable(Span): callable>
+     */
     private array $resultCallbacks = [];
 
     public function setResult(?string $key = null, mixed $value = null): static

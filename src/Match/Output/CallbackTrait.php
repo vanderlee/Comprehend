@@ -26,7 +26,7 @@ trait CallbackTrait
      *
      * @internal
      */
-    public function addPrecedingMatch(Success $match)
+    public function addPrecedingMatch(Success $match): void
     {
         $this->precedingMatches[] = $match;
     }
@@ -45,7 +45,7 @@ trait CallbackTrait
         return $this;
     }
 
-    public function getCallback()
+    public function getCallback(): void
     {
         $this->processCustomCallbacks();
     }

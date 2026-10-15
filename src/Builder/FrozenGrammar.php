@@ -14,6 +14,9 @@ use Vanderlee\Comprehend\Source\Utf8Source;
 /** A reusable resolved snapshot; no mutable parser graph is exposed. */
 final class FrozenGrammar
 {
+    /**
+     * @param list<string> $analysisWarnings
+     */
     private function __construct(private readonly Parser $root, public readonly array $analysisWarnings) {}
 
     public static function from(Comprehend|Parser $parser): self

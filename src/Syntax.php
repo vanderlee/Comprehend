@@ -29,6 +29,7 @@ final class Syntax
         return new self($this->catalog->defineFluent($name, $factory));
     }
 
+    /** @param array<array-key, mixed> $arguments */
     public function __call(string $name, array $arguments): Comprehend
     {
         return Comprehend::callSyntax($name, $arguments, $this);
@@ -39,6 +40,7 @@ final class Syntax
         return Comprehend::callSyntax($name, $arguments, $this);
     }
 
+    /** @return list<string> */
     public function names(): array
     {
         return $this->catalog->names();

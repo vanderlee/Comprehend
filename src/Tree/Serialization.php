@@ -12,11 +12,17 @@ use Vanderlee\Comprehend\Source\Span;
 /** The same explicit source-span schema for concrete and named trees. */
 trait Serialization
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         $data = [
@@ -43,6 +49,9 @@ trait Serialization
         return $data;
     }
 
+    /**
+     * @return array{start: int, end: int, text: string, textEncoding: 'utf8'|'base64'}
+     */
     private static function spanArray(Span $span): array
     {
         $raw = $span->rawText();

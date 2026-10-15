@@ -12,14 +12,22 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Library;
 
+use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Parser\Parser;
 
 /**
  */
 class Rfc7405 extends Rfc5234
 {
+    /**
+     * @var string
+     */
     protected static $name = 'Rfc7405';
 
+    /**
+     * @param array<string, C|Parser|Definition|callable> $overwrites
+     */
     public function __construct($overwrites = [])
     {
         $rules = [

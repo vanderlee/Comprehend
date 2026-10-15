@@ -62,7 +62,7 @@ class Range extends Parser
         }
     }
 
-    private function sourceOrdinal($character, ParseSession $context)
+    private function sourceOrdinal(string $character, ParseSession $context): int
     {
         $textMode = $context->source()->mode() === SourceMode::UTF8;
         if ($textMode) {

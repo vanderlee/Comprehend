@@ -17,9 +17,15 @@ use Vanderlee\Comprehend\Source\Source;
 abstract class AbstractRuleset extends Parser
 {
     public const ROOT = 'ROOT';
+    /**
+     * @var string|null
+     */
     protected static $name = null;
     /** @var array<string, Definition|Parser|callable> */
     protected array $instanceRules = [];
+    /**
+     * @var array<string, Parser>
+     */
     private array $implementations = [];
     private ?object $graphIdentity = null;
     private ?string $groupName = null;
@@ -106,7 +112,10 @@ abstract class AbstractRuleset extends Parser
         return $success;
     }
 
-    /** @internal Resolve on recognition, never guess a literal or class name. */
+    /**
+     * @internal Resolve on recognition, never guess a literal or class name.
+     * @param array<array-key, mixed> $arguments
+     */
     public function resolveRule(string $name, array $arguments = [], bool $fresh = false): Parser
     {
         if (!isset($this->instanceRules[$name])) {

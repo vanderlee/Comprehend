@@ -42,22 +42,22 @@ class Repeat extends Parser
         return $this->max;
     }
 
-    public static function plus(Parser $parser)
+    public static function plus(Parser $parser): self
     {
         return new self($parser, 1, null);
     }
 
-    public static function star(Parser $parser)
+    public static function star(Parser $parser): self
     {
         return new self($parser, 0, null);
     }
 
-    public static function optional(Parser $parser)
+    public static function optional(Parser $parser): self
     {
         return new self($parser, 0, 1);
     }
 
-    public static function exact(Parser $parser, int $times)
+    public static function exact(Parser $parser, int $times): self
     {
         return new self($parser, $times, $times);
     }

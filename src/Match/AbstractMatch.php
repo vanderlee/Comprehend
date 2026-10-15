@@ -47,6 +47,9 @@ abstract class AbstractMatch
         $this->diagnostic = $diagnostic;
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     public function getResults(): array
     {
         return [];

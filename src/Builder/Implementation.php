@@ -17,6 +17,9 @@ final class Implementation extends Parser
 {
     private ?Parser $parser = null;
 
+    /**
+     * @param array<array-key, mixed> $arguments
+     */
     public function __construct(private readonly Definition $definition, private readonly array $arguments = []) {}
 
     /** @internal Materialize this parameterized definition before snapshotting. */

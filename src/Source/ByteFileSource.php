@@ -11,6 +11,7 @@ use RuntimeException;
 /** Owns an immutable disk snapshot, with one bounded read page. */
 class ByteFileSource implements Source
 {
+    /** @var resource|null */
     private $handle;
     private int $length = 0;
     private int $cacheStart = -1;

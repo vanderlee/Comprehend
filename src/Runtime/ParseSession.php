@@ -26,11 +26,23 @@ final class ParseSession
 
     private readonly Source $source;
     private ?int $farthestFailure = null;
+    /**
+     * @var list<string>
+     */
     private array $expectations = [];
+    /**
+     * @var list<list<string>>
+     */
     private array $rulePaths = [];
+    /**
+     * @var list<string>
+     */
     private array $path = [];
     private int $failureRevision = 0;
     private int $lexemeDepth = 0;
+    /**
+     * @var array<string, true>
+     */
     private array $activeParsers = [];
     private int $work = 0;
     private int $depth = 0;
@@ -130,11 +142,17 @@ final class ParseSession
         return $this->failureRevision;
     }
 
+    /**
+     * @return array{int|null, list<string>, list<list<string>>, int}
+     */
     public function diagnosticState(): array
     {
         return [$this->farthestFailure, $this->expectations, $this->rulePaths, $this->failureRevision];
     }
 
+    /**
+     * @param array{int|null, list<string>, list<list<string>>, int} $state
+     */
     public function restoreDiagnostics(array $state): void
     {
         [$this->farthestFailure, $this->expectations, $this->rulePaths, $this->failureRevision] = $state;
@@ -152,6 +170,9 @@ final class ParseSession
         return $this->source;
     }
 
+    /**
+     * @param list<list<string>>|null $paths
+     */
     public function recordFailure(int $byteOffset, ?string $expected = null, ?array $paths = null): void
     {
         $this->source->span($byteOffset, $byteOffset);

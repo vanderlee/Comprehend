@@ -13,6 +13,8 @@ use Vanderlee\Comprehend\Parser\Parser;
  * Abstract class indicating a parser that consists of multiple parsers and can be accessed as an array.
  *
  * @author Martijn
+ * @implements IteratorAggregate<array-key, Parser>
+ * @implements ArrayAccess<array-key, Parser>
  */
 abstract class IterableParser extends Parser implements IteratorAggregate, ArrayAccess
 {
@@ -26,6 +28,7 @@ abstract class IterableParser extends Parser implements IteratorAggregate, Array
         return new ArrayIterator($this->parsers);
     }
 
+    /** @param mixed $value Validated at the public array-access boundary. */
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if (!$value instanceof Parser) {

@@ -11,7 +11,13 @@ use Vanderlee\Comprehend\Parser\Parser;
 /** Resolve factories and detach owned state while preserving sharing and cycles. */
 final class GraphSnapshot
 {
+    /**
+     * @var SplObjectStorage<Parser|Definition, Parser|Definition>
+     */
     private SplObjectStorage $copies;
+    /**
+     * @var array<string, RuleReference>
+     */
     private array $references = [];
 
     public function __construct(private readonly bool $resolveReferences = true)
@@ -24,6 +30,11 @@ final class GraphSnapshot
         return $this->copyObject($parser);
     }
 
+    /**
+     * @template T of Parser|Definition
+     * @param T $object
+     * @return T
+     */
     private function copyObject(Parser|Definition $object): Parser|Definition
     {
         if (isset($this->copies[$object])) {

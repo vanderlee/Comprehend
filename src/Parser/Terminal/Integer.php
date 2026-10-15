@@ -119,6 +119,9 @@ class Integer extends Parser
         return $this->failure($source, $byteOffset);
     }
 
+    /**
+     * @return array<array-key, int>
+     */
     private function digitValues(bool $caseSensitive): array
     {
         $values = [];
@@ -132,7 +135,10 @@ class Integer extends Parser
         return $values;
     }
 
-    /** Alternatives keep multibyte symbols intact, including on byte sources. */
+    /**
+     * Alternatives keep multibyte symbols intact, including on byte sources.
+     * @param list<string> $symbols
+     */
     private static function digitPattern(array $symbols): string
     {
         $text = implode('', $symbols);
@@ -144,7 +150,11 @@ class Integer extends Parser
         return '(?:' . implode('|', $quoted) . ')';
     }
 
-    /** Accumulate negatively so PHP_INT_MIN remains representable; reject overflow. */
+    /**
+     * Accumulate negatively so PHP_INT_MIN remains representable; reject overflow.
+     * @param list<string> $symbols
+     * @param array<array-key, int> $values
+     */
     private function integerValue(
         array $symbols,
         array $values,

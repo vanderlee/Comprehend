@@ -9,6 +9,9 @@ use Vanderlee\Comprehend\Directive\Prefer;
 
 trait PreferContextTrait
 {
+    /**
+     * @var list<string>
+     */
     private array $preference = [];
 
     public function pushPreference(string $preference): void

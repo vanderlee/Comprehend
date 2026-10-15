@@ -21,7 +21,13 @@ final class Reader
 {
     private int $position = 0;
     private readonly ByteSource $source;
+    /**
+     * @var array<string, true>
+     */
     private array $definitions = [];
+    /**
+     * @var array<string, int>
+     */
     private array $references = [];
 
     public function __construct(

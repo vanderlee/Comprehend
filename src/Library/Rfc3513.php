@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
+use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Parser\Parser;
 
 /**
  * IPv6 address
@@ -27,8 +29,14 @@ use Vanderlee\Comprehend\Comprehend as C;
  */
 class Rfc3513 extends AbstractRuleset
 {
+    /**
+     * @var string
+     */
     protected static $name = 'Rfc3513';
 
+    /**
+     * @param array<string, C|Parser|Definition|callable> $overwrites
+     */
     public function __construct($overwrites = [])
     {
         /*

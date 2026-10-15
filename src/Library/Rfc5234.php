@@ -17,5 +17,8 @@ namespace Vanderlee\Comprehend\Library;
  */
 class Rfc5234 extends Rfc4234
 {
+    /**
+     * @var string
+     */
     protected static $name = 'Rfc5234';
 }

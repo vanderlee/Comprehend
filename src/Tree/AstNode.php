@@ -31,6 +31,12 @@ final class AstNode implements JsonSerializable
         self::validateStructure($span, $children, $tags, $preamble, $postamble);
     }
 
+    /**
+     * @param array<array-key, mixed> $children
+     * @param array<array-key, mixed> $tags
+     * @param array<array-key, mixed> $preamble
+     * @param array<array-key, mixed> $postamble
+     */
     private static function validateStructure(
         Span $span,
         array $children,
@@ -72,7 +78,10 @@ final class AstNode implements JsonSerializable
         return new self(null, null, $root->span, self::surround($nodes, $root->span), $root->tags);
     }
 
-    /** @return list<AstNode> */
+    /**
+     * @return list<AstNode>
+     * @param list<string> $inheritedTags
+     */
     private static function project(ConcreteNode $node, array $inheritedTags = []): array
     {
         if ($node->isTrivia) {
@@ -89,7 +98,11 @@ final class AstNode implements JsonSerializable
             : [new self($node->name, $node->group, $node->span, self::surround($children, $node->span), $tags)];
     }
 
-    /** Unnamed gaps lead the next sibling; the final gap trails the last sibling. */
+    /**
+     * Unnamed gaps lead the next sibling; the final gap trails the last sibling.
+     * @param list<AstNode> $nodes
+     * @return list<AstNode>
+     */
     private static function surround(array $nodes, Span $parent): array
     {
         $cursor = $parent->start;

@@ -85,17 +85,26 @@ final class Comprehend
         return Syntax::create();
     }
 
-    /** Names reserved by built-in factory and fluent dispatch. */
+    /**
+     * Names reserved by built-in factory and fluent dispatch.
+     * @return list<string>
+     */
     public static function syntaxNames(): array
     {
         return Catalog::builtinNames();
     }
 
+    /**
+     * @param array<array-key, mixed> $arguments
+     */
     public static function __callStatic(string $name, array $arguments): self
     {
         return self::callSyntax($name, $arguments);
     }
 
+    /**
+     * @param array<array-key, mixed> $arguments
+     */
     public function __call(string $name, array $arguments): self
     {
         $name = strtolower($name);
@@ -108,7 +117,10 @@ final class Comprehend
         return $this->then(self::callSyntax($name, $arguments, $this->syntax));
     }
 
-    /** @internal Scoped vocabularies call this same typed dispatch boundary. */
+    /**
+     * @internal Scoped vocabularies call this same typed dispatch boundary.
+     * @param array<array-key, mixed> $arguments
+     */
     public static function callSyntax(string $name, array $arguments, ?Syntax $syntax = null): self
     {
         $name = strtolower($name);
@@ -132,6 +144,9 @@ final class Comprehend
         return new self($expression->parser, $syntax);
     }
 
+    /**
+     * @param array<array-key, mixed> $arguments
+     */
     private static function invoke(Closure $factory, array $arguments): mixed
     {
         $signature = new ReflectionFunction($factory);

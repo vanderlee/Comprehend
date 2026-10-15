@@ -11,6 +11,9 @@ final class ParseMetrics
 {
     private int $entries = 0;
     private int $repeatedPositions = 0;
+    /**
+     * @var array<string, Parser>
+     */
     private array $positions = [];
 
     public function __construct(private readonly int $maxTrackedPositions = 4096)
@@ -31,7 +34,10 @@ final class ParseMetrics
         }
     }
 
-    /** Repeated positions ignore scope context: they are candidates, not proven cache hits. */
+    /**
+     * Repeated positions ignore scope context: they are candidates, not proven cache hits.
+     * @return array{parser_entries: int, repeated_positions: int, tracked_positions: int, capacity: int}
+     */
     public function snapshot(): array
     {
         return [

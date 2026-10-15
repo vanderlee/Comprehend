@@ -24,11 +24,26 @@ abstract class Parser
     use Output\ResultTrait;
     use Output\AssignTrait;
 
+    /**
+     * @var list<callable>
+     */
     private array $effects = [];
+    /**
+     * @var callable|null
+     */
     private $valueMapper = null;
+    /**
+     * @var list<callable>
+     */
     private array $guards = [];
+    /**
+     * @var list<callable>
+     */
     private array $semanticValidators = [];
     private string|int|\Closure|null $nodeName = null;
+    /**
+     * @var list<string>
+     */
     private array $nodeTags = [];
     private ?string $nodeGroup = null;
     private bool $semanticLeaf = false;
@@ -236,6 +251,9 @@ abstract class Parser
         return $match;
     }
 
+    /**
+     * @param list<Success>|Success $children
+     */
     protected function success(Source $source, int $offset, int $length = 0, array|Success $children = []): Success
     {
         $success = new Success($length, is_array($children) ? $children : [$children]);
@@ -336,6 +354,9 @@ abstract class Parser
 
     abstract public function __toString(): string;
 
+    /**
+     * @param list<Success>|Success $children
+     */
     protected function makeMatch(
         bool $accepted,
         Source $source,

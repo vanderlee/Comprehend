@@ -8,6 +8,9 @@ use Vanderlee\Comprehend\Source\SourceMode;
 
 trait CaseSensitiveContextTrait
 {
+    /**
+     * @var list<bool>
+     */
     private array $caseSensitivity = [];
 
     public function pushCaseSensitivity(bool $caseSensitive = true): void

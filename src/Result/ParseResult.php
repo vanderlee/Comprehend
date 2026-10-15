@@ -86,6 +86,9 @@ final class ParseResult
         return $this->match instanceof Success && $this->match->isCommitted();
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     public function results(): array
     {
         $results = $this->match->getResults();

@@ -13,14 +13,22 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
+use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Parser\Parser;
 
 /**
  */
 class Rfc2234 extends AbstractRuleset
 {
+    /**
+     * @var string
+     */
     protected static $name = 'Rfc2234';
 
+    /**
+     * @param array<string, C|Parser|Definition|callable> $overwrites
+     */
     public function __construct($overwrites = [])
     {
         /*

@@ -9,7 +9,7 @@ trait ResultTrait
     /**
      * Map of resolved result callbacks.
      *
-     * @var array|null
+     * @var array<array-key, mixed>|null
      */
     private ?array $resultCache = null;
     private ?\Throwable $resultError = null;
@@ -45,7 +45,7 @@ trait ResultTrait
     /**
      * Pre-calculate results.
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function getResults(): array
     {
@@ -75,7 +75,7 @@ trait ResultTrait
      * Handle all registered result callbacks for this match and any matches
      * at deeper levels of this match.
      *
-     * @param array $results map of result-key => value
+     * @param array<array-key, mixed> $results map of result-key => value
      */
     private function processResultCallbacks(array &$results): void
     {

@@ -12,7 +12,10 @@ final class ConcreteNode implements \JsonSerializable
 {
     use Serialization;
 
-    /** @param list<ConcreteNode> $children */
+    /**
+     * @param list<ConcreteNode> $children
+     * @param list<string> $tags
+     */
     public function __construct(
         public string $kind,
         public readonly Span $span,
@@ -26,6 +29,10 @@ final class ConcreteNode implements \JsonSerializable
         self::validateStructure($span, $children, $tags);
     }
 
+    /**
+     * @param array<array-key, mixed> $children
+     * @param array<array-key, mixed> $tags
+     */
     private static function validateStructure(Span $span, array $children, array $tags): void
     {
         if (!array_is_list($tags)) {

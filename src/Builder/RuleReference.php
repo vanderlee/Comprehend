@@ -15,6 +15,9 @@ final class RuleReference extends Parser
     private ?Parser $target = null;
     private readonly object $scopeIdentity;
 
+    /**
+     * @param array<array-key, mixed> $arguments
+     */
     public function __construct(
         private ?AbstractRuleset $rules,
         private readonly string $rule,
@@ -25,7 +28,10 @@ final class RuleReference extends Parser
         $this->diagnosticRule($rule);
     }
 
-    /** @internal Parameter identities avoid serializing user objects. */
+    /**
+     * @internal Parameter identities avoid serializing user objects.
+     * @return array{object, string, array<array-key, mixed>}
+     */
     public function graphKey(): array
     {
         return [$this->scopeIdentity, $this->rule, $this->arguments];

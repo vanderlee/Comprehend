@@ -15,7 +15,7 @@ final class Definition
     public $generator;
     /** @var list<callable(ParseResult): bool|string> */
     public array $validators = [];
-    /** @var array<string, callable(array): mixed> */
+    /** @var array<string, callable(array<array-key, mixed>): mixed> */
     public array $processors = [];
 
     public function __construct(Comprehend|Parser|callable $generator, ?callable $validator = null)

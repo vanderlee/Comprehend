@@ -32,10 +32,22 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 /** Conservative structural analysis: opaque custom recognizers remain runtime guarded. */
 final class GraphAnalysis
 {
+    /**
+     * @var array<int, Parser>
+     */
     private array $nodes = [];
+    /**
+     * @var array<int, list<string>>
+     */
     private array $paths = [];
+    /**
+     * @var array<int, bool|null>
+     */
     private array $nullable = [];
 
+    /**
+     * @return list<string>
+     */
     public function validate(Parser $root): array
     {
         $this->collect($root, []);
@@ -51,6 +63,9 @@ final class GraphAnalysis
         return $warnings;
     }
 
+    /**
+     * @param list<string> $path
+     */
     private function collect(Parser $node, array $path): void
     {
         $id = spl_object_id($node);
@@ -71,6 +86,9 @@ final class GraphAnalysis
         }
     }
 
+    /**
+     * @return list<string>
+     */
     private function initializeNullability(): array
     {
         $warnings = [];
@@ -179,6 +197,9 @@ final class GraphAnalysis
         return in_array(null, $values, true) ? null : true;
     }
 
+    /**
+     * @return list<Parser>
+     */
     private function grammarChildren(Parser $node): array
     {
         if ($node instanceof RuleReference || $node instanceof Implementation) {
@@ -236,6 +257,10 @@ final class GraphAnalysis
         }
     }
 
+    /**
+     * @param array<int, string> $active
+     * @param array<int, true> $completed
+     */
     private function checkLeadingCycles(Parser $node, array $active, array &$completed): void
     {
         $id = spl_object_id($node);
@@ -256,6 +281,9 @@ final class GraphAnalysis
         $completed[$id] = true;
     }
 
+    /**
+     * @return list<Parser>
+     */
     private function leadingChildren(Parser $node): array
     {
         if (!$this->isKnown($node)) {
