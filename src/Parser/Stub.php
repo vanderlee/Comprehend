@@ -44,6 +44,12 @@ class Stub extends Parser implements AnalyzableParser
         return $this->parser === null ? 'Unresolved stub' : null;
     }
 
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return $this->parser === null ? [] : [$this->parser];
+    }
+
     protected function analysisTarget(): Parser
     {
         return $this->parser ?? throw new \LogicException('Unresolved stub');

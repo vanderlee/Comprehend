@@ -27,6 +27,12 @@ class Space extends Parser implements AnalyzableParser
         return $this->parser;
     }
 
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return $this->spacer === null ? [$this->parser] : [$this->spacer, $this->parser];
+    }
+
     protected function analysisTarget(): Parser
     {
         return $this->getParser();

@@ -103,6 +103,12 @@ abstract class AbstractRuleset extends Parser implements AnalyzableParser
         return Comprehend::ref($this, $name, ...$arguments);
     }
 
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return [$this->resolveRule(self::ROOT)];
+    }
+
     protected function analysisTarget(): Parser
     {
         return $this->resolveRule(self::ROOT);

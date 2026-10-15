@@ -27,6 +27,12 @@ class Trivia extends Parser implements AnalyzableParser
         return $this->parser;
     }
 
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return [$this->parser];
+    }
+
     protected function analysisTarget(): Parser
     {
         return $this->getParser();

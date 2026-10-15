@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Builder;
 
 use ReflectionObject;
+use ReflectionProperty;
 use SplObjectStorage;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -41,10 +42,16 @@ final class GraphSnapshot
     {
         if (isset($this->copies[$object])) {
             $copy = $this->copies[$object];
-            if ($object instanceof Parser && $copy instanceof Parser) {
+            if (
+                $object instanceof Parser
+                && $copy instanceof Parser
+            ) {
                 return $copy;
             }
-            if ($object instanceof Definition && $copy instanceof Definition) {
+            if (
+                $object instanceof Definition
+                && $copy instanceof Definition
+            ) {
                 return $copy;
             }
             throw new \LogicException('Snapshot copy must preserve the parser or definition category');
@@ -52,7 +59,10 @@ final class GraphSnapshot
         if ($object instanceof RuleReference) {
             return $this->copyReference($object);
         }
-        if ($object instanceof AbstractRuleset && $this->resolveReferences) {
+        if (
+            $object instanceof AbstractRuleset
+            && $this->resolveReferences
+        ) {
             $copy = clone $object;
             $this->copies[$object] = $copy;
             $copy->bindSnapshotRoot($this->copy($object->resolveRule(AbstractRuleset::ROOT, [], true)));
@@ -62,7 +72,7 @@ final class GraphSnapshot
         $copy = (new ReflectionObject($object))->newInstanceWithoutConstructor();
         $this->copies[$object] = $copy;
         $this->copies[$copy] = $copy;
-        foreach (GraphState::properties($object) as $property) {
+        foreach ($this->properties($object) as $property) {
             if (
                 $object instanceof Implementation
                 && $this->resolveReferences
@@ -74,11 +84,35 @@ final class GraphSnapshot
             }
             $property->setValue($copy, $this->copyValue($property->getValue($object)));
         }
-        if ($copy instanceof Implementation && $this->resolveReferences) {
+        if (
+            $copy instanceof Implementation
+            && $this->resolveReferences
+        ) {
             $copy->bindSnapshotTarget($this->copy($copy->graphTarget()));
         }
 
         return $copy;
+    }
+
+    /** @return list<ReflectionProperty> Initialized instance properties, including inherited private state. */
+    private function properties(object $object): array
+    {
+        $properties = [];
+        for ($class = new ReflectionObject($object); $class !== false; $class = $class->getParentClass()) {
+            foreach ($class->getProperties() as $property) {
+                if (
+                    $property->isStatic()
+                    || $property->getDeclaringClass()->getName() !== $class->getName()
+                ) {
+                    continue;
+                }
+                if ($property->isInitialized($object)) {
+                    $properties[] = $property;
+                }
+            }
+        }
+
+        return $properties;
     }
 
     private function copyReference(RuleReference $reference): RuleReference

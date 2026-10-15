@@ -15,6 +15,19 @@ use Vanderlee\Comprehend\Source\ByteSource;
 
 final class GraphSnapshotTest extends TestCase
 {
+    public function testCopyingOwnedStateDoesNotExecuteSemanticCallbacks(): void
+    {
+        $calls = 0;
+        $child = (new Text('a'))->mapValue(static function () use (&$calls): int {
+            return ++$calls;
+        });
+        $copy = (new GraphSnapshot())->copy(new Sequence($child));
+
+        $this->assertCount(1, $copy->children());
+        $this->assertNotSame($child, $copy->children()[0]);
+        $this->assertSame(0, $calls);
+    }
+
     public function testSharedDefinitionsRemainDefinitionsWhenCopiedFromCache(): void
     {
         $definition = new Definition(new Text('a'));

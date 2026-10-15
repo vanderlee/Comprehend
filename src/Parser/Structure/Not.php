@@ -9,6 +9,7 @@ use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Parser\FailureDiagnosticAtStart;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
@@ -17,7 +18,7 @@ use Vanderlee\Comprehend\Source\Source;
  * Implements negative lookahead without consuming input. Rejects when its child matches and
  * discards probe diagnostics so lookahead does not contaminate ordinary failures.
  */
-class Not extends Parser implements AnalyzableParser
+class Not extends Parser implements AnalyzableParser, FailureDiagnosticAtStart
 {
     use DefaultAnalysisTrait;
 
@@ -38,6 +39,12 @@ class Not extends Parser implements AnalyzableParser
     public function analysisNullability(NullabilityLookup $lookup): ?bool
     {
         return true;
+    }
+
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return [$this->parser];
     }
 
     public function __toString(): string

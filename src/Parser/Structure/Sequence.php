@@ -72,6 +72,17 @@ class Sequence extends IterableParser implements AnalyzableParser
         return $lookup->every(array_values($this->parsers));
     }
 
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        $children = parent::children();
+        if ($this->spacer !== null) {
+            $children[] = $this->spacer;
+        }
+
+        return $children;
+    }
+
     public function __toString(): string
     {
         return '( ' . implode(' ', $this->parsers) . ' )';

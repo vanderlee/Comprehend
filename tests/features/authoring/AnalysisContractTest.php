@@ -93,6 +93,11 @@ final class AnalysisContractTest extends TestCase
             {
                 return [$this->child];
             }
+
+            public function children(): array
+            {
+                return [$this->child];
+            }
         };
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Nullable repetition:');
@@ -207,6 +212,11 @@ final class AnalysisContractTest extends TestCase
             protected function analysisTarget(): Parser
             {
                 return $this->child;
+            }
+
+            public function children(): array
+            {
+                return [$this->child];
             }
 
             public function __toString(): string

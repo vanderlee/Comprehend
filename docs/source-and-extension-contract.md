@@ -39,6 +39,26 @@ entry/end bounds, UTF-8 boundaries, diagnostics, guards and immutable CST output
 It never commits effects. A returned partial code point or foreign-source record
 is an extension error. Internal execution records are not consumer result types.
 
+Implement the optional `Parser\FailureDiagnosticAtStart` marker interface when
+a failed recognition should report its fallback diagnostic at the entry byte
+offset, independently of observed progress. `Not` and `Except` implement this
+marker. Other parsers default to entry offset plus observed failure progress.
+The marker does not change the failure length or consumption, and does not replace
+diagnostics explicitly recorded during recognition.
+
+`Parser::children(): array` returns a list of all direct parser dependencies.
+The default returns an empty list for terminals. Composite extensions must override
+it to expose operands and stored policies, including spacing parsers, even when
+they are not leading recognition operands. Return the same parser identities on
+repeated calls until the builder changes; sharing and recursive cycles are allowed.
+Discovery must not recognize input or run semantic callbacks. Deferred references
+return their resolved target, materializing grammar factories when necessary.
+
+Graph analysis traverses this method rather than reflecting over parser fields.
+Snapshot copying still uses declared Parser/Definition fields and arrays. Exposing
+children from a collection object enables discovery, but does not make snapshot
+copying detach that collection or its contents.
+
 Recognition must be pure. Attach `guard(callable(ConcreteNode): bool)` for
 speculative rejection, `validateSemantic(callable(ParseResult): bool|string)`
 for selected validation, `mapValue(callable(ParseResult): mixed)` for lazy typed
@@ -117,6 +137,11 @@ final class Wrapper extends Parser implements AnalyzableParser
 
     public function __construct(private Parser $child) {}
 
+    public function children(): array
+    {
+        return [$this->child];
+    }
+
     protected function analysisTarget(): Parser
     {
         return $this->child;
@@ -134,9 +159,10 @@ final class Wrapper extends Parser implements AnalyzableParser
 }
 ```
 
-Keep operands in declared Parser fields or arrays so graph snapshots and discovery
-include them. Analysis operands must belong to the collected graph; returning or
-looking up an undiscovered operand raises `LogicException`. Discovery also includes
+Keep operands in declared Parser fields or arrays so graph snapshots copy them,
+and expose them through `children()` for discovery. Analysis operands must belong
+to the collected graph; returning or looking up an undiscovered operand raises
+`LogicException`. Discovery also includes
 stored policy parsers, such as spacing, which need not be leading operands.
 
 Subclasses inherit the analysis contract. If recognition behavior changes, update

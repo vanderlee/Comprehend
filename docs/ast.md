@@ -7,6 +7,9 @@ containers promote their named descendants into a synthetic root spanning the
 accepted input. Completely unnamed input still has a full-span synthetic root.
 Explicit rule references name their grammar scope. Trivia and its descendants
 are omitted. A semantic-leaf marker hides AST descendants while keeping the CST.
+Subclasses of `Directive\Trivia` retain trivia classification, including in the
+concrete node passed to a dynamic name callback. Their CST kind remains the
+subclass name.
 
 ```php
 $letter = (new \Vanderlee\Comprehend\Parser\Terminal\Text('é'))->name('letter');

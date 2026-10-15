@@ -10,6 +10,7 @@ use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Parser\FailureDiagnosticAtStart;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
@@ -20,7 +21,7 @@ use Vanderlee\Comprehend\Source\Source;
  *
  * @author Martijn
  */
-class Except extends Parser implements AnalyzableParser
+class Except extends Parser implements AnalyzableParser, FailureDiagnosticAtStart
 {
     use DefaultAnalysisTrait;
 
@@ -58,6 +59,12 @@ class Except extends Parser implements AnalyzableParser
     public function analysisNullability(NullabilityLookup $lookup): ?bool
     {
         return $lookup->get($this->parserMatch);
+    }
+
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return [$this->parserMatch, $this->parserNot];
     }
 
     public function __toString(): string

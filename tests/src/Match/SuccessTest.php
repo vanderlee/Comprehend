@@ -6,6 +6,7 @@ namespace Tests\Src\Match;
 
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Source\ByteSource;
 
@@ -17,14 +18,14 @@ final class SuccessTest extends TestCase
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('Concrete nodes require source-bound recognition');
 
-        $success->buildConcreteNode('test');
+        $success->buildConcreteNode(new Text('a'));
     }
 
     public function testValueMappingIsLazyAndCachedIndependentlyOfCommit(): void
     {
         $success = new Success(1);
         $success->setSourceMetadata((new ByteSource('a'))->span(0, 1), null);
-        $success->buildConcreteNode('test');
+        $success->buildConcreteNode(new Text('a'));
         $calls = 0;
         $success->setValueMapper(static function (ParseResult $result) use (&$calls): string {
             ++$calls;

@@ -75,6 +75,16 @@ abstract class Parser
         return $this->diagnosticName();
     }
 
+    /**
+     * All direct parser dependencies, including stored policies. Override in composites.
+     * Return stable parser identities without recognizing input or running semantic callbacks.
+     * @return list<Parser>
+     */
+    public function children(): array
+    {
+        return [];
+    }
+
     protected function diagnosticName(): string
     {
         $separator = strrpos(static::class, '\\');
@@ -218,9 +228,12 @@ abstract class Parser
         $session->pushRule($this->diagnosticName());
         try {
             $match = $this->recognize($source, $offset, $session);
-            if (!$match->accepted && $failureRevision === $session->failureRevision()) {
+            if (
+                !$match->accepted
+                && $failureRevision === $session->failureRevision()
+            ) {
                 $session->recordFailure(
-                    $this instanceof Structure\Not || $this instanceof Structure\Except
+                    $this instanceof FailureDiagnosticAtStart
                         ? $offset
                         : $offset + $match->length,
                     $this->diagnosticExpectation(),
@@ -306,7 +319,7 @@ abstract class Parser
         Success $match,
     ): AbstractMatch {
         $match->buildConcreteNode(
-            static::class,
+            $this,
             $this->nodeName,
             $this->nodeGroup,
             $this->semanticLeaf,

@@ -86,6 +86,12 @@ class Repeat extends Parser implements AnalyzableParser
         return $this->min === 0 ? true : $lookup->get($this->parser);
     }
 
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return $this->spacer === null ? [$this->parser] : [$this->parser, $this->spacer];
+    }
+
     public function __toString(): string
     {
         // Output ABNF formatting

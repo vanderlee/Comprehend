@@ -63,6 +63,12 @@ final class Implementation extends Parser implements AnalyzableParser
         $this->parser = $parser;
     }
 
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return [$this->graphTarget()];
+    }
+
     protected function analysisTarget(): Parser
     {
         return $this->graphTarget();

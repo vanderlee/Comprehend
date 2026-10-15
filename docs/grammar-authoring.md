@@ -93,7 +93,8 @@ Snapshots copy declared Parser/Definition fields and arrays, including readonly
 fields, without invoking constructors. Closures and non-parser service/value
 objects remain caller-owned dependencies; freeze does not deep-freeze external
 objects or variables captured by reference. Custom recognizers should keep their
-grammar structure in declared Parser fields and keep external dependencies pure.
+grammar structure in declared Parser fields, expose dependencies through
+`children()`, and keep external dependencies pure.
 Dynamic child construction remains opaque to static analysis.
 
 ## Immutable fluent composition

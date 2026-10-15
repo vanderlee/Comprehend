@@ -24,6 +24,12 @@ abstract class IterableParser extends Parser implements IteratorAggregate, Array
      */
     protected $parsers = [];
 
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return array_values($this->parsers);
+    }
+
     public function getIterator(): \Traversable
     {
         return new ArrayIterator($this->parsers);

@@ -53,7 +53,7 @@ final class GraphAnalysis
                 throw new LogicException($error . ': ' . implode(' -> ', $this->paths[$id]));
             }
         }
-        foreach (GraphState::children($node) as $child) {
+        foreach ($node->children() as $child) {
             $this->collect($child, $this->paths[$id]);
         }
     }

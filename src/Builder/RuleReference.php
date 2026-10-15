@@ -50,6 +50,12 @@ final class RuleReference extends Parser implements AnalyzableParser
         $this->rules = null;
     }
 
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return [$this->graphTarget()];
+    }
+
     protected function analysisTarget(): Parser
     {
         return $this->graphTarget();

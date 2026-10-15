@@ -57,6 +57,12 @@ class All extends Parser implements AnalyzableParser
         return $lookup->any(array_values($this->parsers));
     }
 
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return array_values($this->parsers);
+    }
+
     public function __toString(): string
     {
         return '( ' . implode(' + ', $this->parsers) . ' )';

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Match;
 
+use Closure;
+use LogicException;
+use UnexpectedValueException;
 use Vanderlee\Comprehend\Directive\Trivia;
 use Vanderlee\Comprehend\Match\Output\CallbackTrait;
 use Vanderlee\Comprehend\Match\Output\ResultTrait;
+use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Result\SemanticProjection;
 use Vanderlee\Comprehend\Result\ValidationResult;
@@ -78,43 +82,49 @@ class Success extends AbstractMatch
      * @param list<string> $tags
      */
     public function buildConcreteNode(
-        string $kind,
-        string|int|\Closure|null $name = null,
+        Parser $parser,
+        string|int|Closure|null $name = null,
         ?string $group = null,
         bool $leaf = false,
         array $tags = [],
     ): void {
         $span = $this->span;
         if ($span === null) {
-            throw new \LogicException('Concrete nodes require source-bound recognition');
+            throw new LogicException('Concrete nodes require source-bound recognition');
         }
+        $kind = $parser::class;
+        $isTrivia = $parser instanceof Trivia;
         $children = [];
         foreach ($this->concreteMatches as $match) {
             if ($match->node === null) {
-                throw new \LogicException('Concrete children require source-bound recognition');
+                throw new LogicException('Concrete children require source-bound recognition');
             }
             $children[] = $match->node;
         }
-        if ($name instanceof \Closure) {
+        if ($name instanceof Closure) {
             $name = $name(new ConcreteNode(
                 $kind,
                 $span,
                 $children,
-                $kind === Trivia::class,
+                $isTrivia,
                 null,
                 $group,
                 $leaf,
                 $tags,
             ));
-            if ($name !== null && !is_string($name) && !is_int($name)) {
-                throw new \UnexpectedValueException('Dynamic names must return string, int or null');
+            if (
+                $name !== null
+                && !is_string($name)
+                && !is_int($name)
+            ) {
+                throw new UnexpectedValueException('Dynamic names must return string, int or null');
             }
         }
         $this->setConcreteNode(new ConcreteNode(
             $kind,
             $span,
             $children,
-            $kind === Trivia::class,
+            $isTrivia,
             $name,
             $group,
             $leaf,
@@ -158,7 +168,7 @@ class Success extends AbstractMatch
     public function commit(): void
     {
         if ($this->committing || $this->effectsProcessing) {
-            throw new \LogicException('Recursive effect commit');
+            throw new LogicException('Recursive effect commit');
         }
         if ($this->commitError !== null) {
             throw $this->commitError;
@@ -167,7 +177,7 @@ class Success extends AbstractMatch
             return;
         }
         if (!$this->validateSemantic()->valid) {
-            throw new \LogicException('Semantic validation rejected commit');
+            throw new LogicException('Semantic validation rejected commit');
         }
         $this->resolved = true;
         $this->committing = true;
@@ -190,7 +200,7 @@ class Success extends AbstractMatch
             return $this->validation;
         }
         if ($this->validating) {
-            throw new \LogicException('Recursive semantic validation');
+            throw new LogicException('Recursive semantic validation');
         }
         $this->validating = true;
         try {
@@ -242,7 +252,7 @@ class Success extends AbstractMatch
             } elseif (is_string($outcome)) {
                 $errors[] = $outcome;
             } elseif ($outcome !== true) {
-                throw new \UnexpectedValueException('Semantic validators must return true, false or an error string');
+                throw new UnexpectedValueException('Semantic validators must return true, false or an error string');
             }
         }
 

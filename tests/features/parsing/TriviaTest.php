@@ -7,15 +7,44 @@ namespace Tests\features\parsing;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Tests\ParserTestCase;
 use Vanderlee\Comprehend\Directive\Space;
+use Vanderlee\Comprehend\Directive\Trivia;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Regex;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 class TriviaTest extends ParserTestCase
 {
+    public function testTriviaSubclassIsClassifiedBeforeDynamicNamingAndOmittedFromAst(): void
+    {
+        $trivia = new class (new Text(' ')) extends Trivia {
+            public function __toString(): string
+            {
+                return 'custom trivia';
+            }
+        };
+        $namingSawTrivia = false;
+        $trivia->name(static function (ConcreteNode $node) use (&$namingSawTrivia): string {
+            $namingSawTrivia = $node->isTrivia;
+
+            return 'space';
+        });
+        $parser = (new Sequence($trivia, (new Text('a'))->name('letter')))->name('root');
+        $result = $parser->parseAll(new ByteSource(' a'));
+
+        $this->assertTrue($result->success);
+        $this->assertTrue($namingSawTrivia);
+        $this->assertTrue($result->node->children[0]->isTrivia);
+        $this->assertSame($trivia::class, $result->node->children[0]->kind);
+        $this->assertFalse($result->node->children[1]->isTrivia);
+        $this->assertSame(' a', $result->rawText());
+        $this->assertCount(1, $result->ast()->children);
+        $this->assertSame('letter', $result->ast()->children[0]->name);
+    }
+
     public function testExplicitAndAutomaticTriviaRoundTripNestedUnnamedInput()
     {
         $trivia = (new Regex('~(?:\s|/\*[^*]*\*/)*~'))->lexeme()->trivia();
