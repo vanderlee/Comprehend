@@ -1,7 +1,7 @@
 # Comprehend 2.0.0 breaking-release preparation
 
 The 2.0.0 candidate exposes one canonical source/recognition/result/lifecycle
-contract. PHP 8.2+ and DOM, JSON and mbstring are required. Existing 1.x callers
+contract. PHP 8.1+ and DOM, JSON and mbstring are required. Existing 1.x callers
 must migrate; removed APIs have no compatibility adapters or deprecation window.
 The changelog remains marked Unreleased until publication is ready.
 
@@ -72,7 +72,7 @@ The release example checks caller changes with canonical Source, frozen named
 grammars, typed values, custom recognition and idempotent commit. Removed APIs
 are not simulated or reintroduced to run an obsolete before-example.
 
-Required CI jobs run on PHP 8.2–8.5; PHP 8.6 is experimental/nonblocking. A local
+Required CI jobs run on PHP 8.1–8.5; PHP 8.6 is experimental/nonblocking. A local
 PHP 8.2 pass does not verify that matrix. The release workflow reuses the same
 test workflow at the tagged commit, following
 [GitHub's reusable-workflow contract](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows).

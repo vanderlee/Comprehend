@@ -9,7 +9,7 @@ use JsonSerializable;
 use Vanderlee\Comprehend\Source\Span;
 
 /** Named structure; raw source remains independent of semantic results. */
-final readonly class AstNode implements JsonSerializable
+final class AstNode implements JsonSerializable
 {
     use Serialization;
 
@@ -20,13 +20,13 @@ final readonly class AstNode implements JsonSerializable
      * @param list<Span> $postamble
      */
     public function __construct(
-        public string|int|null $name,
-        public ?string $group,
-        public Span $span,
-        public array $children = [],
-        public array $tags = [],
-        public array $preamble = [],
-        public array $postamble = [],
+        public readonly string|int|null $name,
+        public readonly ?string $group,
+        public readonly Span $span,
+        public readonly array $children = [],
+        public readonly array $tags = [],
+        public readonly array $preamble = [],
+        public readonly array $postamble = [],
     ) {
         if (!array_is_list($tags) || !array_is_list($preamble) || !array_is_list($postamble)) {
             throw new InvalidArgumentException('Tags and surrounding spans must be lists');

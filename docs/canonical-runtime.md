@@ -67,10 +67,10 @@ but automatic trivia does not add named collections or AST nodes.
 
 ## Verification and remaining work
 
-The local Phase 2A suite and examples are verified on PHP 8.2. The existing CI
-matrix runs the suite, syntax/API removal gate, Composer checks and examples on
-PHP 8.2–8.5; those other runtimes are not locally installed. No remote CI run is
-claimed by this document.
+The suite, examples, canonical gate and PHPStan have been verified locally on
+PHP 8.1.34 with freshly resolved dependencies in an isolated build copy, as well
+as PHP 8.2.10 in the working tree. CI targets PHP 8.1–8.5, with an experimental
+PHP 8.6 job. No remote CI run is claimed by this document.
 
 Phase 3 still owns graph-wide reference resolution/freezing, the new named graph
 API, immutable fluent composition, graph analysis and facade equivalence. The

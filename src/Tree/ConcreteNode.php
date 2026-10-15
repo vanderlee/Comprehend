@@ -8,20 +8,20 @@ use InvalidArgumentException;
 use Vanderlee\Comprehend\Source\Span;
 
 /** Immutable recognition structure, independent of semantic projections. */
-final readonly class ConcreteNode implements \JsonSerializable
+final class ConcreteNode implements \JsonSerializable
 {
     use Serialization;
 
     /** @param list<ConcreteNode> $children */
     public function __construct(
-        public string $kind,
-        public Span $span,
-        public array $children = [],
-        public bool $isTrivia = false,
-        public string|int|null $name = null,
-        public ?string $group = null,
-        public bool $semanticLeaf = false,
-        public array $tags = [],
+        public readonly string $kind,
+        public readonly Span $span,
+        public readonly array $children = [],
+        public readonly bool $isTrivia = false,
+        public readonly string|int|null $name = null,
+        public readonly ?string $group = null,
+        public readonly bool $semanticLeaf = false,
+        public readonly array $tags = [],
     ) {
         if (!array_is_list($tags)) {
             throw new InvalidArgumentException('Node tags must be a list');

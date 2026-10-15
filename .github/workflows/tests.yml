@@ -20,6 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - php: '8.1'
+            composer: 'v2'
           - php: '8.2'
             composer: 'v2'
           - php: '8.3'
@@ -60,6 +62,9 @@ jobs:
       - name: Verify canonical API and syntax
         run: php tools/check-canonical.php
 
+      - name: Verify quick start
+        run: php docs/examples/quick-start.php
+
       - name: Verify execution examples
         run: php docs/examples/execution.php
 
@@ -92,7 +97,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.1'
           extensions: dom, json, mbstring
           tools: composer:v2
           coverage: none

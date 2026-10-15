@@ -8,9 +8,9 @@ use Closure;
 use Vanderlee\Comprehend\Syntax\Catalog;
 
 /** An immutable vocabulary of start and continuation callbacks. */
-final readonly class Syntax
+final class Syntax
 {
-    private function __construct(private Catalog $catalog) {}
+    private function __construct(private readonly Catalog $catalog) {}
 
     public static function create(): self
     {

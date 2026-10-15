@@ -1,6 +1,6 @@
 # Contributing
 
-Use PHP 8.2+ with DOM, JSON and mbstring. Install development dependencies with
+Use PHP 8.1+ with DOM, JSON and mbstring. Install development dependencies with
 Composer. Run platform checks, PHPUnit, the canonical API/syntax gate and examples:
 
 ```sh
@@ -17,8 +17,14 @@ php tools/release-notes.php 2.0.0
 ```
 
 The PHPUnit configuration covers `src`; a coverage driver optionally writes
-Clover output under `build/logs`. CI runs the checks on PHP 8.2–8.5, with an
+Clover output under `build/logs`. CI runs the checks on PHP 8.1–8.5, with an
 experimental nonblocking PHP 8.6 job. Composer.lock is locally generated/ignored.
+
+Composer resolves dependencies against PHP 8.1.0 via `config.platform.php`, even
+when run on a newer interpreter. PHPStan also targets 8.1. `check-platform-reqs`
+checks the actual interpreter and extensions. After changing the minimum version,
+refresh a locally generated lock file with `composer update` before testing that
+version; an older lock/vendor directory may still contain PHP 8.2-only packages.
 
 Custom parsers implement the [typed recognition contract](source-and-extension-contract.md).
 Keep recognition/guards pure, spans in bytes, scope restoration exception-safe,

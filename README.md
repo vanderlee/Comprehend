@@ -1,6 +1,6 @@
 # Comprehend
 
-An interpreted parser-combinator framework for PHP 8.2+, with named grammars,
+An interpreted parser-combinator framework for PHP 8.1+, with named grammars,
 reusable RFC rules, explicit sources, immutable concrete trees and named ASTs.
 MIT licensed. Requires DOM, JSON and mbstring.
 
@@ -137,7 +137,7 @@ php tools/check-canonical.php
 php docs/examples/execution.php
 ```
 
-CI runs these checks on PHP 8.2–8.5, with an experimental PHP 8.6 job.
+CI runs these checks on PHP 8.1–8.5, with an experimental PHP 8.6 job.
 This is a breaking redesign: old matching entry points, offset/result adapters,
 magic rule dispatch, coercion, automatic callbacks and Token projections are
 removed. See the [breaking changes](docs/canonical-runtime.md#breaking-changes).

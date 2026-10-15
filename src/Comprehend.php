@@ -74,9 +74,9 @@ use Vanderlee\Comprehend\Syntax\Catalog;
  * @method self lexeme()
  * @method self trivia()
  */
-final readonly class Comprehend
+final class Comprehend
 {
-    private function __construct(private Parser $parser, private ?Syntax $syntax = null) {}
+    private function __construct(private readonly Parser $parser, private readonly ?Syntax $syntax = null) {}
 
     public static function syntax(): Syntax
     {

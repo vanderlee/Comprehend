@@ -32,7 +32,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Syntax;
 
 /** Coordinates built-in dispatch and immutable custom vocabularies. */
-final readonly class Catalog
+final class Catalog
 {
     private const BUILTINS = [
         'text',
@@ -92,7 +92,7 @@ final readonly class Catalog
         'optional' => 'maybe',
     ];
 
-    public function __construct(private array $starts = [], private array $continuations = []) {}
+    public function __construct(private readonly array $starts = [], private readonly array $continuations = []) {}
 
     public static function canonicalName(string $name): string
     {
