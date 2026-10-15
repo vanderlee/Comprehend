@@ -69,7 +69,8 @@ final class Diagnostic
         $pendingCr = false;
         for ($start = 0; $start < $this->source->byteLength(); $start += 8192) {
             $chunk = $this->source->sliceBytes($start, min($start + 8192, $this->source->byteLength()));
-            for ($index = 0; $index < strlen($chunk); ++$index) {
+            $indexMax = strlen($chunk);
+            for ($index = 0; $index < $indexMax; ++$index) {
                 $byte = $chunk[$index];
                 if ($pendingCr) {
                     $this->lineStarts[] = $start + $index + ($byte === "\n" ? 1 : 0);

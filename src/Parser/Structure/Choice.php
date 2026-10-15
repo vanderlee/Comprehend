@@ -53,7 +53,7 @@ class Choice extends IterableParser
     /**
      * Add one or more parsers as choices.
      *
-     * @param Parser[] $arguments
+     * @param Parser ...$arguments
      *
      * @return self
      */

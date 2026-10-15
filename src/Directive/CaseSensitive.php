@@ -12,7 +12,7 @@ use Vanderlee\Comprehend\Source\Source;
 /** Override case sensitivity within a subtree. */
 class CaseSensitive extends Parser
 {
-    public function __construct(private bool $sensitivity, private Parser $parser) {}
+    public function __construct(private readonly bool $sensitivity, private readonly Parser $parser) {}
 
     /** @internal Structural operand for graph analysis. */
     public function getParser(): Parser

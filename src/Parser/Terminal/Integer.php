@@ -7,8 +7,6 @@ namespace Vanderlee\Comprehend\Parser\Terminal;
 use Exception;
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Match\AbstractMatch;
-use Vanderlee\Comprehend\Match\Failure;
-use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
@@ -46,10 +44,6 @@ class Integer extends Parser
     private int $base;
 
     /**
-     * @param int|null $minimum
-     * @param int|null $maximum
-     * @param int $base
-     *
      * @throws Exception
      */
     public function __construct(
@@ -84,13 +78,6 @@ class Integer extends Parser
         return ($this->minimum === null ? '<-INF' : '[' . $this->minimum) . ',' . ($this->maximum === null ? 'INF>' : $this->maximum . ']');
     }
 
-    /**
-     * @param Source $input
-     * @param int $offset
-     * @param ParseSession $context
-     *
-     * @return Failure|Success
-     */
     protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
     {
         $this->pushCaseSensitivityToContext($context);

@@ -13,7 +13,7 @@ trait PreferTrait
     private ?string $preference = null;
 
     /**
-     * @param string $preference
+     * @param string|null $preference
      *
      * @return $this
      */
@@ -41,14 +41,14 @@ trait PreferTrait
         return $this;
     }
 
-    private function pushPreferenceToContext(ParseSession $context)
+    private function pushPreferenceToContext(ParseSession $context): void
     {
         if ($this->preference) {
             $context->pushPreference($this->preference);
         }
     }
 
-    private function popPreferenceFromContext(ParseSession $context)
+    private function popPreferenceFromContext(ParseSession $context): void
     {
         if ($this->preference) {
             $context->popPreference();

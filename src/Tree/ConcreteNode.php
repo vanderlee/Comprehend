@@ -14,9 +14,9 @@ final class ConcreteNode implements \JsonSerializable
 
     /** @param list<ConcreteNode> $children */
     public function __construct(
-        public readonly string $kind,
+        public string $kind,
         public readonly Span $span,
-        public readonly array $children = [],
+        public array $children = [],
         public readonly bool $isTrivia = false,
         public readonly string|int|null $name = null,
         public readonly ?string $group = null,

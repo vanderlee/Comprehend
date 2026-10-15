@@ -22,14 +22,14 @@ class Set extends Parser
 {
     use CaseSensitiveTrait;
 
-    private $set = null;
-    private $sourceSet;
+    private string $set;
+    private string $sourceSet;
     /**
      * Match only characters inside the set (`true`) or outside (`false`).
      *
      * @var bool
      */
-    private $include = true;
+    private bool $include;
 
     /**
      * Match any single character in the set or not in the set.

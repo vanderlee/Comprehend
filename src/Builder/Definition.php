@@ -11,7 +11,7 @@ use Vanderlee\Comprehend\Result\ParseResult;
 /** Facade, custom parser or factory, with selected-scope validation and processors. */
 final class Definition
 {
-    /** @var Comprehend|Parser|callable(...mixed): (Comprehend|Parser) */
+    /** @var Comprehend|Parser|(callable(mixed...): (Comprehend|Parser)) */
     public $generator;
     /** @var list<callable(ParseResult): bool|string> */
     public array $validators = [];

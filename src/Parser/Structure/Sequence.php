@@ -37,7 +37,7 @@ class Sequence extends IterableParser
     /**
      * Add one or more parsers to the end of this sequence.
      *
-     * @param Parser[] $arguments
+     * @param Parser ...$arguments
      *
      * @return $this
      */

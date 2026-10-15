@@ -19,7 +19,7 @@ trait ResultTrait
      *
      * @var callable[]
      */
-    private $resultCallbacks = [];
+    private array $resultCallbacks = [];
 
     /**
      * Add a callback to this match, to be called after parsing is finished and
@@ -77,7 +77,7 @@ trait ResultTrait
      *
      * @param array $results map of result-key => value
      */
-    private function processResultCallbacks(&$results)
+    private function processResultCallbacks(array &$results): void
     {
         /** @var self $success */
         foreach ($this->successes as $success) {

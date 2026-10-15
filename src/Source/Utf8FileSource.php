@@ -91,7 +91,8 @@ final class Utf8FileSource extends ByteFileSource
         $maximum = 0xbf;
         for ($offset = 0; $offset < $this->byteLength(); $offset += 8192) {
             $chunk = $this->sliceBytes($offset, min($offset + 8192, $this->byteLength()));
-            for ($index = 0; $index < strlen($chunk); ++$index) {
+            $indexMax = strlen($chunk);
+            for ($index = 0; $index < $indexMax; ++$index) {
                 $byte = ord($chunk[$index]);
                 if ($remaining > 0) {
                     if ($byte < $minimum || $byte > $maximum) {

@@ -21,13 +21,13 @@ class Char extends Parser
 {
     use CaseSensitiveTrait;
 
-    private $character;
+    private string $character;
     /**
      * Match the specified character (`true`) or everything else (`false`).
      *
      * @var bool
      */
-    private $include;
+    private bool $include;
 
     public function __construct(string $character, bool $include = true)
     {
@@ -57,7 +57,7 @@ class Char extends Parser
         $this->pushCaseSensitivityToContext($context);
         try {
             $equal = $context->handleCase($unit->rawText()) === $context->handleCase($this->character);
-            return $this->makeMatch($equal === (bool) $this->include, $input, $offset, $unit->byteLength());
+            return $this->makeMatch($equal === $this->include, $input, $offset, $unit->byteLength());
         } finally {
             $this->popCaseSensitivityFromContext($context);
         }

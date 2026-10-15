@@ -22,10 +22,7 @@ class Regex extends Parser
 {
     use CaseSensitiveTrait;
 
-    /**
-     * @var string|null
-     */
-    private $pattern = null;
+    private string $pattern;
     private ?string $windowLiteral = null;
 
     public function __construct(string $pattern)
@@ -104,7 +101,7 @@ class Regex extends Parser
     private function usesUtf8(): bool
     {
         preg_match('/[a-zA-Z]*$/', $this->pattern, $modifiers);
-        if (strpos($modifiers[0], 'u') !== false) {
+        if (str_contains($modifiers[0], 'u')) {
             return true;
         }
         // PCRE permits UTF mode switches before the pattern body as well.

@@ -14,7 +14,7 @@ trait AssignTrait
      *
      * @var callable[]
      */
-    private $assignCallbacks = [];
+    private array $assignCallbacks = [];
 
     /**
      * On explicit commit, assign the matched input to the specified local variable.

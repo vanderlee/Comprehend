@@ -12,7 +12,7 @@ trait CaseSensitiveTrait
     private ?bool $caseSensitivity = null;
 
     /**
-     * @param bool $preference
+     * @param bool|null $preference
      *
      * @return $this
      */
@@ -34,14 +34,14 @@ trait CaseSensitiveTrait
         return $this;
     }
 
-    private function pushCaseSensitivityToContext(ParseSession $context)
+    private function pushCaseSensitivityToContext(ParseSession $context): void
     {
         if ($this->caseSensitivity !== null) {
             $context->pushCaseSensitivity($this->caseSensitivity);
         }
     }
 
-    private function popCaseSensitivityFromContext(ParseSession $context)
+    private function popCaseSensitivityFromContext(ParseSession $context): void
     {
         if ($this->caseSensitivity !== null) {
             $context->popCaseSensitivity();

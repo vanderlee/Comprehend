@@ -21,9 +21,9 @@ class Range extends Parser
 {
     use CaseSensitiveTrait;
 
-    private $first = null;
-    private $last = null;
-    private $in = true;
+    private ?string $first;
+    private ?string $last;
+    private bool $in;
 
     public function __construct(?string $first, ?string $last, bool $in = true)
     {

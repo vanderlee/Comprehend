@@ -21,7 +21,7 @@ class All extends Parser
     /**
      * @var Parser[]
      */
-    private $parsers = [];
+    private array $parsers = [];
 
     public function __construct(Parser ...$arguments)
     {

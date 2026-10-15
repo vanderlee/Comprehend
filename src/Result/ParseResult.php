@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend\Result;
 
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Tree\AstNode;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
@@ -54,7 +55,7 @@ final class ParseResult
     /** Failed results have no value; successful unmapped results yield original text. */
     public function value(): mixed
     {
-        return $this->success ? $this->match->getValue() : null;
+        return $this->match instanceof Success ? $this->match->getValue() : null;
     }
 
     /** Short value access: original text by default, mapped value when configured. */
@@ -66,7 +67,7 @@ final class ParseResult
     /** False means syntax or semantic validation rejected commit. */
     public function commit(): bool
     {
-        if (!$this->validate()->valid) {
+        if (!$this->match instanceof Success || !$this->validate()->valid) {
             return false;
         }
         $this->match->commit();
@@ -75,14 +76,14 @@ final class ParseResult
 
     public function validate(): ValidationResult
     {
-        return $this->success
+        return $this->match instanceof Success
             ? $this->match->validateSemantic()
             : new ValidationResult(false, ['Syntax was not accepted']);
     }
 
     public function isCommitted(): bool
     {
-        return $this->success && $this->match->isCommitted();
+        return $this->match instanceof Success && $this->match->isCommitted();
     }
 
     public function results(): array

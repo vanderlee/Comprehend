@@ -34,7 +34,8 @@ final class EncodedFileSource implements Source
             throw new RuntimeException('Cannot create transcoded source snapshot');
         }
         try {
-            for ($offset = 0; $offset < strlen($utf8); $offset += $written) {
+            $offsetMax = strlen($utf8);
+            for ($offset = 0; $offset < $offsetMax; $offset += $written) {
                 $written = fwrite($stream, substr($utf8, $offset, $pageSize));
                 if ($written === false || $written === 0) {
                     throw new RuntimeException('Cannot write transcoded source snapshot');

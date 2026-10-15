@@ -28,14 +28,15 @@ class Success extends AbstractMatch
      *
      * @var bool
      */
-    private $resolved = false;
+    private bool $resolved = false;
     /**
      * Successful selected execution children.
      *
      * @var Success[]
      */
-    private $successes;
-    private $concreteMatches;
+    private array $successes;
+    /** @var Success[] */
+    private array $concreteMatches;
     private array $semanticValidators = [];
     private ?ValidationResult $validation = null;
     private bool $validating = false;
@@ -178,7 +179,9 @@ class Success extends AbstractMatch
                 continue;
             }
             $seen[$id] = true;
-            $errors = array_merge($errors, $child->validateSemantic()->errors);
+            foreach ($child->validateSemantic()->errors as $error) {
+                $errors[] = $error;
+            }
         }
         return $errors;
     }

@@ -21,8 +21,8 @@ class Text extends Parser
 {
     use CaseSensitiveTrait;
 
-    private $text;
-    private $length;
+    private string $text;
+    private int $length;
 
     public function __construct(string $text)
     {

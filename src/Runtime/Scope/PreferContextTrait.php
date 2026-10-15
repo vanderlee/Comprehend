@@ -9,7 +9,7 @@ use Vanderlee\Comprehend\Directive\Prefer;
 
 trait PreferContextTrait
 {
-    private $preference = [];
+    private array $preference = [];
 
     public function pushPreference(string $preference): void
     {
@@ -18,8 +18,6 @@ trait PreferContextTrait
     }
 
     /**
-     * @param $preference
-     *
      * @throws DomainException
      */
     private static function assertPreference(string $preference): void

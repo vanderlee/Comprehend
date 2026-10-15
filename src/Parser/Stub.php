@@ -13,8 +13,6 @@ use Vanderlee\Comprehend\Source\Source;
 /**
  * Description of StubParser.
  *
- * @property Parser|null $parser
- *
  * @author Martijn
  */
 class Stub extends Parser
@@ -22,7 +20,7 @@ class Stub extends Parser
     /**
      * @var Parser|null
      */
-    private $parser = null;
+    private ?Parser $parser = null;
 
     public function getParser(): ?Parser
     {

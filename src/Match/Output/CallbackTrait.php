@@ -13,9 +13,9 @@ trait CallbackTrait
      *
      * @var callable[]
      */
-    private $customCallbacks = [];
+    private array $customCallbacks = [];
     /** @var Success[] */
-    private $precedingMatches = [];
+    private array $precedingMatches = [];
     private bool $effectsProcessed = false;
     private bool $effectsProcessing = false;
     private ?\Throwable $effectError = null;
@@ -54,7 +54,7 @@ trait CallbackTrait
      * Handle all registered custom callbacks for this match and any matches
      * at deeper levels of this match.
      */
-    private function processCustomCallbacks()
+    private function processCustomCallbacks(): void
     {
         if ($this->effectError !== null) {
             throw $this->effectError;

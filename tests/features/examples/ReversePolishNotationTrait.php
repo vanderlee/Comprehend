@@ -5,27 +5,26 @@ namespace Tests\features\examples;
 trait ReversePolishNotationTrait
 {
     /**
-     * Solve a reverse polish notation (postfix) expresion.
+     * Solve a reverse polish notation (postfix) expression.
      *
      * @param string[] $tokens
      *
      * @return float|int
      */
-    private function solveRpn(array $tokens)
+    private function solveRpn(array $tokens): float|int
     {
         $stack = [];
         foreach ($tokens as $token) {
             if (!is_numeric($token)) {
                 $operand_2 = array_pop($stack);
                 $operand_1 = array_pop($stack);
-                $result = call_user_func([$this, 'solveRpnOperator' . ucfirst($token)], $operand_1, $operand_2);
-                array_push($stack, $result);
+                $result = $this->{'solveRpnOperator' . ucfirst($token)}($operand_1, $operand_2);
+                $stack[] = $result;
             } else {
-                array_push($stack, $token);
+                $stack[] = $token;
             }
         }
-        $result = array_pop($stack);
-        return $result;
+        return array_pop($stack);
     }
     /** @noinspection PhpUnusedPrivateMethodInspection */
     private function solveRpnOperatorAdd($operand_1, $operand_2)
@@ -38,12 +37,12 @@ trait ReversePolishNotationTrait
         return $operand_1 - $operand_2;
     }
     /** @noinspection PhpUnusedPrivateMethodInspection */
-    private function solveRpnOperatorMultiply($operand_1, $operand_2)
+    private function solveRpnOperatorMultiply($operand_1, $operand_2): float|int
     {
         return $operand_1 * $operand_2;
     }
     /** @noinspection PhpUnusedPrivateMethodInspection */
-    private function solveRpnOperatorDivide($operand_1, $operand_2)
+    private function solveRpnOperatorDivide($operand_1, $operand_2): float|int
     {
         return $operand_1 / $operand_2;
     }

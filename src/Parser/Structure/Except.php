@@ -19,8 +19,8 @@ use Vanderlee\Comprehend\Source\Source;
  */
 class Except extends Parser
 {
-    private $parserMatch;
-    private $parserNot;
+    private Parser $parserMatch;
+    private Parser $parserNot;
 
     /**
      * @param Parser $match
