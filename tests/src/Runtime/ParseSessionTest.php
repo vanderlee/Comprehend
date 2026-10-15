@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Src\Runtime;
 
+use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
@@ -12,6 +13,16 @@ use Vanderlee\Comprehend\Source\ByteSource;
 
 final class ParseSessionTest extends TestCase
 {
+    public function testReadingAnExhaustedPreferenceScopeIsRejected(): void
+    {
+        $session = new ParseSession(new ByteSource(''));
+        $session->popPreference();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Choice preference scope is empty');
+
+        $session->getPreference();
+    }
+
     public function testDiagnosticsMergeTiesAndCanBeRestoredAfterAProbe(): void
     {
         $session = new ParseSession(new ByteSource('abc'));

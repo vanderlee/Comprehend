@@ -37,6 +37,10 @@ trait PreferContextTrait
 
     public function getPreference(): string
     {
-        return end($this->preference);
+        $preference = end($this->preference);
+        if ($preference === false) {
+            throw new \LogicException('Choice preference scope is empty');
+        }
+        return $preference;
     }
 }

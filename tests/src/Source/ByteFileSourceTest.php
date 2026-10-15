@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Src\Source;
 
+use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Source\ByteFileSource;
@@ -11,6 +12,14 @@ use Vanderlee\Comprehend\Source\SourceMode;
 
 final class ByteFileSourceTest extends TestCase
 {
+    public function testPageSizeIsValidatedBeforeOpeningInput(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('File page size must be at least 4 bytes');
+
+        new ByteFileSource('unused', 0);
+    }
+
     public function testBorrowedStreamIsPreservedWhileReadsUseAnOwnedSnapshot(): void
     {
         $stream = tmpfile();

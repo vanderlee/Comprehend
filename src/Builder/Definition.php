@@ -13,7 +13,7 @@ final class Definition
 {
     /** @var Comprehend|Parser|(callable(mixed...): (Comprehend|Parser)) */
     public $generator;
-    /** @var list<callable(ParseResult): bool|string> */
+    /** @var list<callable(ParseResult): (bool|string)> */
     public array $validators = [];
     /** @var array<string, callable(array<array-key, mixed>): mixed> */
     public array $processors = [];

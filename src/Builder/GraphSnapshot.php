@@ -31,14 +31,19 @@ final class GraphSnapshot
     }
 
     /**
-     * @template T of Parser|Definition
-     * @param T $object
-     * @return T
+     * @return ($object is Parser ? Parser : Definition)
      */
     private function copyObject(Parser|Definition $object): Parser|Definition
     {
         if (isset($this->copies[$object])) {
-            return $this->copies[$object];
+            $copy = $this->copies[$object];
+            if ($object instanceof Parser && $copy instanceof Parser) {
+                return $copy;
+            }
+            if ($object instanceof Definition && $copy instanceof Definition) {
+                return $copy;
+            }
+            throw new \LogicException('Snapshot copy must preserve the parser or definition category');
         }
         if ($object instanceof RuleReference) {
             return $this->copyReference($object);

@@ -215,7 +215,7 @@ final class GraphAnalysis
             return array_values(iterator_to_array($node));
         }
         if ($node instanceof All) {
-            return $node->getParsers();
+            return array_values($node->getParsers());
         }
         if ($node instanceof Except) {
             return [$node->getMatchParser(), $node->getExcludedParser()];

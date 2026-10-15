@@ -100,8 +100,7 @@ class Regex extends Parser
 
     private function usesUtf8(): bool
     {
-        preg_match('/[a-zA-Z]*$/', $this->pattern, $modifiers);
-        if (str_contains($modifiers[0], 'u')) {
+        if (preg_match('/[a-zA-Z]*$/', $this->pattern, $modifiers) === 1 && str_contains($modifiers[0], 'u')) {
             return true;
         }
         // PCRE permits UTF mode switches before the pattern body as well.

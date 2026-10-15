@@ -13,16 +13,19 @@ class ByteFileSource implements Source
 {
     /** @var resource|null */
     private $handle;
+    /** @var int<4, max> */
+    private readonly int $pageSize;
     private int $length = 0;
     private int $cacheStart = -1;
     private string $cache = '';
 
     /** A path is opened/closed here; a borrowed seekable stream keeps its position and ownership. */
-    public function __construct(mixed $input, private readonly int $pageSize = 8192)
+    public function __construct(mixed $input, int $pageSize = 8192)
     {
         if ($pageSize < 4) {
             throw new InvalidArgumentException('File page size must be at least 4 bytes');
         }
+        $this->pageSize = $pageSize;
 
         $owned = is_string($input);
         $stream = $owned ? @fopen($input, 'rb') : $input;
@@ -163,12 +166,14 @@ class ByteFileSource implements Source
 
         $expected = min($this->pageSize, $this->length - $pageStart);
         $bytes = '';
-        while (strlen($bytes) < $expected) {
-            $part = fread($this->handle, $expected - strlen($bytes));
+        $remaining = $expected;
+        while ($remaining > 0) {
+            $part = fread($this->handle, $remaining);
             if ($part === false || $part === '') {
                 throw new RuntimeException('Cannot read file source snapshot');
             }
             $bytes .= $part;
+            $remaining -= strlen($part);
         }
 
         // Publish a cache page only after the complete read succeeds.

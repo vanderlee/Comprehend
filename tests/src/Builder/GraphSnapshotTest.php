@@ -6,12 +6,31 @@ namespace Tests\Src\Builder;
 
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
+use Vanderlee\Comprehend\Builder\Definition;
+use Vanderlee\Comprehend\Builder\Implementation;
+use Vanderlee\Comprehend\Parser\Structure\All;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 
 final class GraphSnapshotTest extends TestCase
 {
+    public function testSharedDefinitionsRemainDefinitionsWhenCopiedFromCache(): void
+    {
+        $definition = new Definition(new Text('a'));
+        $original = new Sequence(new Implementation($definition), new Implementation($definition));
+        $copy = (new GraphSnapshot())->copy($original);
+
+        $this->assertTrue($copy->parseAll(new ByteSource('aa'))->success);
+    }
+
+    public function testNamedAllOperandsCanBeAnalyzedAndFrozen(): void
+    {
+        $grammar = (new All(first: new Text('a'), second: new Text('a')))->freeze();
+
+        $this->assertTrue($grammar->parseAll(new ByteSource('a'))->success);
+    }
+
     public function testCopiesDetachOwnedChildrenButPreserveSharing(): void
     {
         $child = new Text('a');

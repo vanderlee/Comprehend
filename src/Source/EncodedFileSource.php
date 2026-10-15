@@ -29,6 +29,9 @@ final class EncodedFileSource implements Source
             throw new InvalidArgumentException('File is not valid ' . $this->inputEncoding);
         }
         $utf8 = mb_convert_encoding($bytes, 'UTF-8', $this->inputEncoding);
+        if ($utf8 === false) {
+            throw new RuntimeException('Cannot transcode file source to UTF-8');
+        }
         $stream = tmpfile();
         if ($stream === false) {
             throw new RuntimeException('Cannot create transcoded source snapshot');
