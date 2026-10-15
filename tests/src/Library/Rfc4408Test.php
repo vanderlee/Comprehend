@@ -27,6 +27,34 @@ class Rfc4408Test extends ParserTestCase
         $this->assertNotNull($this->getRfc());
     }
 
+    /** @dataProvider completeRecords */
+    public function testCompleteRecordsResolveAndFreeze(string $input, bool $accepted): void
+    {
+        $result = $this->getRfc()->freeze()->parse($input);
+
+        $this->assertSame($accepted, $result->success, $input);
+    }
+
+    public static function completeRecords(): array
+    {
+        return [
+            ['v=spf1', true],
+            ['v=spf1 -all', true],
+            ['v=spf1 ip4:192.0.2.1 -all  ', true],
+            ['v=spf1 a mx -all', true],
+            ['v=spf2 -all', false],
+            ['v=spf1 invalid', false],
+        ];
+    }
+
+    public function testExplanationRepetitionAlwaysConsumesInput(): void
+    {
+        $grammar = $this->getRfc()->rule('explain_string')->freeze();
+
+        $this->assertTrue($grammar->parse('')->success);
+        $this->assertTrue($grammar->parse('Denied %{i} %% message')->success);
+    }
+
     /**
      * @dataProvider rulesData
      *

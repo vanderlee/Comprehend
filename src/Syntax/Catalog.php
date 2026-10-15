@@ -183,10 +183,10 @@ final class Catalog
                 Comprehend|Parser|string $parser,
                 int $min = 0,
                 ?int $max = null,
-            ): Comprehend => Comprehend::repeat($parser, $min, $max),
-            'some' => static fn(Comprehend|Parser|string $parser): Comprehend => Comprehend::repeat($parser, 1),
-            'many' => static fn(Comprehend|Parser|string $parser): Comprehend => Comprehend::repeat($parser),
-            'maybe' => static fn(Comprehend|Parser|string $parser): Comprehend => Comprehend::repeat($parser, 0, 1),
+            ): Comprehend => self::repeat($parser, $min, $max),
+            'some' => static fn(Comprehend|Parser|string $parser): Comprehend => self::repeat($parser, 1),
+            'many' => static fn(Comprehend|Parser|string $parser): Comprehend => self::repeat($parser),
+            'maybe' => static fn(Comprehend|Parser|string $parser): Comprehend => self::repeat($parser, 0, 1),
             default => null,
         };
     }
@@ -267,6 +267,15 @@ final class Catalog
         };
     }
 
+    private static function repeat(Comprehend|Parser|string $parser, int $min = 0, ?int $max = null): Comprehend
+    {
+        // Enter fluent dispatch on an expression; static dispatch would call this factory again.
+        // Retain an existing expression's vocabulary for subsequent custom syntax calls.
+        $expression = Comprehend::of(is_string($parser) ? new Text($parser) : $parser);
+
+        return $expression->repeat($min, $max);
+    }
+
     /**
      * Inherited choice policies are associative; explicit policies remain nested.
      * @param array<array-key, Comprehend|Parser|string> $items
@@ -278,15 +287,20 @@ final class Catalog
         $expanded = new SplObjectStorage();
         while ($pending !== []) {
             $parser = array_pop($pending);
-            if ($parser instanceof Choice && $parser->canFlatten() && !isset($expanded[$parser])) {
-                $alternatives = iterator_to_array($parser, false);
-                if ($alternatives !== []) {
-                    $expanded[$parser] = true;
-                    array_push($pending, ...array_reverse($alternatives));
-                    continue;
-                }
+            if (!$parser instanceof Choice || !$parser->canFlatten() || isset($expanded[$parser])) {
+                $children[] = $parser;
+                continue;
             }
-            $children[] = $parser;
+
+            $alternatives = iterator_to_array($parser, false);
+            if ($alternatives === []) {
+                $children[] = $parser;
+                continue;
+            }
+
+            $expanded[$parser] = true;
+            // The stack visits alternatives in their original order, including ties.
+            array_push($pending, ...array_reverse($alternatives));
         }
 
         return new Choice(...$children);
@@ -323,7 +337,11 @@ final class Catalog
             return new Text($parser);
         }
 
-        return $parser instanceof Comprehend ? $parser->parser() : (new GraphSnapshot(false))->copy($parser);
+        if ($parser instanceof Comprehend) {
+            return $parser->parser();
+        }
+
+        return (new GraphSnapshot(false))->copy($parser);
     }
 
     /**

@@ -25,6 +25,31 @@ class Rfc3986Test extends ParserTestCase
         $this->assertNotNull($this->getRfc());
     }
 
+    /** @dataProvider completeReferences */
+    public function testCompleteReferencesPreserveAlternativePathForms(string $rule, string $input): void
+    {
+        $result = $this->getRfc()->rule($rule)->parse($input);
+
+        $this->assertTrue($result->success, $input);
+        $this->assertSame($input, $result->rawText());
+    }
+
+    public static function completeReferences(): array
+    {
+        return [
+            ['URI', 'https://example.com/path?query#fragment'],
+            ['URI', 'urn:example:animal'],
+            ['URI', 'file:/path'],
+            ['URI', 'scheme:'],
+            ['relative_ref', '//example.com/path'],
+            ['relative_ref', '/path'],
+            ['relative_ref', 'path/to/file'],
+            ['relative_ref', '?query'],
+            ['relative_ref', '#fragment'],
+            ['relative_ref', ''],
+        ];
+    }
+
     /**
      * @dataProvider rulesData
      *

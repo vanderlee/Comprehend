@@ -20,6 +20,20 @@ These assets are not a claim of exhaustive RFC conformance; conformance review
 is separate from runtime consolidation. Constructors accept facade, custom Parser,
 Definition or factory overrides as named maps. Factories may return facade values.
 
+`Rfc3986::rule('URI')` accepts authority, absolute-path, rootless and empty-path
+forms, including `https://example.com/path`, `file:/path`, `urn:example:animal`
+and `scheme:`. Use `relative_ref` for relative paths, query-only and
+fragment-only references. These alternatives follow
+[RFC 3986 Appendix A](https://www.rfc-editor.org/rfc/rfc3986#appendix-A).
+
+The `Rfc4408` root can be frozen and used to parse complete records such as
+`v=spf1`, `v=spf1 -all` and `v=spf1 a mx -all`, with optional trailing spaces.
+Its `explain_string` rule repeats individual macro expansions, literal characters
+and spaces so every iteration consumes input, including when the explanation is
+empty. This preserves the syntax of
+[RFC 4408's macro productions](https://www.rfc-editor.org/rfc/rfc4408#section-8.1)
+without repeating a nullable parser.
+
 The [ABNF IPv4 example](examples/abnf.php) compares the frontend's documented
 local-longest policy with equivalent object/Ruleset grammars and bundled RFC
 acceptance fixtures. It does not promise generalized ABNF ambiguity handling.

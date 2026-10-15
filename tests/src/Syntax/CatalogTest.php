@@ -13,6 +13,54 @@ use Vanderlee\Comprehend\Syntax\Catalog;
 
 final class CatalogTest extends TestCase
 {
+    /** @dataProvider repetitionFactories */
+    public function testStaticRepetitionFactoriesPreserveBoundsAndNamedArguments(
+        string $name,
+        string $input,
+        bool $accepted,
+    ): void {
+        $factory = Catalog::builtinStatic($name);
+        $this->assertNotNull($factory);
+
+        $expression = $factory(parser: 'a');
+
+        $this->assertInstanceOf(Comprehend::class, $expression);
+        $this->assertSame($accepted, $expression->parse($input)->success);
+    }
+
+    public static function repetitionFactories(): array
+    {
+        return [
+            ['repeat', '', true],
+            ['some', '', false],
+            ['some', 'aa', true],
+            ['PLUS', 'aa', true],
+            ['many', '', true],
+            ['star', 'aa', true],
+            ['kleene', 'aa', true],
+            ['maybe', '', true],
+            ['maybe', 'a', true],
+            ['maybe', 'aa', false],
+            ['optional', 'aa', false],
+        ];
+    }
+
+    public function testStaticRepetitionDetachesRawParsersAndRetainsExpressionVocabulary(): void
+    {
+        $parser = new Text('a');
+        $repeated = Comprehend::repeat(parser: $parser, min: 2, max: 3);
+        $parser->guard(static fn(): bool => false);
+
+        $this->assertTrue($repeated->parse('aa')->success);
+        $this->assertFalse($repeated->parse('a')->success);
+        $this->assertFalse($repeated->parse('aaaa')->success);
+
+        $syntax = Comprehend::syntax()->define('suffix', static fn(): Text => new Text('!'));
+        $expression = Comprehend::repeat(parser: $syntax->text('a'), min: 2, max: 3)->suffix();
+
+        $this->assertTrue($expression->parse('aaa!')->success);
+    }
+
     public function testNamedSequenceArgumentsFlattenThePrefixInInsertionOrder(): void
     {
         $prefix = Comprehend::sequence('a', 'b');

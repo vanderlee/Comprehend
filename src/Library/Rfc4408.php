@@ -42,8 +42,8 @@ class Rfc4408 extends AbstractRuleset
          */
         $rules = [
             // 4.5. Selecting Records
-            'record' => C::sequence($this->rule('version'), $this->rule('terms'), $this->rule('SP')),
-            'version' => $this->rule('v=spf1'),
+            'record' => C::sequence($this->rule('version'), $this->rule('terms'), $abnf->rule('SP')->many()),
+            'version' => C::text('v=spf1'),
             // 4.6.1. Term Evaluation
             'terms' => C::sequence(
                 $abnf->rule('SP')->some(),
@@ -86,7 +86,7 @@ class Rfc4408 extends AbstractRuleset
                 )->many(),
             ),
             // 5.1. "all"
-            'all' => $this->rule('all'),
+            'all' => C::text('all'),
             // 5.2. "include"
             'include' => C::sequence(
                 C::text('include'),
@@ -97,13 +97,13 @@ class Rfc4408 extends AbstractRuleset
             'A' => C::sequence(
                 C::text('a'),
                 C::sequence(C::text(':'), $this->rule('domain_spec'))->maybe(),
-                $this->rule('dual_cidr_length')->maybe(),
+                $this->rule('dual_cidr_length'),
             ),
             // 5.4. "mx"
             'MX' => C::sequence(
                 C::text('mx'),
                 C::sequence(C::text(':'), $this->rule('domain_spec'))->maybe(),
-                $this->rule('dual_cidr_length')->maybe(),
+                $this->rule('dual_cidr_length'),
             ),
             // 5.5. "ptr"
             'PTR' => C::sequence(C::text('ptr'), C::text(':'), $this->rule('domain_spec')),
@@ -182,7 +182,12 @@ class Rfc4408 extends AbstractRuleset
             ),
             // LDH rule plus additional TLD restrictions (see [RFC3696], Section 2) @todo Read & implement
             'alphanum' => C::choice($abnf->rule('ALPHA'), $abnf->rule('DIGIT')),
-            'explain_string' => C::choice($this->rule('macro_string'), $abnf->rule('SP'))->many(),
+            // Expand the nullable macro-string production so each repeated item consumes input.
+            'explain_string' => C::choice(
+                $this->rule('macro_expand'),
+                $this->rule('macro_literal'),
+                $abnf->rule('SP'),
+            )->many(),
             'macro_string' => C::choice(
                 $this->rule('macro_expand'),
                 $this->rule('macro_literal'),

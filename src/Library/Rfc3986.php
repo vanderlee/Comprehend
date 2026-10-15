@@ -99,15 +99,15 @@ class Rfc3986 extends AbstractRuleset
                 C::text('?'),
             )->many(),
             // 3.  Syntax Components
-            'hier_part' => C::sequence(
-                C::text('//'),
-                $this->rule('authority'),
-                C::choice(
+            'hier_part' => C::choice(
+                C::sequence(
+                    C::text('//'),
+                    $this->rule('authority'),
                     $this->rule('path_abempty'),
-                    $this->rule('path_absolute'),
-                    $this->rule('path_rootless'),
-                    $this->rule('path_empty'),
                 ),
+                $this->rule('path_absolute'),
+                $this->rule('path_rootless'),
+                $this->rule('path_empty'),
             ),
             'URI' => C::sequence(
                 $this->rule('scheme'),
@@ -254,15 +254,15 @@ class Rfc3986 extends AbstractRuleset
                 $this->rule('reg_name'),
             ),
             // 4.2.  Relative Reference
-            'relative_part' => C::sequence(
-                C::text('//'),
-                $this->rule('authority'),
-                C::choice(
+            'relative_part' => C::choice(
+                C::sequence(
+                    C::text('//'),
+                    $this->rule('authority'),
                     $this->rule('path_abempty'),
-                    $this->rule('path_absolute'),
-                    $this->rule('path_noscheme'),
-                    $this->rule('path_empty'),
                 ),
+                $this->rule('path_absolute'),
+                $this->rule('path_noscheme'),
+                $this->rule('path_empty'),
             ),
             'relative_ref' => C::sequence(
                 $this->rule('relative_part'),
