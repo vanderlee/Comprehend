@@ -26,16 +26,16 @@ class Not extends Parser
         return '!' . $this->parser;
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $diagnostics = $context->diagnosticState();
+        $diagnostics = $session->diagnosticState();
         try {
-            $match = $this->parser->recognizeInSession($input, $offset, $context);
+            $match = $this->parser->recognizeInSession($source, $byteOffset, $session);
         } finally {
-            $context->restoreDiagnostics($diagnostics);
+            $session->restoreDiagnostics($diagnostics);
         }
         return $match instanceof Success
-            ? $this->failure($input, $offset, $match->length)
-            : $this->success($input, $offset);
+            ? $this->failure($source, $byteOffset, $match->length)
+            : $this->success($source, $byteOffset);
     }
 }

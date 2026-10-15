@@ -21,8 +21,10 @@ class End extends Parser
         return 'end';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        return $offset === $input->byteLength() ? $this->success($input, $offset) : $this->failure($input, $offset);
+        return $byteOffset === $source->byteLength()
+            ? $this->success($source, $byteOffset)
+            : $this->failure($source, $byteOffset);
     }
 }

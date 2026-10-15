@@ -21,9 +21,11 @@ class Any extends Parser
         return '.';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $unit = $context->readSourceUnit($offset);
-        return $unit !== null ? $this->success($input, $offset, $unit->byteLength()) : $this->failure($input, $offset);
+        $unit = $session->readSourceUnit($byteOffset);
+        return $unit !== null
+            ? $this->success($source, $byteOffset, $unit->byteLength())
+            : $this->failure($source, $byteOffset);
     }
 }

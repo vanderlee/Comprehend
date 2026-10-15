@@ -95,13 +95,13 @@ abstract class AbstractRuleset extends Parser
         return static::class;
     }
 
-    protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $match = $this->resolveRule(self::ROOT)->recognizeInSession($source, $offset, $session);
+        $match = $this->resolveRule(self::ROOT)->recognizeInSession($source, $byteOffset, $session);
         if (!$match instanceof Success) {
-            return $this->failure($source, $offset, $match->length);
+            return $this->failure($source, $byteOffset, $match->length);
         }
-        $success = $this->success($source, $offset, $match->length, $match);
+        $success = $this->success($source, $byteOffset, $match->length, $match);
         $success->inheritValueFrom($match);
         return $success;
     }

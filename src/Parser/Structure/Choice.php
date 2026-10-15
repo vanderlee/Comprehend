@@ -73,14 +73,14 @@ class Choice extends IterableParser
         return $prefix . '( ' . implode(' | ', $this->parsers) . ' )';
     }
 
-    protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
         $this->pushPreferenceToContext($session);
         try {
             $preference = $session->getPreference();
             return match ($preference) {
-                Prefer::LONGEST, Prefer::SHORTEST => $this->parseRanked($source, $offset, $session, $preference),
-                default => $this->parseFirst($source, $offset, $session),
+                Prefer::LONGEST, Prefer::SHORTEST => $this->parseRanked($source, $byteOffset, $session, $preference),
+                default => $this->parseFirst($source, $byteOffset, $session),
             };
         } finally {
             $this->popPreferenceFromContext($session);

@@ -54,25 +54,25 @@ class Regex extends Parser
         return (string) $this->pattern;
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        [$pattern, $textMode] = $this->recognitionPattern($context);
-        [$subject, $subjectOffset] = $this->recognitionSubject($input, $offset, $context, $textMode);
+        [$pattern, $textMode] = $this->recognitionPattern($session);
+        [$subject, $subjectOffset] = $this->recognitionSubject($source, $byteOffset, $session, $textMode);
 
         $status = @preg_match($pattern, $subject, $match, PREG_OFFSET_CAPTURE, $subjectOffset);
         if ($status === false) {
             throw new RuntimeException('Regex recognition failed: ' . preg_last_error_msg());
         }
         if ($status !== 1 || $match[0][1] !== $subjectOffset || $match[0][0] === '') {
-            return $this->failure($input, $offset);
+            return $this->failure($source, $byteOffset);
         }
 
         $length = strlen($match[0][0]);
-        if ($textMode && !$context->source()->isUnitBoundary($offset + $length)) {
+        if ($textMode && !$session->source()->isUnitBoundary($byteOffset + $length)) {
             throw new InvalidArgumentException('Text regex matched a partial UTF-8 code point');
         }
 
-        return $this->success($input, $offset, $length);
+        return $this->success($source, $byteOffset, $length);
     }
 
     /** @return array{string, bool} Pattern and whether the source uses UTF-8. */

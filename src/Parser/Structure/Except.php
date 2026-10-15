@@ -49,21 +49,21 @@ class Except extends Parser
         return '( ' . $this->parserMatch . ' - ' . $this->parserNot . ' )';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $match = $this->parserMatch->recognizeInSession($input, $offset, $context);
-        $diagnostics = $context->diagnosticState();
+        $match = $this->parserMatch->recognizeInSession($source, $byteOffset, $session);
+        $diagnostics = $session->diagnosticState();
         try {
-            $not = $this->parserNot->recognizeInSession($input, $offset, $context);
+            $not = $this->parserNot->recognizeInSession($source, $byteOffset, $session);
         } finally {
-            $context->restoreDiagnostics($diagnostics);
+            $session->restoreDiagnostics($diagnostics);
         }
         if ($match instanceof Success && $not instanceof Failure) {
-            return $this->success($input, $offset, $match->length, $match);
+            return $this->success($source, $byteOffset, $match->length, $match);
         }
         if ($match instanceof Success) {
-            $context->recordFailure($offset, 'Except');
+            $session->recordFailure($byteOffset, 'Except');
         }
-        return $this->failure($input, $offset, min($match->length, $not->length));
+        return $this->failure($source, $byteOffset, min($match->length, $not->length));
     }
 }

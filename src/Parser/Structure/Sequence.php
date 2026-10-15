@@ -52,26 +52,26 @@ class Sequence extends IterableParser
         return '( ' . implode(' ', $this->parsers) . ' )';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
         $childMatches = [];
         $concreteMatches = [];
-        $this->pushSpacer($context);
+        $this->pushSpacer($session);
         try {
             $total = 0;
             foreach ($this->parsers as $parser) {
                 $spacingMatch = null;
                 if ($childMatches !== []) {
-                    $skip = $context->skipSpacing($input, $offset + $total, $spacingMatch);
+                    $skip = $session->skipSpacing($source, $byteOffset + $total, $spacingMatch);
                     if ($skip === false) {
-                        return $this->failure($input, $offset, $total);
+                        return $this->failure($source, $byteOffset, $total);
                     }
                     $total += $skip;
                 }
-                $match = $parser->recognizeInSession($input, $offset + $total, $context);
+                $match = $parser->recognizeInSession($source, $byteOffset + $total, $session);
                 $total += $match->length;
                 if (!$match instanceof Success) {
-                    return $this->failure($input, $offset, $total);
+                    return $this->failure($source, $byteOffset, $total);
                 }
                 if ($spacingMatch !== null) {
                     $match->addPrecedingMatch($spacingMatch);
@@ -81,9 +81,9 @@ class Sequence extends IterableParser
                 $concreteMatches[] = $match;
             }
         } finally {
-            $this->popSpacer($context);
+            $this->popSpacer($session);
         }
-        $success = $this->success($input, $offset, $total, $childMatches);
+        $success = $this->success($source, $byteOffset, $total, $childMatches);
         $success->setConcreteMatches($concreteMatches);
         return $success;
     }

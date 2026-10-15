@@ -23,8 +23,8 @@ class Nothing extends Parser
         return '0.';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        return $this->success($input, $offset);
+        return $this->success($source, $byteOffset);
     }
 }

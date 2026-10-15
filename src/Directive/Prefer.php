@@ -39,13 +39,13 @@ class Prefer extends Parser
         };
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $context->pushPreference($this->preference);
+        $session->pushPreference($this->preference);
         try {
-            return $this->parser->recognizeInSession($input, $offset, $context);
+            return $this->parser->recognizeInSession($source, $byteOffset, $session);
         } finally {
-            $context->popPreference();
+            $session->popPreference();
         }
     }
 }

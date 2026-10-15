@@ -40,9 +40,9 @@ class Char extends Parser
         return '\'' . $this->character . '\'';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $textMode = $context->source()->mode() === SourceMode::UTF8;
+        $textMode = $session->source()->mode() === SourceMode::UTF8;
         if ($textMode) {
             if ((new Utf8Source($this->character))->codePointLength() !== 1) {
                 throw new InvalidArgumentException('Text Char requires one UTF-8 code point');
@@ -50,16 +50,16 @@ class Char extends Parser
         } elseif (strlen($this->character) !== 1) {
             throw new InvalidArgumentException('Byte Char requires one octet');
         }
-        $unit = $context->readSourceUnit($offset);
+        $unit = $session->readSourceUnit($byteOffset);
         if ($unit === null) {
-            return $this->failure($input, $offset);
+            return $this->failure($source, $byteOffset);
         }
-        $this->pushCaseSensitivityToContext($context);
+        $this->pushCaseSensitivityToContext($session);
         try {
-            $equal = $context->handleCase($unit->rawText()) === $context->handleCase($this->character);
-            return $this->makeMatch($equal === $this->include, $input, $offset, $unit->byteLength());
+            $equal = $session->handleCase($unit->rawText()) === $session->handleCase($this->character);
+            return $this->makeMatch($equal === $this->include, $source, $byteOffset, $unit->byteLength());
         } finally {
-            $this->popCaseSensitivityFromContext($context);
+            $this->popCaseSensitivityFromContext($session);
         }
     }
 }

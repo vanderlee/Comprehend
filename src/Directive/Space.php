@@ -25,13 +25,13 @@ class Space extends Parser
         return (string) $this->parser;
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $context->pushSpacer($this->spacer);
+        $session->pushSpacer($this->spacer);
         try {
-            return $this->parser->recognizeInSession($input, $offset, $context);
+            return $this->parser->recognizeInSession($source, $byteOffset, $session);
         } finally {
-            $context->popSpacer();
+            $session->popSpacer();
         }
     }
 }

@@ -45,19 +45,19 @@ class All extends Parser
         return '( ' . implode(' + ', $this->parsers) . ' )';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
         $length = PHP_INT_MAX;
         $matches = [];
         foreach ($this->parsers as $parser) {
-            $match = $parser->recognizeInSession($input, $offset, $context);
+            $match = $parser->recognizeInSession($source, $byteOffset, $session);
             $length = min($length, $match->length);
             if (!$match instanceof Success) {
-                return $this->failure($input, $offset, $length);
+                return $this->failure($source, $byteOffset, $length);
             }
             $matches[] = $match;
         }
-        $success = $this->success($input, $offset, $length, $matches);
+        $success = $this->success($source, $byteOffset, $length, $matches);
         $success->setConcreteMatches($matches);
         return $success;
     }

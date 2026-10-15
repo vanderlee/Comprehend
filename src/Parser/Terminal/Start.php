@@ -21,8 +21,8 @@ class Start extends Parser
         return 'start';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        return $offset === 0 ? $this->success($input, $offset) : $this->failure($input, $offset);
+        return $byteOffset === 0 ? $this->success($source, $byteOffset) : $this->failure($source, $byteOffset);
     }
 }

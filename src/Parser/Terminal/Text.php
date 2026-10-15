@@ -38,26 +38,26 @@ class Text extends Parser
         return '"' . $this->text . '"';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $this->pushCaseSensitivityToContext($context);
+        $this->pushCaseSensitivityToContext($session);
         try {
-            $literal = $context->source()->mode() === SourceMode::UTF8 ? mb_str_split(
+            $literal = $session->source()->mode() === SourceMode::UTF8 ? mb_str_split(
                 (new Utf8Source($this->text))->sliceBytes(0, strlen($this->text)),
                 1,
                 'UTF-8',
             ) : str_split($this->text);
-            $position = $offset;
+            $position = $byteOffset;
             foreach ($literal as $character) {
-                $unit = $context->readSourceUnit($position);
-                if ($unit === null || $context->handleCase($unit->rawText()) !== $context->handleCase($character)) {
-                    return $this->failure($input, $offset, $position - $offset);
+                $unit = $session->readSourceUnit($position);
+                if ($unit === null || $session->handleCase($unit->rawText()) !== $session->handleCase($character)) {
+                    return $this->failure($source, $byteOffset, $position - $byteOffset);
                 }
                 $position = $unit->end;
             }
-            return $this->success($input, $offset, $position - $offset);
+            return $this->success($source, $byteOffset, $position - $byteOffset);
         } finally {
-            $this->popCaseSensitivityFromContext($context);
+            $this->popCaseSensitivityFromContext($session);
         }
     }
 }

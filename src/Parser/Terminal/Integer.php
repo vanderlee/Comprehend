@@ -78,11 +78,11 @@ class Integer extends Parser
         return ($this->minimum === null ? '<-INF' : '[' . $this->minimum) . ',' . ($this->maximum === null ? 'INF>' : $this->maximum . ']');
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $this->pushCaseSensitivityToContext($context);
+        $this->pushCaseSensitivityToContext($session);
         try {
-            $caseSensitive = $context->isCaseSensitive();
+            $caseSensitive = $session->isCaseSensitive();
             $values = $this->digitValues($caseSensitive);
             $all = self::digitPattern($this->digitSymbols);
             $nonzero = self::digitPattern(array_slice($this->digitSymbols, 1));
@@ -91,18 +91,18 @@ class Integer extends Parser
                 ? '/-?' . $all . '+/A'
                 : '/(?:' . $zero . '|-?' . $nonzero . $all . '*)/A';
             $pattern .= $caseSensitive ? '' : 'i';
-            $pattern .= $input->mode() === SourceMode::UTF8 ? 'u' : '';
+            $pattern .= $source->mode() === SourceMode::UTF8 ? 'u' : '';
         } finally {
-            $this->popCaseSensitivityFromContext($context);
+            $this->popCaseSensitivityFromContext($session);
         }
-        $context->consumeWork(max(1, $input->byteLength()), $offset);
-        $subject = $input->sliceBytes(0, $input->byteLength());
-        $status = preg_match($pattern, $subject, $match, 0, $offset);
+        $session->consumeWork(max(1, $source->byteLength()), $byteOffset);
+        $subject = $source->sliceBytes(0, $source->byteLength());
+        $status = preg_match($pattern, $subject, $match, 0, $byteOffset);
         if ($status === false) {
             throw new \RuntimeException('Integer recognition failed: ' . preg_last_error_msg());
         }
         if ($status !== 1) {
-            return $this->failure($input, $offset);
+            return $this->failure($source, $byteOffset);
         }
 
         // Try shorter prefixes when the full integer lies outside the bounds.
@@ -110,13 +110,13 @@ class Integer extends Parser
         $symbols = mb_str_split($negative ? substr($match[0], 1) : $match[0], 1, 'UTF-8');
         $length = strlen($match[0]);
         while ($symbols !== []) {
-            $integer = $this->integerValue($symbols, $values, $negative, $caseSensitive, $context, $offset);
+            $integer = $this->integerValue($symbols, $values, $negative, $caseSensitive, $session, $byteOffset);
             if ($integer !== null && $this->isInRange($integer)) {
-                return $this->success($input, $offset, $length);
+                return $this->success($source, $byteOffset, $length);
             }
             $length -= strlen(array_pop($symbols));
         }
-        return $this->failure($input, $offset);
+        return $this->failure($source, $byteOffset);
     }
 
     private function digitValues(bool $caseSensitive): array

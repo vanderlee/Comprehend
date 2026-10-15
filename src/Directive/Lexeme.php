@@ -25,13 +25,13 @@ class Lexeme extends Parser
         return (string) $this->parser;
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $context->pushLexeme();
+        $session->pushLexeme();
         try {
-            return $this->parser->recognizeInSession($input, $offset, $context);
+            return $this->parser->recognizeInSession($source, $byteOffset, $session);
         } finally {
-            $context->popLexeme();
+            $session->popLexeme();
         }
     }
 }

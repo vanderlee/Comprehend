@@ -25,13 +25,13 @@ class CaseSensitive extends Parser
         return ($this->sensitivity ? 'case' : 'no-case') . '( ' . $this->parser . ' )';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $context->pushCaseSensitivity($this->sensitivity);
+        $session->pushCaseSensitivity($this->sensitivity);
         try {
-            return $this->parser->recognizeInSession($input, $offset, $context);
+            return $this->parser->recognizeInSession($source, $byteOffset, $session);
         } finally {
-            $context->popCaseSensitivity();
+            $session->popCaseSensitivity();
         }
     }
 }

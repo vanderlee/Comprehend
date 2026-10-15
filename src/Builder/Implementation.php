@@ -53,14 +53,14 @@ final class Implementation extends Parser
         return 'definition';
     }
 
-    protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $match = $this->parser()->recognizeInSession($source, $offset, $session);
+        $match = $this->parser()->recognizeInSession($source, $byteOffset, $session);
         if (!$match instanceof Success) {
-            return $this->failure($source, $offset, $match->length);
+            return $this->failure($source, $byteOffset, $match->length);
         }
         $processors = $this->definition->processors;
-        $success = $this->success($source, $offset, $match->length, $processors === [] ? $match : []);
+        $success = $this->success($source, $byteOffset, $match->length, $processors === [] ? $match : []);
         $success->setConcreteMatches([$match]);
         $success->addSemanticValidators($this->definition->validators);
         if ($processors === []) {

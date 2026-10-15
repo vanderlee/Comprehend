@@ -42,23 +42,23 @@ class Range extends Parser
         return 'range(' . $first . '..' . $last . ')';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $this->pushCaseSensitivityToContext($context);
+        $this->pushCaseSensitivityToContext($session);
         try {
-            $first = $this->first === null ? 0 : $this->sourceOrdinal($this->first, $context);
-            $last = $this->last === null ? null : $this->sourceOrdinal($this->last, $context);
-            $unit = $context->readSourceUnit($offset);
+            $first = $this->first === null ? 0 : $this->sourceOrdinal($this->first, $session);
+            $last = $this->last === null ? null : $this->sourceOrdinal($this->last, $session);
+            $unit = $session->readSourceUnit($byteOffset);
             if ($unit === null) {
-                return $this->failure($input, $offset);
+                return $this->failure($source, $byteOffset);
             }
-            $value = $this->sourceOrdinal($unit->rawText(), $context);
+            $value = $this->sourceOrdinal($unit->rawText(), $session);
             $inside = $first <= $value && ($last === null || $value <= $last);
             return $inside === $this->in
-                ? $this->success($input, $offset, $unit->byteLength())
-                : $this->failure($input, $offset);
+                ? $this->success($source, $byteOffset, $unit->byteLength())
+                : $this->failure($source, $byteOffset);
         } finally {
-            $this->popCaseSensitivityFromContext($context);
+            $this->popCaseSensitivityFromContext($session);
         }
     }
 

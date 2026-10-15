@@ -39,15 +39,15 @@ class Stub extends Parser
         return $this->parser ? (string) $this->parser : '<undefined>';
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
         if ($this->parser === null) {
             throw new UnexpectedValueException('Missing parser');
         }
-        $match = $this->parser->recognizeInSession($input, $offset, $context);
+        $match = $this->parser->recognizeInSession($source, $byteOffset, $session);
         if ($match instanceof Success) {
-            return $this->success($input, $offset, $match->length, $match);
+            return $this->success($source, $byteOffset, $match->length, $match);
         }
-        return $this->failure($input, $offset, $match->length);
+        return $this->failure($source, $byteOffset, $match->length);
     }
 }

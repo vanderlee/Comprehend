@@ -25,8 +25,8 @@ class Trivia extends Parser
         return (string) $this->parser;
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        return $this->parser->recognizeInSession($input, $offset, $context);
+        return $this->parser->recognizeInSession($source, $byteOffset, $session);
     }
 }

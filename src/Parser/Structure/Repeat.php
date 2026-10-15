@@ -70,25 +70,25 @@ class Repeat extends Parser
         return ($min === $max ? $min : $min . '*' . $max) . $this->parser;
     }
 
-    protected function recognize(Source $input, int $offset, ParseSession $context): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
         $childMatches = [];
         $concreteMatches = [];
-        $this->pushSpacer($context);
+        $this->pushSpacer($session);
         try {
             $length = 0;
             while ($this->max === null || count($childMatches) < $this->max) {
-                $diagnostics = $context->diagnosticState();
+                $diagnostics = $session->diagnosticState();
                 $spacingMatch = null;
-                $skip = $length > 0 ? $context->skipSpacing($input, $offset + $length, $spacingMatch) : 0;
+                $skip = $length > 0 ? $session->skipSpacing($source, $byteOffset + $length, $spacingMatch) : 0;
                 $match = $skip !== false ? $this->parser->recognizeInSession(
-                    $input,
-                    $offset + $length + $skip,
-                    $context,
+                    $source,
+                    $byteOffset + $length + $skip,
+                    $session,
                 ) : null;
                 if (!$match instanceof Success) {
                     if (count($childMatches) >= $this->min) {
-                        $context->restoreDiagnostics($diagnostics);
+                        $session->restoreDiagnostics($diagnostics);
                     }
                     break;
                 }
@@ -105,12 +105,12 @@ class Repeat extends Parser
                 $concreteMatches[] = $match;
             }
         } finally {
-            $this->popSpacer($context);
+            $this->popSpacer($session);
         }
         if (count($childMatches) < $this->min) {
-            return $this->failure($input, $offset, $length);
+            return $this->failure($source, $byteOffset, $length);
         }
-        $success = $this->success($input, $offset, $length, $childMatches);
+        $success = $this->success($source, $byteOffset, $length, $childMatches);
         $success->setConcreteMatches($concreteMatches);
         return $success;
     }

@@ -42,9 +42,9 @@ final class RuleReference extends Parser
         return $this->rule;
     }
 
-    protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        return $this->graphTarget()->recognizeInSession($source, $offset, $session);
+        return $this->graphTarget()->recognizeInSession($source, $byteOffset, $session);
     }
 
     /** @internal Resolve factories once for each parameterized reference in a snapshot. */
