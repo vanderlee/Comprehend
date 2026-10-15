@@ -35,14 +35,18 @@ class Success extends AbstractMatch
      *
      * @var bool
      */
-    private bool $resolved = false;
+    private bool $commitStarted = false;
     /**
-     * Successful selected execution children.
+     * Selected children used for named collections and effect traversal.
      *
      * @var Success[]
      */
     private array $successes;
-    /** @var Success[] */
+    /**
+     * All retained recognition children, including trivia and intersection checks.
+     * Used for concrete syntax and semantic validation.
+     * @var Success[]
+     */
     private array $concreteMatches;
     /**
      * @var list<callable>
@@ -95,13 +99,7 @@ class Success extends AbstractMatch
         }
         $kind = $parser::class;
         $isTrivia = $parser instanceof Trivia;
-        $children = [];
-        foreach ($this->concreteMatches as $match) {
-            if ($match->node === null) {
-                throw new LogicException('Concrete children require source-bound recognition');
-            }
-            $children[] = $match->node;
-        }
+        $children = $this->concreteChildNodes();
         if ($name instanceof Closure) {
             $name = $name(new ConcreteNode(
                 $kind,
@@ -131,6 +129,20 @@ class Success extends AbstractMatch
             $leaf,
             $tags,
         ));
+    }
+
+    /** @return list<ConcreteNode> */
+    private function concreteChildNodes(): array
+    {
+        $children = [];
+        foreach ($this->concreteMatches as $match) {
+            if ($match->node === null) {
+                throw new LogicException('Concrete children require source-bound recognition');
+            }
+            $children[] = $match->node;
+        }
+
+        return $children;
     }
 
     public function inheritValueFrom(self $child): void
@@ -174,13 +186,13 @@ class Success extends AbstractMatch
         if ($this->commitError !== null) {
             throw $this->commitError;
         }
-        if ($this->resolved) {
+        if ($this->commitStarted) {
             return;
         }
         if (!$this->validateSemantic()->valid) {
             throw new LogicException('Semantic validation rejected commit');
         }
-        $this->resolved = true;
+        $this->commitStarted = true;
         $this->committing = true;
         try {
             $this->getCallback();

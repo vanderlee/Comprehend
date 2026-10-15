@@ -7,6 +7,7 @@ namespace Tests\Src\Runtime;
 use DomainException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
@@ -84,6 +85,39 @@ final class ParseSessionTest extends TestCase
 
         $this->assertSame(1, $session->workUsed());
         $this->assertSame('a', $session->readSourceUnit(0)->rawText());
+        $this->assertSame(2, $session->workUsed());
+    }
+
+    public function testNearerFailureAdvancesRevisionWithoutReplacingFarthestDetails(): void
+    {
+        $session = new ParseSession(new ByteSource('abc'));
+        $session->recordFailure(2, 'farther', [['root', 'farther']]);
+        $session->recordFailure(1, 'nearer', [['root', 'nearer']]);
+
+        $this->assertSame(2, $session->failureRevision());
+        $this->assertSame(2, $session->farthestFailure());
+        $this->assertSame(['farther'], $session->diagnostic()->expected);
+        $this->assertSame([['root', 'farther']], $session->diagnostic()->rulePaths);
+    }
+
+    public function testRejectedEntryDoesNotRetainParserOrDepthState(): void
+    {
+        $session = new ParseSession(new ByteSource('a'), limits: new ParseLimits(maxDepth: 1));
+        $outer = new Text('a');
+        $inner = new Text('a');
+        $session->enterParser($outer, 0);
+
+        try {
+            $session->enterParser($inner, 0);
+            $this->fail('Expected depth exhaustion');
+        } catch (ParseLimitException $error) {
+            $this->assertSame('depth', $error->limit);
+        }
+
+        $session->leaveParser($outer, 0);
+        $session->enterParser($inner, 0);
+        $session->leaveParser($inner, 0);
+
         $this->assertSame(2, $session->workUsed());
     }
 }

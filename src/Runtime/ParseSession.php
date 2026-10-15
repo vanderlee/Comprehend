@@ -93,6 +93,7 @@ final class ParseSession
         $this->consumeWork(1, $offset);
         $this->metrics?->record($parser, $offset);
 
+        // Only successful entry owns a matching leaveParser() call.
         ++$this->depth;
         $this->activeParsers[$key] = true;
     }
@@ -179,6 +180,7 @@ final class ParseSession
     public function recordFailure(int $byteOffset, ?string $expected = null, ?array $paths = null): void
     {
         $this->source->span($byteOffset, $byteOffset);
+        // Even a nearer failure counts as an observation for Parser's fallback diagnostic.
         ++$this->failureRevision;
 
         if ($this->farthestFailure === null || $byteOffset > $this->farthestFailure) {
@@ -191,6 +193,12 @@ final class ParseSession
             return;
         }
 
+        $this->mergeFailureDetails($expected, $paths);
+    }
+
+    /** @param list<list<string>>|null $paths */
+    private function mergeFailureDetails(?string $expected, ?array $paths): void
+    {
         if ($expected !== null && !in_array($expected, $this->expectations, true)) {
             $this->expectations[] = $expected;
         }

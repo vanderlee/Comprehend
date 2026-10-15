@@ -19,6 +19,7 @@ use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Source\Span;
 use Closure;
 
 /**
@@ -305,6 +306,14 @@ abstract class Parser implements SnapshotParticipant
         $success = new Success($length, is_array($children) ? $children : [$children]);
         $span = $source->span($offset, $offset + $length);
         $success->setSourceMetadata($span, null);
+        $this->bindResultCallbacks($success, $span);
+        $this->bindCommitEffects($success, $span);
+
+        return $success;
+    }
+
+    private function bindResultCallbacks(Success $success, Span $span): void
+    {
         $resultCallbacks = array_map(static fn($factory) => $factory($span), $this->resultCallbacks);
         $success->addResultCallback(
             static function (&$results) use ($resultCallbacks) {
@@ -313,6 +322,11 @@ abstract class Parser implements SnapshotParticipant
                 }
             },
         );
+    }
+
+    private function bindCommitEffects(Success $success, Span $span): void
+    {
+        // Snapshot registrations now; assignments and effects remain deferred until commit.
         $effects = $this->effects;
         $assignments = $this->assignCallbacks;
         $success->addCustomCallback(
@@ -326,8 +340,6 @@ abstract class Parser implements SnapshotParticipant
                 }
             },
         );
-
-        return $success;
     }
 
     private function prepareSuccessfulMatch(

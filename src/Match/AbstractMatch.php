@@ -23,6 +23,7 @@ abstract class AbstractMatch
     public ?Diagnostic $diagnostic = null;
     public ?ConcreteNode $node = null;
 
+    /** $length is byte progress; failed attempts still consume zero bytes. */
     public function __construct(public readonly int $length = 0)
     {
         if ($length < 0) {
