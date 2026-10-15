@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\features\sources;
 
@@ -27,6 +27,7 @@ class SourceTest extends TestCase
         $this->assertSame($start, $source->byteOffsetForCodePointPosition($cpStart));
         $this->assertSame($end, $source->byteOffsetForCodePointPosition($cpEnd));
     }
+
     public function coordinateData()
     {
         return [
@@ -40,6 +41,7 @@ class SourceTest extends TestCase
             'four-byte prefix' => ["😀a", 4, 5, 'a', 1, 2],
         ];
     }
+
     public function testAllOctetsAreAcceptedAndReadWithoutDecoding()
     {
         $bytes = implode('', array_map('chr', range(0, 255)));
@@ -54,6 +56,7 @@ class SourceTest extends TestCase
         }
         $this->assertNull($source->readByte(256));
     }
+
     public function testCodePointReadsUseOriginalByteBoundaries()
     {
         $source = new Utf8Source("Aé€😀\x00");
@@ -75,6 +78,7 @@ class SourceTest extends TestCase
         }
         $this->assertNull($source->readCodePoint(11));
     }
+
     public function testRawByteAccessMaySplitCodePoints()
     {
         $source = new Utf8Source("éa");
@@ -83,6 +87,7 @@ class SourceTest extends TestCase
         $this->assertSame("\xa9", $source->span(1, 2)->rawText());
         $this->assertSame('', $source->span(1, 1)->rawText());
     }
+
     /** @dataProvider invalidRangeData */
     public function testInvalidRangesAreRejected($start, $end, $operation)
     {
@@ -94,6 +99,7 @@ class SourceTest extends TestCase
             $source->{$operation}($start, $end);
         }
     }
+
     public function invalidRangeData()
     {
         $cases = [];
@@ -102,8 +108,10 @@ class SourceTest extends TestCase
                 $cases[] = [$start, $end, $operation];
             }
         }
+
         return $cases;
     }
+
     /** @dataProvider invalidUtf8Data */
     public function testMalformedUtf8IsRejectedAtConstruction($bytes)
     {
@@ -112,6 +120,7 @@ class SourceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         new Utf8Source($bytes);
     }
+
     public function invalidUtf8Data()
     {
         return [
@@ -129,6 +138,7 @@ class SourceTest extends TestCase
             'invalid leading byte' => ["\xff"],
         ];
     }
+
     /** @dataProvider invalidPositionData */
     public function testInvalidReadAndConversionPositionsAreRejected($method, $position)
     {
@@ -136,6 +146,7 @@ class SourceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $source->{$method}($position);
     }
+
     public function invalidPositionData()
     {
         $cases = [];
@@ -150,18 +161,22 @@ class SourceTest extends TestCase
         foreach ([-1, 6] as $position) {
             $cases[] = ['byteOffsetForCodePointPosition', $position];
         }
+
         return $cases;
     }
+
     /** @dataProvider invalidByteReadData */
     public function testByteReadDoesNotClampInvalidOffsets($offset)
     {
         $this->expectException(InvalidArgumentException::class);
         (new ByteSource('abc'))->readByte($offset);
     }
+
     public function invalidByteReadData()
     {
         return [[-1], [4]];
     }
+
     public function testEmptySourcesHaveValidEofSpansAndNoReadUnit()
     {
         $bytes = new ByteSource('');
@@ -177,6 +192,7 @@ class SourceTest extends TestCase
         $this->assertSame(0, $text->byteOffsetForCodePointPosition(0));
         $this->assertSame(0, $text->codePointPositionForByteOffset(0));
     }
+
     public function testEncodingAndRawTextDoNotDependOnAmbientSettings()
     {
         $encoding = mb_internal_encoding();
@@ -195,6 +211,7 @@ class SourceTest extends TestCase
             mb_internal_encoding($encoding);
         }
     }
+
     public function testSpanRetainsStableSourceAfterOriginalVariableChanges()
     {
         $input = "éa";
@@ -205,6 +222,7 @@ class SourceTest extends TestCase
         $this->assertSame("é", $span->rawText());
         $this->assertSame(3, $span->source->byteLength());
     }
+
     public function testCoverKeepsSourceIdentityAndIncludesGap()
     {
         $source = new ByteSource('abcde');

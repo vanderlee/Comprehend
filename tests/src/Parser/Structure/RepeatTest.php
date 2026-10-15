@@ -25,6 +25,7 @@ class RepeatTest extends ParserTestCase
     {
         $this->assertInstanceOf(Repeat::class, new Repeat(new Text('a')));
     }
+
     /**
      * @dataProvider invalidBoundsData
      */
@@ -34,6 +35,7 @@ class RepeatTest extends ParserTestCase
         $this->expectExceptionMessage('Invalid repeat range specified');
         new Repeat(new Text('a'), $min, $max);
     }
+
     public function invalidBoundsData()
     {
         return [
@@ -44,11 +46,13 @@ class RepeatTest extends ParserTestCase
             'both negative in ascending order' => [-2, -1],
         ];
     }
+
     public function testNegativeExactCount()
     {
         $this->expectException(InvalidArgumentException::class);
         Repeat::exact(new Text('a'), -1);
     }
+
     public function testStaticConstructors()
     {
         $c = Repeat::plus(new Text('a'));
@@ -72,6 +76,7 @@ class RepeatTest extends ParserTestCase
         $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('')));
         $this->assertResult(true, 0, $c->matchPrefix(new ByteSource('a')));
     }
+
     /**
      * @dataProvider zeroLengthChildData
      */
@@ -81,6 +86,7 @@ class RepeatTest extends ParserTestCase
         $this->expectExceptionMessage('Repeat child matched successfully without consuming input');
         $parser->matchPrefix(new ByteSource($input));
     }
+
     public function zeroLengthChildData()
     {
         $cases = [];
@@ -92,7 +98,10 @@ class RepeatTest extends ParserTestCase
         }
         $cases['positive minimum'] = [new Repeat(new Not(new Text('b')), 1), 'a'];
         $cases['nullable after consuming child'] = [new Repeat(new Choice(new Text('a'), new Not(new Text('b')))), 'a'];
-        $cases['spacing cannot supply child progress'] = [(new Repeat(new Choice(new Text('a'), new Not(new Text('b'))), 0, 2))->spacing(new Text(' ')), 'a c'];
+        $cases['spacing cannot supply child progress'] = [
+            (new Repeat(new Choice(new Text('a'), new Not(new Text('b'))), 0, 2))->spacing(new Text(' ')),
+            'a c',
+        ];
         $cases['custom nullable parser'] = [
             new Repeat(
                 new class ('a') extends Text {
@@ -104,12 +113,15 @@ class RepeatTest extends ParserTestCase
             ),
             'a',
         ];
+
         return $cases;
     }
+
     public function testZeroMaximumAllowsNullableChild()
     {
         $this->assertResult(true, 0, (new Repeat(new Nothing(), 0, 0))->matchPrefix(new ByteSource('a')));
     }
+
     public function testZeroLengthChildCallbackIsNotResolved()
     {
         $calls = 0;
@@ -125,6 +137,7 @@ class RepeatTest extends ParserTestCase
             $this->assertSame(0, $calls);
         }
     }
+
     /**
      * @dataProvider repeatData
      *
@@ -140,6 +153,7 @@ class RepeatTest extends ParserTestCase
         $this->assertSame($match, $result->success, (string) $parser);
         $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
+
     public function repeatData()
     {
         return [

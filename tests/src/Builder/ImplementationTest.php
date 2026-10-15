@@ -17,6 +17,7 @@ final class ImplementationTest extends TestCase
         $calls = 0;
         $definition = new Definition(static function (string $text) use (&$calls): Text {
             ++$calls;
+
             return new Text($text);
         });
         $implementation = new Implementation($definition, ['a']);

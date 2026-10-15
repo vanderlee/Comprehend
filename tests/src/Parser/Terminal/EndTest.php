@@ -27,6 +27,7 @@ class EndTest extends ParserTestCase
         $this->assertSame($match, $result->success, (string) $parser);
         $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
+
     public function endData()
     {
         return [[new End(), 'aa', 0, false, 0], [new End(), 'aa', 1, false, 0], [new End(), 'aa', 2, true, 0]];

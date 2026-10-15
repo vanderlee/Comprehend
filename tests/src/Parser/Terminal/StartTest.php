@@ -27,6 +27,7 @@ class StartTest extends ParserTestCase
         $this->assertSame($match, $result->success, (string) $parser);
         $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
+
     public function startData()
     {
         return [[new Start(), 'aa', 0, true, 0], [new Start(), 'aa', 1, false, 0], [new Start(), 'aa', 2, false, 0]];

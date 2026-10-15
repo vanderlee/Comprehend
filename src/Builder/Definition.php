@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Builder;
 
@@ -29,24 +29,28 @@ final class Definition
     public function setGenerator(Comprehend|Parser|callable $generator): self
     {
         $this->generator = $generator instanceof Comprehend ? $generator->parser() : $generator;
+
         return $this;
     }
 
     public function clearValidators(): self
     {
         $this->validators = [];
+
         return $this;
     }
 
     public function addValidator(callable $validator): self
     {
         $this->validators[] = $validator;
+
         return $this;
     }
 
     public function addProcessor(string $name, callable $processor): self
     {
         $this->processors[$name] = $processor;
+
         return $this;
     }
 

@@ -30,7 +30,10 @@ class ParseLimitsTest extends TestCase
             $this->assertContains('Text', $error->rulePath);
         }
         $this->assertSame(0, $calls);
-        $this->assertTrue($parser->parseAll(new Utf8Source(str_repeat('a', 100)), limits: new ParseLimits(maxWork: 101))->success);
+        $this->assertTrue($parser->parseAll(
+            new Utf8Source(str_repeat('a', 100)),
+            limits: new ParseLimits(maxWork: 101),
+        )->success);
     }
 
     public function testFrozenConsumingRecursionStopsAtDepthBudget()

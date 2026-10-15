@@ -104,6 +104,7 @@ final class Catalog
     public static function canonicalName(string $name): string
     {
         $name = strtolower($name);
+
         return self::ALIASES[$name] ?? $name;
     }
 
@@ -285,6 +286,7 @@ final class Catalog
             }
             $children[] = $parser;
         }
+
         return new Choice(...$children);
     }
 
@@ -308,6 +310,7 @@ final class Catalog
             }
             $parsers = [...$children, ...array_slice($parsers, 1)];
         }
+
         return new Sequence(...$parsers);
     }
 
@@ -317,6 +320,7 @@ final class Catalog
         if (is_string($parser)) {
             return new Text($parser);
         }
+
         return $parser instanceof Comprehend ? $parser->parser() : (new GraphSnapshot(false))->copy($parser);
     }
 
@@ -331,12 +335,14 @@ final class Catalog
     public function define(string $name, callable $factory): self
     {
         $name = self::validateName($name);
+
         return new self([...$this->statics, $name => Closure::fromCallable($factory)], $this->fluents);
     }
 
     public function defineFluent(string $name, callable $factory): self
     {
         $name = self::validateName($name);
+
         return new self($this->statics, [...$this->fluents, $name => Closure::fromCallable($factory)]);
     }
 
@@ -353,6 +359,7 @@ final class Catalog
         ) {
             throw new InvalidArgumentException('Syntax name is reserved: ' . $name);
         }
+
         return $name;
     }
 

@@ -232,6 +232,7 @@ final class GraphAnalysis
             || $node instanceof Trivia
         ) {
             $child = $node->getParser();
+
             return $child === null ? [] : [$child];
         }
 

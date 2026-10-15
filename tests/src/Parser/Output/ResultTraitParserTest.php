@@ -16,28 +16,43 @@ class ResultTraitParserTest extends ParserTestCase
 {
     public function testConcatFlat()
     {
-        $parser = new Sequence((new Text('foo'))->setResult('word'), new Text('bar'), (new Text('baz'))->concatResult('word'));
+        $parser = new Sequence(
+            (new Text('foo'))->setResult('word'),
+            new Text('bar'),
+            (new Text('baz'))->concatResult('word'),
+        );
         $match = $parser->matchPrefix(new ByteSource('foobarbaz'));
         $this->assertResult(true, 9, $match);
         $this->assertEquals('foobaz', $match->results()['word']);
         $this->assertEquals('foobaz', $match->result('word'));
     }
+
     public function testConcatArray()
     {
-        $parser = new Sequence((new Text('foo'))->pushResult('word'), new Text('bar'), (new Text('baz'))->concatResult('word'));
+        $parser = new Sequence(
+            (new Text('foo'))->pushResult('word'),
+            new Text('bar'),
+            (new Text('baz'))->concatResult('word'),
+        );
         $match = $parser->matchPrefix(new ByteSource('foobarbaz'));
         $this->assertResult(true, 9, $match);
         $this->assertEquals(['foobaz'], $match->results()['word']);
         $this->assertEquals(['foobaz'], $match->result('word'));
     }
+
     public function testFlatToArray()
     {
-        $parser = new Sequence((new Text('foo'))->setResult('word'), new Text('bar'), (new Text('baz'))->pushResult('word'));
+        $parser = new Sequence(
+            (new Text('foo'))->setResult('word'),
+            new Text('bar'),
+            (new Text('baz'))->pushResult('word'),
+        );
         $match = $parser->matchPrefix(new ByteSource('foobarbaz'));
         $this->assertResult(true, 9, $match);
         $this->assertEquals(['foo', 'baz'], $match->results()['word']);
         $this->assertEquals(['foo', 'baz'], $match->result('word'));
     }
+
     public function testDefaultResult()
     {
         $parser = new Sequence((new Text('foo'))->setResult(), new Text('bar'), (new Text('baz'))->concatResult());
@@ -47,6 +62,7 @@ class ResultTraitParserTest extends ParserTestCase
         $this->assertEquals('foobaz', $match->result());
         $this->assertEmpty($match->results());
     }
+
     public function testSetResultValue()
     {
         $parser = (new Text('foo'))->setResult('var', 'found it');
@@ -55,6 +71,7 @@ class ResultTraitParserTest extends ParserTestCase
         $this->assertEquals('found it', $match->results()['var']);
         $this->assertEquals('found it', $match->result('var'));
     }
+
     public function testSetResultValueCallback()
     {
         $parser = (new Text('foo'))->setResult(
@@ -68,6 +85,7 @@ class ResultTraitParserTest extends ParserTestCase
         $this->assertEquals('oof', $match->results()['var']);
         $this->assertEquals('oof', $match->result('var'));
     }
+
     public function testConcatResult()
     {
         $parser = new Sequence(
@@ -88,6 +106,7 @@ class ResultTraitParserTest extends ParserTestCase
         $this->assertEquals('fooBARzab', $match->results()['var']);
         $this->assertEquals('fooBARzab', $match->result('var'));
     }
+
     public function testPushResult()
     {
         $parser = new Sequence(
@@ -114,6 +133,7 @@ class ResultTraitParserTest extends ParserTestCase
         $calls = 0;
         $nullable = (new Text('a'))->setResult('value', static function () use (&$calls) {
             ++$calls;
+
             return null;
         });
 
@@ -123,7 +143,10 @@ class ResultTraitParserTest extends ParserTestCase
         $this->assertSame([null, 'b'], $pushed->result('value'));
         $this->assertSame(1, $calls);
 
-        $concatenated = (new Sequence($nullable, (new Text('b'))->concatResult('value')))->parseAll(new ByteSource('ab'));
+        $concatenated = (new Sequence(
+            $nullable,
+            (new Text('b'))->concatResult('value'),
+        ))->parseAll(new ByteSource('ab'));
         $this->assertSame('b', $concatenated->result('value'));
         $this->assertSame('b', $concatenated->result('value'));
         $this->assertSame(2, $calls);

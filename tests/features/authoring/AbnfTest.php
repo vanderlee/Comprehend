@@ -17,7 +17,10 @@ class AbnfTest extends TestCase
 {
     public function testForwardCaseInsensitiveReferencesAndIncrementalRules(): void
     {
-        $grammar = Compiler::compile("Word = Prefix Suffix\nPrefix = %s\"a\"\nSuffix = \"b\"\nSUFFIX =/ \"c\"\n", 'WORD');
+        $grammar = Compiler::compile(
+            "Word = Prefix Suffix\nPrefix = %s\"a\"\nSuffix = \"b\"\nSUFFIX =/ \"c\"\n",
+            'WORD',
+        );
 
         $this->assertTrue($grammar->parseAll(new ByteSource('aB'))->success);
         $this->assertTrue($grammar->parseAll(new ByteSource('aC'))->success);

@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Source;
 
@@ -29,6 +29,7 @@ abstract class InMemorySource implements Source
         if ($end < $start) {
             throw new InvalidArgumentException('Span end must not precede its start');
         }
+
         return substr($this->bytes, $start, $end - $start);
     }
 

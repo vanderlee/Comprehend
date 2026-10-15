@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Tree;
 
@@ -46,6 +46,7 @@ trait Serialization
                 }
             }
         }
+
         return $data;
     }
 
@@ -56,6 +57,7 @@ trait Serialization
     {
         $raw = $span->rawText();
         $utf8 = mb_check_encoding($raw, 'UTF-8');
+
         return [
             'start' => $span->start,
             'end' => $span->end,
@@ -78,6 +80,7 @@ trait Serialization
 
         $document = new DOMDocument('1.0', 'UTF-8');
         $document->appendChild($this->xmlNode($document));
+
         return $document;
     }
 
@@ -108,42 +111,48 @@ trait Serialization
         foreach ($this->children as $child) {
             $element->appendChild($child->xmlNode($document));
         }
+
         return $element;
     }
 
     private function appendXmlTags(DOMDocument $document, DOMElement $element): void
     {
-        if ($this->tags !== []) {
-            $tags = $document->createElement('tags');
-            foreach ($this->tags as $tag) {
-                $entry = $document->createElement('tag');
-                $entry->appendChild($document->createTextNode($tag));
-                $tags->appendChild($entry);
-            }
-            $element->appendChild($tags);
+        if ($this->tags === []) {
+            return;
         }
+
+        $tags = $document->createElement('tags');
+        foreach ($this->tags as $tag) {
+            $entry = $document->createElement('tag');
+            $entry->appendChild($document->createTextNode($tag));
+            $tags->appendChild($entry);
+        }
+        $element->appendChild($tags);
     }
 
     private function appendXmlSurroundings(DOMDocument $document, DOMElement $element): void
     {
-        if ($this instanceof AstNode) {
-            foreach (['preamble', 'postamble'] as $side) {
-                if ($this->$side === []) {
-                    continue;
-                }
-                $container = $document->createElement($side);
-                foreach ($this->$side as $span) {
-                    $fragment = $document->createElement('span');
-                    $fragment->setAttribute('start', (string) $span->start);
-                    $fragment->setAttribute('end', (string) $span->end);
-                    $raw = $document->createElement('text');
-                    $raw->setAttribute('encoding', 'base64');
-                    $raw->appendChild($document->createTextNode(base64_encode($span->rawText())));
-                    $fragment->appendChild($raw);
-                    $container->appendChild($fragment);
-                }
-                $element->appendChild($container);
+        if (!$this instanceof AstNode) {
+            return;
+        }
+
+        foreach (['preamble', 'postamble'] as $side) {
+            if ($this->$side === []) {
+                continue;
             }
+
+            $container = $document->createElement($side);
+            foreach ($this->$side as $span) {
+                $fragment = $document->createElement('span');
+                $fragment->setAttribute('start', (string) $span->start);
+                $fragment->setAttribute('end', (string) $span->end);
+                $raw = $document->createElement('text');
+                $raw->setAttribute('encoding', 'base64');
+                $raw->appendChild($document->createTextNode(base64_encode($span->rawText())));
+                $fragment->appendChild($raw);
+                $container->appendChild($fragment);
+            }
+            $element->appendChild($container);
         }
     }
 }

@@ -20,6 +20,7 @@ class IntegerTest extends ParserTestCase
     {
         $this->assertInstanceOf(Integer::class, new Integer());
     }
+
     /**
      * @throws Exception
      */
@@ -28,6 +29,7 @@ class IntegerTest extends ParserTestCase
         $this->expectException(\TypeError::class);
         new Integer('a');
     }
+
     /**
      * @throws Exception
      */
@@ -36,6 +38,7 @@ class IntegerTest extends ParserTestCase
         $this->expectException(\TypeError::class);
         new Integer(0, 'a');
     }
+
     /**
      * @throws Exception
      */
@@ -44,6 +47,7 @@ class IntegerTest extends ParserTestCase
         $this->expectExceptionMessage('Maximum must be greater than minimum');
         new Integer(1, -1);
     }
+
     /**
      * @throws Exception
      */
@@ -52,6 +56,7 @@ class IntegerTest extends ParserTestCase
         $this->expectExceptionMessage('Unsupported base');
         new Integer(0, null, 1);
     }
+
     /**
      * @throws Exception
      */
@@ -60,6 +65,7 @@ class IntegerTest extends ParserTestCase
         $this->expectExceptionMessage('Unsupported base');
         new Integer(0, null, 10 + 26 + 1);
     }
+
     /**
      * @dataProvider integerData
      *
@@ -75,6 +81,7 @@ class IntegerTest extends ParserTestCase
         $message = $input . ' = ' . (string) $parser;
         $this->assertResult($match, $length, $result, $message);
     }
+
     /**
      * @return array
      * @throws Exception

@@ -50,6 +50,7 @@ final class Utf8Source extends InMemorySource
             $lead < 0xf0 => 3,
             default => 4,
         };
+
         return $this->span($byteOffset, $byteOffset + $length);
     }
 
@@ -64,6 +65,7 @@ final class Utf8Source extends InMemorySource
     public function isCodePointBoundary(int $byteOffset): bool
     {
         $this->assertByteOffset($byteOffset);
+
         return $byteOffset === $this->byteLength() || (ord($this->bytes[$byteOffset]) & 0xc0) !== 0x80;
     }
 
@@ -77,12 +79,14 @@ final class Utf8Source extends InMemorySource
         if ($position < 0 || $position > $this->codePointLength) {
             throw new InvalidArgumentException('Code-point position is outside the source');
         }
+
         return strlen(mb_substr($this->bytes, 0, $position, 'UTF-8'));
     }
 
     public function codePointPositionForByteOffset(int $byteOffset): int
     {
         $this->assertCodePointBoundary($byteOffset);
+
         return mb_strlen(substr($this->bytes, 0, $byteOffset), 'UTF-8');
     }
 }

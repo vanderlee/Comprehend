@@ -19,6 +19,7 @@ class PublicFacadeTest extends TestCase
         $rules = new Ruleset([], 'syntax');
         $rules->define('pair', static function (C $item, string $separator) use (&$calls): C {
             ++$calls;
+
             return $item->then($separator, $item);
         });
         $item = C::range('0', '9')->some()->named('digits');
@@ -29,7 +30,10 @@ class PublicFacadeTest extends TestCase
         $result = $grammar->parse('12:34');
         $this->assertTrue($result->success);
         $pair = $result->ast()->firstNamed('pair', 'syntax');
-        $this->assertSame(['12', '34'], array_map(static fn($node): string => $node->rawText(), $pair->allNamed('digits')));
+        $this->assertSame(
+            ['12', '34'],
+            array_map(static fn($node): string => $node->rawText(), $pair->allNamed('digits')),
+        );
         $this->assertFalse($grammar->parse('12:')->success);
         $this->assertSame(1, $calls);
         $this->assertTrue($item->parse('56')->success);
@@ -66,6 +70,7 @@ class PublicFacadeTest extends TestCase
         $calls = 0;
         $definition = new Definition(static function (C $item) use (&$calls): C {
             ++$calls;
+
             return $item->then($item);
         });
         $rules = new Ruleset(['double' => $definition]);
@@ -99,6 +104,7 @@ class PublicFacadeTest extends TestCase
         $rules = new Ruleset();
         $rules->define('nested', static function (string $text) use ($rules, &$calls): C {
             ++$calls;
+
             return C::first($text, C::sequence('(', $rules->rule('nested', $text), ')'));
         });
         $grammar = $rules->rule('nested', 'x')->freeze();

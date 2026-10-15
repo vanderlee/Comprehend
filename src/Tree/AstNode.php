@@ -94,6 +94,7 @@ final class AstNode implements JsonSerializable
                 array_push($children, ...self::project($child, $node->name === null ? $tags : []));
             }
         }
+
         return $node->name === null ? $children
             : [new self($node->name, $node->group, $node->span, self::surround($children, $node->span), $tags)];
     }
@@ -113,8 +114,17 @@ final class AstNode implements JsonSerializable
             $cursor = max($cursor, $node->span->end);
             $postamble = $index === $last && $cursor < $parent->end
                 ? [$parent->source->span($cursor, $parent->end)] : [];
-            $nodes[$index] = new self($node->name, $node->group, $node->span, $node->children, $node->tags, $preamble, $postamble);
+            $nodes[$index] = new self(
+                $node->name,
+                $node->group,
+                $node->span,
+                $node->children,
+                $node->tags,
+                $preamble,
+                $postamble,
+            );
         }
+
         return $nodes;
     }
 
@@ -150,6 +160,7 @@ final class AstNode implements JsonSerializable
                 return $child;
             }
         }
+
         return null;
     }
 
@@ -182,6 +193,7 @@ final class AstNode implements JsonSerializable
                 return $child;
             }
         }
+
         return null;
     }
 
@@ -202,6 +214,7 @@ final class AstNode implements JsonSerializable
                 return $child;
             }
         }
+
         return null;
     }
 

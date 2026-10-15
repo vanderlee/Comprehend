@@ -17,6 +17,7 @@ final class SemanticProjectionTest extends TestCase
         $calls = 0;
         $projection = new SemanticProjection(static function () use (&$calls): mixed {
             ++$calls;
+
             return null;
         });
         $result = (new Text('a'))->parseAll(new ByteSource('a'));

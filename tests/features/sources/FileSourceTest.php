@@ -20,6 +20,7 @@ class FileSourceTest extends TestCase
     {
         $stream = tmpfile();
         fwrite($stream, $bytes);
+
         return $stream;
     }
 
@@ -63,13 +64,21 @@ class FileSourceTest extends TestCase
 
     public function testFileAndMemoryRecognitionAndRandomSlicesAgree()
     {
-        foreach ([['abcxyz', ByteFileSource::class, ByteSource::class], ['é🙂abc', Utf8FileSource::class, Utf8Source::class]] as [$bytes, $fileClass, $memoryClass]) {
+        foreach (
+            [
+                ['abcxyz', ByteFileSource::class, ByteSource::class],
+                ['é🙂abc', Utf8FileSource::class, Utf8Source::class],
+            ] as [$bytes, $fileClass, $memoryClass]
+        ) {
             $stream = $this->stream($bytes);
             $file = new $fileClass($stream, 4);
             fclose($stream);
             $memory = new $memoryClass($bytes);
             for ($start = strlen($bytes); $start >= 0; --$start) {
-                $this->assertSame($memory->sliceBytes($start, strlen($bytes)), $file->sliceBytes($start, strlen($bytes)));
+                $this->assertSame(
+                    $memory->sliceBytes($start, strlen($bytes)),
+                    $file->sliceBytes($start, strlen($bytes)),
+                );
                 $this->assertSame($memory->isUnitBoundary($start), $file->isUnitBoundary($start));
             }
             $parser = new Text($bytes);

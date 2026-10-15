@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
@@ -17,6 +17,7 @@ trait SpacingTrait
     {
         $this->spacer = $trivia;
         $this->hasSpacingPolicy = true;
+
         return $this;
     }
 

@@ -19,10 +19,12 @@ class Rfc3513Test extends ParserTestCase
     {
         return new Rfc3513();
     }
+
     public function testConstruct()
     {
         $this->assertNotNull($this->getRfc());
     }
+
     /**
      * @dataProvider rfc3513Data
      *
@@ -33,11 +35,18 @@ class Rfc3513Test extends ParserTestCase
      */
     public function testRfc3513(Parser $parser, $input, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input)), $parser . ' == `' . $input . '`');
+        $this->assertResult(
+            $match,
+            $length,
+            $parser->matchPrefix(new ByteSource($input)),
+            $parser . ' == `' . $input . '`',
+        );
     }
+
     public function rfc3513Data()
     {
         $ipv6 = $this->getRfc();
+
         return [
             // Core rules
             [$ipv6->ref('ipv6_address'), '::1', true, 3],

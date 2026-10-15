@@ -18,6 +18,7 @@ final class GraphState
                 return $property->getValue($parser);
             }
         }
+
         return null;
     }
 
@@ -35,6 +36,7 @@ final class GraphState
                 }
             }
         }
+
         return $properties;
     }
 
@@ -60,6 +62,7 @@ final class GraphState
                 }
             }
         }
+
         return $children;
     }
 }

@@ -21,10 +21,12 @@ class Rfc4408Test extends ParserTestCase
     {
         return new Rfc4408();
     }
+
     public function testConstruct()
     {
         $this->assertNotNull($this->getRfc());
     }
+
     /**
      * @dataProvider rulesData
      *
@@ -35,11 +37,18 @@ class Rfc4408Test extends ParserTestCase
      */
     public function testRules(Parser $parser, $input, $match, $length)
     {
-        $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input)), (string) $parser . ' <=> ' . $input);
+        $this->assertResult(
+            $match,
+            $length,
+            $parser->matchPrefix(new ByteSource($input)),
+            (string) $parser . ' <=> ' . $input,
+        );
     }
+
     public function rulesData()
     {
         $spf = $this->getRfc();
+
         return [
             // Core rules
             [$spf->ref('qnum'), '0', true, 1],

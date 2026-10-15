@@ -36,9 +36,11 @@ class TreeMetadataTest extends TestCase
         $base = C::set('ab');
         $parser = $base->named(static function (ConcreteNode $node) use (&$names): string {
             ++$names;
+
             return 'letter_' . $node->rawText();
         })->mapValue(static function () use (&$values): int {
             ++$values;
+
             return 1;
         });
         $result = $parser->parse('a');
@@ -56,7 +58,13 @@ class TreeMetadataTest extends TestCase
 
     public function testSurroundingSpansKeepTriviaPunctuationAndUtf8Bytes(): void
     {
-        $ast = C::sequence('(', C::text('é')->named('letter'), ', ', C::text('b')->named('letter'), ')')->parse('(é, b)')->ast();
+        $ast = C::sequence(
+            '(',
+            C::text('é')->named('letter'),
+            ', ',
+            C::text('b')->named('letter'),
+            ')',
+        )->parse('(é, b)')->ast();
         $left = $ast->firstChild();
         $right = $ast->lastChild();
         $this->assertSame('(', $left->preambleText());
@@ -67,7 +75,12 @@ class TreeMetadataTest extends TestCase
         $this->assertSame('é', $left->rawText());
         $this->assertSame([3, 5], [$right->preamble[0]->start, $right->preamble[0]->end]);
         $this->assertSame(', ', $right->toArray()['preamble'][0]['text']);
-        $this->assertSame('(', base64_decode($ast->toXml()->getElementsByTagName('preamble')[0]->getElementsByTagName('text')[0]->textContent));
+        $this->assertSame(
+            '(',
+            base64_decode(
+                $ast->toXml()->getElementsByTagName('preamble')[0]->getElementsByTagName('text')[0]->textContent,
+            ),
+        );
         $binary = C::sequence("\xff", C::text('a')->named('a'))->parse(new ByteSource("\xffa"))->ast()->firstChild();
         $this->assertSame('base64', $binary->toArray()['preamble'][0]['textEncoding']);
         $this->assertSame("\xffa", $binary->surroundedText());

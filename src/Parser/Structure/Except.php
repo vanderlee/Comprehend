@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
@@ -64,6 +64,7 @@ class Except extends Parser
         if ($match instanceof Success) {
             $session->recordFailure($byteOffset, 'Except');
         }
+
         return $this->failure($source, $byteOffset, min($match->length, $not->length));
     }
 }

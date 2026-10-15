@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Result;
 
@@ -41,6 +41,7 @@ final class SemanticProjection
         if ($this->error !== null) {
             throw $this->error;
         }
+
         return $this->cached;
     }
 }

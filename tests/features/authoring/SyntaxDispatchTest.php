@@ -28,7 +28,11 @@ class SyntaxDispatchTest extends TestCase
         $this->assertTrue(C::nothing()->start()->any()->nothing()->end()->parse('é')->success);
         $this->assertTrue(C::text('(')->char('é')->range('a', 'z')->regex('/[0-9]+/')
             ->literalWindow(')')->parse('(éa12)')->success);
-        $this->assertTrue(C::text('n:')->integer(minimum: 7, maximum: 7, allowLeadingZeros: true)->parse('n:007')->success);
+        $this->assertTrue(C::text('n:')->integer(
+            minimum: 7,
+            maximum: 7,
+            allowLeadingZeros: true,
+        )->parse('n:007')->success);
     }
 
     public function testStaticAndFluentRepetitionSignaturesRetainTheirMeaning(): void
@@ -67,7 +71,10 @@ class SyntaxDispatchTest extends TestCase
     public function testCustomFactoriesForwardNamedArgumentsAndNormalizeTypedResults(): void
     {
         $syntax = C::syntax()
-            ->define('literal', static fn(string $value, bool $upper = false): Text => new Text($upper ? strtoupper($value) : $value))
+            ->define(
+                'literal',
+                static fn(string $value, bool $upper = false): Text => new Text($upper ? strtoupper($value) : $value),
+            )
             ->define('defined', static fn(): Definition => new Definition(C::text('x')));
         $this->assertTrue($syntax->literal(upper: true, value: 'a')->literal(value: 'b')->parse('Ab')->success);
         $this->assertTrue($syntax->call('LITERAL', value: 'a')->defined()->parse('ax')->success);
@@ -75,7 +82,10 @@ class SyntaxDispatchTest extends TestCase
 
     public function testCustomFluentsCanWrapTheCurrentExpression(): void
     {
-        $syntax = C::syntax()->defineFluent('between', static fn(C $item, string $left, string $right): C => C::sequence($left, $item, $right));
+        $syntax = C::syntax()->defineFluent(
+            'between',
+            static fn(C $item, string $left, string $right): C => C::sequence($left, $item, $right),
+        );
         $base = $syntax->range('0', '9')->some()->named('number');
         $wrapped = $base->between(right: ']', left: '[')->between('(', ')');
         $result = $wrapped->parse('([12])');
@@ -154,7 +164,10 @@ class SyntaxDispatchTest extends TestCase
             [static fn() => C::someOf('a'), BadMethodCallException::class],
             [static fn() => C::syntax()->define('text', static fn() => C::text('a')), InvalidArgumentException::class],
             [static fn() => C::syntax()->define('parse', static fn() => C::text('a')), InvalidArgumentException::class],
-            [static fn() => C::syntax()->define('not-a-method', static fn() => C::text('a')), InvalidArgumentException::class],
+            [
+                static fn() => C::syntax()->define('not-a-method', static fn() => C::text('a')),
+                InvalidArgumentException::class,
+            ],
             [static fn() => C::syntax()->define('bad', static fn() => 'text')->bad(), UnexpectedValueException::class],
         ];
     }

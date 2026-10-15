@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Runtime\Scope;
 
@@ -42,6 +42,7 @@ trait SpacingContextTrait
             return false;
         }
         $match = $attempt;
+
         return $match->length;
     }
 }

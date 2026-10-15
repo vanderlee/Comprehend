@@ -28,6 +28,7 @@ final class SuccessTest extends TestCase
         $calls = 0;
         $success->setValueMapper(static function (ParseResult $result) use (&$calls): string {
             ++$calls;
+
             return strtoupper($result->rawText());
         });
 

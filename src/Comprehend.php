@@ -114,6 +114,7 @@ final class Comprehend
         if ($fluent !== null) {
             return self::syntaxExpression(self::invoke($fluent, [$this, ...$arguments]), $name, $this->syntax);
         }
+
         return $this->then(self::callSyntax($name, $arguments, $this->syntax));
     }
 
@@ -129,18 +130,22 @@ final class Comprehend
             throw new \BadMethodCallException('Unknown syntax: ' . $name);
         }
         $result = self::invoke($factory, $arguments);
+
         return self::syntaxExpression($result, $name, $syntax);
     }
 
     private static function syntaxExpression(mixed $result, string $name, ?Syntax $syntax): self
     {
         if (!$result instanceof self && !$result instanceof Parser && !$result instanceof Definition) {
-            throw new UnexpectedValueException('Syntax factories must return Comprehend, Parser or Definition: ' . $name);
+            throw new UnexpectedValueException(
+                'Syntax factories must return Comprehend, Parser or Definition: ' . $name,
+            );
         }
         $expression = self::of($result);
         if ($syntax === null || $syntax === $expression->syntax) {
             return $expression;
         }
+
         return new self($expression->parser, $syntax);
     }
 
@@ -153,6 +158,7 @@ final class Comprehend
         if (!$signature->isVariadic() && count($arguments) > $signature->getNumberOfParameters()) {
             throw new ArgumentCountError('Too many syntax arguments');
         }
+
         return $factory(...$arguments);
     }
 
@@ -206,6 +212,7 @@ final class Comprehend
         self|Parser|null $spacing = null,
     ): ParseResult {
         $grammar = $spacing === null ? $this : $this->spacing($spacing);
+
         return $grammar->freeze()->parseAll($source, $byteOffset, $limits);
     }
 
@@ -216,6 +223,7 @@ final class Comprehend
         self|Parser|null $spacing = null,
     ): ParseResult {
         $grammar = $spacing === null ? $this : $this->spacing($spacing);
+
         return $grammar->freeze()->matchPrefix($source, $byteOffset, $limits);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\features\trees;
 
@@ -16,7 +16,13 @@ class TreeSerializationTest extends ParserTestCase
     public function testConcreteAndAstSerializationUseSourceSpansAndNamingAsData(): void
     {
         $letter = (new Text('é'))->name('unsafe: <name>', 'group & value')->setResult('letter', 'changed');
-        $parser = (new Sequence(new Text('('), $letter, (new Text(' '))->trivia(), (new Nothing())->name('empty'), new Text(')')))->name('root');
+        $parser = (new Sequence(
+            new Text('('),
+            $letter,
+            (new Text(' '))->trivia(),
+            (new Nothing())->name('empty'),
+            new Text(')'),
+        ))->name('root');
         $result = $parser->parseAll(new Utf8Source('(é )'));
         $concrete = json_decode($result->node->toJson(), true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame('(é )', $concrete['text']);
@@ -35,6 +41,7 @@ class TreeSerializationTest extends ParserTestCase
         $this->assertSame('changed', $result->result('letter'));
         $this->assertSame('é', $letter->parseAll(new Utf8Source('é'))->ast()->rawText());
     }
+
     public function testArbitraryBytesRoundTripThroughJsonAndXml(): void
     {
         $raw = "\xff\x00\x01";

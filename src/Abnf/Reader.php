@@ -44,11 +44,6 @@ final class Reader
         }
     }
 
-    private function fail(string $message, ?int $offset = null): never
-    {
-        throw new SyntaxException($message, $this->source, min($offset ?? $this->position, strlen($this->text)));
-    }
-
     public function readRules(): void
     {
         while ($this->position < strlen($this->text)) {
@@ -57,32 +52,7 @@ final class Reader
                 break;
             }
 
-            $start = $this->position;
-            $name = $this->ruleName();
-            $this->skipWhitespace();
-            $this->expect('=');
-            $incremental = $this->peek() === '/';
-            if ($incremental) {
-                ++$this->position;
-                if (!$this->rules->defined($name)) {
-                    $this->fail('Incremental rule needs an existing definition: ' . $name, $start);
-                }
-            } elseif (isset($this->definitions[$name])) {
-                $this->fail('Duplicate rule; use =/ to extend it: ' . $name, $start);
-            }
-
-            $this->skipWhitespace();
-            $expression = $this->alternation();
-            $this->skipWhitespace();
-            if ($this->peek() !== '' && $this->peek() !== "\r" && $this->peek() !== "\n") {
-                $this->fail('Expected end of rule');
-            }
-
-            if ($incremental) {
-                $expression = new Choice($this->rules->resolveRule($name), $expression);
-            }
-            $this->definitions[$name] = true;
-            $this->rules->define($name, $expression);
+            $this->readRule();
         }
 
         foreach ($this->references as $name => $offset) {
@@ -90,6 +60,42 @@ final class Reader
                 $this->fail('Undefined rule: ' . $name, $offset);
             }
         }
+    }
+
+    private function readRule(): void
+    {
+        $start = $this->position;
+        $name = $this->ruleName();
+        $this->skipWhitespace();
+        $this->expect('=');
+
+        $incremental = $this->peek() === '/';
+        if ($incremental) {
+            ++$this->position;
+            if (!$this->rules->defined($name)) {
+                $this->fail('Incremental rule needs an existing definition: ' . $name, $start);
+            }
+        } elseif (isset($this->definitions[$name])) {
+            $this->fail('Duplicate rule; use =/ to extend it: ' . $name, $start);
+        }
+
+        $this->skipWhitespace();
+        $expression = $this->alternation();
+        $this->skipWhitespace();
+        if ($this->peek() !== '' && $this->peek() !== "\r" && $this->peek() !== "\n") {
+            $this->fail('Expected end of rule');
+        }
+
+        if ($incremental) {
+            $expression = new Choice($this->rules->resolveRule($name), $expression);
+        }
+        $this->definitions[$name] = true;
+        $this->rules->define($name, $expression);
+    }
+
+    private function fail(string $message, ?int $offset = null): never
+    {
+        throw new SyntaxException($message, $this->source, min($offset ?? $this->position, strlen($this->text)));
     }
 
     private function skipRuleSeparators(): void
@@ -134,8 +140,10 @@ final class Reader
                 $this->take('/;[^\r\n]*/A');
             }
             $newline = $this->peek() === "\r" ? "\r\n" : "\n";
-            if (substr($this->text, $this->position, strlen($newline)) === $newline
-                && in_array($this->text[$this->position + strlen($newline)] ?? '', [' ', "\t"], true)) {
+            if (
+                substr($this->text, $this->position, strlen($newline)) === $newline
+                && in_array($this->text[$this->position + strlen($newline)] ?? '', [' ', "\t"], true)
+            ) {
                 $this->position += strlen($newline);
                 continue;
             }
@@ -211,8 +219,10 @@ final class Reader
     {
         $digits = ltrim($digits, '0');
         $maximum = (string) PHP_INT_MAX;
-        if (strlen($digits) > strlen($maximum)
-            || (strlen($digits) === strlen($maximum) && strcmp($digits, $maximum) > 0)) {
+        if (
+            strlen($digits) > strlen($maximum)
+            || (strlen($digits) === strlen($maximum) && strcmp($digits, $maximum) > 0)
+        ) {
             $this->fail('Repetition count exceeds PHP integer range');
         }
 

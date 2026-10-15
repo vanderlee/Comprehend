@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\features\sources;
 
@@ -108,8 +108,10 @@ class SourceMatchingTest extends ParserTestCase
     public function testByteModePreservesOctetsAcrossTerminalFamilies(): void
     {
         $source = new ByteSource("\xFF");
-        foreach ([new Text("\xFF"), new Char("\xFF"), new Any(), new Set("\0\xFF"),
-            new Range("\x80", "\xFF"), new Regex('/./s')] as $parser) {
+        foreach (
+            [new Text("\xFF"), new Char("\xFF"), new Any(), new Set("\0\xFF"),
+                new Range("\x80", "\xFF"), new Regex('/./s')] as $parser
+        ) {
             $result = $parser->parseAll($source);
             $this->assertResult(true, 1, $result);
             $this->assertSame("\xFF", $result->node->rawText());
@@ -123,20 +125,24 @@ class SourceMatchingTest extends ParserTestCase
         $previous = mb_internal_encoding();
         try {
             mb_internal_encoding('ISO-8859-1');
-            foreach ([(new Text('É'))->caseInsensitive(), (new Char('É'))->caseInsensitive(),
-                (new Set('É'))->caseInsensitive(), (new Range('É', 'Ê'))->caseInsensitive()] as $parser) {
+            foreach (
+                [(new Text('É'))->caseInsensitive(), (new Char('É'))->caseInsensitive(),
+                    (new Set('É'))->caseInsensitive(), (new Range('É', 'Ê'))->caseInsensitive()] as $parser
+            ) {
                 $this->assertResult(true, 2, $parser->parseAll(new Utf8Source('é')));
             }
         } finally {
             mb_internal_encoding($previous);
         }
     }
+
     public function testWrongUnicodeSuffixIsRejectedByCompleteGrammar()
     {
         $parser = new Sequence(new Text("éa"), new End());
         $this->assertResult(false, 2, $parser->matchPrefix(new Utf8Source("éb")));
         $this->assertResult(true, 3, $parser->matchPrefix(new Utf8Source("éa")));
     }
+
     public function testMultibyteSpacingRetainsModeAndDeferredEffects()
     {
         $offsets = [];
@@ -158,6 +164,7 @@ class SourceMatchingTest extends ParserTestCase
         $this->assertTrue($sequence->parseAll(new Utf8Source("é a"))->commit());
         $this->assertSame([[2, 2]], $offsets);
     }
+
     public function testCombinatorsAndRulesetsPropagateSourceMode()
     {
         $letter = "é";
@@ -171,6 +178,7 @@ class SourceMatchingTest extends ParserTestCase
         $rules = new Ruleset([Ruleset::ROOT => new Sequence(new Text($letter), $stub, new End())]);
         $this->assertResult(true, 5, $rules->matchPrefix(new Utf8Source($letter . '(x)')));
     }
+
     public function testDefinitionsValidateAndProcessWholeUtf8Text()
     {
         $text = "é";
@@ -200,6 +208,7 @@ class SourceMatchingTest extends ParserTestCase
         $this->assertTrue($result->commit());
         $this->assertSame(1, $calls);
     }
+
     public function testExistingRfcFixturesAgreeInBothSourceModes()
     {
         $providers = [
@@ -221,22 +230,26 @@ class SourceMatchingTest extends ParserTestCase
             }
         }
     }
+
     /** @dataProvider invalidEntryData */
     public function testInvalidTextEntryPositionsAreRejected($offset)
     {
         $this->expectException(InvalidArgumentException::class);
         (new Nothing())->matchPrefix(new Utf8Source("é"), $offset);
     }
+
     public function invalidEntryData()
     {
         return [[-1], [1], [3]];
     }
+
     /** @dataProvider mismatchData */
     public function testModeMismatchesAreErrors($parser, $source)
     {
         $this->expectException(InvalidArgumentException::class);
         $parser->matchPrefix($source);
     }
+
     public function mismatchData()
     {
         return [
@@ -255,6 +268,7 @@ class SourceMatchingTest extends ParserTestCase
             [(new Range('a', 'z'))->caseInsensitive(), new Utf8Source("İ")],
         ];
     }
+
     public function testRegexErrorsAreNotOrdinaryFailures()
     {
         $limit = ini_get('pcre.backtrack_limit');

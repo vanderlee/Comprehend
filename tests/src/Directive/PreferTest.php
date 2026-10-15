@@ -18,11 +18,13 @@ class PreferTest extends ParserTestCase
         /* @noinspection PhpParamsInspection */
         $this->assertInstanceOf(Prefer::class, new Prefer(Prefer::FIRST, new Text('a')));
     }
+
     public function testEmpty()
     {
         $this->expectException(\TypeError::class);
         new Prefer(null, new Text('x'));
     }
+
     /**
      * @dataProvider preferData
      *
@@ -36,6 +38,7 @@ class PreferTest extends ParserTestCase
     {
         $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input), $offset), (string) $parser);
     }
+
     public function preferData()
     {
         return [

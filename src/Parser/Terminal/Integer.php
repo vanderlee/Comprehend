@@ -75,7 +75,8 @@ class Integer extends Parser
 
     public function __toString(): string
     {
-        return ($this->minimum === null ? '<-INF' : '[' . $this->minimum) . ',' . ($this->maximum === null ? 'INF>' : $this->maximum . ']');
+        return ($this->minimum === null ? '<-INF' : '[' . $this->minimum)
+            . ',' . ($this->maximum === null ? 'INF>' : $this->maximum . ']');
     }
 
     protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
@@ -84,14 +85,7 @@ class Integer extends Parser
         try {
             $caseSensitive = $session->isCaseSensitive();
             $values = $this->digitValues($caseSensitive);
-            $all = self::digitPattern($this->digitSymbols);
-            $nonzero = self::digitPattern(array_slice($this->digitSymbols, 1));
-            $zero = preg_quote($this->digitSymbols[0], '/');
-            $pattern = $this->allowLeadingZeros
-                ? '/-?' . $all . '+/A'
-                : '/(?:' . $zero . '|-?' . $nonzero . $all . '*)/A';
-            $pattern .= $caseSensitive ? '' : 'i';
-            $pattern .= $source->mode() === SourceMode::UTF8 ? 'u' : '';
+            $pattern = $this->recognitionPattern($caseSensitive, $source->mode());
         } finally {
             $this->popCaseSensitivityFromContext($session);
         }
@@ -116,7 +110,22 @@ class Integer extends Parser
             }
             $length -= strlen(array_pop($symbols));
         }
+
         return $this->failure($source, $byteOffset);
+    }
+
+    private function recognitionPattern(bool $caseSensitive, SourceMode $mode): string
+    {
+        $all = self::digitPattern($this->digitSymbols);
+        $nonzero = self::digitPattern(array_slice($this->digitSymbols, 1));
+        $zero = preg_quote($this->digitSymbols[0], '/');
+        $pattern = $this->allowLeadingZeros
+            ? '/-?' . $all . '+/A'
+            : '/(?:' . $zero . '|-?' . $nonzero . $all . '*)/A';
+        $pattern .= $caseSensitive ? '' : 'i';
+        $pattern .= $mode === SourceMode::UTF8 ? 'u' : '';
+
+        return $pattern;
     }
 
     /**
@@ -132,6 +141,7 @@ class Integer extends Parser
             }
             $values[$key] = $value;
         }
+
         return $values;
     }
 
@@ -147,6 +157,7 @@ class Integer extends Parser
         }
 
         $quoted = array_map(static fn(string $symbol): string => preg_quote($symbol, '/'), $symbols);
+
         return '(?:' . implode('|', $quoted) . ')';
     }
 
@@ -177,11 +188,13 @@ class Integer extends Parser
             }
             $integer = $integer * $this->base - $digit;
         }
+
         return $negative ? $integer : -$integer;
     }
 
     private function isInRange(int $integer): bool
     {
-        return ($this->minimum === null || $integer >= $this->minimum) && ($this->maximum === null || $integer <= $this->maximum);
+        return ($this->minimum === null || $integer >= $this->minimum)
+            && ($this->maximum === null || $integer <= $this->maximum);
     }
 }

@@ -115,6 +115,7 @@ class ComprehendTest extends TestCase
         ));
         $rules->define('leaf', static function () use (&$calls): Parser {
             ++$calls;
+
             return new Text('x');
         });
 
@@ -196,9 +197,14 @@ class ComprehendTest extends TestCase
         $rules = new Ruleset();
         $rules->define('literal', function (string $text) use (&$calls): Parser {
             ++$calls;
+
             return new Text($text);
         });
-        $rules->root(new Sequence($rules->ref('literal', 'a'), $rules->ref('literal', 'b'), $rules->ref('literal', 'a')));
+        $rules->root(new Sequence(
+            $rules->ref('literal', 'a'),
+            $rules->ref('literal', 'b'),
+            $rules->ref('literal', 'a'),
+        ));
         $frozen = $rules->freeze();
         $this->assertSame(2, $calls);
         $this->assertTrue($frozen->parseAll(new Utf8Source('aba'))->success);
@@ -272,6 +278,7 @@ class ComprehendTest extends TestCase
         $definition = new Definition(new Nothing());
         $selfImplementation = $definition->implementation();
         $definition->setGenerator($selfImplementation);
+
         return [[$direct, 'expression'], [$indirect, 'first'], [$hidden, 'Left-recursive'],
             [$selfImplementation, 'Left-recursive'],
             [Repeat::optional(new Nothing()), 'Nullable repetition'],
@@ -319,6 +326,7 @@ class ComprehendTest extends TestCase
             ): \Vanderlee\Comprehend\Match\AbstractMatch {
                 return $this->success($source, $offset);
             }
+
             public function __toString(): string
             {
                 return 'opaque';
@@ -341,6 +349,7 @@ class ComprehendTest extends TestCase
             ): \Vanderlee\Comprehend\Match\AbstractMatch {
                 return $this->recognizeInSession($source, $offset, $session);
             }
+
             public function __toString(): string
             {
                 return 'opaque';

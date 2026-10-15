@@ -46,6 +46,7 @@ class Regex extends Parser
 
         $parser = new self('/\A' . preg_quote($literal, '/') . '/');
         $parser->windowLiteral = $literal;
+
         return $parser;
     }
 
@@ -95,6 +96,7 @@ class Regex extends Parser
         if ($textMode && $this->containsByteEscape()) {
             throw new InvalidArgumentException('Text regex cannot use the byte escape \C');
         }
+
         return [$pattern . ($textMode ? 'u' : ''), $textMode];
     }
 
@@ -111,6 +113,7 @@ class Regex extends Parser
             }
             $body = substr($body, strlen($option[0]));
         }
+
         return false;
     }
 
@@ -130,6 +133,7 @@ class Regex extends Parser
                 // An escaped backslash is literal, not a byte escape.
             }
         }
+
         return false;
     }
 
@@ -138,6 +142,7 @@ class Regex extends Parser
     {
         if ($this->windowLiteral === null) {
             $context->consumeWork(max(1, $input->byteLength()), $offset);
+
             return [$input->sliceBytes(0, $input->byteLength()), $offset];
         }
 
@@ -151,6 +156,7 @@ class Regex extends Parser
         }
 
         $context->consumeWork(max(1, $end - $offset), $offset);
+
         return [$input->sliceBytes($offset, $end), 0];
     }
 }

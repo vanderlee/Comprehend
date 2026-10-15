@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\features\semantics;
 
@@ -26,6 +26,7 @@ class LifecycleTest extends ParserTestCase
             null,
             function () use (&$maps) {
                 ++$maps;
+
                 return 'mapped';
             },
         )->onCommit(
@@ -50,19 +51,23 @@ class LifecycleTest extends ParserTestCase
         $this->assertFalse($failure->success);
         $this->assertSame(['guard(Text)'], $failure->diagnostic->expected);
     }
+
     public function testSemanticValidationFollowsSyntaxAndBlocksCommit()
     {
         $events = [];
-        $parser = (new Text('42'))->mapValue(fn(ParseResult $result): int => (int) $result->rawText())->validateSemantic(
-            function (ParseResult $result) use (&$events) {
-                $events[] = 'validate';
-                return $result->value() < 10 ? true : 'Number is too large';
-            },
-        )->onCommit(
-            function () use (&$events) {
-                $events[] = 'effect';
-            },
-        );
+        $parser = (new Text('42'))
+            ->mapValue(fn(ParseResult $result): int => (int) $result->rawText())
+            ->validateSemantic(
+                function (ParseResult $result) use (&$events) {
+                    $events[] = 'validate';
+
+                    return $result->value() < 10 ? true : 'Number is too large';
+                },
+            )->onCommit(
+                function () use (&$events) {
+                    $events[] = 'effect';
+                },
+            );
         $failed = $parser->parseAll(new Utf8Source('42x'));
         $this->assertFalse($failed->commit());
         $this->assertSame([], $events);
@@ -78,6 +83,7 @@ class LifecycleTest extends ParserTestCase
         $this->assertSame(['validate'], $events);
         $this->assertSame('42', $result->node->rawText());
     }
+
     public function testSelectedChildValidationAndEffectsRunInOrderOnce()
     {
         $events = [];
@@ -85,6 +91,7 @@ class LifecycleTest extends ParserTestCase
         $child = (new Text('a'))->assignTo($assigned)->validateSemantic(
             function () use (&$events) {
                 $events[] = 'child validation';
+
                 return true;
             },
         )->onCommit(
@@ -100,6 +107,7 @@ class LifecycleTest extends ParserTestCase
         $parser = (new Sequence($child, new Text('b')))->spacing($spacer)->validateSemantic(
             function () use (&$events) {
                 $events[] = 'root validation';
+
                 return true;
             },
         )->onCommit(
@@ -116,6 +124,7 @@ class LifecycleTest extends ParserTestCase
         $this->assertTrue($result->commit());
         $this->assertCount(5, $events);
     }
+
     public function testAbandonedDefinitionsDoNotEvaluateTransformsProcessorsOrValidators()
     {
         $events = [];
@@ -124,11 +133,13 @@ class LifecycleTest extends ParserTestCase
                 'item',
                 function () use (&$events) {
                     $events[] = 'transform';
+
                     return 'value';
                 },
             ),
             function () use (&$events) {
                 $events[] = 'validate';
+
                 return true;
             },
         );
@@ -136,6 +147,7 @@ class LifecycleTest extends ParserTestCase
             'value',
             function () use (&$events) {
                 $events[] = 'process';
+
                 return 42;
             },
         );
@@ -153,6 +165,7 @@ class LifecycleTest extends ParserTestCase
         $this->assertTrue($selected->commit());
         $this->assertSame(['transform', 'process', 'validate'], $events);
     }
+
     public function testSnapshotsExcludeLaterValidatorsCallbacksAndAssignments()
     {
         $events = [];
@@ -171,6 +184,7 @@ class LifecycleTest extends ParserTestCase
         $this->assertSame([], $events);
         $this->assertFalse($parser->parseAll(new Utf8Source('a'))->commit());
     }
+
     public function testFailedEffectSequenceIsNotRetriedAndCannotClaimCommitted()
     {
         $calls = 0;
@@ -192,13 +206,18 @@ class LifecycleTest extends ParserTestCase
         $this->assertSame(1, $calls);
         $this->assertFalse($result->isCommitted());
     }
+
     public function testRequiredIntersectionValidationIsRetained()
     {
-        $result = (new All(new Text('a'), (new Text('ab'))->validateSemantic(fn() => 'Intersection rejected')))->matchPrefix(new Utf8Source('ab'));
+        $result = (new All(
+            new Text('a'),
+            (new Text('ab'))->validateSemantic(fn() => 'Intersection rejected'),
+        ))->matchPrefix(new Utf8Source('ab'));
         $this->assertTrue($result->success);
         $this->assertSame(['Intersection rejected'], $result->validate()->errors);
         $this->assertFalse($result->commit());
     }
+
     public function testValidationErrorsAreCachedAndPreventEffects()
     {
         $calls = 0;
@@ -225,12 +244,16 @@ class LifecycleTest extends ParserTestCase
         $this->assertSame(1, $calls);
         $this->assertSame(0, $effects);
     }
+
     public function testRecursiveValidationIsRejected()
     {
-        $result = (new Text('a'))->validateSemantic(fn(ParseResult $result) => $result->validate()->valid)->parseAll(new Utf8Source('a'));
+        $result = (new Text('a'))
+            ->validateSemantic(fn(ParseResult $result) => $result->validate()->valid)
+            ->parseAll(new Utf8Source('a'));
         $this->expectException(\LogicException::class);
         $result->validate();
     }
+
     public function testRecursiveCommitIsRejectedWithoutReplayingEffects()
     {
         $result = null;
@@ -263,6 +286,7 @@ class LifecycleTest extends ParserTestCase
         $child->addSemanticValidators([
             function () use (&$events) {
                 $events[] = 'child';
+
                 return 'Child rejected';
             },
         ]);
@@ -271,6 +295,7 @@ class LifecycleTest extends ParserTestCase
         $parent->addSemanticValidators([
             function () use (&$events) {
                 $events[] = 'parent';
+
                 return false;
             },
         ]);

@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Builder;
 
@@ -64,6 +64,7 @@ final class RuleReference extends Parser
         if ($this->rules === null) {
             throw new \LogicException('Rule reference requires a ruleset or snapshot target');
         }
+
         return $this->rules->resolveRule($this->rule, $this->arguments, $fresh);
     }
 }

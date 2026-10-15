@@ -20,6 +20,7 @@ class SetTest extends ParserTestCase
     {
         $this->assertInstanceOf(Set::class, new Set('abc'));
     }
+
     /**
      * @throws Exception
      */
@@ -28,6 +29,7 @@ class SetTest extends ParserTestCase
         $this->expectExceptionMessage('Empty set');
         new Set('');
     }
+
     /**
      * @dataProvider setData
      *
@@ -43,6 +45,7 @@ class SetTest extends ParserTestCase
         $this->assertSame($match, $result->success, (string) $parser);
         $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
+
     /**
      * @return array
      * @throws Exception

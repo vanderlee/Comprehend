@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 /**
  * RFC 5234 - Augmented BNF for Syntax Specifications: ABNF.
  *

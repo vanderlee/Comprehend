@@ -33,6 +33,7 @@ final class Utf8FileSource extends ByteFileSource
             return true;
         }
         $byte = ord($this->sliceBytes($byteOffset, $byteOffset + 1));
+
         return ($byte & 0xc0) !== 0x80;
     }
 
@@ -56,6 +57,7 @@ final class Utf8FileSource extends ByteFileSource
             $lead < 0xf0 => 3,
             default => 4,
         };
+
         return $this->span($byteOffset, $byteOffset + $length);
     }
 
@@ -73,6 +75,7 @@ final class Utf8FileSource extends ByteFileSource
             }
             $offset = $unit->end;
         }
+
         return $offset;
     }
 
@@ -91,6 +94,7 @@ final class Utf8FileSource extends ByteFileSource
             $offset = $unit->end;
             ++$position;
         }
+
         return $position;
     }
 

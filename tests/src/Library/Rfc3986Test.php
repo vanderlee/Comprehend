@@ -19,10 +19,12 @@ class Rfc3986Test extends ParserTestCase
     {
         return new Rfc3986();
     }
+
     public function testConstruct()
     {
         $this->assertNotNull($this->getRfc());
     }
+
     /**
      * @dataProvider rulesData
      *
@@ -35,10 +37,12 @@ class Rfc3986Test extends ParserTestCase
     {
         $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input)), (string) $parser);
     }
+
     public function rulesData()
     {
         /** @var Rfc3986 $uri */
         $uri = $this->getRfc();
+
         return [
             [$uri->ref('dec_octet'), '0', true, 1],
             [$uri->ref('dec_octet'), '1', true, 1],

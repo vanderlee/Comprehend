@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Output;
 
@@ -29,6 +29,7 @@ trait AssignTrait
         $this->assignCallbacks[] = function ($text) use (&$variable) {
             $variable = $text;
         };
+
         return $this;
     }
 }

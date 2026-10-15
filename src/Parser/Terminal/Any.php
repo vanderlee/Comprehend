@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
@@ -24,6 +24,7 @@ class Any extends Parser
     protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
         $unit = $session->readSourceUnit($byteOffset);
+
         return $unit !== null
             ? $this->success($source, $byteOffset, $unit->byteLength())
             : $this->failure($source, $byteOffset);

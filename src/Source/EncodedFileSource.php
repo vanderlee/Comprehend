@@ -57,9 +57,16 @@ final class EncodedFileSource implements Source
                 if (strcasecmp($requested, $alias) !== 0) {
                     continue;
                 }
-                if (in_array($encoding, ['BASE64', 'UUENCODE', 'HTML-ENTITIES', 'Quoted-Printable', '7bit', '8bit'], true)) {
+                if (
+                    in_array(
+                        $encoding,
+                        ['BASE64', 'UUENCODE', 'HTML-ENTITIES', 'Quoted-Printable', '7bit', '8bit'],
+                        true,
+                    )
+                ) {
                     throw new InvalidArgumentException('A character encoding is required');
                 }
+
                 return $encoding;
             }
         }
@@ -89,6 +96,7 @@ final class EncodedFileSource implements Source
     public function readUnit(int $byteOffset): ?Span
     {
         $unit = $this->source->readUnit($byteOffset);
+
         return $unit === null ? null : $this->span($unit->start, $unit->end);
     }
 

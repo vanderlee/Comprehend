@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\Src\Result;
 
@@ -29,6 +29,7 @@ class ParseResultTest extends ParserTestCase
             [new Text("éb"), "zéa", 1, 3],
         ];
     }
+
     public function testSuccessfulResultCanCarrySeparateSpeculativeFailurePosition()
     {
         $result = Choice::first(new Text('abcd'), new Text('a'))->matchPrefix(new Utf8Source('abcx'));

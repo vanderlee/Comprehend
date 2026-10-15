@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
@@ -59,6 +59,7 @@ class All extends Parser
         }
         $success = $this->success($source, $byteOffset, $length, $matches);
         $success->setConcreteMatches($matches);
+
         return $success;
     }
 }

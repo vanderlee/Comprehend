@@ -36,7 +36,10 @@ class TerminalChainingTest extends TestCase
             ->literalWindow(')');
         $this->assertTrue($grammar->parse('(éa12)')->success);
         $this->assertFalse($grammar->parse('(éA12)')->success);
-        $this->assertTrue(C::text('a')->char('x', false)->set('z', false)->range('a', 'z', false)->parse('aby1')->success);
+        $this->assertTrue(C::text('a')->char(
+            'x',
+            false,
+        )->set('z', false)->range('a', 'z', false)->parse('aby1')->success);
         $this->assertFalse(C::text('a')->char('x', false)->parse('ax')->success);
         $this->assertTrue(C::text('a')->char("\xff")->parse(new ByteSource("a\xff"))->success);
     }

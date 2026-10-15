@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Source;
 
@@ -32,6 +32,7 @@ final class Span
         if ($this->source !== $other->source) {
             throw new InvalidArgumentException('Cannot combine spans from different sources');
         }
+
         return new self($this->source, min($this->start, $other->start), max($this->end, $other->end));
     }
 }

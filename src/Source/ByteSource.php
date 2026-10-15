@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Source;
 
@@ -21,12 +21,14 @@ final class ByteSource extends InMemorySource
     public function readByte(int $byteOffset): ?Span
     {
         $this->assertByteOffset($byteOffset);
+
         return $byteOffset === $this->byteLength() ? null : $this->span($byteOffset, $byteOffset + 1);
     }
 
     public function isUnitBoundary(int $byteOffset): bool
     {
         $this->assertByteOffset($byteOffset);
+
         return true;
     }
 }

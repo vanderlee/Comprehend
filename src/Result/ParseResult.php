@@ -71,6 +71,7 @@ final class ParseResult
             return false;
         }
         $this->match->commit();
+
         return true;
     }
 
@@ -93,6 +94,7 @@ final class ParseResult
     {
         $results = $this->match->getResults();
         unset($results['']);
+
         return $results;
     }
 

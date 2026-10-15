@@ -18,6 +18,7 @@ class FluentConvenienceTest extends TestCase
         $base = C::text('42');
         $mapped = $base->mapText(static function (string $text) use (&$calls): int {
             ++$calls;
+
             return (int) $text;
         })->onCommit(static function () use (&$effects): void {
             ++$effects;

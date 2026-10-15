@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
@@ -57,6 +57,7 @@ class Char extends Parser
         $this->pushCaseSensitivityToContext($session);
         try {
             $equal = $session->handleCase($unit->rawText()) === $session->handleCase($this->character);
+
             return $this->makeMatch($equal === $this->include, $source, $byteOffset, $unit->byteLength());
         } finally {
             $this->popCaseSensitivityFromContext($session);

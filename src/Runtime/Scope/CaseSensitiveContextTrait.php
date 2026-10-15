@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Runtime\Scope;
 
@@ -24,6 +24,7 @@ trait CaseSensitiveContextTrait
         if ($caseSensitive === null) {
             throw new \LogicException('Case sensitivity scope is empty');
         }
+
         return $caseSensitive;
     }
 
@@ -35,6 +36,7 @@ trait CaseSensitiveContextTrait
         if ($this->source()->mode() === SourceMode::UTF8) {
             return mb_strtolower($text, 'UTF-8');
         }
+
         return strtolower($text);
     }
 

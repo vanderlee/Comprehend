@@ -27,12 +27,14 @@ use Vanderlee\Comprehend\Parser\Terminal\Range;
 class MathObjectTest extends ParserTestCase
 {
     use ReversePolishNotationTrait;
+
     /**
      * Math expression parser.
      *
      * @var Parser
      */
     private static $math;
+
     public static function setUpBeforeClass(): void
     {
         $term = new Stub();
@@ -55,6 +57,7 @@ class MathObjectTest extends ParserTestCase
         );
         self::$math = $expression;
     }
+
     /**
      * @dataProvider dataExpression
      *
@@ -69,6 +72,7 @@ class MathObjectTest extends ParserTestCase
         $this->assertEquals($expected, $match->result());
         $this->assertEquals($result, $this->solveRpn($match->result()));
     }
+
     public function dataExpression()
     {
         return [

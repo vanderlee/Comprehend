@@ -39,6 +39,7 @@ class Range extends Parser
     {
         $first = $this->first === null ? '*' : json_encode($this->first);
         $last = $this->last === null ? '*' : json_encode($this->last);
+
         return 'range(' . $first . '..' . $last . ')';
     }
 
@@ -54,6 +55,7 @@ class Range extends Parser
             }
             $value = $this->sourceOrdinal($unit->rawText(), $session);
             $inside = $first <= $value && ($last === null || $value <= $last);
+
             return $inside === $this->in
                 ? $this->success($source, $byteOffset, $unit->byteLength())
                 : $this->failure($source, $byteOffset);
@@ -76,6 +78,7 @@ class Range extends Parser
         if ($textMode && mb_strlen($value, 'UTF-8') !== 1) {
             throw new InvalidArgumentException('Range case mapping must remain one code point');
         }
+
         return $textMode ? mb_ord($value, 'UTF-8') : ord($value);
     }
 }

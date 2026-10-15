@@ -20,6 +20,7 @@ class Rfc7405Test extends Rfc5234Test
     {
         return new Rfc7405();
     }
+
     /**
      * @dataProvider rfc7405Data
      *
@@ -32,9 +33,11 @@ class Rfc7405Test extends Rfc5234Test
     {
         $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input)), (string) $parser);
     }
+
     public function rfc7405Data()
     {
         $abnf = $this->getRfc();
+
         return [
             [$abnf->ref('case_sensitive_string'), '%s"SenSiTive"', true, 13],
             [$abnf->ref('case_sensitive_string'), '%s""', true, 4],

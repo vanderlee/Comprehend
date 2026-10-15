@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\features\trees;
 
@@ -32,14 +32,19 @@ class ConcreteNodeTest extends ParserTestCase
         $this->assertSame([0, 0, ''], [$result->node->span->start, $result->node->span->end, $result->node->rawText()]);
         $this->assertSame([], $result->node->children);
     }
+
     public function emptyParsers(): array
     {
         return [[new Nothing()], [new End()], [Repeat::optional(new Text('a'))], [Repeat::star(new Text('a'))]];
     }
+
     public function testTreeRetainsUnnamedAndEmptyChildrenAtBytePositions()
     {
         $source = new Utf8Source('zéaa');
-        $result = (new Sequence(new Text('é'), Repeat::plus(new Text('a')), new Nothing(), new End()))->parseAll($source, 1);
+        $result = (new Sequence(new Text('é'), Repeat::plus(new Text('a')), new Nothing(), new End()))->parseAll(
+            $source,
+            1,
+        );
         $root = $result->node;
         $this->assertSame($result->span, $root->span);
         $this->assertSame(Sequence::class, $root->kind);
@@ -54,6 +59,7 @@ class ConcreteNodeTest extends ParserTestCase
         $this->assertSame(End::class, $root->children[3]->kind);
         $this->assertRawSpans($root, $source);
     }
+
     private function assertRawSpans(ConcreteNode $node, $source): void
     {
         $this->assertSame($source, $node->span->source);
@@ -62,6 +68,7 @@ class ConcreteNodeTest extends ParserTestCase
             $this->assertRawSpans($child, $source);
         }
     }
+
     public function testProcessedRulesRetainConcreteChildren()
     {
         $definition = new Definition(new Sequence(new Text('a'), new Text('b')));
@@ -72,6 +79,7 @@ class ConcreteNodeTest extends ParserTestCase
         $this->assertCount(2, $result->node->children[0]->children);
         $this->assertSame('ab', $result->node->rawText());
     }
+
     public function testChoiceRetainsOnlySelectedAlternative()
     {
         $result = Choice::longest(new Text('a'), new Text('ab'))->matchPrefix(new Utf8Source('abc'));
@@ -79,12 +87,14 @@ class ConcreteNodeTest extends ParserTestCase
         $this->assertSame('ab', $result->node->children[0]->rawText());
         $this->assertSame('ab', $result->node->rawText());
     }
+
     public function testIntersectionRetainsOverlappingRecognitionChildren()
     {
         $result = (new All(new Text('a'), new Text('abc')))->matchPrefix(new Utf8Source('abc'));
         $this->assertSame('a', $result->node->rawText());
         $this->assertSame(['a', 'abc'], array_map(fn($node) => $node->rawText(), $result->node->children));
     }
+
     public function testLookaheadHasEmptyNodeAndExclusionKeepsOnlyRequiredChild()
     {
         $result = (new Not(new Text('b')))->matchPrefix(new Utf8Source('a'));
@@ -94,9 +104,13 @@ class ConcreteNodeTest extends ParserTestCase
         $this->assertCount(1, $result->node->children);
         $this->assertSame('a', $result->node->children[0]->rawText());
     }
+
     public function testDirectivesWrapChildAndSpacingIsInRawSpan()
     {
-        $result = (new Space(new Text(' '), new Sequence(new Text('a'), new Text('b'))))->parseAll(new Utf8Source('a b'));
+        $result = (new Space(
+            new Text(' '),
+            new Sequence(new Text('a'), new Text('b')),
+        ))->parseAll(new Utf8Source('a b'));
         $this->assertSame(Space::class, $result->node->kind);
         $this->assertSame(Sequence::class, $result->node->children[0]->kind);
         $this->assertSame('a b', $result->node->rawText());
@@ -104,6 +118,7 @@ class ConcreteNodeTest extends ParserTestCase
         $this->assertTrue($result->node->children[0]->children[1]->isTrivia);
         $this->assertSame(2, $result->node->children[0]->children[2]->span->start);
     }
+
     public function testNodeAndChildrenAreImmutable()
     {
         $node = (new Sequence(new Text('a'), new Text('b')))->parseAll(new Utf8Source('ab'))->node;
@@ -121,12 +136,14 @@ class ConcreteNodeTest extends ParserTestCase
         }
         $this->assertSame('ab', $node->rawText());
     }
+
     /** @dataProvider invalidChildren */
     public function testInvalidChildrenAreRejected($children)
     {
         $this->expectException(InvalidArgumentException::class);
         new ConcreteNode('root', (new Utf8Source('a'))->span(0, 1), $children);
     }
+
     public function invalidChildren(): array
     {
         return [

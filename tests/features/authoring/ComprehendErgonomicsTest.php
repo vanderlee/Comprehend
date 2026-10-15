@@ -49,6 +49,7 @@ class ComprehendErgonomicsTest extends TestCase
         $pair = $rules->rule('pair', 'x')->some();
         $rules->define('pair', static function (string $text) use (&$calls): Parser {
             ++$calls;
+
             return C::text($text)->then(C::text($text))->parser();
         });
 
@@ -141,9 +142,15 @@ class ComprehendErgonomicsTest extends TestCase
         $letter = C::text('a');
         foreach (['star', 'kleene', 'plus', 'optional', 'maybe', 'some', 'many'] as $shortcut) {
             $grammar = $letter->$shortcut()->freeze();
-            $this->assertSame(!in_array($shortcut, ['plus', 'some'], true), $grammar->parseAll(new Utf8Source(''))->success);
+            $this->assertSame(
+                !in_array($shortcut, ['plus', 'some'], true),
+                $grammar->parseAll(new Utf8Source(''))->success,
+            );
             $this->assertTrue($grammar->parseAll(new Utf8Source('a'))->success);
-            $this->assertSame(in_array($shortcut, ['star', 'kleene', 'plus', 'some', 'many'], true), $grammar->parseAll(new Utf8Source('aa'))->success);
+            $this->assertSame(
+                in_array($shortcut, ['star', 'kleene', 'plus', 'some', 'many'], true),
+                $grammar->parseAll(new Utf8Source('aa'))->success,
+            );
             $this->assertFalse($grammar->parseAll(new Utf8Source('b'))->success);
         }
         $this->assertFalse($letter->freeze()->parseAll(new Utf8Source('aa'))->success);
@@ -159,6 +166,7 @@ class ComprehendErgonomicsTest extends TestCase
         $base = C::integer(0, 99);
         $number = $base->mapValue(static function (ParseResult $result) use (&$reads): int {
             ++$reads;
+
             return (int) $result->rawText();
         })->validateSemantic(static fn(ParseResult $result): bool => $result->value() >= 10)
             ->onCommit(static function (ParseResult $result) use (&$effects): void {

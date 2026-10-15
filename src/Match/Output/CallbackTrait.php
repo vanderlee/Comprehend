@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Match\Output;
 
@@ -42,6 +42,7 @@ trait CallbackTrait
     public function addCustomCallback(callable $callback)
     {
         $this->customCallbacks[] = $callback;
+
         return $this;
     }
 

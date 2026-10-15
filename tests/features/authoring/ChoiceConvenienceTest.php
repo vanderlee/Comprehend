@@ -106,6 +106,7 @@ class ChoiceConvenienceTest extends TestCase
         $effects = 0;
         $parser = C::text('42')->mapValue(static function (ParseResult $r) use (&$calls): int {
             ++$calls;
+
             return (int) $r->rawText();
         })->validateSemantic(static fn(): bool => false)
             ->onCommit(static function () use (&$effects): void {

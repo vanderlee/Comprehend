@@ -24,23 +24,28 @@ trait ReversePolishNotationTrait
                 $stack[] = $token;
             }
         }
+
         return array_pop($stack);
     }
+
     /** @noinspection PhpUnusedPrivateMethodInspection */
     private function solveRpnOperatorAdd($operand_1, $operand_2)
     {
         return $operand_1 + $operand_2;
     }
+
     /** @noinspection PhpUnusedPrivateMethodInspection */
     private function solveRpnOperatorSubtract($operand_1, $operand_2)
     {
         return $operand_1 - $operand_2;
     }
+
     /** @noinspection PhpUnusedPrivateMethodInspection */
     private function solveRpnOperatorMultiply($operand_1, $operand_2): float|int
     {
         return $operand_1 * $operand_2;
     }
+
     /** @noinspection PhpUnusedPrivateMethodInspection */
     private function solveRpnOperatorDivide($operand_1, $operand_2): float|int
     {

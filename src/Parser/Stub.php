@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser;
 
@@ -30,6 +30,7 @@ class Stub extends Parser
     public function setParser(Parser $parser): static
     {
         $this->parser = $parser;
+
         return $this;
     }
 
@@ -48,6 +49,7 @@ class Stub extends Parser
         if ($match instanceof Success) {
             return $this->success($source, $byteOffset, $match->length, $match);
         }
+
         return $this->failure($source, $byteOffset, $match->length);
     }
 }

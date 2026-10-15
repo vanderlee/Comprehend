@@ -34,6 +34,7 @@ class Not extends Parser
         } finally {
             $session->restoreDiagnostics($diagnostics);
         }
+
         return $match instanceof Success
             ? $this->failure($source, $byteOffset, $match->length)
             : $this->success($source, $byteOffset);

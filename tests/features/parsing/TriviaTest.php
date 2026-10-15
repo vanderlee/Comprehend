@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\features\parsing;
 
@@ -19,7 +19,11 @@ class TriviaTest extends ParserTestCase
     public function testExplicitAndAutomaticTriviaRoundTripNestedUnnamedInput()
     {
         $trivia = (new Regex('~(?:\s|/\*[^*]*\*/)*~'))->lexeme()->trivia();
-        $body = (new Sequence(new Text('('), new Sequence(new Text('a'), new Text('b')), new Text(')')))->spacing($trivia);
+        $body = (new Sequence(
+            new Text('('),
+            new Sequence(new Text('a'), new Text('b')),
+            new Text(')'),
+        ))->spacing($trivia);
         $parser = (new Sequence($trivia, $body, $trivia))->spacing(null);
         $text = " \n( /*first*/ a\tb /*last*/ ) \n";
         $result = $parser->parseAll(new Utf8Source($text));
@@ -38,6 +42,7 @@ class TriviaTest extends ParserTestCase
         $this->assertTrue($bodyChildren[2]->children[1]->isTrivia);
         $this->assertSame("\t", $bodyChildren[2]->children[1]->rawText());
     }
+
     public function testZeroWidthTriviaRetainsActualPosition()
     {
         $trivia = Repeat::star(new Text(' '))->trivia();
@@ -47,6 +52,7 @@ class TriviaTest extends ParserTestCase
         $this->assertSame([1, 1], [$result->node->children[2]->span->start, $result->node->children[2]->span->end]);
         $this->assertTrue($result->node->children[0]->isTrivia);
     }
+
     public function testUtf8TriviaHasWholeCodePointByteSpans()
     {
         $trivia = Repeat::star(new Text(" "))->trivia();
@@ -56,6 +62,7 @@ class TriviaTest extends ParserTestCase
         $this->assertSame([4, 6], [$result->node->children[2]->span->start, $result->node->children[2]->span->end]);
         $this->assertSame(" ", $result->node->children[2]->rawText());
     }
+
     public function testLexemeDisablesNestedOverridesAndRestoresOuterSpacing()
     {
         $literal = (new Sequence(new Text('a'), new Text('b')))->spacing(new Text(' '));
@@ -66,18 +73,24 @@ class TriviaTest extends ParserTestCase
         $this->assertTrue($parser->matchPrefix(new ByteSource('ab c'))->success);
         $this->assertFalse($parser->matchPrefix(new ByteSource('a b c'))->success);
     }
+
     public function testLexemeScopeRestoresAfterFailedAlternative()
     {
-        $choice = new Choice((new Sequence(new Text('a'), new Text('x')))->lexeme(), new Sequence(new Text('a'), new Text('b')));
+        $choice = new Choice(
+            (new Sequence(new Text('a'), new Text('x')))->lexeme(),
+            new Sequence(new Text('a'), new Text('b')),
+        );
         $parser = new Space(new Text(' '), $choice);
         $this->assertTrue($parser->parseAll(new Utf8Source('a b'))->success);
     }
+
     public function testExplicitLiteralSpacesStillMatchInsideLexeme()
     {
         $parser = (new Sequence(new Text('a'), new Text(' '), new Text('b')))->spacing(new Text(' '))->lexeme();
         $this->assertTrue($parser->parseAll(new Utf8Source('a b'))->success);
         $this->assertFalse($parser->parseAll(new Utf8Source('ab'))->success);
     }
+
     public function testRepeatRetainsOnlyAcceptedInterveningTrivia()
     {
         $calls = 0;
@@ -97,10 +110,14 @@ class TriviaTest extends ParserTestCase
         $this->assertFalse($parser->parseAll(new Utf8Source('a a '))->success);
         $this->assertSame(0, $calls);
     }
+
     public function testAutomaticTriviaIsConcreteAndOmittedFromNamedAstAndResults()
     {
         $spacer = (new Text(' '))->name('space')->setResult('space');
-        $parser = (new Sequence((new Text('a'))->name('a'), (new Text('b'))->name('b')))->name('root')->spacing($spacer);
+        $parser = (new Sequence(
+            (new Text('a'))->name('a'),
+            (new Text('b'))->name('b'),
+        ))->name('root')->spacing($spacer);
         $result = $parser->parseAll(new Utf8Source('a b'));
         $this->assertSame([], $result->results());
         $this->assertCount(2, $result->ast()->children);

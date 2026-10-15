@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\features\trees;
 
@@ -38,9 +38,15 @@ class AstTest extends ParserTestCase
         $this->assertSame([1, 3], [$pairNode->children[0]->span->start, $pairNode->children[0]->span->end]);
         $this->assertSame($ast, $result->ast());
     }
+
     public function testCompletelyUnnamedAndEmptyInputKeepSyntheticRoot()
     {
-        foreach ([[new Sequence(new Text('('), new Text('a'), new Text(')')), '(a)'], [new Nothing(), '']] as [$parser, $text]) {
+        foreach (
+            [
+                [new Sequence(new Text('('), new Text('a'), new Text(')')), '(a)'],
+                [new Nothing(), ''],
+            ] as [$parser, $text]
+        ) {
             $result = $parser->parseAll(new Utf8Source($text));
             $this->assertNull($result->ast()->name);
             $this->assertSame([], $result->ast()->children);
@@ -48,14 +54,22 @@ class AstTest extends ParserTestCase
             $this->assertSame($result->span, $result->ast()->span);
         }
     }
+
     public function testNamedRootAndEmptyNamedChild()
     {
-        $result = (new Sequence(new Text('a'), (new Nothing())->name('empty')))->name('root')->parseAll(new Utf8Source('a'));
+        $result = (new Sequence(
+            new Text('a'),
+            (new Nothing())->name('empty'),
+        ))->name('root')->parseAll(new Utf8Source('a'));
         $this->assertSame('root', $result->ast()->name);
         $this->assertCount(1, $result->ast()->children);
         $empty = $result->ast()->children[0];
-        $this->assertSame(['empty', 1, 1, ''], [$empty->name, $empty->span->start, $empty->span->end, $empty->rawText()]);
+        $this->assertSame(
+            ['empty', 1, 1, ''],
+            [$empty->name, $empty->span->start, $empty->span->end, $empty->rawText()],
+        );
     }
+
     public function testTriviaIsOmittedIncludingItsNamedDescendants()
     {
         $trivia = (new Text(' '))->name('space')->trivia();
@@ -65,14 +79,20 @@ class AstTest extends ParserTestCase
         $this->assertSame(' a b ', $result->ast()->rawText());
         $this->assertTrue($result->node->children[0]->isTrivia);
     }
+
     public function testTerminalNamingHidesAstChildrenButPreservesConcreteTree()
     {
-        $result = (new Sequence((new Text('a'))->name('child'), new Text('b')))->name('terminal', null, true)->parseAll(new Utf8Source('ab'));
+        $result = (new Sequence((new Text('a'))->name('child'), new Text('b')))->name(
+            'terminal',
+            null,
+            true,
+        )->parseAll(new Utf8Source('ab'));
         $this->assertSame('terminal', $result->ast()->name);
         $this->assertSame([], $result->ast()->children);
         $this->assertCount(2, $result->node->children);
         $this->assertSame('ab', $result->ast()->rawText());
     }
+
     public function testNamingSnapshotAndAstReadsDoNotEvaluateResults()
     {
         $calls = 0;
@@ -80,6 +100,7 @@ class AstTest extends ParserTestCase
             null,
             function () use (&$calls) {
                 ++$calls;
+
                 return 'changed';
             },
         );
@@ -92,6 +113,7 @@ class AstTest extends ParserTestCase
         $this->assertSame('changed', $match->result());
         $this->assertSame('é', $ast->rawText());
     }
+
     public function testProcessedNamedRulesKeepStructure()
     {
         $definition = new Definition(new Sequence((new Text('a'))->name('item'), new Text('b')));
@@ -103,13 +125,18 @@ class AstTest extends ParserTestCase
         $this->assertSame('document', $result->ast()->name);
         $this->assertSame('item', $result->ast()->children[0]->name);
     }
+
     public function testChoiceIncludesOnlySelectedName()
     {
-        $result = Choice::longest((new Text('a'))->name('short'), (new Text('ab'))->name('long'))->matchPrefix(new Utf8Source('abc'));
+        $result = Choice::longest(
+            (new Text('a'))->name('short'),
+            (new Text('ab'))->name('long'),
+        )->matchPrefix(new Utf8Source('abc'));
         $this->assertCount(1, $result->ast()->children);
         $this->assertSame('long', $result->ast()->children[0]->name);
         $this->assertSame('ab', $result->ast()->rawText());
     }
+
     public function testAstIsImmutable()
     {
         $ast = (new Text('a'))->name('a')->parseAll(new Utf8Source('a'))->ast();

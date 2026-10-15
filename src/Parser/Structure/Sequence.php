@@ -44,6 +44,7 @@ class Sequence extends IterableParser
     public function add(Parser ...$arguments)
     {
         $this->parsers = array_merge($this->parsers, $arguments);
+
         return $this;
     }
 
@@ -85,6 +86,7 @@ class Sequence extends IterableParser
         }
         $success = $this->success($source, $byteOffset, $total, $childMatches);
         $success->setConcreteMatches($concreteMatches);
+
         return $success;
     }
 }

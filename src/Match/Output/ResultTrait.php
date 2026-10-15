@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Match\Output;
 
@@ -32,6 +32,7 @@ trait ResultTrait
     public function addResultCallback(callable $callback)
     {
         $this->resultCallbacks[] = $callback;
+
         return $this;
     }
 
@@ -39,6 +40,7 @@ trait ResultTrait
     {
         $results = $this->getResults();
         $key = $name ?? '';
+
         return array_key_exists($key, $results) ? $results[$key] : $default;
     }
 
@@ -62,6 +64,7 @@ trait ResultTrait
         try {
             $results = [];
             $this->processResultCallbacks($results);
+
             return $this->resultCache = $results;
         } catch (\Throwable $error) {
             $this->resultError = $error;

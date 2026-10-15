@@ -13,8 +13,12 @@ use Vanderlee\Comprehend\Source\Utf8Source;
 class RegexWindowTest extends TestCase
 {
     /** @dataProvider literalCases */
-    public function testBoundedLiteralAgreesWithFullSubjectAtByteOffset(string $literal, string $text, int $offset, bool $caseInsensitive)
-    {
+    public function testBoundedLiteralAgreesWithFullSubjectAtByteOffset(
+        string $literal,
+        string $text,
+        int $offset,
+        bool $caseInsensitive,
+    ) {
         $ordinary = new Regex('/' . preg_quote($literal, '/') . '/A');
         $bounded = Regex::literalWindow($literal);
         $ordinary->setCaseSensitivity(!$caseInsensitive);
@@ -26,7 +30,10 @@ class RegexWindowTest extends TestCase
         foreach ([new Utf8Source($text), $file] as $source) {
             $expected = $ordinary->matchPrefix($source, $offset);
             $actual = $bounded->matchPrefix($source, $offset);
-            $this->assertSame([$expected->success, $expected->end, $expected->rawText()], [$actual->success, $actual->end, $actual->rawText()]);
+            $this->assertSame(
+                [$expected->success, $expected->end, $expected->rawText()],
+                [$actual->success, $actual->end, $actual->rawText()],
+            );
         }
     }
 
@@ -53,6 +60,9 @@ class RegexWindowTest extends TestCase
         fwrite($stream, 'a' . str_repeat('x', 10000));
         $source = new Utf8FileSource($stream);
         fclose($stream);
-        $this->assertTrue(Regex::literalWindow('a')->matchPrefix($source, limits: new ParseLimits(maxWork: 5))->success);
+        $this->assertTrue(Regex::literalWindow('a')->matchPrefix(
+            $source,
+            limits: new ParseLimits(maxWork: 5),
+        )->success);
     }
 }

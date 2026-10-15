@@ -25,6 +25,7 @@ trait ResultTrait
             $evaluated = false;
             $mapped = null;
             $error = null;
+
             return static function (array &$results) use (
                 $span,
                 $operation,
@@ -48,10 +49,12 @@ trait ResultTrait
                 $name = $key ?? '';
                 if ($operation === 'set') {
                     $results[$name] = $mapped;
+
                     return;
                 }
                 if (!array_key_exists($name, $results)) {
                     $results[$name] = $operation === 'push' ? [$mapped] : (string) $mapped;
+
                     return;
                 }
 
@@ -68,6 +71,7 @@ trait ResultTrait
                 }
             };
         };
+
         return $this;
     }
 

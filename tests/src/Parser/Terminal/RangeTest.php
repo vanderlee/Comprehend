@@ -16,11 +16,13 @@ class RangeTest extends ParserTestCase
     {
         $this->assertInstanceOf(Range::class, new Range('a', 'z'));
     }
+
     public function testBothNull()
     {
         $this->expectExceptionMessage('Empty arguments');
         new Range(null, null);
     }
+
     public function testNoFirst()
     {
         $range = new Range(null, 'd');
@@ -28,6 +30,7 @@ class RangeTest extends ParserTestCase
         $this->assertResult(true, 1, $range->matchPrefix(new ByteSource('d')));
         $this->assertResult(false, 0, $range->matchPrefix(new ByteSource('e')));
     }
+
     public function testNoLast()
     {
         $range = new Range('d', null);
@@ -35,26 +38,31 @@ class RangeTest extends ParserTestCase
         $this->assertResult(true, 1, $range->matchPrefix(new ByteSource('d')));
         $this->assertResult(true, 1, $range->matchPrefix(new ByteSource('e')));
     }
+
     public function testFirstEmpty()
     {
         $this->expectExceptionMessage('Empty argument');
         new Range('', '');
     }
+
     public function testLastEmpty()
     {
         $this->expectExceptionMessage('Empty argument');
         new Range('a', '');
     }
+
     public function testFirstTooLong()
     {
         $this->expectExceptionMessage('Non-character argument');
         new Range('aa', 'z');
     }
+
     public function testLastTooLong()
     {
         $this->expectExceptionMessage('Non-character argument');
         new Range('a', 'zz');
     }
+
     /**
      * @dataProvider rangeData
      *
@@ -70,6 +78,7 @@ class RangeTest extends ParserTestCase
         $this->assertSame($match, $result->success, (string) $parser);
         $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
+
     public function rangeData()
     {
         return [

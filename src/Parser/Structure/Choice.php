@@ -60,6 +60,7 @@ class Choice extends IterableParser
     public function add(Parser ...$arguments): self
     {
         $this->parsers = array_merge($this->parsers, $arguments);
+
         return $this;
     }
 
@@ -70,6 +71,7 @@ class Choice extends IterableParser
             Prefer::SHORTEST => 'shortest-of',
             default => '',
         };
+
         return $prefix . '( ' . implode(' | ', $this->parsers) . ' )';
     }
 
@@ -78,6 +80,7 @@ class Choice extends IterableParser
         $this->pushPreferenceToContext($session);
         try {
             $preference = $session->getPreference();
+
             return match ($preference) {
                 Prefer::LONGEST, Prefer::SHORTEST => $this->parseRanked($source, $byteOffset, $session, $preference),
                 default => $this->parseFirst($source, $byteOffset, $session),
@@ -96,6 +99,7 @@ class Choice extends IterableParser
                 $selected = $attempt;
             }
         }
+
         return $selected instanceof Success
             ? $this->success($source, $offset, $selected->length, $selected)
             : $this->failure($source, $offset, $selected->length ?? 0);
@@ -106,6 +110,7 @@ class Choice extends IterableParser
         if ($attempt->accepted !== $selected->accepted) {
             return $attempt instanceof Success;
         }
+
         // Strict comparisons preserve the earlier alternative on equal lengths.
         // Failure progress follows this policy too; farthest diagnostics are separate.
         return $preference === Prefer::LONGEST
@@ -123,6 +128,7 @@ class Choice extends IterableParser
             }
             $farthestProgress = max($farthestProgress, $match->length);
         }
+
         return $this->failure($source, $offset, $farthestProgress);
     }
 }

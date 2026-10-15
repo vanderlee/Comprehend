@@ -57,6 +57,7 @@ abstract class Parser
         if (mb_check_encoding($character, 'UTF-8') ? mb_strlen($character, 'UTF-8') !== 1 : strlen($character) !== 1) {
             throw new InvalidArgumentException('Non-character argument');
         }
+
         return $character;
     }
 
@@ -73,6 +74,7 @@ abstract class Parser
     protected function diagnosticName(): string
     {
         $separator = strrpos(static::class, '\\');
+
         return $this->ruleName ?? ($separator === false ? static::class : substr(static::class, $separator + 1));
     }
 
@@ -81,6 +83,7 @@ abstract class Parser
         $this->nodeName = is_string($name) || is_int($name) ? $name : \Closure::fromCallable($name);
         $this->nodeGroup = $group;
         $this->semanticLeaf = $leaf;
+
         return $this;
     }
 
@@ -92,6 +95,7 @@ abstract class Parser
             }
         }
         $this->nodeTags = array_values(array_unique([...$this->nodeTags, ...$tags]));
+
         return $this;
     }
 
@@ -112,24 +116,28 @@ abstract class Parser
     public function diagnosticRule(string $name): static
     {
         $this->ruleName = $name;
+
         return $this;
     }
 
     public function guard(callable $predicate): static
     {
         $this->guards[] = $predicate;
+
         return $this;
     }
 
     public function validateSemantic(callable $validator): static
     {
         $this->semanticValidators[] = $validator;
+
         return $this;
     }
 
     public function mapValue(callable $mapper): static
     {
         $this->valueMapper = $mapper;
+
         return $this;
     }
 
@@ -137,6 +145,7 @@ abstract class Parser
     public function onCommit(callable $effect): static
     {
         $this->effects[] = $effect;
+
         return $this;
     }
 
@@ -216,6 +225,7 @@ abstract class Parser
         } finally {
             $session->popRule();
         }
+
         return $match;
     }
 
@@ -248,6 +258,7 @@ abstract class Parser
                 $match->inheritValueFrom($child);
             }
         }
+
         return $match;
     }
 
@@ -280,6 +291,7 @@ abstract class Parser
                 }
             },
         );
+
         return $success;
     }
 
@@ -289,7 +301,13 @@ abstract class Parser
         ParseSession $session,
         Success $match,
     ): AbstractMatch {
-        $match->buildConcreteNode(static::class, $this->nodeName, $this->nodeGroup, $this->semanticLeaf, $this->nodeTags);
+        $match->buildConcreteNode(
+            static::class,
+            $this->nodeName,
+            $this->nodeGroup,
+            $this->semanticLeaf,
+            $this->nodeTags,
+        );
         $match->setValueMapper($this->valueMapper);
         $match->addSemanticValidators($this->semanticValidators);
 
@@ -298,6 +316,7 @@ abstract class Parser
                 return $this->guardFailure($source, $offset, $session, $match);
             }
         }
+
         return $match;
     }
 
@@ -315,6 +334,7 @@ abstract class Parser
             $session->farthestFailure(),
             $session->diagnostic(),
         );
+
         return $failure;
     }
 
@@ -327,6 +347,7 @@ abstract class Parser
         if (!$match->accepted || $byteOffset + $match->length === $source->byteLength()) {
             return new ParseResult($match);
         }
+
         return new ParseResult($this->trailingInputFailure($source, $byteOffset, $match));
     }
 
@@ -350,6 +371,7 @@ abstract class Parser
                 $previous !== null && $previous->byteOffset === $position ? $previous->rulePaths : [],
             ),
         );
+
         return $failure;
     }
 

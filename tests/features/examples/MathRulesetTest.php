@@ -30,12 +30,14 @@ use Vanderlee\Comprehend\Parser\Terminal\Range;
 class MathRulesetTest extends ParserTestCase
 {
     use ReversePolishNotationTrait;
+
     /**
      * Math expression parser.
      *
      * @var Parser
      */
     private static $math;
+
     public static function setUpBeforeClass(): void
     {
         $rules = new Ruleset();
@@ -46,7 +48,10 @@ class MathRulesetTest extends ParserTestCase
         );
         $rules->define(
             'factor',
-            Choice::first(new Sequence($literal('('), $rules->ref('expression'), $literal(')')), $rules->ref('integer')),
+            Choice::first(
+                new Sequence($literal('('), $rules->ref('expression'), $literal(')')),
+                $rules->ref('integer'),
+            ),
         );
         $rules->define(
             'term',
@@ -60,13 +65,17 @@ class MathRulesetTest extends ParserTestCase
             'expression',
             Choice::first(
                 (new Sequence($rules->ref('term'), $literal('+'), $rules->ref('expression')))->pushResult(null, 'add'),
-                (new Sequence($rules->ref('term'), $literal('-'), $rules->ref('expression')))->pushResult(null, 'subtract'),
+                (new Sequence($rules->ref('term'), $literal('-'), $rules->ref('expression')))->pushResult(
+                    null,
+                    'subtract',
+                ),
                 $rules->ref('term'),
             ),
         );
         $rules->define(Ruleset::ROOT, $rules->ref('expression'));
         self::$math = $rules;
     }
+
     /**
      * @dataProvider dataExpression
      *
@@ -81,6 +90,7 @@ class MathRulesetTest extends ParserTestCase
         $this->assertEquals($expected, $match->result());
         $this->assertEquals($result, $this->solveRpn($match->result()));
     }
+
     public function dataExpression()
     {
         return [

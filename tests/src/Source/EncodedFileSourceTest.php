@@ -45,7 +45,13 @@ class EncodedFileSourceTest extends TestCase
 
     public function encodings(): array
     {
-        return [['Windows-1252', 'café €'], ['UTF-16LE', 'é🙂'], ['UTF-16BE', 'é🙂'], ['SJIS', '日本'], ['ISO-2022-JP', '日本']];
+        return [
+            ['Windows-1252', 'café €'],
+            ['UTF-16LE', 'é🙂'],
+            ['UTF-16BE', 'é🙂'],
+            ['SJIS', '日本'],
+            ['ISO-2022-JP', '日本'],
+        ];
     }
 
     public function testMalformedInputIsRejectedWithoutSubstitutionOrMovingBorrowedStream(): void

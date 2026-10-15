@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\features\parsing;
 
@@ -17,8 +17,14 @@ use Vanderlee\Comprehend\Source\Utf8Source;
 class ConsumptionTest extends ParserTestCase
 {
     /** @dataProvider consumptionData */
-    public function testPrefixAndFullInputHaveExplicitContracts($parser, $source, $offset, $prefixSuccess, $length, $allSuccess)
-    {
+    public function testPrefixAndFullInputHaveExplicitContracts(
+        $parser,
+        $source,
+        $offset,
+        $prefixSuccess,
+        $length,
+        $allSuccess,
+    ) {
         $prefix = $parser->matchPrefix($source, $offset);
         $full = $parser->parseAll($source, $offset);
         $this->assertSame($prefixSuccess, $prefix->success);
@@ -33,6 +39,7 @@ class ConsumptionTest extends ParserTestCase
             $this->assertSame([], $full->results());
         }
     }
+
     public function consumptionData()
     {
         return [
@@ -50,6 +57,7 @@ class ConsumptionTest extends ParserTestCase
             [new Text("\xff"), new ByteSource("\xff\x00"), 0, true, 1, false],
         ];
     }
+
     public function testCompletionIsCheckedBeforeCallbacksAssignmentsAndLazyOutput()
     {
         $events = [];
@@ -59,6 +67,7 @@ class ConsumptionTest extends ParserTestCase
             'letter',
             function ($text) use (&$maps) {
                 $maps++;
+
                 return $text;
             },
         )->onCommit(
@@ -81,6 +90,7 @@ class ConsumptionTest extends ParserTestCase
         $this->assertSame('a', $success->result('letter'));
         $this->assertSame(1, $maps);
     }
+
     public function testRootSpacingDoesNotImplicitlyAcceptTrailingTrivia()
     {
         $events = [];
@@ -109,6 +119,7 @@ class ConsumptionTest extends ParserTestCase
         $this->assertTrue($full->commit());
         $this->assertSame(['space', 'body'], $events);
     }
+
     public function testLeadingAndTrailingTriviaMustBeInTheGrammar()
     {
         $grammar = new Sequence(Repeat::star(new Text(' ')), new Text("é"), Repeat::star(new Text(" ")));
@@ -118,6 +129,7 @@ class ConsumptionTest extends ParserTestCase
         $this->assertSame(7, $result->consumedByteLength);
         $this->assertSame($source->sliceBytes(0, 7), $result->rawText());
     }
+
     public function testFullInputDoesNotRetrySuccessfulChoice()
     {
         $parser = Choice::first(new Text('a'), new Text('ab'));
@@ -125,6 +137,7 @@ class ConsumptionTest extends ParserTestCase
         $this->assertFalse($parser->parseAll(new Utf8Source('ab'))->success);
         $this->assertTrue(Choice::longest(new Text('a'), new Text('ab'))->parseAll(new Utf8Source('ab'))->success);
     }
+
     public function testFullInputFailureKeepsFarthestObservedPosition()
     {
         $result = Choice::first(new Text('abcd'), new Text('a'))->parseAll(new Utf8Source('abcx'));
@@ -132,6 +145,7 @@ class ConsumptionTest extends ParserTestCase
         $this->assertSame(0, $result->consumedByteLength);
         $this->assertSame(3, $result->farthestFailure);
     }
+
     public function testPrefixPolicyWorksInBothSourceModes()
     {
         $parser = new Text('a');
@@ -140,6 +154,7 @@ class ConsumptionTest extends ParserTestCase
         $this->assertResult(true, 1, $parser->matchPrefix($source));
         $this->assertSame('a', $parser->matchPrefix($source)->rawText());
     }
+
     public function testFullInputRejectsInteriorTextStart()
     {
         $this->expectException(InvalidArgumentException::class);

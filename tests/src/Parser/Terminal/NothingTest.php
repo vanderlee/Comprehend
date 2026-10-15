@@ -27,6 +27,7 @@ class NothingTest extends ParserTestCase
         $this->assertSame($match, $result->success, (string) $parser);
         $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
+
     public function nothingData()
     {
         return [

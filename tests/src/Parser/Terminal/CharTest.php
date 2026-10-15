@@ -16,16 +16,19 @@ class CharTest extends ParserTestCase
     {
         $this->assertInstanceOf(Char::class, new Char('a'));
     }
+
     public function testEmpty()
     {
         $this->expectExceptionMessage('Empty argument');
         new Char('');
     }
+
     public function testTooLong()
     {
         $this->expectExceptionMessage('Non-character argument');
         new Char('aa');
     }
+
     /**
      * @dataProvider charData
      *
@@ -41,6 +44,7 @@ class CharTest extends ParserTestCase
         $this->assertSame($match, $result->success, (string) $parser);
         $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
+
     public function charData()
     {
         return [

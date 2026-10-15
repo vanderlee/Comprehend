@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\features\semantics;
 
@@ -23,6 +23,7 @@ class SemanticValueTest extends ParserTestCase
             function (ParseResult $result) use (&$calls, $value) {
                 ++$calls;
                 $this->assertSame('a', $result->rawText());
+
                 return $value;
             },
         );
@@ -32,10 +33,12 @@ class SemanticValueTest extends ParserTestCase
         $this->assertSame($value, $result->value());
         $this->assertSame(1, $calls);
     }
+
     public function typedValues(): array
     {
         return [[42], [false], [null], [['number' => 42]], [(object) ['number' => 42]]];
     }
+
     public function testMappingAndNamedResultsHaveRecognitionOwnedLifetime()
     {
         $calls = 0;
@@ -43,6 +46,7 @@ class SemanticValueTest extends ParserTestCase
             'number',
             function ($text) use (&$calls) {
                 ++$calls;
+
                 return (int) $text;
             },
         )->mapValue(fn(ParseResult $result): int => $result->result('number') * 2);
@@ -62,6 +66,7 @@ class SemanticValueTest extends ParserTestCase
         $this->assertSame([0, 2], [$first->ast()->span->start, $first->ast()->span->end]);
         $this->assertSame('42', $first->node->rawText());
     }
+
     public function testEachRecognitionHasItsOwnCache()
     {
         $calls = 0;
@@ -76,12 +81,14 @@ class SemanticValueTest extends ParserTestCase
         $this->assertSame(2, $second->value());
         $this->assertSame(1, $first->value());
     }
+
     public function testFailuresAndDiscardedAlternativesNeverEvaluateMapping()
     {
         $calls = 0;
         $mapped = (new Text('ab'))->mapValue(
             function () use (&$calls) {
                 ++$calls;
+
                 return 42;
             },
         );
@@ -91,6 +98,7 @@ class SemanticValueTest extends ParserTestCase
             (new Text('a'))->mapValue(
                 function () use (&$calls) {
                     ++$calls;
+
                     return 0;
                 },
             ),
@@ -99,12 +107,14 @@ class SemanticValueTest extends ParserTestCase
         $this->assertSame('ab', $result->value());
         $this->assertSame(0, $calls);
     }
+
     public function testDefaultValueIsRawTextSeparateFromDefaultResult()
     {
         $result = (new Text('é'))->setResult(null, 'changed')->parseAll(new Utf8Source('é'));
         $this->assertSame('é', $result->value());
         $this->assertSame('changed', $result->result());
     }
+
     public function testThrownMappingIsEvaluatedOnceAndErrorIsRetained()
     {
         $calls = 0;
@@ -125,6 +135,7 @@ class SemanticValueTest extends ParserTestCase
         }
         $this->assertSame(1, $calls);
     }
+
     public function testRecursiveValueReadIsRejected()
     {
         $result = (new Text('a'))->mapValue(fn(ParseResult $result) => $result->value())->parseAll(new Utf8Source('a'));

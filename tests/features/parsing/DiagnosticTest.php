@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\features\parsing;
 
@@ -29,13 +29,18 @@ class DiagnosticTest extends ParserTestCase
         $this->assertSame($diagnostic->location(), $diagnostic->location());
         $this->assertStringContainsString('byte 2', $diagnostic->message());
     }
+
     public function testTiedExpectationsAndPaths()
     {
-        $diagnostic = (new Sequence(new Text('a'), new Choice(new Text('b'), new Text('c'), new Text('b'))))->parseAll(new Utf8Source('ax'))->diagnostic;
+        $diagnostic = (new Sequence(
+            new Text('a'),
+            new Choice(new Text('b'), new Text('c'), new Text('b')),
+        ))->parseAll(new Utf8Source('ax'))->diagnostic;
         $this->assertSame(1, $diagnostic->byteOffset);
         $this->assertSame(['"b"', '"c"'], $diagnostic->expected);
         $this->assertSame([['Sequence', 'Choice', 'Text']], $diagnostic->rulePaths);
     }
+
     /** @dataProvider probeData */
     public function testIrrelevantProbesAreSuppressed($probe)
     {
@@ -43,25 +48,32 @@ class DiagnosticTest extends ParserTestCase
         $this->assertSame(0, $result->farthestFailure);
         $this->assertSame(['"z"'], $result->diagnostic->expected);
     }
+
     public function probeData(): array
     {
         return [[Repeat::optional(new Text('abc'))], [Repeat::star(new Text('abc'))], [new Not(new Text('abc'))]];
     }
+
     public function testRequiredRepetitionRetainsFailure()
     {
         $result = Repeat::plus(new Text('abc'))->parseAll(new Utf8Source('abx'));
         $this->assertSame(2, $result->farthestFailure);
         $this->assertSame(['"abc"'], $result->diagnostic->expected);
     }
+
     public function testTerminationAfterMinimumAndSuccessfulExclusionDiscardProbes()
     {
         $result = (new Sequence(Repeat::plus(new Text('ab')), new Text('z')))->parseAll(new Utf8Source('abax'));
         $this->assertSame(2, $result->farthestFailure);
         $this->assertSame(['"z"'], $result->diagnostic->expected);
-        $result = (new Sequence(new Except(new Text('a'), new Text('abcd')), new Text('z')))->parseAll(new Utf8Source('abcx'));
+        $result = (new Sequence(
+            new Except(new Text('a'), new Text('abcd')),
+            new Text('z'),
+        ))->parseAll(new Utf8Source('abcx'));
         $this->assertSame(1, $result->farthestFailure);
         $this->assertSame(['"z"'], $result->diagnostic->expected);
     }
+
     public function testEofMergesTiesButRetainsFartherChoiceFailure()
     {
         $result = Choice::first(new Text('ab'), new Text('a'))->parseAll(new Utf8Source('ax'));
@@ -70,6 +82,7 @@ class DiagnosticTest extends ParserTestCase
         $this->assertSame(3, $result->diagnostic->byteOffset);
         $this->assertSame(['"abcd"'], $result->diagnostic->expected);
     }
+
     public function testNegativeLookaheadFailureReportsItsStart()
     {
         $result = (new Not(new Text('abc')))->parseAll(new Utf8Source('abc'));
@@ -79,6 +92,7 @@ class DiagnosticTest extends ParserTestCase
         $this->assertSame(0, $result->farthestFailure);
         $this->assertSame(['Except'], $result->diagnostic->expected);
     }
+
     public function testNamedRulePath()
     {
         $rules = new Ruleset();
@@ -86,16 +100,28 @@ class DiagnosticTest extends ParserTestCase
         $diagnostic = $rules->ref('word')->parseAll(new Utf8Source('abx'))->diagnostic;
         $this->assertContains('word', $diagnostic->rulePaths[0]);
     }
+
     public function testSpacingRetainsExpectedSymbol()
     {
-        $diagnostic = (new Sequence(new Text('a'), new Text('b')))->spacing(new Text(' -'))->parseAll(new Utf8Source('a x'))->diagnostic;
+        $diagnostic = (new Sequence(
+            new Text('a'),
+            new Text('b'),
+        ))->spacing(new Text(' -'))->parseAll(new Utf8Source('a x'))->diagnostic;
         $this->assertSame(2, $diagnostic->byteOffset);
         $this->assertSame(['" -"'], $diagnostic->expected);
     }
+
     public function testNewlinesByteColumnsAndEmptyEofExcerpt()
     {
         $source = new Utf8Source("é\r\nx\ry\nz\n");
-        foreach ([4 => [2, 1, 'x'], 6 => [3, 1, 'y'], 8 => [4, 1, 'z'], 10 => [5, 1, '']] as $offset => [$line, $column, $excerpt]) {
+        foreach (
+            [
+                4 => [2, 1, 'x'],
+                6 => [3, 1, 'y'],
+                8 => [4, 1, 'z'],
+                10 => [5, 1, ''],
+            ] as $offset => [$line, $column, $excerpt]
+        ) {
             $diagnostic = (new Text('!'))->parseAll($source, $offset)->diagnostic;
             $this->assertSame(['line' => $line, 'column' => $column], $diagnostic->location());
             $this->assertSame($excerpt, $diagnostic->excerpt());

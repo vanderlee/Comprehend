@@ -18,10 +18,12 @@ class SpaceTest extends ParserTestCase
     {
         $this->assertInstanceOf(Space::class, new Space(new Text(' '), new Text('x')));
     }
+
     public function testConstructorNull()
     {
         $this->assertInstanceOf(Space::class, new Space(null, new Text('x')));
     }
+
     /**
      * @dataProvider spaceData
      *
@@ -35,9 +37,11 @@ class SpaceTest extends ParserTestCase
     {
         $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input), $offset), (string) $parser);
     }
+
     public function spaceData()
     {
         $spacer = new Repeat(new Text('-'), 0, 1);
+
         return [
             [new Space($spacer, new Sequence(new Text('a'), new Text('b'))), 'ab', 0, true, 2],
             [new Space($spacer, new Sequence(new Text('a'), new Text('b'))), 'a-b', 0, true, 3],
@@ -46,7 +50,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), new Space(null, new Sequence(new Text('b'), new Text('c'))), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        new Space(null, new Sequence(new Text('b'), new Text('c'))),
+                        new Text('d'),
+                    ),
                 ),
                 'a-b-c-d',
                 0,
@@ -56,7 +64,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), new Space(null, new Sequence(new Text('b'), new Text('c'))), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        new Space(null, new Sequence(new Text('b'), new Text('c'))),
+                        new Text('d'),
+                    ),
                 ),
                 'a-bc-d',
                 0,
@@ -66,7 +78,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), new Space(null, new Sequence(new Text('b'), new Text('c'))), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        new Space(null, new Sequence(new Text('b'), new Text('c'))),
+                        new Text('d'),
+                    ),
                 ),
                 'abcd',
                 0,
@@ -76,7 +92,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), new Space(null, new Sequence(new Text('b'), new Text('c'))), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        new Space(null, new Sequence(new Text('b'), new Text('c'))),
+                        new Text('d'),
+                    ),
                 ),
                 'ab-cd',
                 0,
@@ -86,7 +106,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), (new Sequence(new Text('b'), new Text('c')))->spacing(null), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        (new Sequence(new Text('b'), new Text('c')))->spacing(null),
+                        new Text('d'),
+                    ),
                 ),
                 'a-b-c-d',
                 0,
@@ -96,7 +120,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), (new Sequence(new Text('b'), new Text('c')))->spacing(null), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        (new Sequence(new Text('b'), new Text('c')))->spacing(null),
+                        new Text('d'),
+                    ),
                 ),
                 'a-bc-d',
                 0,
@@ -106,7 +134,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), (new Sequence(new Text('b'), new Text('c')))->spacing(null), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        (new Sequence(new Text('b'), new Text('c')))->spacing(null),
+                        new Text('d'),
+                    ),
                 ),
                 'abcd',
                 0,
@@ -116,7 +148,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), (new Sequence(new Text('b'), new Text('c')))->spacing(null), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        (new Sequence(new Text('b'), new Text('c')))->spacing(null),
+                        new Text('d'),
+                    ),
                 ),
                 'ab-cd',
                 0,
@@ -126,7 +162,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), (new Sequence(new Text('b'), new Text('c')))->spacing(null), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        (new Sequence(new Text('b'), new Text('c')))->spacing(null),
+                        new Text('d'),
+                    ),
                 ),
                 'a-b-c-d',
                 0,
@@ -136,7 +176,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), (new Sequence(new Text('b'), new Text('c')))->spacing(null), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        (new Sequence(new Text('b'), new Text('c')))->spacing(null),
+                        new Text('d'),
+                    ),
                 ),
                 'a-bc-d',
                 0,
@@ -146,7 +190,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), (new Sequence(new Text('b'), new Text('c')))->spacing(null), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        (new Sequence(new Text('b'), new Text('c')))->spacing(null),
+                        new Text('d'),
+                    ),
                 ),
                 'abcd',
                 0,
@@ -156,7 +204,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    new Sequence(new Text('a'), (new Sequence(new Text('b'), new Text('c')))->spacing(null), new Text('d')),
+                    new Sequence(
+                        new Text('a'),
+                        (new Sequence(new Text('b'), new Text('c')))->spacing(null),
+                        new Text('d'),
+                    ),
                 ),
                 'ab-cd',
                 0,
@@ -164,28 +216,40 @@ class SpaceTest extends ParserTestCase
                 2,
             ],
             [
-                new Space($spacer, new Sequence(new Text('a'), new Sequence(new Text('b'), new Text('c')), new Text('d'))),
+                new Space(
+                    $spacer,
+                    new Sequence(new Text('a'), new Sequence(new Text('b'), new Text('c')), new Text('d')),
+                ),
                 'a-b-c-d',
                 0,
                 true,
                 7,
             ],
             [
-                new Space($spacer, new Sequence(new Text('a'), new Sequence(new Text('b'), new Text('c')), new Text('d'))),
+                new Space(
+                    $spacer,
+                    new Sequence(new Text('a'), new Sequence(new Text('b'), new Text('c')), new Text('d')),
+                ),
                 'a-bc-d',
                 0,
                 true,
                 6,
             ],
             [
-                new Space($spacer, new Sequence(new Text('a'), new Sequence(new Text('b'), new Text('c')), new Text('d'))),
+                new Space(
+                    $spacer,
+                    new Sequence(new Text('a'), new Sequence(new Text('b'), new Text('c')), new Text('d')),
+                ),
                 'abcd',
                 0,
                 true,
                 4,
             ],
             [
-                new Space($spacer, new Sequence(new Text('a'), new Sequence(new Text('b'), new Text('c')), new Text('d'))),
+                new Space(
+                    $spacer,
+                    new Sequence(new Text('a'), new Sequence(new Text('b'), new Text('c')), new Text('d')),
+                ),
                 'ab-cd',
                 0,
                 true,
@@ -194,7 +258,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    (new Sequence(new Text('a'), new Sequence(new Text('b'), new Text('c')), new Text('d')))->spacing(null),
+                    (new Sequence(
+                        new Text('a'),
+                        new Sequence(new Text('b'), new Text('c')),
+                        new Text('d'),
+                    ))->spacing(null),
                 ),
                 'a-b-c-d',
                 0,
@@ -204,7 +272,11 @@ class SpaceTest extends ParserTestCase
             [
                 new Space(
                     $spacer,
-                    (new Sequence(new Text('a'), new Sequence(new Text('b'), new Text('c')), new Text('d')))->spacing(null),
+                    (new Sequence(
+                        new Text('a'),
+                        new Sequence(new Text('b'), new Text('c')),
+                        new Text('d'),
+                    ))->spacing(null),
                 ),
                 'ab-cd',
                 0,

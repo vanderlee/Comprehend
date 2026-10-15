@@ -188,12 +188,14 @@ class ByteFileSource implements Source
     public function isUnitBoundary(int $byteOffset): bool
     {
         $this->assertReadableOffset($byteOffset);
+
         return true;
     }
 
     public function readUnit(int $byteOffset): ?Span
     {
         $this->assertReadableOffset($byteOffset);
+
         return $byteOffset === $this->length ? null : $this->span($byteOffset, $byteOffset + 1);
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
@@ -72,6 +72,7 @@ class Set extends Parser
             foreach ($characters as $character) {
                 $inside = $inside || $session->handleCase($character) === $value;
             }
+
             return $this->makeMatch($inside === $this->include, $source, $byteOffset, $unit->byteLength());
         } finally {
             $this->popCaseSensitivityFromContext($session);

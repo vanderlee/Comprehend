@@ -49,6 +49,7 @@ abstract class AbstractRuleset extends Parser
         // Explicit redefinition affects future recognitions; existing results
         // retain their own nodes, values, validators and effects.
         $this->implementations = [];
+
         return $this;
     }
 
@@ -109,6 +110,7 @@ abstract class AbstractRuleset extends Parser
         }
         $success = $this->success($source, $byteOffset, $match->length, $match);
         $success->inheritValueFrom($match);
+
         return $success;
     }
 
@@ -145,6 +147,7 @@ abstract class AbstractRuleset extends Parser
         if (!$fresh && $arguments === []) {
             $this->implementations[$name] = $parser;
         }
+
         return $parser;
     }
 }

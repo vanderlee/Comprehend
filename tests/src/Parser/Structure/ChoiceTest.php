@@ -32,6 +32,7 @@ class ChoiceTest extends ParserTestCase
         $this->expectExceptionMessage('No arguments');
         new Choice();
     }
+
     /**
      * @dataProvider choiceData
      *
@@ -45,6 +46,7 @@ class ChoiceTest extends ParserTestCase
     {
         $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input), $offset), (string) $parser);
     }
+
     public function choiceData()
     {
         return [
@@ -107,9 +109,13 @@ class ChoiceTest extends ParserTestCase
             ],
         ];
     }
+
     public function testSetResult()
     {
-        $parser = (new Choice((new Text('a'))->setResult('valueA'), (new Text('b'))->setResult('valueB')))->setResult('choice');
+        $parser = (new Choice(
+            (new Text('a'))->setResult('valueA'),
+            (new Text('b'))->setResult('valueB'),
+        ))->setResult('choice');
         $match = $parser->matchPrefix(new ByteSource('a'));
         $this->assertTrue($match->success);
         $this->assertTrue(array_key_exists('choice', $match->results()));
@@ -135,6 +141,7 @@ class ChoiceTest extends ParserTestCase
         $this->assertFalse(array_key_exists('valueB', $match->results()));
         $this->assertEquals(null, $match->result('valueB'));
     }
+
     public function testAssignTo()
     {
         $a = $b = $choice = null;
@@ -161,6 +168,7 @@ class ChoiceTest extends ParserTestCase
         $this->assertEquals(null, $a);
         $this->assertEquals(null, $b);
     }
+
     public function testStaticConstructors()
     {
         $c = Choice::first(new Text('aa'), new Text('a'), new Text('aaa'));
@@ -170,6 +178,7 @@ class ChoiceTest extends ParserTestCase
         $c = Choice::shortest(new Text('aa'), new Text('a'), new Text('aaa'));
         $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('aaa')));
     }
+
     public function testSetPreference()
     {
         $c = (new Choice(new Text('aa'), new Text('a'), new Text('aaa')))->setPreference(Prefer::FIRST);
@@ -179,6 +188,7 @@ class ChoiceTest extends ParserTestCase
         $c = (new Choice(new Text('aa'), new Text('a'), new Text('aaa')))->setPreference(Prefer::SHORTEST);
         $this->assertResult(true, 1, $c->matchPrefix(new ByteSource('aaa')));
     }
+
     public function testAddParser()
     {
         $choice = Choice::longest(new Text('a'), new Text('aa'));
@@ -242,7 +252,11 @@ class ChoiceTest extends ParserTestCase
                 $alternatives = array_reverse($alternatives);
             }
             $source = new ByteSource('ab');
-            $match = (new Choice(...$alternatives))->setPreference($preference)->recognizeInSession($source, 0, new ParseSession($source));
+            $match = (new Choice(...$alternatives))->setPreference($preference)->recognizeInSession(
+                $source,
+                0,
+                new ParseSession($source),
+            );
 
             $this->assertFalse($match->accepted);
             $this->assertSame($preference === Prefer::SHORTEST ? 1 : 2, $match->length);

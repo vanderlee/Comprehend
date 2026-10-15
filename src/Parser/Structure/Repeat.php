@@ -67,6 +67,7 @@ class Repeat extends Parser
         // Output ABNF formatting
         $min = $this->min > 0 ? $this->min : '';
         $max = $this->max ?? '';
+
         return ($min === $max ? $min : $min . '*' . $max) . $this->parser;
     }
 
@@ -112,6 +113,7 @@ class Repeat extends Parser
         }
         $success = $this->success($source, $byteOffset, $length, $childMatches);
         $success->setConcreteMatches($concreteMatches);
+
         return $success;
     }
 }

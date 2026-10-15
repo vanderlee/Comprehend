@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Tests\features\parsing;
 
@@ -39,8 +39,14 @@ class CanonicalArchitectureTest extends ParserTestCase
             {
                 $first = $source->readUnit($offset);
                 $second = $first === null ? null : $source->readUnit($first->end);
-                return $second === null ? $this->failure($source, $offset, $first?->byteLength() ?? 0) : $this->success($source, $offset, $second->end - $offset);
+
+                return $second === null ? $this->failure(
+                    $source,
+                    $offset,
+                    $first?->byteLength() ?? 0,
+                ) : $this->success($source, $offset, $second->end - $offset);
             }
+
             public function __toString(): string
             {
                 return 'two units';
@@ -54,37 +60,46 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertResult(false, 0, $failure);
         $this->assertSame(2, $failure->farthestFailure);
     }
+
     public function testSourceInterfaceWorksWithoutConcreteClassDispatch(): void
     {
         $source = new class implements Source {
             private Utf8Source $inner;
+
             public function __construct()
             {
                 $this->inner = new Utf8Source('é');
             }
+
             public function mode(): SourceMode
             {
                 return SourceMode::UTF8;
             }
+
             public function byteLength(): int
             {
                 return $this->inner->byteLength();
             }
+
             public function sliceBytes(int $start, int $end): string
             {
                 return $this->inner->sliceBytes($start, $end);
             }
+
             public function span(int $start, int $end): Span
             {
                 return new Span($this, $start, $end);
             }
+
             public function isUnitBoundary(int $offset): bool
             {
                 return $this->inner->isUnitBoundary($offset);
             }
+
             public function readUnit(int $offset): ?Span
             {
                 $span = $this->inner->readUnit($offset);
+
                 return $span === null ? null : $this->span($span->start, $span->end);
             }
         };
@@ -93,6 +108,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertSame($source, $result->span->source);
         $this->assertSame('é', $result->rawText());
     }
+
     public function testPartialCodePointReturnedByCustomParserIsRejected(): void
     {
         $parser = new class extends Parser {
@@ -100,6 +116,7 @@ class CanonicalArchitectureTest extends ParserTestCase
             {
                 return $this->success($source, $offset, 1);
             }
+
             public function __toString(): string
             {
                 return 'broken';
@@ -108,6 +125,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->expectException(LogicException::class);
         $parser->parseAll(new Utf8Source('é'));
     }
+
     public function testForeignSourceReturnedByCustomParserIsRejected(): void
     {
         $parser = new class extends Parser {
@@ -115,6 +133,7 @@ class CanonicalArchitectureTest extends ParserTestCase
             {
                 return $this->success(new ByteSource('a'), $offset, 1);
             }
+
             public function __toString(): string
             {
                 return 'broken';
@@ -123,18 +142,21 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->expectExceptionMessage('foreign source');
         $parser->parseAll(new ByteSource('a'));
     }
+
     public function testSessionCannotRecognizeAnotherSource(): void
     {
         $source = new ByteSource('a');
         $this->expectExceptionMessage('session source');
         (new Text('a'))->recognizeInSession(new ByteSource('a'), 0, new ParseSession($source));
     }
+
     /** @dataProvider coercionCalls */
     public function testImplicitArgumentCoercionIsRemoved(callable $call): void
     {
         $this->expectException(\TypeError::class);
         $call();
     }
+
     public function coercionCalls(): array
     {
         return [
@@ -146,6 +168,7 @@ class CanonicalArchitectureTest extends ParserTestCase
             [static fn() => (new Ruleset())->define('letter', 'a')],
         ];
     }
+
     public function testRuleFactoriesAndForwardReferencesUseExplicitCalls(): void
     {
         $rules = new Ruleset([], 'test');
@@ -159,6 +182,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $rules->define('item', $definition);
         $this->assertTrue($rules->ref('item', 'x')->parseAll(new ByteSource('x'))->success);
     }
+
     public function testUndefinedReferenceDoesNotGuessALiteral(): void
     {
         $rules = new Ruleset();
@@ -167,18 +191,21 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->expectExceptionMessage('Undefined grammar rule: missing');
         $reference->parseAll(new ByteSource('missing'));
     }
+
     public function testFactoryMustReturnAParser(): void
     {
         $rules = new Ruleset(['bad' => static fn() => 'text']);
         $this->expectExceptionMessage('Rule factory must return Comprehend or Parser: bad');
         $rules->ref('bad')->parseAll(new ByteSource('text'));
     }
+
     public function testDefinitionFactoryMustReturnAParser(): void
     {
         $definition = new Definition(static fn() => 'text');
         $this->expectExceptionMessage('Definition factory must return Comprehend or Parser');
         $definition->build()->parseAll(new ByteSource('text'));
     }
+
     public function testGrammarNamesAndRedefinitionAreIsolated(): void
     {
         $first = new Ruleset(['letter' => new Text('a')], 'first');
@@ -195,6 +222,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->expectExceptionMessage('Undefined grammar rule: letter');
         $reference->parseAll(new ByteSource('c'));
     }
+
     public function testDefinitionValidationIsSemanticAndDoesNotRetryChoice(): void
     {
         $events = [];
@@ -202,6 +230,7 @@ class CanonicalArchitectureTest extends ParserTestCase
             new Text('a'),
             static function (ParseResult $result) use (&$events): string {
                 $events[] = $result->rawText();
+
                 return 'rejected';
             },
         );
@@ -213,6 +242,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertFalse($result->commit());
         $this->assertSame(['a'], $events);
     }
+
     public function testExplicitMappingOverridesInheritedDefinitionValue(): void
     {
         $definition = new Definition((new Text('a'))->mapValue(static fn() => 42));
@@ -221,6 +251,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertSame(42, $inherited->value());
         $this->assertSame(99, $overridden->value());
     }
+
     public function testLocalAndParentResultReadsEvaluateTransformsAndProcessorsOnce(): void
     {
         $maps = $processors = 0;
@@ -236,16 +267,20 @@ class CanonicalArchitectureTest extends ParserTestCase
             'total',
             static function (array $local) use (&$processors): int {
                 ++$processors;
+
                 return $local['item'] + 1;
             },
         );
-        $scope = $definition->implementation()->validateSemantic(static fn(ParseResult $result): bool => $result->result('total') === 2);
+        $scope = $definition->implementation()->validateSemantic(
+            static fn(ParseResult $result): bool => $result->result('total') === 2,
+        );
         $result = (new Sequence($scope, new Text('b')))->parseAll(new ByteSource('ab'));
         $this->assertTrue($result->validate()->valid);
         $this->assertSame(['total' => 2], $result->results());
         $this->assertSame(['total' => 2], $result->results());
         $this->assertSame([1, 1], [$maps, $processors]);
     }
+
     public function testNamedResultErrorsAreRetained(): void
     {
         $calls = 0;
@@ -275,6 +310,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertNull($result->result('nullable', 'fallback'));
         $this->assertSame('fallback', $result->result('missing', 'fallback'));
     }
+
     public function testDirectivesPreserveChildCacheAndHaveTheirOwnEffects(): void
     {
         $events = [];
@@ -295,6 +331,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertTrue($result->commit());
         $this->assertSame(['child', 'A'], $events);
     }
+
     public function testTriviaUsesSessionCasePolicyAndRestoresScopesAfterExceptions(): void
     {
         $trivia = new Text('X');
@@ -307,6 +344,7 @@ class CanonicalArchitectureTest extends ParserTestCase
             {
                 throw new RuntimeException('scope');
             }
+
             public function __toString(): string
             {
                 return 'thrower';
@@ -325,6 +363,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertSame(0, $session->skipSpacing($source, 0));
         $this->assertSame([], $session->diagnosticState()[2]);
     }
+
     public function testInvalidTriviaValidationIsReportedOnce(): void
     {
         $trivia = (new Text(' '))->validateSemantic(static fn() => 'invalid trivia');
@@ -332,6 +371,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertSame(['invalid trivia'], $result->validate()->errors);
         $this->assertFalse($result->commit());
     }
+
     public function testInterveningTriviaIncludesZeroWidthGrammarItems(): void
     {
         $parser = (new Sequence(new Nothing(), new Text('a')))->spacing(new Text(' '));
@@ -340,6 +380,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertSame(' a', $result->rawText());
         $this->assertTrue($result->node->children[1]->isTrivia);
     }
+
     public function testRecursiveStubUsesExplicitSetter(): void
     {
         $stub = new Stub();
@@ -347,6 +388,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertTrue($stub->parseAll(new ByteSource('((x))'))->success);
         $this->assertInstanceOf(Choice::class, $stub->getParser());
     }
+
     public function testChildEffectCannotRecursivelyCommitItsOwnResult(): void
     {
         $calls = 0;
@@ -368,6 +410,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertSame(1, $calls);
         $this->assertFalse($result->isCommitted());
     }
+
     public function testSelectedChildResultReportsCommittedAfterParentCommit(): void
     {
         $childResult = null;
@@ -381,6 +424,7 @@ class CanonicalArchitectureTest extends ParserTestCase
         $this->assertTrue($childResult->isCommitted());
         $this->assertTrue($childResult->commit());
     }
+
     public function testIntersectionRetainsAllSelectedCollectionsAndEffects(): void
     {
         $events = [];

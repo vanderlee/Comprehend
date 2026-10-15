@@ -19,6 +19,7 @@ class SequenceTest extends ParserTestCase
         $this->expectExceptionMessage('No arguments');
         new Sequence();
     }
+
     /**
      * @dataProvider sequenceData
      *
@@ -32,6 +33,7 @@ class SequenceTest extends ParserTestCase
     {
         $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input), $offset), (string) $parser);
     }
+
     public function sequenceData()
     {
         return [
@@ -49,9 +51,13 @@ class SequenceTest extends ParserTestCase
             [new Sequence(new Char('a'), new Text('bc')), 'abc', 0, true, 3],
         ];
     }
+
     public function testSetResult()
     {
-        $parser = (new Sequence((new Text('a'))->setResult('valueA'), (new Text('b'))->setResult('valueB')))->setResult('word');
+        $parser = (new Sequence(
+            (new Text('a'))->setResult('valueA'),
+            (new Text('b'))->setResult('valueB'),
+        ))->setResult('word');
         $match = $parser->matchPrefix(new ByteSource('a'));
         $this->assertFalse($match->success);
         $this->assertFalse(array_key_exists('word', $match->results()));
@@ -69,6 +75,7 @@ class SequenceTest extends ParserTestCase
         $this->assertTrue(array_key_exists('valueB', $match->results()));
         $this->assertEquals('b', $match->result('valueB'));
     }
+
     public function testAssignTo()
     {
         $a = $b = $sequence = null;
@@ -88,6 +95,7 @@ class SequenceTest extends ParserTestCase
         $this->assertEquals('a', $a);
         $this->assertEquals('b', $b);
     }
+
     public function testArrayAccess()
     {
         $seq = new Sequence(new Text('a'), new Text('b'));
@@ -100,11 +108,13 @@ class SequenceTest extends ParserTestCase
         $this->assertResult(false, 0, $seq->matchPrefix(new ByteSource('abc')));
         $this->assertResult(true, 2, $seq->matchPrefix(new ByteSource('bc')));
     }
+
     public function testFailedSkip()
     {
         $seq = (new Sequence(new Text('a'), new Text('b')))->spacing(new Text('-'));
         $this->assertResult(false, 1, $seq->matchPrefix(new ByteSource('ab')));
     }
+
     public function testAddParser()
     {
         $seq = new Sequence(new Text('a'), new Text('b'));

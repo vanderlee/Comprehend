@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Builder;
 
@@ -37,6 +37,7 @@ final class Implementation extends Parser
                 : $generator(...$this->arguments);
             $this->parser = $this->requireParser($parser);
         }
+
         return $this->parser;
     }
 
@@ -48,6 +49,7 @@ final class Implementation extends Parser
         if (!$parser instanceof Parser) {
             throw new LogicException('Definition factory must return Comprehend or Parser');
         }
+
         return $parser;
     }
 
@@ -102,6 +104,7 @@ final class Implementation extends Parser
                 },
             );
         }
+
         return $success;
     }
 }

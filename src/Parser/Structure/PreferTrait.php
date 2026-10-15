@@ -20,24 +20,28 @@ trait PreferTrait
     public function setPreference(?string $preference): static
     {
         $this->preference = $preference;
+
         return $this;
     }
 
     public function preferShortest(): static
     {
         $this->preference = Prefer::SHORTEST;
+
         return $this;
     }
 
     public function preferLongest(): static
     {
         $this->preference = Prefer::LONGEST;
+
         return $this;
     }
 
     public function preferFirst(): static
     {
         $this->preference = Prefer::FIRST;
+
         return $this;
     }
 

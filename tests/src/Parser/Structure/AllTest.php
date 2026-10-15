@@ -19,11 +19,13 @@ class AllTest extends ParserTestCase
     {
         $this->assertInstanceOf(All::class, new All(new Text('a'), new Text('aa')));
     }
+
     public function testLessThanTwoArguments()
     {
         $this->expectExceptionMessage('Less than 2 arguments provided');
         new All(new Text('a'));
     }
+
     /**
      * @dataProvider allData
      *
@@ -39,6 +41,7 @@ class AllTest extends ParserTestCase
         $this->assertSame($match, $result->success, (string) $parser);
         $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
     }
+
     public function allData()
     {
         return [

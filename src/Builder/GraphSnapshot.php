@@ -52,14 +52,19 @@ final class GraphSnapshot
             $copy = clone $object;
             $this->copies[$object] = $copy;
             $copy->bindSnapshotRoot($this->copy($object->resolveRule(AbstractRuleset::ROOT, [], true)));
+
             return $copy;
         }
         $copy = (new ReflectionObject($object))->newInstanceWithoutConstructor();
         $this->copies[$object] = $copy;
         $this->copies[$copy] = $copy;
         foreach (GraphState::properties($object) as $property) {
-            if ($object instanceof Implementation && $this->resolveReferences
-                && $property->getDeclaringClass()->getName() === Implementation::class && $property->getName() === 'parser') {
+            if (
+                $object instanceof Implementation
+                && $this->resolveReferences
+                && $property->getDeclaringClass()->getName() === Implementation::class
+                && $property->getName() === 'parser'
+            ) {
                 $property->setValue($copy, null);
                 continue;
             }
@@ -68,6 +73,7 @@ final class GraphSnapshot
         if ($copy instanceof Implementation && $this->resolveReferences) {
             $copy->bindSnapshotTarget($this->copy($copy->graphTarget()));
         }
+
         return $copy;
     }
 
@@ -87,6 +93,7 @@ final class GraphSnapshot
         // Register before resolving so recursive references reuse this node.
         $this->references[$key] = $copy;
         $copy->bindSnapshotTarget($this->copy($reference->graphTarget(true)));
+
         return $copy;
     }
 
@@ -103,8 +110,10 @@ final class GraphSnapshot
             foreach ($value as $key => $item) {
                 $parts[] = [$this->parameterKey($key), $this->parameterKey($item)];
             }
+
             return serialize($parts);
         }
+
         return serialize($value);
     }
 
@@ -116,6 +125,7 @@ final class GraphSnapshot
         if (is_array($value)) {
             return array_map(fn($item) => $this->copyValue($item), $value);
         }
+
         // Closures, external services and value objects are caller-owned dependencies.
         return $value;
     }

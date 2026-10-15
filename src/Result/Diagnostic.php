@@ -35,6 +35,7 @@ final class Diagnostic
         $lineStarts = $this->indexLines();
         $start = $lineStarts[$line];
         $end = $lineStarts[$line + 1] ?? $this->source->byteLength();
+
         return rtrim($this->source->sliceBytes($start, $end), "\r\n");
     }
 
@@ -59,6 +60,7 @@ final class Diagnostic
 
         $prefix = $this->source->sliceBytes($lineStarts[$low], $this->byteOffset);
         $length = $this->source->mode() === SourceMode::UTF8 ? mb_strlen($prefix, 'UTF-8') : strlen($prefix);
+
         return ['line' => $low + 1, 'column' => $length + 1];
     }
 
@@ -66,6 +68,7 @@ final class Diagnostic
     {
         $location = $this->location();
         $expected = implode(' or ', $this->expected);
+
         return 'Expected ' . $expected . ' at line ' . $location['line']
             . ', column ' . $location['column'] . ' (byte ' . $this->byteOffset . ')';
     }
@@ -101,6 +104,7 @@ final class Diagnostic
         if ($pendingCr) {
             $this->lineStarts[] = $this->source->byteLength();
         }
+
         return $this->lineStarts;
     }
 }

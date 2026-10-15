@@ -12,11 +12,13 @@ class TextTest extends ParserTestCase
     {
         $this->assertInstanceOf(Text::class, new Text('foo'));
     }
+
     public function testEmpty()
     {
         $this->expectExceptionMessage('Empty argument');
         new Text('');
     }
+
     /**
      * @group        terminal
      * @group        parser
@@ -32,6 +34,7 @@ class TextTest extends ParserTestCase
     {
         $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input), $offset), (string) $parser);
     }
+
     public function textData()
     {
         return [

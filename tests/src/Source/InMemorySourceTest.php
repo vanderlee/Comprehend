@@ -47,12 +47,14 @@ final class InMemorySourceTest extends TestCase
             public function readUnit(int $byteOffset): ?Span
             {
                 $this->assertByteOffset($byteOffset);
+
                 return $byteOffset === $this->byteLength() ? null : $this->span($byteOffset, $byteOffset + 1);
             }
 
             public function isUnitBoundary(int $byteOffset): bool
             {
                 $this->assertByteOffset($byteOffset);
+
                 return true;
             }
         };

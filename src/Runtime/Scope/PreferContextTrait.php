@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Runtime\Scope;
 
@@ -41,6 +41,7 @@ trait PreferContextTrait
         if ($preference === false) {
             throw new \LogicException('Choice preference scope is empty');
         }
+
         return $preference;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
@@ -55,6 +55,7 @@ class Text extends Parser
                 }
                 $position = $unit->end;
             }
+
             return $this->success($source, $byteOffset, $position - $byteOffset);
         } finally {
             $this->popCaseSensitivityFromContext($session);

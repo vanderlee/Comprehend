@@ -207,6 +207,7 @@ final class ParseSession
     public function readSourceUnit(int $byteOffset): ?Span
     {
         $this->consumeWork(1, $byteOffset);
+
         return $this->source->readUnit($byteOffset);
     }
 }

@@ -17,6 +17,7 @@ class Rfc4234Test extends Rfc2234Test
     {
         $this->assertNotNull($this->getRfc());
     }
+
     protected function getRfc()
     {
         return new Rfc4234();

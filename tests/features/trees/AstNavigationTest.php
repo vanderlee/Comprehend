@@ -35,7 +35,10 @@ class AstNavigationTest extends TestCase
         $this->assertSame($ast->children[3], $ast->firstInGroup(null));
         $this->assertNull($ast->firstInGroup('missing'));
         $descendants = iterator_to_array($ast->descendants(), false);
-        $this->assertSame(['a', '(n)', 'n', 'b', 'c'], array_map(static fn($node): string => $node->rawText(), $descendants));
+        $this->assertSame(
+            ['a', '(n)', 'n', 'b', 'c'],
+            array_map(static fn($node): string => $node->rawText(), $descendants),
+        );
         $this->assertSame($ast->children[1]->children[0], $descendants[2]);
     }
 
@@ -44,6 +47,7 @@ class AstNavigationTest extends TestCase
         $reads = 0;
         $result = C::text('a')->named('leaf')->mapValue(static function () use (&$reads): int {
             ++$reads;
+
             return 1;
         })->parse('a');
         $ast = $result->ast();

@@ -26,6 +26,7 @@ final class FrozenGrammar
         }
         $root = (new GraphSnapshot())->copy($parser);
         $warnings = (new GraphAnalysis())->validate($root);
+
         return new self($root, $warnings);
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Match;
 
@@ -140,6 +140,7 @@ class Success extends AbstractMatch
             return $this->valueChild->getValue();
         }
         $this->semanticProjection ??= new SemanticProjection(null);
+
         return $this->semanticProjection->value(new ParseResult($this));
     }
 
@@ -193,6 +194,7 @@ class Success extends AbstractMatch
         try {
             $errors = $this->childValidationErrors();
             $errors = array_merge($errors, $this->localValidationErrors());
+
             return $this->validation = new ValidationResult($errors === [], $errors);
         } catch (\Throwable $error) {
             $this->validationError = $error;
@@ -220,6 +222,7 @@ class Success extends AbstractMatch
                 $errors[] = $error;
             }
         }
+
         return $errors;
     }
 
@@ -240,6 +243,7 @@ class Success extends AbstractMatch
                 throw new \UnexpectedValueException('Semantic validators must return true, false or an error string');
             }
         }
+
         return $errors;
     }
 

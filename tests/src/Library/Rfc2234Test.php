@@ -19,10 +19,12 @@ class Rfc2234Test extends ParserTestCase
     {
         return new Rfc2234();
     }
+
     public function testConstruct()
     {
         $this->assertNotNull($this->getRfc());
     }
+
     /**
      * @dataProvider rfc2234Data
      *
@@ -35,9 +37,11 @@ class Rfc2234Test extends ParserTestCase
     {
         $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input)), (string) $parser);
     }
+
     public function rfc2234Data()
     {
         $abnf = $this->getRfc();
+
         return [
             // Core rules
             [$abnf->ref('ALPHA'), 'a', true, 1],

@@ -16,6 +16,7 @@ class CaseSensitiveTest extends ParserTestCase
     {
         $this->assertInstanceOf(CaseSensitive::class, new CaseSensitive(true, new Text('a')));
     }
+
     /**
      * @dataProvider caseSensitiveData
      *
@@ -29,6 +30,7 @@ class CaseSensitiveTest extends ParserTestCase
     {
         $this->assertResult($match, $length, $parser->matchPrefix(new ByteSource($input), $offset), (string) $parser);
     }
+
     public function caseSensitiveData()
     {
         return [
