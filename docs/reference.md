@@ -24,6 +24,8 @@
 | ABNF authoring | `Abnf\Compiler::compile(string, root, numericEncoding, choice)` returning FrozenGrammar |
 | Naming | `name(string|int, ?string = null, bool $leaf = false)` |
 | Meaning | `mapValue(callable)`, named set/concat/push collection operations |
+| Text mapping | `mapText(callable(string): mixed)` maps original matched text lazily, replacing any previous value mapper |
+| Prepending | Facade `prepend(Comprehend\|Parser\|string ...items)` returns an immutable sequence of the supplied items followed by the current expression |
 | Lifecycle | `guard(callable)`, `validateSemantic(callable)`, `onCommit(callable)`, assignments |
 | Results | ParseResult, Diagnostic, ValidationResult, immutable ConcreteNode and AstNode |
 | Simple result access | Readonly `ok` aliases `success`; `output()` aliases lazy typed `value()`, returning null on syntax failure without committing effects |

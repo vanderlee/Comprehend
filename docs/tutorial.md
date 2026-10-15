@@ -8,11 +8,10 @@ For a typed value, attach a pure mapping before parsing:
 
 ~~~php
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Result\ParseResult;
 
 $age = C::integer(0, 150)
     ->named('age')
-    ->mapValue(static fn(ParseResult $r): int => (int) $r->rawText());
+    ->mapText(static fn(string $text): int => (int) $text);
 
 $result = $age->parse('42');
 if ($result->ok) {

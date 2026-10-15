@@ -29,6 +29,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Regex;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Start;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Syntax;
 
 /** Coordinates built-in dispatch and immutable custom vocabularies. */
@@ -68,9 +69,11 @@ final class Catalog
 
     private const CONTINUATIONS = [
         'then',
+        'prepend',
         'named',
         'tag',
         'mapvalue',
+        'maptext',
         'guard',
         'validatesemantic',
         'oncommit',
@@ -188,6 +191,10 @@ final class Catalog
                 Comprehend $item,
                 Comprehend|Parser|string ...$next,
             ): Comprehend|Parser => $next === [] ? $item : self::sequence([$item, ...$next]),
+            'prepend' => static fn(
+                Comprehend $item,
+                Comprehend|Parser|string ...$before,
+            ): Comprehend|Parser => $before === [] ? $item : self::sequence([...array_values($before), $item]),
             'or' => static fn(
                 Comprehend $item,
                 Comprehend|Parser|string ...$next,
@@ -208,6 +215,9 @@ final class Catalog
             ): Parser => $item->parser()->name($name, $group, $leaf),
             'tag' => static fn(Comprehend $item, string ...$tags): Parser => $item->parser()->tag(...$tags),
             'mapvalue' => static fn(Comprehend $item, callable $mapper): Parser => $item->parser()->mapValue($mapper),
+            'maptext' => static fn(Comprehend $item, callable $mapper): Parser => $item->parser()->mapValue(
+                static fn(ParseResult $result): mixed => $mapper($result->rawText()),
+            ),
             'guard' => static fn(Comprehend $item, callable $predicate): Parser => $item->parser()->guard($predicate),
             'validatesemantic' => static fn(
                 Comprehend $item,

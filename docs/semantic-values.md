@@ -6,6 +6,12 @@ Without a mapping it returns raw text. Transparent runtime wrappers preserve
 their accepted child's mapping unless explicitly mapped. Failed results return
 null; abandoned alternatives do not evaluate their mappings automatically.
 
+Facade `mapText(callable(string): mixed)` is the text-only convenience: its callback
+receives the original matched string instead of ParseResult. It uses the same lazy
+value cache, supports typed return values, and never changes raw source text or
+commits effects. Both methods set the same mapper; a later call replaces the previous
+mapping rather than transforming its output.
+
 Named collections remain useful supported projections: `setResult(name, value)`,
 `concatResult(name, value)` and `pushResult(name, value)`. A callable value maps
 raw text. `results()` returns the named map; `result()` accesses the default

@@ -10,12 +10,11 @@ MIT licensed. Requires DOM, JSON and mbstring.
 require 'vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Result\ParseResult;
 
 // Build a parser and describe the value to extract.
 $age = C::integer(0, 150)
     ->named('age')
-    ->mapValue(static fn(ParseResult $r): int => (int) $r->rawText());
+    ->mapText(static fn(string $text): int => (int) $text);
 
 // Parse complete input, then extract the typed value.
 $result = $age->parse('42');

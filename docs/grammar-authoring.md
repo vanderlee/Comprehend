@@ -120,6 +120,7 @@ The bundled RFC grammars import the facade as `C` with
 | `literalWindow(literal)` | Regex matching with a proven finite literal read window |
 | `ref(Ruleset, name, ...args)` | Deferred supported named reference |
 | `sequence(...items)`, `then(...items)` | Sequence composition |
+| `prepend(...items)` | Sequence the supplied items before the current expression, preserving their order; no arguments returns the same facade |
 | `->text()`, `->char()`, `->set()`, `->range()`, `->regex()`, `->literalWindow()` | Append a terminal with the same arguments/defaults as its static factory |
 | `->any()`, `->nothing()`, `->start()`, `->end()` | Append unit, empty or boundary terminals |
 | `->integer()`, `->binary()`, `->octal()`, `->hexadecimal()`, `->octet()` | Append numeric terminals with the same options as their factories |
@@ -131,6 +132,7 @@ The bundled RFC grammars import the facade as `C` with
 | `some()` / `plus()`, `many()` / `star()` / `kleene()`, `maybe()` / `optional()` | One or more, zero or more, zero or one |
 | `some(item)`, `many(item)`, `maybe(item)`, `repeat(item, min, max)` | Static repetition factories accepting a facade, Parser or literal string |
 | `named(string\|int\|callable)`, `tag(...tags)`, `mapValue()` | Fixed or pure dynamic names, tags and semantic mappings on a detached graph |
+| `mapText(callable)` | Lazy mapping receiving only the original matched text; may return any value, just like `mapValue()` |
 | `guard()`, `validateSemantic()`, `onCommit()`, `assignTo()` | Pure recognition predicate, selected semantic validation, explicit committed effects and assignments |
 | `setResult()`, `concatResult()`, `pushResult()` | Cached named result collections, independent of source text |
 | `diagnosticRule(name)` | A readable rule label for failures |
@@ -176,6 +178,25 @@ $bracketed = Comprehend::sequence('[', $digits, ']');
 $grammar = $bracketed->or('none', 'empty');
 $grammar->parse('[123]')->success; // true
 ```
+
+`prepend(...items)` is the immutable counterpart of `then(...items)`: it constructs
+`sequence(...items, currentExpression)` and detaches supplied Parser objects. Names,
+policies and callbacks on the current expression stay attached to that subtree.
+The returned expression retains its custom syntax scope.
+
+```php
+$word = Comprehend::text('hello')->mapText('strtoupper');
+$word->parse('hello')->output(); // 'HELLO'; rawText() remains 'hello'
+$wrapped = $word->prepend('[')->text(']');
+$wrapped->parse('[hello]')->rawText(); // '[hello]'; $word still matches 'hello'
+```
+
+`mapText()` accepts a callable taking the original matched string and returning any
+value. It shares `mapValue()`'s lazy cache and effect boundaries: failed parses do
+not call it, and reading output does not commit effects. Both configure the same
+value mapper, so a later mapping replaces the earlier one rather than forming a
+transformation pipeline. A mapping on a child remains local to that child; map the
+completed composition to transform its whole value.
 
 Repetition shortcuts retain the same nullable-child rejection as `repeat()`,
 including optional repetition. Lifecycle operations retain their distinct timing:
