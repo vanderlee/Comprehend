@@ -43,7 +43,7 @@ use Vanderlee\Comprehend\Syntax;
  */
 final class Catalog
 {
-    private const BUILTINS = [
+    private const RULES = [
         'text',
         'regex',
         'char',
@@ -108,10 +108,10 @@ final class Catalog
     ];
 
     /**
-     * @param array<string, Closure> $statics
+     * @param array<string, Closure> $rules
      * @param array<string, Closure> $fluents
      */
-    public function __construct(private readonly array $statics = [], private readonly array $fluents = []) {}
+    public function __construct(private readonly array $rules = [], private readonly array $fluents = []) {}
 
     public static function canonicalName(string $name): string
     {
@@ -422,21 +422,21 @@ final class Catalog
      */
     public static function builtinNames(): array
     {
-        return [...self::BUILTINS, ...self::FLUENTS, ...array_keys(self::ALIASES)];
+        return [...self::RULES, ...self::FLUENTS, ...array_keys(self::ALIASES)];
     }
 
-    public function define(string $name, callable $factory): self
+    public function defineRule(string $name, callable $factory): self
     {
         $name = self::validateName($name);
 
-        return new self([...$this->statics, $name => Closure::fromCallable($factory)], $this->fluents);
+        return new self([...$this->rules, $name => Closure::fromCallable($factory)], $this->fluents);
     }
 
     public function defineFluent(string $name, callable $factory): self
     {
         $name = self::validateName($name);
 
-        return new self($this->statics, [...$this->fluents, $name => Closure::fromCallable($factory)]);
+        return new self($this->rules, [...$this->fluents, $name => Closure::fromCallable($factory)]);
     }
 
     private static function validateName(string $name): string
@@ -464,7 +464,7 @@ final class Catalog
             return $builtin;
         }
 
-        return $this->statics[self::canonicalName($name)] ?? null;
+        return $this->rules[self::canonicalName($name)] ?? null;
     }
 
     public function fluent(string $name): ?Closure
@@ -484,7 +484,7 @@ final class Catalog
     {
         return array_values(array_unique([
             ...self::builtinNames(),
-            ...array_keys($this->statics),
+            ...array_keys($this->rules),
             ...array_keys($this->fluents),
         ]));
     }

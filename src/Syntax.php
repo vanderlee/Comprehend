@@ -24,7 +24,7 @@ final class Syntax
     /** Existing expressions retain their original catalog. */
     public function defineRule(string $name, callable $factory): self
     {
-        return new self($this->catalog->define($name, $factory));
+        return new self($this->catalog->defineRule($name, $factory));
     }
 
     /** Install rule then fluent factories; the original vocabulary survives installation errors. */

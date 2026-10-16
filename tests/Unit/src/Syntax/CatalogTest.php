@@ -96,7 +96,7 @@ test('named sequence arguments preserve annotated prefix boundaries', function (
 test('custom factories are case insensitive and catalogs are immutable', function (): void {
     $catalog = new Catalog();
     $factory = static fn(): Text => new Text('a');
-    $extended = $catalog->define('Letter', $factory);
+    $extended = $catalog->defineRule('Letter', $factory);
 
     $this->assertNull($catalog->rule('letter'));
     $this->assertSame($factory, $extended->rule('LETTER'));
@@ -108,5 +108,5 @@ test('custom factories are case insensitive and catalogs are immutable', functio
 test('invalid or reserved names cannot override builtins', function (string $name): void {
     $this->expectException(InvalidArgumentException::class);
 
-    (new Catalog())->define($name, static fn(): Text => new Text('a'));
+    (new Catalog())->defineRule($name, static fn(): Text => new Text('a'));
 })->with(CatalogTest::reservedNames());
