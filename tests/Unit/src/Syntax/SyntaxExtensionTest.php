@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Binding;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Syntax;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
@@ -150,7 +151,7 @@ test('extensions register independent static and fluent factories without execut
             };
         }
     };
-    $base = C::syntax();
+    $base = Binding::syntax();
     $old = $base->text('a');
     $syntax = $base->extend($extension);
     $this->assertSame(['static', 'fluent'], $events);

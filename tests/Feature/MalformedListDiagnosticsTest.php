@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Binding;
 use Vanderlee\Comprehend\Parser\Structure\Not;
 
 uses(TestCase::class);
@@ -14,9 +14,9 @@ test('failed delimited lists retain malformed item positions through nested roll
     int $line,
     int $column,
 ): void {
-    $item = C::text("\u{e9}");
+    $item = Binding::syntax()->text("\u{e9}");
     $list = $item->separatedBy(',')->between('[', ']');
-    $nested = $list->separatedBy(',')->between('[', ']')->spacing(C::set(" \t\r\n")->many());
+    $nested = $list->separatedBy(',')->between('[', ']')->spacing(Binding::syntax()->set(" \t\r\n")->many());
     $result = $nested->parse($input);
 
     $this->assertFalse($result->success);
@@ -35,7 +35,7 @@ test('failed delimited lists retain malformed item positions through nested roll
 test('list prefix diagnostics stay silent but complete parsing retains the failed extension', function (
     bool $allowTrailing,
 ): void {
-    $list = C::text('abc')->separatedBy(',', allowTrailing: $allowTrailing);
+    $list = Binding::syntax()->text('abc')->separatedBy(',', allowTrailing: $allowTrailing);
     $prefix = $list->matchPrefix('abc,abx');
     $this->assertTrue($prefix->success);
     $this->assertSame($allowTrailing ? 'abc,' : 'abc', $prefix->rawText());
@@ -48,7 +48,7 @@ test('list prefix diagnostics stay silent but complete parsing retains the faile
 })->with([false, true]);
 
 test('valid empty and trailing lists have no termination diagnostics', function (string $input): void {
-    $list = C::text('a')->separatedBy(',', allowTrailing: true)->between('[', ']');
+    $list = Binding::syntax()->text('a')->separatedBy(',', allowTrailing: true)->between('[', ']');
     $result = $list->parse($input);
     $this->assertTrue($result->success);
     $this->assertNull($result->diagnostic);
@@ -56,7 +56,7 @@ test('valid empty and trailing lists have no termination diagnostics', function 
 })->with(['[]', '[a]', '[a,]']);
 
 test('a missing close retains tied delimiter and separator expectations', function (): void {
-    $result = C::text('a')->separatedBy(',')->between('[', ']')->parse('[a');
+    $result = Binding::syntax()->text('a')->separatedBy(',')->between('[', ']')->parse('[a');
     $this->assertFalse($result->success);
     $this->assertSame(2, $result->diagnostic->byteOffset);
     $this->assertContains('"]"', $result->diagnostic->expected);
@@ -64,7 +64,7 @@ test('a missing close retains tied delimiter and separator expectations', functi
 });
 
 test('partial separators and required items retain the farther failure', function (string $input, int $minimum): void {
-    $result = C::text('abc')->separatedBy('::', min: $minimum)->parse($input);
+    $result = Binding::syntax()->text('abc')->separatedBy('::', min: $minimum)->parse($input);
     $this->assertFalse($result->success);
     $this->assertSame(4, $result->diagnostic->byteOffset);
     $this->assertContains('"::"', $result->diagnostic->expected);
@@ -73,11 +73,11 @@ test('partial separators and required items retain the farther failure', functio
 test('discarded optional repetition and negative lookahead restore deferred list diagnostics', function (
     string $probe,
 ): void {
-    $list = C::text('a')->separatedBy(',')->between('[', ']');
+    $list = Binding::syntax()->text('a')->separatedBy(',')->between('[', ']');
     $parser = match ($probe) {
         'optional' => $list->optionalValue()->ignoreThen('!'),
         'repeat' => $list->manyValues()->ignoreThen('!'),
-        default => C::of(new Not($list->parser()))->ignoreThen('!'),
+        default => Binding::syntax()->of(new Not($list->parser()))->ignoreThen('!'),
     };
     $result = $parser->parse('[a,?]');
     $this->assertFalse($result->success);

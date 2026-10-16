@@ -37,6 +37,6 @@ final class AsciiIdentifiers implements SyntaxExtension
         $continuation = C::regex('/[A-Za-z0-9_]/A')->caseSensitive();
 
         // Check the immediate next unit, before enclosing spacing can consume anything.
-        return C::text($word)->thenIgnore(C::not($continuation))->lexeme();
+        return C::text($word)->then(C::not($continuation))->lexeme();
     }
 }

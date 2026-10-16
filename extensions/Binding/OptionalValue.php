@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Parser\Structure;
+namespace Vanderlee\Comprehend\Extensions\Binding;
 
+use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;

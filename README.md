@@ -6,13 +6,16 @@ MIT licensed. Requires JSON and mbstring. DOM is optional, needed only for XML o
 
 ## Quick start
 
+This value-extraction example uses the optional [Binding expansion](docs/binding.md).
+It is bundled with the library and activated explicitly with `Binding::syntax()`.
+
 ```php
 require 'vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
-
+use Vanderlee\Comprehend\Extensions\Binding;
 // Build a parser and describe the value to extract.
-$age = C::integer(0, 150)
+$age = Binding::syntax()->integer(0, 150)
     ->named('age')
     ->mapText(static fn(string $text): int => (int) $text);
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Examples\ApplicationValues;
 
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Binding;
 
 final class Job
 {
@@ -25,17 +26,17 @@ final class Job
 /** @return C<Job> */
 function jobParser(): C
 {
-    $name = C::regex('/[A-Za-z][A-Za-z0-9_]*/A');
-    $number = C::integer(0, 999)->mapText('intval');
-    $retryValue = C::valueChoice(
-        C::integer(0, 9)->mapText('intval'),
-        C::text('off')->map(static fn(string $text): bool => false),
+    $name = Binding::syntax()->regex('/[A-Za-z][A-Za-z0-9_]*/A');
+    $number = Binding::syntax()->integer(0, 999)->mapText('intval');
+    $retryValue = Binding::syntax()->valueChoice(
+        Binding::syntax()->integer(0, 9)->mapText('intval'),
+        Binding::syntax()->text('off')->map(static fn(string $text): bool => false),
     );
-    $retries = C::text('retry=')->ignoreThen($retryValue)->optionalValue(default: 3);
+    $retries = Binding::syntax()->text('retry=')->ignoreThen($retryValue)->optionalValue(default: 3);
     $batch = $number->separatedBy(',')->between('[', ']');
     $batches = $batch->separatedBy(',')->between('[', ']');
 
-    return C::collect($name, $retries, $batches)
+    return Binding::syntax()->collect($name, $retries, $batches)
         ->map(static fn(array $parts): Job => new Job($parts[0], $parts[1], $parts[2]))
-        ->spacing(C::set(" \t\r\n")->many());
+        ->spacing(Binding::syntax()->set(" \t\r\n")->many());
 }

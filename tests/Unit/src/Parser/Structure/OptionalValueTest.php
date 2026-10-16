@@ -6,7 +6,7 @@ namespace Tests\Unit\src\Parser\Structure;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Parser\Structure\OptionalValue;
+use Vanderlee\Comprehend\Extensions\Binding\OptionalValue;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;

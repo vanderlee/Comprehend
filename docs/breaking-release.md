@@ -7,6 +7,14 @@ The changelog remains marked Unreleased until publication is ready.
 
 ## Caller changes
 
+Application extraction helpers now require the opt-in [Binding expansion](binding.md).
+Replace static helpers such as `C::collect(...)` with
+`Binding::syntax()->collect(...)`, and attach existing expressions or rule
+references with `$syntax->of($parser)` before fluent extraction calls. Low-level
+extraction classes moved from `Parser\Structure` to `Extensions\Binding`.
+Core separated lists now return matched text; use Binding's subclass for lists
+of item values. Binding's PHPStan configuration is separate from core support.
+
 | Previous surface | Supported replacement |
 | --- | --- |
 | String `match()`/invocation and implicit complete-input assumptions | Explicit Source with `matchPrefix()` or `parseAll()` |

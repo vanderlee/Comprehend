@@ -10,10 +10,12 @@ require_once __DIR__ . '/../../../../docs/examples/application-values-grammar.ph
 
 uses(ValueTypeInferenceTestCase::class);
 
+// PHPStan and the test runner bundle different PhpParser versions; isolate the analyzer container.
+
 test('value inference preserves mappings lists defaults and tutorial domain outputs', function (): void {
     $assertions = $this::gatherAssertTypes(__DIR__ . '/../../../Fixtures/PHPStan/values.php');
     $this->assertNotEmpty($assertions);
     foreach ($assertions as $assertion) {
         $this->assertFileAsserts(...$assertion);
     }
-});
+})->setRunTestInSeparateProcess(true)->setPreserveGlobalState(false);

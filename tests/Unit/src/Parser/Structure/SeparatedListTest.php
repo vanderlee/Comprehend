@@ -7,7 +7,7 @@ namespace Tests\Src\Parser\Structure;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Parser\Structure\SeparatedList;
+use Vanderlee\Comprehend\Extensions\Binding\SeparatedList;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;

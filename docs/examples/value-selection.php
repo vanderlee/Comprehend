@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Binding;
 
-$number = C::integer()->mapText(static fn(string $text): int => (int) $text);
-$numbers = $number->separatedBy(',')->between('[', ']')->spacing(C::text(' ')->many());
+$number = Binding::syntax()->integer()->mapText(static fn(string $text): int => (int) $text);
+$numbers = $number->separatedBy(',')->between('[', ']')->spacing(Binding::syntax()->text(' ')->many());
 $result = $numbers->parse('[10, 20]');
 if (!$result->success || $result->value() !== [10, 20] || $result->rawText() !== '[10, 20]') {
     throw new RuntimeException('Delimited list values or source round trip failed');
@@ -17,8 +17,8 @@ if ($numbers->parse('[10,20')->success || $numbers->parse('[10,,20]')->success) 
 }
 if (
     $number->thenIgnore(';')->parse('42;')->value() !== 42
-    || C::text('return:')->ignoreThen($number)->parse('return:42')->value() !== 42
-    || C::text('hello')->between('(', ')')->parse('(hello)')->value() !== 'hello'
+    || Binding::syntax()->text('return:')->ignoreThen($number)->parse('return:42')->value() !== 42
+    || Binding::syntax()->text('hello')->between('(', ')')->parse('(hello)')->value() !== 'hello'
 ) {
     throw new RuntimeException('Selected sequence value changed');
 }

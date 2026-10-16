@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Binding;
 
 // A record with an optional label and a list of single-digit application values.
-$label = C::regex('/[A-Za-z]+/A')->thenIgnore(':')->optionalValue(default: 'untitled');
-$digits = C::range('0', '9')->mapText('intval')->manyValues()->between('[', ']');
-$record = C::collect($label, $digits)
+$label = Binding::syntax()->regex('/[A-Za-z]+/A')->thenIgnore(':')->optionalValue(default: 'untitled');
+$digits = Binding::syntax()->range('0', '9')->mapText('intval')->manyValues()->between('[', ']');
+$record = Binding::syntax()->collect($label, $digits)
     ->map(static fn(array $parts): object => (object) ['label' => $parts[0], 'digits' => $parts[1]])
-    ->spacing(C::text(' ')->many());
+    ->spacing(Binding::syntax()->text(' ')->many());
 
 foreach (['scores: [1 2 3]' => ['scores', [1, 2, 3]], '[]' => ['untitled', []]] as $input => $expected) {
     $result = $record->parse($input);

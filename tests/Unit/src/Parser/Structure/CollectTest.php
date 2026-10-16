@@ -6,7 +6,7 @@ namespace Tests\Src\Parser\Structure;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Parser\Structure\Collect;
+use Vanderlee\Comprehend\Extensions\Binding\Collect;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 

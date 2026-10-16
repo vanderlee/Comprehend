@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ComprehendComparison;
 
 use Parsica\Parsica\StringStream;
-use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Binding;
 
 use function Parsica\Parsica\many;
 use function Parsica\Parsica\digitChar;
@@ -16,7 +16,7 @@ use function PHPStan\dumpType;
 // This is an observation probe, not an assertion of one analyzer's superiority.
 function typeObservations(): void
 {
-    $comprehendNumber = C::range('0', '9')->mapText('intval');
+    $comprehendNumber = Binding::syntax()->range('0', '9')->mapText('intval');
     $bindingNumber = digitChar()->map('intval');
     dumpType($comprehendNumber);
     dumpType($bindingNumber);

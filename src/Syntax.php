@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend;
 
 use Closure;
+use Vanderlee\Comprehend\Builder\Definition;
+use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Syntax\Catalog;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 
@@ -19,6 +21,12 @@ final class Syntax
     public static function create(): self
     {
         return new self(new Catalog());
+    }
+
+    /** Attach this vocabulary to an existing expression or detached parser graph. */
+    public function of(Comprehend|Parser|Definition $parser): Comprehend
+    {
+        return Comprehend::of($parser, $this);
     }
 
     /** Existing expressions retain their original catalog. */

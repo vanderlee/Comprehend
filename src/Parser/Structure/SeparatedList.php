@@ -18,7 +18,7 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** Recognizes separated, consuming items; keeps syntax while lazily projecting item values. */
+/** Recognizes separated, consuming items; retains concrete syntax and a raw-text default value. */
 class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
 {
     use ExactClassSnapshotReuseTrait;
@@ -193,9 +193,7 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
      */
     protected function prepareListValue(Success $success, array $items, array $selected): void
     {
-        $success->setValueMapper(
-            static fn(): array => array_map(static fn(Success $item): mixed => $item->getValue(), $items),
-        );
+        // Ordinary syntax lists retain their raw-text projection.
     }
 
     /**

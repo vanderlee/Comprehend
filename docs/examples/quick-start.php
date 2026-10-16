@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Binding;
 
-$age = C::integer(0, 150)
+$age = Binding::syntax()->integer(0, 150)
     ->named('age')
     ->mapText(static fn(string $text): int => (int) $text);
 $result = $age->parse('42');
@@ -17,8 +17,8 @@ if ($age->parse('151')->success || $age->parse('42!')->success) {
     throw new RuntimeException('Complete-input bounds were not enforced');
 }
 
-$declaration = C::text('age')->text(':')->then($age);
-$spaces = C::text(' ')->many();
+$declaration = Binding::syntax()->text('age')->text(':')->then($age);
+$spaces = Binding::syntax()->text(' ')->many();
 $result = $declaration->parse('age : 42', spacing: $spaces);
 if (!$result->success || $result->ast()->firstNamed('age')->rawText() !== '42') {
     throw new RuntimeException('Spaced declaration extraction failed');
@@ -27,7 +27,7 @@ if ($declaration->parse('age : 42')->success) {
     throw new RuntimeException('Per-call spacing mutated the grammar');
 }
 
-$word = C::text('hello')->mapText('strtoupper');
+$word = Binding::syntax()->text('hello')->mapText('strtoupper');
 if ($word->parse('hello')->output() !== 'HELLO') {
     throw new RuntimeException('Text mapping failed');
 }

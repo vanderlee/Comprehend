@@ -12,7 +12,7 @@
 | Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Integer, Start, End, Nothing |
 | Structures | Sequence(Parser...), Choice(Parser...), All(Parser...), Except(Parser, Parser), Not(Parser), Repeat(Parser, int = 0, ?int = null) |
 | Repetition | `Comprehend::of(Parser)->repeat(min, max)`; object factories `Repeat::plus/star/optional/exact` |
-| Separated lists | `item->separatedBy(separator, min: 0, max: null, allowLeading: false, allowTrailing: false)`; static `separatedBy(item, separator, ...)`, object `SeparatedList(Parser, Parser, ...)`; [behavior and values](separated-lists.md) |
+| Separated lists | Core object `Parser\Structure\SeparatedList` recognizes syntax with raw-text output; Binding's `separatedBy(...)` and `Extensions\Binding\SeparatedList` project item values; [behavior and values](separated-lists.md) |
 | Shared repetition names | Static `some/many/maybe(item)`, `repeat(item, min, max)`; fluent `some/many/maybe()`, `repeat(min, max)` |
 | Terminal chaining | `->text/char/set/range/regex/literalWindow/any/nothing/start/end/integer/binary/octal/hexadecimal/octet(...)` |
 | Choice policy | `first/longest/shortest(Parser...)`, scoped Prefer |
@@ -26,10 +26,10 @@
 | Expression tables | Optional `Extensions\Expressions`: `operatorExpression(primary, Operator...)`, `expressionChoice(alternatives...)`; [precedence and lifecycle](expressions.md) |
 | ABNF authoring | `Abnf\Compiler::compile(string, root, numericEncoding, choice)` returning FrozenGrammar |
 | Naming | `name(string|int, ?string = null, bool $leaf = false)` |
-| Meaning | `mapValue(callable)`, named set/concat/push collection operations |
-| Text mapping | `mapText(callable(string): mixed)` maps original matched text lazily, replacing any previous value mapper |
+| Meaning | Core `mapValue(callable)`, named set/concat/push collection operations |
+| Binding expansion | Opt-in `Extensions\Binding`: `map`, `mapText`, `collect`, `valueChoice`, `manyValues`, `someValues`, `repeatValues`, `optionalValue`, `separatedBy`, `thenIgnore`, `ignoreThen`, `between`; [installation, classes and types](binding.md) |
 | Prepending | Facade `prepend(Comprehend\|Parser\|string ...items)` returns an immutable sequence of the supplied items followed by the current expression |
-| Value selection | Fluent `thenIgnore(next)`, `ignoreThen(next)`, `between(open, close)`; object `ValueSequence(int, Parser...)`; [delimiters and lifecycle](value-selection.md) |
+| Value selection | Binding fluent `thenIgnore(next)`, `ignoreThen(next)`, `between(open, close)`; object `Extensions\Binding\ValueSequence(int, Parser...)`; [delimiters and lifecycle](value-selection.md) |
 | Lifecycle | `guard(callable)`, `validateSemantic(callable)`, `onCommit(callable)`, assignments |
 | Results | ParseResult, Diagnostic, ValidationResult, immutable ConcreteNode and AstNode |
 | Error recovery | Optional `Extensions\Recovery`: `RecoverUntil`, `RecoverDelimited`, `RecoverItem`, `RecoverWith` under `Extensions\Recovery`; rule/fluent factories, shared recovery records and diagnostics; [recovery contracts](recovery.md) |

@@ -9,15 +9,16 @@ if (extension_loaded('dom') || class_exists('DOMDocument', false)) {
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Binding;
 
 $manifest = json_decode(file_get_contents(__DIR__ . '/../composer.json'), true, flags: JSON_THROW_ON_ERROR);
 if (isset($manifest['require']['ext-dom'])) {
     throw new RuntimeException('DOM must not be a runtime Composer requirement');
 }
 
-$grammar = C::text('id')->text(':')->then(C::integer(0, 255)->named('number'))->mapText('strtoupper');
-$result = $grammar->parse('id : 42', spacing: C::text(' ')->many());
+$grammar = Binding::syntax()->text('id')->text(':')
+    ->then(Binding::syntax()->integer(0, 255)->named('number'))->mapText('strtoupper');
+$result = $grammar->parse('id : 42', spacing: Binding::syntax()->text(' ')->many());
 if (!$result->ok || $result->output() !== 'ID : 42' || $result->rawText() !== 'id : 42') {
     throw new RuntimeException('Parsing and mapped values must work without DOM');
 }

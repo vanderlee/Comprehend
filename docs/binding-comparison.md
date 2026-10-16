@@ -1,5 +1,10 @@
 # Application-value comparison with Binding
 
+Comprehend's extraction grammar now explicitly installs its own
+[Binding expansion](binding.md). The comparison label “Binding” below identifies
+the separately pinned comparison dependency, not that expansion. Recorded reports
+predate this packaging change and remain historical measurements.
+
 This harness compares Comprehend's current checkout with Binding 0.8.3, using
 complete input recognition and the same Job domain object. It checks acceptance
 and field values against an independent oracle before accepting timings. It does

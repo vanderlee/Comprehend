@@ -17,20 +17,6 @@ abstract class ValueMappings
 {
     /**
      * @template U
-     * @param callable(T): U $mapper
-     * @return Comprehend<U>
-     */
-    abstract public function map(callable $mapper): Comprehend;
-
-    /**
-     * @template U
-     * @param callable(string): U $mapper
-     * @return Comprehend<U>
-     */
-    abstract public function mapText(callable $mapper): Comprehend;
-
-    /**
-     * @template U
      * @param callable(ParseResult): U $mapper
      * @return Comprehend<U>
      */

@@ -3,16 +3,16 @@ AI AGENTS MUST NOT USE THIS FILE!
 
 ## To do
 - Implement some known languages as examples?
-- Implement usability features
+- Implement usability features (From Binding)
   - labels
   - value pipelines and folds
   - structured validation
 - Comparative analysis
-  - fix malformed-list diagnostics
-  - perform the coverage/type/documentation audit
-  - Move all the value binding stuff to an expansion
+  - ! Do we need all the slow features enabled for value binding/extraction to work or can we make them optional?
+  - ! Why are separatedby, thenIgnore, ignoreThen and between part of the Binding extension?
+  - ! Add a record() method to the Binding extension
   - Performance comparisons
-    - Do we need all the slow features enabled for just extraction to work?
+- ! Organize the classes in the extensions subdirectories in (sub)namespaces.
 - Move core to extension?
   - Numbers?
   - Library to extensions?

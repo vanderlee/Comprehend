@@ -1,5 +1,6 @@
 includes:
     - phpstan-extension.neon
+    - extensions/Binding/phpstan.neon
 
 parameters:
     level: 10

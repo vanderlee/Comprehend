@@ -1,5 +1,9 @@
 # Delimiters and value selection
 
+These operations belong to the optional [Binding expansion](binding.md).
+Start with `Binding::syntax()` or attach it to an existing expression with
+`Binding::syntax()->of($expression)`.
+
 These fluent methods recognize every operand and select one operand's lazy value:
 
 | Method | Recognition order | Default value |
@@ -12,21 +16,22 @@ Operands accept Comprehend expressions, Parser objects, or literal strings. Synt
 vocabularies expose the same fluent methods. Existing `then()` retains its ordinary
 sequence behavior; it does not select a child value.
 
-These names are now reserved built-ins. Custom Syntax vocabularies that previously
-defined `between` must rename that fluent (for example to `surround`).
+These names are expansion registrations and no longer reserved core built-ins.
+Custom vocabularies follow the normal local replacement rules.
 
 ```php
-use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Binding;
 
-$number = C::integer()->mapText(static fn(string $text): int => (int) $text);
+
+$number = Binding::syntax()->integer()->mapText(static fn(string $text): int => (int) $text);
 $numbers = $number->separatedBy(',')->between('[', ']');
 $result = $numbers->parse('[10,20]');
 $result->value();   // [10, 20], lazy and cached
 $result->rawText(); // '[10,20]'
 
 $number->thenIgnore(';')->parse('42;')->value(); // 42
-C::text('return:')->ignoreThen($number)->parse('return:42')->value(); // 42
-C::text('hello')->between('(', ')')->parse('(hello)')->value(); // 'hello'
+Binding::syntax()->text('return:')->ignoreThen($number)->parse('return:42')->value(); // 42
+Binding::syntax()->text('hello')->between('(', ')')->parse('(hello)')->value(); // 'hello'
 ```
 
 ## Syntax, spacing and lifecycle
@@ -61,7 +66,7 @@ and effect behavior. Failed or discarded sequences never commit their effects.
 positions, excluding automatic trivia. For example:
 
 ```php
-use Vanderlee\Comprehend\Parser\Structure\ValueSequence;
+use Vanderlee\Comprehend\Extensions\Binding\ValueSequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 $wrapped = new ValueSequence(1, new Text('('), new Text('hello'), new Text(')'));

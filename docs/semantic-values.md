@@ -2,6 +2,9 @@
 
 ## Composing application values
 
+These helpers belong to the optional [Binding expansion](binding.md).
+Use `Binding::syntax()` or `C::syntax()->extend(new Binding())` to author them.
+
 Follow [Parse application values](application-values.md) for a complete domain-object
 example with optional settings, alternatives and nested lists.
 
@@ -11,24 +14,25 @@ stage is lazy and caches its value or thrown error for that recognition. Calling
 `mapText()` or `mapValue()` replaces the projection and clears earlier transforms.
 Low-level Parser objects also expose `map()`.
 
-`Comprehend::collect(...$operands)` recognizes a sequence and returns an ordered
+`$syntax->collect(...$operands)` recognizes a sequence and returns an ordered
 list of its direct operand values. Automatic trivia is excluded; nested collects
-remain nested. At least one operand is required. `Comprehend::valueChoice(...$alternatives)`
+remain nested. At least one operand is required. `$syntax->valueChoice(...$alternatives)`
 recognizes an ordinary choice but forwards the selected alternative's value,
 including null. First/longest/shortest policies and diagnostics remain unchanged;
 discarded alternatives' mappings are not evaluated to select a match.
 
 ```php
-use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Binding;
 
-$amount = C::integer()->mapText('intval');
-$currency = C::valueChoice('USD', 'EUR');
-$money = C::collect($currency, $amount)
+
+$amount = Binding::syntax()->integer()->mapText('intval');
+$currency = Binding::syntax()->valueChoice('USD', 'EUR');
+$money = Binding::syntax()->collect($currency, $amount)
     ->map(static fn(array $parts): object => (object) [
         'currency' => $parts[0],
         'amount' => $parts[1],
     ])
-    ->spacing(C::text(' ')->many());
+    ->spacing(Binding::syntax()->text(' ')->many());
 
 $result = $money->parse('USD 12');
 $result->value()->amount; // 12 (int)
@@ -40,7 +44,7 @@ vocabularies expose them too. Fluent `$a->collect($b)` and `$a->valueChoice($b)`
 include `$a` as the first operand and preserve nesting. Ordinary `sequence()`,
 `then()` and `choice()` retain their raw-text defaults.
 Low-level constructors are `new Collect(Parser ...$operands)` and
-`new ValueChoice(Parser ...$alternatives)` in `Parser\Structure`.
+`new ValueChoice(Parser ...$alternatives)` in `Extensions\Binding`.
 
 These operations preserve the complete CST, source spans, named collections,
 semantic validators and explicit commit effects. Value inspection never commits.
@@ -48,8 +52,8 @@ Mapping a collected sequence evaluates operand values in recognition order.
 An outer `mapText()` or `mapValue()` can replace collection/choice projection
 without evaluating its operand mappings. Run `php docs/examples/value-composition.php`.
 
-The names `map`, `collect` and `valueChoice` are reserved built-ins; custom Syntax
-registrations using those names must be renamed.
+These names are local expansion registrations, not reserved core built-ins.
+Installing Binding follows the ordinary Syntax replacement and isolation rules.
 
 ## Repeated and optional values
 
@@ -66,7 +70,9 @@ and object values: callables are never invoked, and objects are not cloned or
 constructed afresh per parse. Use a pure `map()` if a fresh application object is needed.
 
 ```php
-$digit = C::range('0', '9')->mapText('intval');
+use Vanderlee\Comprehend\Extensions\Binding;
+
+$digit = Binding::syntax()->range('0', '9')->mapText('intval');
 $digit->manyValues()->parse('123')->value(); // [1, 2, 3]
 $digit->manyValues()->parse('')->value();    // []
 $digit->someValues()->parse('')->success;   // false
@@ -80,7 +86,7 @@ Static and Syntax forms accept facades, Parser objects or literal strings:
 `C::optionalValue($item, default: 'missing')`. These four names are reserved
 built-ins; custom Syntax registrations with those names must be renamed.
 Existing `many()`, `some()`, `repeat()`, `maybe()` and `optional()` keep their
-raw-text defaults. Low-level constructors in `Parser\Structure` are
+raw-text defaults. Low-level constructors in `Extensions\Binding` are
 `new ValueRepeat(Parser $item, int $min = 0, ?int $max = null)` and
 `new OptionalValue(Parser $item, mixed $default = null)`.
 
@@ -102,23 +108,26 @@ CST nodes, trivia and byte spans remain intact. Run
 
 The facade, frozen grammar and parse result carry a PHPDoc value type:
 `Comprehend<T>`, `FrozenGrammar<T>` and `ParseResult<T>`. Mapping signatures are
-provided through a PHPDoc mixin for tools that support generic mixins. PHPStan
-is not a runtime dependency.
+provided through PHPDoc for core projections and Binding's separate PHPStan
+reflection support for its vocabulary. PHPStan is not a runtime dependency.
 
 For PHPStan 2.1, include the bundled extension in your project's configuration:
 
 ```yaml
 includes:
     - vendor/vanderlee/comprehend/phpstan-extension.neon
+    - vendor/vanderlee/comprehend/extensions/Binding/phpstan.neon
 ```
 
-The repository's configuration already includes it. The extension models magic
+The repository's configuration includes both. Binding support models magic
 factory and fluent calls, including list and optional-value projections. IDE
-support depends on the IDE's PHPDoc/mixin support; the PHPStan extension is not
-itself an IDE plugin.
+support depends on its PHPDoc and PHPStan integration; enabling PHPStan support
+does not itself install an IDE plugin or activate Binding at runtime.
 
 ```php
-$number = C::integer()->mapText('intval'); // Comprehend<int>
+use Vanderlee\Comprehend\Extensions\Binding;
+
+$number = Binding::syntax()->integer()->mapText('intval'); // Comprehend<int>
 $doubled = $number->map(static fn(int $n): int => $n * 2);
 $list = $doubled->manyValues();           // Comprehend<list<int>>
 $optional = $number->optionalValue(default: false); // Comprehend<int|false>

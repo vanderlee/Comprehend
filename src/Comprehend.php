@@ -43,8 +43,6 @@ use BadMethodCallException;
  * @method static self<string> hexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
  * @method static self<string> octet(bool $allowLeadingZeros = false)
  * @method static self<string> sequence(self|Parser|string ...$parsers)
- * @method static self collect(self|Parser|string ...$parsers)
- * @method static self valueChoice(self|Parser|string ...$parsers)
  * @method static self<string> choice(self|Parser|string ...$parsers)
  * @method static self<string> first(self|Parser|string ...$parsers)
  * @method static self<string> longest(self|Parser|string ...$parsers)
@@ -55,11 +53,6 @@ use BadMethodCallException;
  * @method static self ref(AbstractRuleset $rules, string $name, mixed ...$arguments)
  * @method static self or(self|Parser|string ...$parsers)
  * @method static self repeat(mixed ...$arguments)
- * @method static self repeatValues(mixed ...$arguments)
- * @method static self manyValues(mixed ...$arguments)
- * @method static self someValues(mixed ...$arguments)
- * @method static self optionalValue(mixed ...$arguments)
- * @method static self separatedBy(mixed ...$arguments)
  * @method static self recoverUntil(mixed ...$arguments)
  * @method static self recoverDelimited(mixed ...$arguments)
  * @method static self recoverItem(mixed ...$arguments)
@@ -72,9 +65,6 @@ use BadMethodCallException;
  * @method static self maybe(mixed ...$arguments)
  * @method static self optional(mixed ...$arguments)
  * @method self then(self|Parser|string ...$next)
- * @method self<T> thenIgnore(self|Parser|string $next)
- * @method self ignoreThen(self|Parser|string $next)
- * @method self<T> between(self|Parser|string $open, self|Parser|string $close)
  * @method self prepend(self|Parser|string ...$before)
  * @method self<T> named(string|int|callable $name, ?string $group = null, bool $leaf = false)
  * @method self<T> tag(string ...$tags)
@@ -195,16 +185,16 @@ final class Comprehend
         return new self($parser, $this->syntax);
     }
 
-    public static function of(self|Parser|Definition $parser): self
+    public static function of(self|Parser|Definition $parser, ?Syntax $syntax = null): self
     {
         if ($parser instanceof self) {
-            return $parser;
+            return $syntax === null || $syntax === $parser->syntax ? $parser : new self($parser->parser, $syntax);
         }
         if ($parser instanceof Definition) {
             $parser = $parser->implementation();
         }
 
-        return new self((new GraphSnapshot(false))->copy($parser));
+        return new self((new GraphSnapshot(false))->copy($parser), $syntax);
     }
 
     /** Export a detached object graph for Ruleset factories and object constructors. */

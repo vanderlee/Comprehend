@@ -1,5 +1,8 @@
 # Parse application values
 
+This tutorial uses the opt-in [Binding expansion](binding.md). Start expressions
+with `Binding::syntax()` or install `new Binding()` on an existing Syntax vocabulary.
+
 Build a parser that returns a domain object directly. This tutorial uses a small
 job format with an optional retry setting and nested lists of batch IDs:
 
@@ -25,8 +28,6 @@ The steps below build the same grammar with the `Comprehend` facade.
 ## Start with the domain object
 
 ```php
-use Vanderlee\Comprehend\Comprehend as C;
-
 final class Job
 {
     public readonly string $name;
@@ -50,8 +51,10 @@ retries. Application values do not require naming AST nodes or traversing syntax
 ## Recognize text and convert numbers
 
 ```php
-$name = C::regex('/[A-Za-z][A-Za-z0-9_]*/A');
-$number = C::integer(0, 999)->mapText('intval');
+use Vanderlee\Comprehend\Extensions\Binding;
+
+$name = Binding::syntax()->regex('/[A-Za-z][A-Za-z0-9_]*/A');
+$number = Binding::syntax()->integer(0, 999)->mapText('intval');
 ```
 
 An unmapped parser returns its matched text. `mapText()` converts the number's
@@ -62,11 +65,13 @@ digits and underscores and must begin with a letter.
 ## Preserve values from alternatives
 
 ```php
-$retryValue = C::valueChoice(
-    C::integer(0, 9)->mapText('intval'),
-    C::text('off')->map(static fn(string $text): bool => false),
+use Vanderlee\Comprehend\Extensions\Binding;
+
+$retryValue = Binding::syntax()->valueChoice(
+    Binding::syntax()->integer(0, 9)->mapText('intval'),
+    Binding::syntax()->text('off')->map(static fn(string $text): bool => false),
 );
-$retries = C::text('retry=')->ignoreThen($retryValue)->optionalValue(default: 3);
+$retries = Binding::syntax()->text('retry=')->ignoreThen($retryValue)->optionalValue(default: 3);
 ```
 
 `valueChoice()` forwards the successful alternative's value. Ordinary `choice()`
@@ -99,9 +104,11 @@ item values too; ordinary `many()` and `some()` retain raw-text defaults.
 ## Collect fields and construct the object
 
 ```php
-$job = C::collect($name, $retries, $batches)
+use Vanderlee\Comprehend\Extensions\Binding;
+
+$job = Binding::syntax()->collect($name, $retries, $batches)
     ->map(static fn(array $parts): Job => new Job($parts[0], $parts[1], $parts[2]))
-    ->spacing(C::set(" \t\r\n")->many());
+    ->spacing(Binding::syntax()->set(" \t\r\n")->many());
 ```
 
 `collect()` supplies the direct operand values in order: name, retry setting,

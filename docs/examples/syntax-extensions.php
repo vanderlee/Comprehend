@@ -5,14 +5,15 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Binding;
 use Vanderlee\Comprehend\Extensions\AsciiIdentifiers;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 
-$base = C::syntax();
+$base = Binding::syntax();
 $syntax = $base->extend(new AsciiIdentifiers())->extend(new class implements SyntaxExtension {
     public function rules(): iterable
     {
-        yield 'semicolon' => static fn(): C => C::text(';');
+        yield 'semicolon' => static fn(): C => Binding::syntax()->text(';');
     }
 
     public function fluents(): iterable
@@ -21,7 +22,7 @@ $syntax = $base->extend(new AsciiIdentifiers())->extend(new class implements Syn
     }
 });
 $declaration = $syntax->asciiKeyword('let')->ignoreThen($syntax->asciiIdentifier()->named('name'))
-    ->thenIgnore($syntax->semicolon())->spacing(C::text(' ')->many());
+    ->thenIgnore($syntax->semicolon())->spacing(Binding::syntax()->text(' ')->many());
 $result = $declaration->parse('let name;');
 if (!$result->success || $result->value() !== 'name' || $result->rawText() !== 'let name;') {
     throw new RuntimeException('Extension declaration values or source round trip failed');
