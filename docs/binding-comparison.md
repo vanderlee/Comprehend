@@ -21,6 +21,7 @@ the installation in ignored `build/binding/vendor`.
 composer install --working-dir=tools/binding --no-interaction --prefer-dist --no-scripts
 php tools/compare-binding.php --verify-only --output=build/binding-correctness.json
 php tools/compare-binding.php --samples=3 --iterations=10 --warmups=2 --size=128 --output=build/binding-comparison.json
+php tools/compare-binding.php --scanners --samples=8 --iterations=30 --warmups=3 --size=128 --output=build/binding-scanners.json
 php tools/binding/type-report.php --output=build/binding-types.json
 ```
 
@@ -62,10 +63,12 @@ not treated as an ergonomics score.
 
 ## Measurement boundaries
 
-Each library/case/sample gets a fresh PHP worker. Library order reverses on every
-other sample. Both workers load the repository autoloader and shared domain class;
+Each library/case/sample gets a fresh PHP worker. Starting positions rotate
+between samples, with order reversed on alternate complete cycles. Workers load
+the repository autoloader and shared domain class;
 only Binding workers additionally load the optional dependency. Grammar creation
 and Comprehend freezing are recorded separately as preparation time.
+Current workers explicitly disable PCOV coverage instrumentation for both libraries.
 
 After correctness checks and warmup, each timed call creates a fresh UTF-8
 source/stream, recognizes complete input and obtains the selected domain value.
@@ -111,6 +114,61 @@ inputs, diagnostics, measurements, dependency reference, source hashes and the
 reproduction command. These data demonstrate an extraction-cost gap on these
 workloads; they do not establish a universal speed ratio or attribute the gap
 solely to tree construction.
+
+## Explicit scanner comparison, 2026-10-16
+
+The `--scanners` run compares four variants against the installed Binding 0.8.3:
+
+- `comprehend`: the existing regex tokens and `set(...)->many()` spacing.
+- `comprehend-spacing`: only spacing changes to `readWhileSet()`.
+- `comprehend-scanners`: spacing and name/digit recognition use `readWhileSet()`
+  and `readWhileRange()`. Names and numbers retain their lexical constraints;
+  composed token scanners use `lexeme()` to reject embedded whitespace.
+- `binding`: the unchanged reference grammar using the actual pinned dependency.
+
+All Comprehend variants construct CSTs on this branch; ASTs are not requested.
+There is no `trees: false` mode in this run. The workload has no natural use for
+`readUntil()`, `readRest()` or their skip variants, so their speed is not measured.
+
+PHP 8.2.10 on Windows, native mbstring, PCOV disabled in all timed workers.
+Each table entry is the median of eight worker medians, with 30 timed parses
+and three warmups per worker. The 192 workers each checked all 21 corpus cases
+before timing. Each variant occupied each execution position twice per case.
+
+| Case | Existing Comprehend (µs) | Scanner spacing (µs) | Scanner tokens and spacing (µs) | Binding (µs) |
+| --- | ---: | ---: | ---: | ---: |
+| Record | 1177.8 | 852.9 | 1153.4 | 100.5 |
+| Default | 538.7 | 438.0 | 559.1 | 57.9 |
+| Nested list | 12231.3 | 8503.7 | 18365.0 | 1107.9 |
+| Malformed field | 193.8 | 155.5 | 205.1 | 20.7 |
+| Multiline error | 434.6 | 320.6 | 452.7 | 44.5 |
+| Trailing input | 268.5 | 206.4 | 241.0 | 28.5 |
+
+Changing only spacing reduced parse time by 18.7–30.5% across these cases.
+Binding remained 7.6–8.5 times faster on successful cases and 7.2–7.5 times faster
+on rejected cases. These are local observations, not universal ratios.
+
+Replacing the regex tokens with composed scanners did not improve on scanner
+spacing alone. In the nested case, time increased from 8503.7 to 18365.0 µs.
+The regex already handles a complete number in one terminal invocation; the
+scanner version needs a choice and multiple bounded terminals to retain the
+leading-zero and digit-count restrictions. Its retained CST contains 1336 nodes
+instead of 820 for scanner spacing alone. This measures those grammar constructions,
+not an inherent slowdown of scanner primitives relative to every possible regex.
+
+For the record, retained used bytes were 56848 (existing), 54808 (scanner spacing),
+63200 (scanner tokens and spacing), and 1064 (Binding). For the nested list these
+were 398144, 397328, 729784, and 3464 respectively. Whitespace scanners reduce
+recognition overhead substantially while most retained syntax remains present.
+
+The [raw scanner report](benchmarks/binding-scanners-2026-10-16.json) records
+all timings, correctness observations, source hashes and the command. Current
+regression tests also cover six additional lexical cases, including whitespace
+inside names/numbers, invalid name prefixes and leading zeros. Diagnostic output
+and CST structure may differ between variants; only acceptance, domain output and
+source round trips are required to agree. Coverage settings, branch contents,
+and grammar changes mean these timings should not be treated as a controlled
+before/after comparison with historical reports above.
 
 ## Diagnostics
 

@@ -23,7 +23,9 @@ use function ComprehendComparison\verify;
 
 mb_internal_encoding('UTF-8');
 
-$options = getopt('', ['worker:', 'verify-only', 'case:', 'samples:', 'iterations:', 'warmups:', 'size:', 'output:']);
+$options = getopt('', [
+    'worker:', 'verify-only', 'case:', 'samples:', 'iterations:', 'warmups:', 'size:', 'output:', 'scanners',
+]);
 $samples = filter_var($options['samples'] ?? 3, FILTER_VALIDATE_INT, [
     'options' => ['min_range' => 1, 'max_range' => 50],
 ]);
@@ -40,7 +42,9 @@ if ($samples === false || $iterations === false || $warmups === false || $size =
     throw new InvalidArgumentException('Invalid samples, iterations, warmups or size');
 }
 $corpus = cases($size);
-$libraries = ['comprehend', 'binding'];
+$libraries = isset($options['scanners'])
+    ? ['comprehend', 'comprehend-spacing', 'comprehend-scanners', 'binding']
+    : ['comprehend', 'binding'];
 $benchmarkCases = ['record', 'default', 'nested', 'malformed-field', 'multiline-error', 'trailing-input'];
 if (isset($options['case'])) {
     if (!is_string($options['case']) || !isset($corpus[$options['case']])) {
@@ -67,7 +71,10 @@ if (isset($options['worker'])) {
         throw new InvalidArgumentException('Unknown worker library');
     }
     $prepareStart = hrtime(true);
-    $parser = $library === 'comprehend' ? comprehendJob()->freeze() : bindingJob();
+    $parser = $library === 'binding' ? bindingJob() : comprehendJob(
+        scanSpacing: $library !== 'comprehend',
+        scanTokens: $library === 'comprehend-scanners',
+    )->freeze();
     $prepareMs = (hrtime(true) - $prepareStart) / 1e6;
     $observations = [];
     foreach ($corpus as $name => $case) {
@@ -117,6 +124,7 @@ if (isset($options['worker'])) {
     sort($orderedTimes);
     echo json_encode([
         'library' => $library, 'case' => $name, 'input_bytes' => strlen($case['input']),
+        'pcov_enabled' => (bool) ini_get('pcov.enabled'),
         'prepare_ms' => $prepareMs, 'iterations' => $iterations, 'warmups' => $warmups,
         'median_us' => ($orderedTimes[intdiv($iterations - 1, 2)] + $orderedTimes[intdiv($iterations, 2)]) / 2,
         'min_us' => min($times), 'max_us' => max($times),
@@ -128,8 +136,11 @@ if (isset($options['worker'])) {
     exit;
 }
 
-$run = static function (array $arguments): array {
-    $command = [PHP_BINARY, '-d', 'memory_limit=512M', __FILE__, ...$arguments];
+$run = static function (array $arguments) use ($options): array {
+    if (isset($options['scanners'])) {
+        $arguments[] = '--scanners';
+    }
+    $command = [PHP_BINARY, '-d', 'memory_limit=512M', '-d', 'pcov.enabled=0', __FILE__, ...$arguments];
     $process = proc_open($command, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
     if (!is_resource($process)) {
         throw new RuntimeException('Could not start comparison worker');
@@ -151,8 +162,13 @@ $measurements = [];
 if (!isset($options['verify-only'])) {
     for ($sample = 0; $sample < $samples; ++$sample) {
         foreach ($benchmarkCases as $case) {
-            // Alternate execution order across samples to reduce consistent first/second bias.
-            foreach ($sample % 2 === 0 ? $libraries : array_reverse($libraries) as $library) {
+            // Rotate starting positions; reverse alternate cycles to balance ordering effects.
+            $start = $sample % count($libraries);
+            $order = [...array_slice($libraries, $start), ...array_slice($libraries, 0, $start)];
+            if (intdiv($sample, count($libraries)) % 2 === 1) {
+                $order = array_reverse($order);
+            }
+            foreach ($order as $library) {
                 $measurement = $run(['--worker=' . $library, '--case=' . $case, '--size=' . $size,
                     '--iterations=' . $iterations, '--warmups=' . $warmups]);
                 $measurements[] = ['sample' => $sample, ...$measurement];
@@ -185,9 +201,13 @@ $report = [
     'command' => 'php tools/compare-binding.php --samples=' . $samples . ' --iterations=' . $iterations
         . ' --warmups=' . $warmups . ' --size=' . $size
         . (isset($options['case']) ? ' --case=' . $options['case'] : '')
+        . (isset($options['scanners']) ? ' --scanners' : '')
         . (isset($options['verify-only']) ? ' --verify-only' : ''),
     'samples' => $samples, 'iterations' => $iterations, 'warmups' => $warmups, 'size' => $size,
     'comprehend_includes_cst' => true,
+    'variants' => $libraries,
+    'worker_php_options' => ['memory_limit=512M', 'pcov.enabled=0'],
+    'sample_order' => 'Rotate starting positions each sample; reverse alternate complete cycles',
     'timing' => 'Fresh UTF-8 source/stream, full recognition and domain value; '
         . 'excludes preparation, assertions, diagnostics formatting, result release and cycle collection',
     'memory' => 'Same warmed worker; retained result and domain object; peaks include baseline process allocations. '

@@ -17,7 +17,7 @@ Comprehend is a PHP 8.2+ parser-combinator library in the
 
 Use `README.md`, `docs/contribute.md`, relevant documentation in `docs/`,
 and the existing implementation and tests to establish intended behavior.
-Source lives in `src/`, PHPUnit tests in `tests/`, runnable examples in
+Source lives in `src/`, Pest tests in `tests/`, runnable examples in
 `docs/examples/`, and verification scripts in `tools/`.
 
 ## Implementation requirements
@@ -46,7 +46,7 @@ changes, run the applicable checks and report any failures or unavailable tools:
 ```sh
 composer validate --strict
 composer check-platform-reqs
-php vendor/phpunit/phpunit/phpunit --do-not-cache-result
+php -d memory_limit=512M vendor/pestphp/pest/bin/pest --do-not-cache-result
 php vendor/phpstan/phpstan/phpstan analyse --configuration=phpstan.neon --memory-limit=512M
 php tools/check-canonical.php
 ```

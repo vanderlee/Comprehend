@@ -28,8 +28,19 @@ test('comparison grammars satisfy the independent acceptance and output oracle',
         }
         require_once $autoload;
     }
-    $parser = $library === 'comprehend' ? comprehendJob()->freeze() : bindingJob();
-    foreach (cases(4) as $case) {
+    $parser = $library === 'binding' ? bindingJob() : comprehendJob(
+        scanSpacing: $library !== 'comprehend',
+        scanTokens: $library === 'comprehend-scanners',
+    )->freeze();
+    $corpus = [...cases(4),
+        ['input' => 'report_7 [[10,99,999]]', 'expected' => ['report_7', 3, [[10, 99, 999]]]],
+        ['input' => 're port []', 'expected' => null],
+        ['input' => 'report [[1 2]]', 'expected' => null],
+        ['input' => 'report [[000]]', 'expected' => null],
+        ['input' => '7report []', 'expected' => null],
+        ['input' => 'réport []', 'expected' => null],
+    ];
+    foreach ($corpus as $case) {
         $result = recognize($parser, $case['input']);
         $output = accepted($result) ? value($result) : null;
         verify($result, $output, $case);
@@ -42,7 +53,7 @@ test('comparison grammars satisfy the independent acceptance and output oracle',
             $this->assertNotEmpty($failure['message']);
         }
     }
-})->with(['comprehend', 'binding']);
+})->with(['comprehend', 'comprehend-spacing', 'comprehend-scanners', 'binding']);
 
 test('comparison oracle detects wrong acceptance and wrong domain values', function (bool $wrongAcceptance): void {
     $parser = comprehendJob()->freeze();

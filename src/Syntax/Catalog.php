@@ -26,6 +26,11 @@ use Vanderlee\Comprehend\Parser\Terminal\End;
 use Vanderlee\Comprehend\Parser\Terminal\Integer;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
+use Vanderlee\Comprehend\Parser\Terminal\ReadRest;
+use Vanderlee\Comprehend\Parser\Terminal\ReadUntil;
+use Vanderlee\Comprehend\Parser\Terminal\ReadWhile;
+use Vanderlee\Comprehend\Parser\Terminal\ReadWhileRange;
+use Vanderlee\Comprehend\Parser\Terminal\ReadWhileSet;
 use Vanderlee\Comprehend\Parser\Terminal\Regex;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Start;
@@ -46,6 +51,14 @@ final class Catalog
         'char',
         'set',
         'range',
+        'readwhile',
+        'readuntil',
+        'readwhileset',
+        'readwhilerange',
+        'readrest',
+        'skipwhile',
+        'skipuntil',
+        'skiprest',
         'any',
         'nothing',
         'start',
@@ -117,6 +130,20 @@ final class Catalog
         return match (self::canonicalName($name)) {
             'text' => static fn(string $text): Parser => new Text($text),
             'regex' => static fn(string $pattern): Parser => new Regex($pattern),
+            'readwhile' => static fn(callable $predicate, int $min = 0, ?int $max = null): Parser
+                => new ReadWhile($predicate, $min, $max),
+            'readuntil' => static fn(string|callable $delimiter, int $min = 0, ?int $max = null): Parser
+                => new ReadUntil($delimiter, $min, $max),
+            'readwhileset' => static fn(string $characters, int $min = 0, ?int $max = null): Parser
+                => new ReadWhileSet($characters, $min, $max),
+            'readwhilerange' => static fn(?string $first, ?string $last, int $min = 0, ?int $max = null): Parser
+                => new ReadWhileRange($first, $last, $min, $max),
+            'readrest' => static fn(): Parser => new ReadRest(),
+            'skipwhile' => static fn(callable $predicate, int $min = 0, ?int $max = null): Parser
+                => (new ReadWhile($predicate, $min, $max))->mapValue(static fn(): mixed => null),
+            'skipuntil' => static fn(string|callable $delimiter, int $min = 0, ?int $max = null): Parser
+                => (new ReadUntil($delimiter, $min, $max))->mapValue(static fn(): mixed => null),
+            'skiprest' => static fn(): Parser => (new ReadRest())->mapValue(static fn(): mixed => null),
             'char' => static fn(string $character, bool $include = true): Parser => new Char($character, $include),
             'set' => static fn(string $characters, bool $include = true): Parser => new Set($characters, $include),
             'range' => static fn(?string $first, ?string $last, bool $in = true): Parser => new Range(

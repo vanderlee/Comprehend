@@ -8,11 +8,11 @@ AI AGENTS MUST NOT USE THIS FILE!
   - value pipelines and folds
   - structured validation
 - Comparative analysis
-  - ! Do we need all the slow features enabled for value binding/extraction to work or can we make them optional?
-  - ! Why are separatedby, thenIgnore, ignoreThen and between part of the Binding extension?
   - ! Add a record() method to the Binding extension
-  - Performance comparisons
 - ! Organize the classes in the extensions subdirectories in (sub)namespaces.
+- Optimizer
+  - ! Implement an optimizer that recognizes specific parser patterns and replaces them with faster alternatives that product the same result. Ensure things
+  - ! Find common patterns for parsers that could be optimized by the optimizer.
 - Move core to extension?
   - Numbers?
   - Library to extensions?

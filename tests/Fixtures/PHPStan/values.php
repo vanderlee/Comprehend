@@ -15,6 +15,18 @@ use function PHPStan\Testing\assertType;
 
 function inferredValues(): void
 {
+    assertType('Vanderlee\Comprehend\Comprehend<string>', C::readWhile(static fn(string $c): bool => $c !== ';'));
+    assertType('Vanderlee\Comprehend\Comprehend<string>', C::readUntil(';', min: 1));
+    assertType('Vanderlee\Comprehend\Comprehend<string>', C::syntax()->readUntil(
+        static fn(string $c): bool => $c === ';',
+    ));
+    assertType('Vanderlee\Comprehend\Comprehend<string>', C::readWhileSet('abc'));
+    assertType('Vanderlee\Comprehend\Comprehend<string>', C::syntax()->readWhileRange('0', '9'));
+    assertType('Vanderlee\Comprehend\Comprehend<string>', C::readRest());
+    assertType('Vanderlee\Comprehend\Comprehend<null>', C::skipWhile(static fn(string $c): bool => $c === ' '));
+    assertType('Vanderlee\Comprehend\Comprehend<null>', C::syntax()->skipUntil(';'));
+    assertType('Vanderlee\Comprehend\Comprehend<null>', C::skipRest());
+    assertType('string|null', C::readUntil(';')->matchPrefix('abc;')->value());
     $number = Binding::syntax()->integer()->mapText('intval');
     assertType('Vanderlee\Comprehend\Comprehend<int>', $number);
     assertType('Vanderlee\Comprehend\Comprehend<int>', $number->map(fn($n) => $n + 1));

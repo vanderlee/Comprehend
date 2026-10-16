@@ -38,6 +38,7 @@ nav:
   - Parsing:
       - Execution: execution.md
       - Consumption: consumption.md
+      - Reading and skipping runs: read-scanning.md
       - Sources: sources.md
       - Source matching: source-matching.md
       - File input and limits: file-input.md

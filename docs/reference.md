@@ -9,6 +9,7 @@
 | Per-call spacing | Facade entry points accept a fourth `spacing: Comprehend\|Parser\|null` argument; local grammar policies take precedence |
 | Limits/profile | ParseLimits(maxDepth, maxWork), ParseLimitException, optional bounded ParseMetrics |
 | Bounded regex | `Regex::literalWindow(string)` for quoted literals; general Regex keeps full-subject semantics |
+| Run scanners | `readWhile(predicate, min: 0, max: null)`, `readUntil(literalOrPredicate, min: 0, max: null)`, `readWhileSet(characters, min: 0, max: null)`, `readWhileRange(first, last, min: 0, max: null)`, `readRest()`; skipWhile/skipUntil/skipRest return null; [contracts and examples](read-scanning.md) |
 | Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Integer, Start, End, Nothing |
 | Structures | Sequence(Parser...), Choice(Parser...), All(Parser...), Except(Parser, Parser), Not(Parser), Repeat(Parser, int = 0, ?int = null) |
 | Repetition | `Comprehend::of(Parser)->repeat(min, max)`; object factories `Repeat::plus/star/optional/exact` |

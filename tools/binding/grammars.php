@@ -22,12 +22,25 @@ use function Parsica\Parsica\takeWhile;
 use function Parsica\Parsica\takeWhile1;
 
 /** @return C<Job> */
-function comprehendJob(): C
+function comprehendJob(bool $scanSpacing = false, bool $scanTokens = false): C
 {
-    $name = Binding::syntax()->regex('/[A-Za-z][A-Za-z0-9_]*/A');
-    $number = Binding::syntax()->regex('/(?:0|[1-9][0-9]{0,2})/A')->mapText('intval');
+    $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    $name = $scanTokens
+        ? Binding::syntax()->readWhileSet($letters, min: 1, max: 1)
+            ->readWhileSet($letters . '0123456789_')->lexeme()
+        : Binding::syntax()->regex('/[A-Za-z][A-Za-z0-9_]*/A');
+    $number = ($scanTokens
+        ? Binding::syntax()->first(
+            Binding::syntax()->text('0'),
+            Binding::syntax()->readWhileRange('1', '9', min: 1, max: 1)
+                ->readWhileRange('0', '9', max: 2)->lexeme(),
+        )
+        : Binding::syntax()->regex('/(?:0|[1-9][0-9]{0,2})/A'))->mapText('intval');
+    $digit = $scanTokens
+        ? Binding::syntax()->readWhileRange('0', '9', min: 1, max: 1)
+        : Binding::syntax()->range('0', '9');
     $retryValue = Binding::syntax()->valueChoice(
-        Binding::syntax()->range('0', '9')->mapText('intval'),
+        $digit->mapText('intval'),
         Binding::syntax()->text('off')->map(static fn(string $text): bool => false),
     );
     $retries = Binding::syntax()->text('retry=')->ignoreThen($retryValue)->optionalValue(default: 3);
@@ -36,7 +49,9 @@ function comprehendJob(): C
 
     return Binding::syntax()->collect($name, $retries, $batches)
         ->map(static fn(array $parts): Job => new Job($parts[0], $parts[1], $parts[2]))
-        ->spacing(Binding::syntax()->set(" \t\r\n")->many());
+        ->spacing($scanSpacing
+            ? Binding::syntax()->readWhileSet(" \t\r\n")
+            : Binding::syntax()->set(" \t\r\n")->many());
 }
 
 /** @return BindingParser<Job> */

@@ -75,6 +75,12 @@ final class ParseSession
         return $this->work;
     }
 
+    /** @internal Bulk scanners retain cooperative scalar recognition under a finite work budget. */
+    public function hasWorkLimit(): bool
+    {
+        return $this->limits->maxWork !== null;
+    }
+
     /** @internal A bounded, session-owned full subject; large subjects retain uncached access. */
     public function regexSubject(): string
     {
