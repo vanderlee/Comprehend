@@ -19,6 +19,12 @@ use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Except;
 use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\RecoverUntil;
+use Vanderlee\Comprehend\Parser\Structure\RecoverDelimited;
+use Vanderlee\Comprehend\Parser\Structure\RecoverItem;
+use Vanderlee\Comprehend\Parser\Structure\RecoverWith;
+use Vanderlee\Comprehend\Recovery\RecoveryContext;
+use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Parser\Structure\SeparatedList;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Structure\ValueSequence;
@@ -71,6 +77,10 @@ final class Catalog
         'or',
         'repeat',
         'separatedby',
+        'recoveruntil',
+        'recoverdelimited',
+        'recoveritem',
+        'recoverwith',
         'some',
         'many',
         'maybe',
@@ -123,6 +133,22 @@ final class Catalog
     public static function builtinStatic(string $name): ?Closure
     {
         return match (self::canonicalName($name)) {
+            'recoverdelimited' => self::recoverDelimited(...),
+            'recoveritem' => self::recoverItem(...),
+            'recoverwith' => self::recoverWith(...),
+            'recoveruntil' => static fn(
+                Comprehend|Parser|string $parser,
+                Comprehend|Parser|string $boundary,
+                bool $consumeBoundary = false,
+                bool $allowEof = false,
+                ?int $maxSkippedBytes = null,
+            ): Parser => new RecoverUntil(
+                self::parser($parser),
+                self::parser($boundary),
+                $consumeBoundary,
+                $allowEof,
+                $maxSkippedBytes,
+            ),
             'text' => static fn(string $text): Parser => new Text($text),
             'regex' => static fn(string $pattern): Parser => new Regex($pattern),
             'char' => static fn(string $character, bool $include = true): Parser => new Char($character, $include),
@@ -216,6 +242,22 @@ final class Catalog
     public static function builtinFluent(string $name): ?Closure
     {
         return match (self::canonicalName($name)) {
+            'recoverdelimited' => self::recoverDelimited(...),
+            'recoveritem' => self::recoverItem(...),
+            'recoverwith' => self::recoverWith(...),
+            'recoveruntil' => static fn(
+                Comprehend $item,
+                Comprehend|Parser|string $boundary,
+                bool $consumeBoundary = false,
+                bool $allowEof = false,
+                ?int $maxSkippedBytes = null,
+            ): Parser => new RecoverUntil(
+                $item->parser(),
+                self::parser($boundary),
+                $consumeBoundary,
+                $allowEof,
+                $maxSkippedBytes,
+            ),
             'thenignore' => static fn(Comprehend $item, Comprehend|Parser|string $next): Parser => new ValueSequence(
                 0,
                 $item->parser(),
@@ -317,6 +359,70 @@ final class Catalog
             'trivia' => static fn(Comprehend $item): Parser => $item->parser()->trivia(),
             default => null,
         };
+    }
+
+    private static function recoverDelimited(
+        Comprehend|Parser|string $parser,
+        Comprehend|Parser|string $open,
+        Comprehend|Parser|string $close,
+        Comprehend|Parser|null $ignore = null,
+        bool $allowEof = false,
+        ?int $maxSkippedBytes = null,
+    ): Parser {
+        return new RecoverDelimited(
+            self::parser($parser),
+            self::parser($open),
+            self::parser($close),
+            $ignore === null ? null : self::parser($ignore),
+            $allowEof,
+            $maxSkippedBytes,
+        );
+    }
+
+    private static function recoverItem(
+        Comprehend|Parser|string $item,
+        Comprehend|Parser|string $separator,
+        Comprehend|Parser|string $close,
+        int $min = 0,
+        ?int $max = null,
+        bool $allowTrailing = false,
+        Comprehend|Parser|null $ignore = null,
+        ?int $maxSkippedBytes = null,
+    ): Parser {
+        return new RecoverItem(
+            self::parser($item),
+            self::parser($separator),
+            self::parser($close),
+            $min,
+            $max,
+            $allowTrailing,
+            $ignore === null ? null : self::parser($ignore),
+            $maxSkippedBytes,
+        );
+    }
+
+    /**
+     * @param callable(RecoveryContext): ?Span $strategy
+     * @param array<array-key, mixed> $probes
+     */
+    private static function recoverWith(
+        Comprehend|Parser|string $parser,
+        callable $strategy,
+        array $probes = [],
+        ?int $maxSkippedBytes = null,
+    ): Parser {
+        $parsers = [];
+        foreach ($probes as $name => $probe) {
+            if (
+                !is_string($name) || $name === ''
+                || !($probe instanceof Comprehend || $probe instanceof Parser || is_string($probe))
+            ) {
+                throw new InvalidArgumentException('Recovery probes require names and parser expressions');
+            }
+            $parsers[$name] = self::parser($probe);
+        }
+
+        return new RecoverWith(self::parser($parser), $strategy, $parsers, $maxSkippedBytes);
     }
 
     private static function repeat(Comprehend|Parser|string $parser, int $min = 0, ?int $max = null): Comprehend

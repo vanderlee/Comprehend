@@ -5,13 +5,11 @@ AI AGENTS MUST NOT USE THIS FILE!
 - Implement some known languages as examples?
 - Implement usability features
   - labels
-  - expression builder
   - value pipelines and folds
   - structured validation
-  - recovery
-- Fault tolerance? Killer feature!
 - Apply some traits for common use cases
-- Comparative
+- Comparative analysis
+- Move core to extension?
 
 ## Ongoing concerns
 - Benchmark and improve performance

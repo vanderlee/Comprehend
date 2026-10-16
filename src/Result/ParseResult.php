@@ -59,6 +59,31 @@ final class ParseResult
         return $this->span->rawText();
     }
 
+    /** @return list<Recovery> Selected recovery actions, in source order. */
+    public function recoveries(): array
+    {
+        return $this->match instanceof Success ? $this->match->recoveries() : [];
+    }
+
+    public function hasRecovery(): bool
+    {
+        return $this->recoveries() !== [];
+    }
+
+    /** @return list<Diagnostic> Recovery errors, or the terminal diagnostic on failure. */
+    public function diagnostics(): array
+    {
+        $diagnostics = array_map(
+            static fn(Recovery $recovery): Diagnostic => $recovery->diagnostic,
+            $this->recoveries(),
+        );
+        if (!$this->success && $this->diagnostic !== null) {
+            $diagnostics[] = $this->diagnostic;
+        }
+
+        return $diagnostics;
+    }
+
     /** Failed results have no value; successful unmapped results yield original text. */
     public function value(): mixed
     {

@@ -12,6 +12,7 @@ use Vanderlee\Comprehend\Match\Output\CallbackTrait;
 use Vanderlee\Comprehend\Match\Output\ResultTrait;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Result\Recovery;
 use Vanderlee\Comprehend\Result\SemanticProjection;
 use Vanderlee\Comprehend\Result\ValidationResult;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
@@ -46,6 +47,7 @@ class Success extends AbstractMatch
             $state = $this->executionState();
             $state->successes = array_values($successes);
             $state->concreteMatches = $state->successes;
+            $this->inheritRecoveries($state->successes);
         }
     }
 
@@ -57,6 +59,38 @@ class Success extends AbstractMatch
     {
         $state = $this->executionState();
         $state->concreteMatches = $matches;
+        $this->inheritRecoveries($matches);
+    }
+
+    public function addRecovery(Recovery $recovery): void
+    {
+        $this->executionState()->recoveries[] = $recovery;
+    }
+
+    /** @return list<Recovery> */
+    public function recoveries(): array
+    {
+        return $this->state->recoveries ?? [];
+    }
+
+    /** @param list<Success> $matches */
+    private function inheritRecoveries(array $matches): void
+    {
+        $recoveries = [];
+        foreach ($this->recoveries() as $recovery) {
+            $recoveries[spl_object_id($recovery)] = $recovery;
+        }
+        foreach ($matches as $match) {
+            foreach ($match->recoveries() as $recovery) {
+                $recoveries[spl_object_id($recovery)] = $recovery;
+            }
+        }
+        if ($recoveries !== []) {
+            $ordered = array_values($recoveries);
+            // Concrete trivia may be attached after semantic operands; report errors in source order.
+            usort($ordered, static fn(Recovery $a, Recovery $b): int => $a->span->start <=> $b->span->start);
+            $this->executionState()->recoveries = $ordered;
+        }
     }
 
     /**
@@ -186,6 +220,12 @@ class Success extends AbstractMatch
     public function validateSemantic(): ValidationResult
     {
         $state = $this->executionState();
+        if ($state->recoveries !== []) {
+            return $state->validation ??= new ValidationResult(false, array_map(
+                static fn(Recovery $recovery): string => $recovery->diagnostic->message(),
+                $state->recoveries,
+            ));
+        }
         if ($state->validationError !== null) {
             throw $state->validationError;
         }

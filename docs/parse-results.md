@@ -8,6 +8,8 @@
 | `span`, `start`, `end` | Original-source byte span; failed results have `[start,start)` |
 | `consumedByteLength` | End minus start; zero on failure |
 | `farthestFailure`, `diagnostic` | Separately observed failure position/details, or null |
+| `hasRecovery()`, `recoveries()` | Whether explicit recovery occurred, and selected source-bound recovery records |
+| `diagnostics()` | Selected recovery diagnostics on acceptance, or the terminal diagnostic on failure |
 | `node` | Immutable selected CST, null on failure |
 | `rawText()` | Exact original span text, empty on failure |
 | `ast()` | Cached named source projection, null on failure |
@@ -21,6 +23,11 @@ false and produces no effects. Failed syntax likewise cannot commit. Successful
 commits are idempotent; thrown validation/value/effect errors are retained and
 not retried. The default collection key is separate from the named `results()`
 map and is accessed with `result()`.
+
+With explicit [error recovery](recovery.md), acceptance can include malformed
+regions. Such results retain a partial tree, fail validation before semantic
+validators execute, and cannot commit. A directly recovered parser's default
+value is a `Recovery` record rather than its operand's usual value.
 
 Consumers do not receive mutable internal Success/Failure records, Tokens or
 coordinate adapters. All source, CST and AST reads are independent of semantic

@@ -6,11 +6,14 @@ namespace Vanderlee\Comprehend\Match;
 
 use Throwable;
 use Vanderlee\Comprehend\Result\SemanticProjection;
+use Vanderlee\Comprehend\Result\Recovery;
 use Vanderlee\Comprehend\Result\ValidationResult;
 
 /** @internal Mutable per-recognition state, allocated only for retained operations or their ancestors. */
 final class ExecutionState
 {
+    /** @var list<Recovery> */
+    public array $recoveries = [];
     /** @var list<Success> */
     public array $successes = [];
     /** @var list<Success> */
@@ -36,7 +39,8 @@ final class ExecutionState
 
     public function isEmpty(): bool
     {
-        return $this->successes === []
+        return $this->recoveries === []
+            && $this->successes === []
             && $this->concreteMatches === []
             && $this->semanticValidators === []
             && $this->validation === null

@@ -17,3 +17,8 @@ guard rejection and relevant tied alternatives retain their details. Full-input
 failure adds EOF at the accepted endpoint unless an observed failure is farther.
 Successful results may retain useful observed failures; the presence of a
 diagnostic alone does not mean the selected syntax failed.
+
+Explicit [error recovery](recovery.md) retains each recovered region's original
+failure separately. Use `diagnostics()` for that selected list and `hasRecovery()`
+to distinguish recovered acceptance from ordinary acceptance. Synchronization
+probe failures do not contribute expectations.

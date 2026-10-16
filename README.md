@@ -130,6 +130,7 @@ supported PHP versions and the gated publication workflow.
 - [Tutorial](docs/tutorial.md), [builder](docs/builder.md), [reference](docs/reference.md)
 - [Sources](docs/sources.md) and [custom parser contract](docs/source-and-extension-contract.md)
 - [Consumption](docs/consumption.md), [diagnostics](docs/diagnostics.md), [trivia](docs/trivia.md)
+- [Error recovery](docs/recovery.md): explicit synchronization, preserved invalid regions and multiple diagnostics
 - [Separated lists](docs/separated-lists.md): bounds, boundary separators and lazy item values
 - [Delimiters and value selection](docs/value-selection.md): `between()`, `thenIgnore()` and `ignoreThen()`
 - [Optional Syntax extensions](docs/syntax-extensions.md): iterable factories and ASCII identifiers/keywords

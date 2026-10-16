@@ -42,6 +42,7 @@ nav:
       - File input and limits: file-input.md
       - Spacing and trivia: trivia.md
       - Diagnostics: diagnostics.md
+      - Error recovery: recovery.md
       - Separated lists: separated-lists.md
       - Delimiters and value selection: value-selection.md
   - Trees and semantics:

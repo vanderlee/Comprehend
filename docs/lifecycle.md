@@ -15,6 +15,9 @@
    argument. They never run merely because parsing or output reading succeeds.
 
 Commit returns false for failed syntax or rejected semantic validation.
+An accepted result containing explicit [error recovery](recovery.md) also refuses
+commit. Its validation reports recovery errors without running semantic validators;
+no effects execute on valid siblings or enclosing parsers.
 Successful commits are idempotent. Mapping, validation and effect exceptions are
 cached and rethrown; a partially executed effect sequence is never retried or
 reported as committed. External effects cannot be rolled back automatically.
