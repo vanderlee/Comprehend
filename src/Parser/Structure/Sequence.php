@@ -131,7 +131,17 @@ class Sequence extends IterableParser implements AnalyzableParser
         }
         $success = $this->success($source, $byteOffset, $progressByteLength, $childMatches);
         $success->setConcreteMatches($concreteMatches);
+        $this->prepareSequenceValue($success, $childMatches);
 
         return $success;
+    }
+
+    /**
+     * Specializations may select a lazy value without changing syntax or lifecycle children.
+     * @param list<Success> $children Operand matches, excluding automatic trivia.
+     */
+    protected function prepareSequenceValue(Success $success, array $children): void
+    {
+        // Ordinary sequences keep their own raw text as the default value.
     }
 }

@@ -117,18 +117,18 @@ test('factory results use the calling vocabulary while unscoped repetition retai
 
 test('custom fluents can wrap the current expression', function (): void {
     $syntax = C::syntax()->defineFluent(
-        'between',
+        'surround',
         static fn(C $item, string $left, string $right): C => C::sequence($left, $item, $right),
     );
     $base = $syntax->range('0', '9')->some()->named('number');
-    $wrapped = $base->between(right: ']', left: '[')->between('(', ')');
+    $wrapped = $base->surround(right: ']', left: '[')->surround('(', ')');
     $result = $wrapped->parse('([12])');
     $this->assertTrue($result->success);
     $this->assertSame('12', $result->ast()->firstNamed('number')->rawText());
     $this->assertTrue($base->parse('12')->success);
     $this->assertFalse($base->parse('[12]')->success);
     $this->expectException(BadMethodCallException::class);
-    $syntax->between('[', ']');
+    $syntax->surround('[', ']');
 });
 
 test('factories run for every expression and never during parsing', function (): void {

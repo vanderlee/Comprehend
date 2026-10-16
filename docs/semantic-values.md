@@ -6,6 +6,11 @@ Without a mapping it returns raw text. Transparent runtime wrappers preserve
 their accepted child's mapping unless explicitly mapped. Failed results return
 null; abandoned alternatives do not evaluate their mappings automatically.
 
+Value-selecting sequences provide a different default: `thenIgnore()` returns
+the first operand's value, `ignoreThen()` the second, and `between()` the body's.
+They retain the full outer raw text, syntax and lifecycle. See
+[delimiters and value selection](value-selection.md).
+
 Facade `mapText(callable(string): mixed)` is the text-only convenience: its callback
 receives the original matched string instead of ParseResult. It uses the same lazy
 value cache, supports typed return values, and never changes raw source text or

@@ -272,10 +272,10 @@ may have separate static and fluent definitions in the same vocabulary.
 Without a custom fluent, calling a registered static factory fluently appends it.
 
 ```php
-$syntax = $syntax->defineFluent('between',
+$syntax = $syntax->defineFluent('surround',
     static fn(Comprehend $item, string $left, string $right): Comprehend =>
         Comprehend::sequence($left, $item, $right));
-$grammar = $syntax->word()->between('(', ')');
+$grammar = $syntax->word()->surround('(', ')');
 ```
 
 Custom syntax works for static and fluent factories within that vocabulary. Facade

@@ -125,6 +125,7 @@ supported PHP versions and the gated publication workflow.
 - [Sources](docs/sources.md) and [custom parser contract](docs/source-and-extension-contract.md)
 - [Consumption](docs/consumption.md), [diagnostics](docs/diagnostics.md), [trivia](docs/trivia.md)
 - [Separated lists](docs/separated-lists.md): bounds, boundary separators and lazy item values
+- [Delimiters and value selection](docs/value-selection.md): `between()`, `thenIgnore()` and `ignoreThen()`
 - [CST](docs/concrete-trees.md), [AST](docs/ast.md), [serialization](docs/serialization.md)
 - [Semantic values](docs/semantic-values.md) and [lifecycle](docs/lifecycle.md)
 - [RFC libraries](docs/libraries.md), [contributing](docs/contribute.md)

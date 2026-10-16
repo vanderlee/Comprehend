@@ -21,6 +21,7 @@ use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\SeparatedList;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Structure\ValueSequence;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
 use Vanderlee\Comprehend\Parser\Terminal\End;
@@ -77,6 +78,9 @@ final class Catalog
 
     private const FLUENTS = [
         'then',
+        'thenignore',
+        'ignorethen',
+        'between',
         'prepend',
         'named',
         'tag',
@@ -212,6 +216,21 @@ final class Catalog
     public static function builtinFluent(string $name): ?Closure
     {
         return match (self::canonicalName($name)) {
+            'thenignore' => static fn(Comprehend $item, Comprehend|Parser|string $next): Parser => new ValueSequence(
+                0,
+                $item->parser(),
+                self::parser($next),
+            ),
+            'ignorethen' => static fn(Comprehend $item, Comprehend|Parser|string $next): Parser => new ValueSequence(
+                1,
+                $item->parser(),
+                self::parser($next),
+            ),
+            'between' => static fn(
+                Comprehend $item,
+                Comprehend|Parser|string $open,
+                Comprehend|Parser|string $close,
+            ): Parser => new ValueSequence(1, self::parser($open), $item->parser(), self::parser($close)),
             'then' => static fn(
                 Comprehend $item,
                 Comprehend|Parser|string ...$next,
