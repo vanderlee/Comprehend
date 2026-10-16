@@ -12,6 +12,7 @@
 | Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Integer, Start, End, Nothing |
 | Structures | Sequence(Parser...), Choice(Parser...), All(Parser...), Except(Parser, Parser), Not(Parser), Repeat(Parser, int = 0, ?int = null) |
 | Repetition | `Comprehend::of(Parser)->repeat(min, max)`; object factories `Repeat::plus/star/optional/exact` |
+| Separated lists | `item->separatedBy(separator, min: 0, max: null, allowLeading: false, allowTrailing: false)`; static `separatedBy(item, separator, ...)`, object `SeparatedList(Parser, Parser, ...)`; [behavior and values](separated-lists.md) |
 | Shared repetition names | Static `some/many/maybe(item)`, `repeat(item, min, max)`; fluent `some/many/maybe()`, `repeat(min, max)` |
 | Terminal chaining | `->text/char/set/range/regex/literalWindow/any/nothing/start/end/integer/binary/octal/hexadecimal/octet(...)` |
 | Choice policy | `first/longest/shortest(Parser...)`, scoped Prefer |

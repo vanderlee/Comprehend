@@ -376,7 +376,10 @@ abstract class Parser implements SnapshotParticipant
             $this->semanticLeaf,
             $this->nodeTags,
         );
-        $match->setValueMapper($this->valueMapper);
+        // Explicit mappings override defaults installed by a recognizer (for example lists).
+        if ($this->valueMapper !== null) {
+            $match->setValueMapper($this->valueMapper);
+        }
         $match->addSemanticValidators($this->semanticValidators);
 
         foreach ($this->guards as $guard) {

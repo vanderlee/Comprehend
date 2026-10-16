@@ -36,6 +36,7 @@ final class GraphSnapshot
         Structure\Except::class => true,
         Structure\Not::class => true,
         Structure\Repeat::class => true,
+        Structure\SeparatedList::class => true,
         Structure\Sequence::class => true,
         Directive\CaseSensitive::class => true,
         Directive\Lexeme::class => true,

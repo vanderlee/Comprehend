@@ -51,6 +51,7 @@ use BadMethodCallException;
  * @method static self ref(AbstractRuleset $rules, string $name, mixed ...$arguments)
  * @method static self or(self|Parser|string ...$parsers)
  * @method static self repeat(mixed ...$arguments)
+ * @method static self separatedBy(mixed ...$arguments)
  * @method static self some(mixed ...$arguments)
  * @method static self plus(mixed ...$arguments)
  * @method static self many(mixed ...$arguments)

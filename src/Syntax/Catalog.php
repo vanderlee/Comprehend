@@ -19,6 +19,7 @@ use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Except;
 use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\SeparatedList;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
@@ -68,6 +69,7 @@ final class Catalog
         'ref',
         'or',
         'repeat',
+        'separatedby',
         'some',
         'many',
         'maybe',
@@ -185,6 +187,21 @@ final class Catalog
                 int $min = 0,
                 ?int $max = null,
             ): Comprehend => self::repeat($parser, $min, $max),
+            'separatedby' => static fn(
+                Comprehend|Parser|string $item,
+                Comprehend|Parser|string $separator,
+                int $min = 0,
+                ?int $max = null,
+                bool $allowLeading = false,
+                bool $allowTrailing = false,
+            ): Parser => new SeparatedList(
+                self::parser($item),
+                self::parser($separator),
+                $min,
+                $max,
+                $allowLeading,
+                $allowTrailing,
+            ),
             'some' => static fn(Comprehend|Parser|string $parser): Comprehend => self::repeat($parser, 1),
             'many' => static fn(Comprehend|Parser|string $parser): Comprehend => self::repeat($parser),
             'maybe' => static fn(Comprehend|Parser|string $parser): Comprehend => self::repeat($parser, 0, 1),
@@ -211,6 +228,21 @@ final class Catalog
                 $item->parser(),
                 $min,
                 $max,
+            ),
+            'separatedby' => static fn(
+                Comprehend $item,
+                Comprehend|Parser|string $separator,
+                int $min = 0,
+                ?int $max = null,
+                bool $allowLeading = false,
+                bool $allowTrailing = false,
+            ): Parser => new SeparatedList(
+                $item->parser(),
+                self::parser($separator),
+                $min,
+                $max,
+                $allowLeading,
+                $allowTrailing,
             ),
             'some' => static fn(Comprehend $item): Comprehend => $item->repeat(1),
             'many' => static fn(Comprehend $item): Comprehend => $item->repeat(),
