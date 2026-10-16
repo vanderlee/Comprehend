@@ -2,6 +2,9 @@
 
 ## Composing application values
 
+Follow [Parse application values](application-values.md) for a complete domain-object
+example with optional settings, alternatives and nested lists.
+
 `map(callable(mixed): mixed)` transforms the current semantic value. Unlike
 `mapText()` and `mapValue()`, consecutive `map()` calls compose in order. Every
 stage is lazy and caches its value or thrown error for that recognition. Calling

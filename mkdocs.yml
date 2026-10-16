@@ -30,6 +30,7 @@ nav:
   - Home: index.md
   - Getting started:
       - Tutorial: tutorial.md
+      - Parse application values: application-values.md
       - Grammar authoring: grammar-authoring.md
       - Facade: facade.md
       - Builders and Rulesets: builder.md

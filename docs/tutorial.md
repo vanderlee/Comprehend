@@ -4,6 +4,9 @@ Build a grammar, parse input, then extract the result. Start with the
 [quick start](index.md#quick-start), or run
 `php docs/examples/quick-start.php`.
 
+For a complete value-first walkthrough, follow [Parse application values](application-values.md):
+construct a domain object with an optional field, value alternatives and nested lists.
+
 For a typed value, attach a pure mapping before parsing:
 
 ~~~php

@@ -41,6 +41,7 @@ Side effects run only through explicit `commit()`.
 ## Explore the documentation
 
 - Start with the [tutorial](tutorial.md) and [grammar-authoring guide](grammar-authoring.md).
+- Build domain objects with [Parse application values](application-values.md).
 - Learn about [sources](sources.md), [spacing](trivia.md) and [diagnostics](diagnostics.md).
 - Extract [semantic values](semantic-values.md) and navigate [syntax trees](ast.md).
 - Consult the [API reference](reference.md), [ABNF subset](abnf.md) and [RFC libraries](libraries.md).

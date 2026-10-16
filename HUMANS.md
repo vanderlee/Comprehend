@@ -16,6 +16,7 @@ AI AGENTS MUST NOT USE THIS FILE!
     - Repeat into a list of item values: Makes ordinary repetition as convenient as separatedBy()
     - Static type propagation: Makes composed values discoverable and checkable in IDEs
     - A value-first tutorial and examples: Makes the simple path visible without teaching the runtime first
+  - Move all the value binding stuff to an expansion
 - Move core to extension?
   - Numbers?
   - Library to extensions?

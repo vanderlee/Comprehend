@@ -128,6 +128,7 @@ The [2.0.0 breaking-release guide](docs/breaking-release.md) covers caller chang
 supported PHP versions and the gated publication workflow.
 
 - [Tutorial](docs/tutorial.md), [builder](docs/builder.md), [reference](docs/reference.md)
+- [Parse application values](docs/application-values.md): domain objects, optional fields and nested lists
 - [Sources](docs/sources.md) and [custom parser contract](docs/source-and-extension-contract.md)
 - [Consumption](docs/consumption.md), [diagnostics](docs/diagnostics.md), [trivia](docs/trivia.md)
 - [Recovery extension](docs/recovery.md): optional synchronization, preserved invalid regions and multiple diagnostics
