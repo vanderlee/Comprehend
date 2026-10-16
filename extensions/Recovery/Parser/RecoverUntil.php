@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Extensions\Recovery;
+namespace Vanderlee\Comprehend\Extensions\Recovery\Parser;
 
 use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Extensions\Recovery\RecoveryContext;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Source\Span;
 

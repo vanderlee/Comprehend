@@ -6,7 +6,7 @@ namespace Tests\Extensions\Expression;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Extensions\Expression\ValueRepeat;
+use Vanderlee\Comprehend\Extensions\Expression\Parser\ValueRepeat;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 

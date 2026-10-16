@@ -5,7 +5,7 @@ declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Extensions\Extraction;
-use Vanderlee\Comprehend\Extensions\Extraction\Record;
+use Vanderlee\Comprehend\Extensions\Extraction\Parser\Record;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Source\ByteSource;

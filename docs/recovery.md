@@ -4,6 +4,9 @@ Recovery lets a grammar continue through invalid input while retaining errors an
 original source bytes. It is an optional extension, enabled explicitly at a grammar
 boundary. Ordinary parsers remain strict.
 
+Recovery parser implementations live in `Extensions\Recovery\Parser`; the strategy
+context remains `Extensions\Recovery\RecoveryContext`.
+
 ```php
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Extensions\Recovery;

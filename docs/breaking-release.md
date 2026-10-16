@@ -11,7 +11,7 @@ Application extraction helpers now require the opt-in [Extraction expansion](ext
 Replace static helpers such as `C::collect(...)` with
 `Extraction::syntax()->collect(...)`, and attach existing expressions or rule
 references with `$syntax->of($parser)` before fluent extraction calls. Low-level
-extraction classes moved from `Parser\Structure` to `Extensions\Extraction`.
+extraction classes moved from `Parser\Structure` to `Extensions\Extraction\Parser`.
 Core `separatedBy()` projects item values; `thenIgnore()`, `ignoreThen()` and
 `between()` select operand values without installing an extension. Extraction's PHPStan configuration is separate from core support.
 

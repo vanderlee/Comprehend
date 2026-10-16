@@ -10,11 +10,11 @@ use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Syntax;
 use Vanderlee\Comprehend\Syntax\Catalog;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
-use Vanderlee\Comprehend\Extensions\Extraction\Collect;
-use Vanderlee\Comprehend\Extensions\Extraction\Record;
-use Vanderlee\Comprehend\Extensions\Extraction\ValueChoice;
-use Vanderlee\Comprehend\Extensions\Extraction\ValueRepeat;
-use Vanderlee\Comprehend\Extensions\Extraction\OptionalValue;
+use Vanderlee\Comprehend\Extensions\Extraction\Parser\Collect;
+use Vanderlee\Comprehend\Extensions\Extraction\Parser\Record;
+use Vanderlee\Comprehend\Extensions\Extraction\Parser\ValueChoice;
+use Vanderlee\Comprehend\Extensions\Extraction\Parser\ValueRepeat;
+use Vanderlee\Comprehend\Extensions\Extraction\Parser\OptionalValue;
 
 /** Optional application-value authoring over the shared recognition and projection runtime. */
 final class Extraction implements SyntaxExtension

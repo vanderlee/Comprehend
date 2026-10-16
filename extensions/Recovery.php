@@ -6,10 +6,10 @@ namespace Vanderlee\Comprehend\Extensions;
 
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Comprehend;
-use Vanderlee\Comprehend\Extensions\Recovery\RecoverDelimited;
-use Vanderlee\Comprehend\Extensions\Recovery\RecoverItem;
-use Vanderlee\Comprehend\Extensions\Recovery\RecoverUntil;
-use Vanderlee\Comprehend\Extensions\Recovery\RecoverWith;
+use Vanderlee\Comprehend\Extensions\Recovery\Parser\RecoverDelimited;
+use Vanderlee\Comprehend\Extensions\Recovery\Parser\RecoverItem;
+use Vanderlee\Comprehend\Extensions\Recovery\Parser\RecoverUntil;
+use Vanderlee\Comprehend\Extensions\Recovery\Parser\RecoverWith;
 use Vanderlee\Comprehend\Extensions\Recovery\RecoveryContext;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Source\Span;

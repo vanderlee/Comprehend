@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Extensions\Expression;
 
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Extensions\Expression\ReductionSequence;
+use Vanderlee\Comprehend\Extensions\Expression\Parser\ReductionSequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 

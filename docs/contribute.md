@@ -114,7 +114,10 @@ that cover interactions across classes, runtime contracts, or complete grammars
 in `tests/features/`. Shared test infrastructure stays in `tests/`. Pest
 discovers test directories recursively. Bundled optional syntax implementations
 live in `extensions/`, under `Vanderlee\Comprehend\Extensions`, with focused tests
-in `tests/extensions/`. Cross-class extension scenarios remain in `tests/features/`.
+in `tests/extensions/`. Group extension parser implementations in a `Parser`
+subnamespace and analysis-only helpers in a `PHPStan` subnamespace. Public
+operator definitions and recovery contexts stay in their extension namespace.
+Cross-class extension scenarios remain in `tests/features/`.
 
 Write tests with Pest's `test()` closures and attach parameterized cases with
 `with()`. Pest 2 preserves the library's PHP 8.1 development baseline. Existing

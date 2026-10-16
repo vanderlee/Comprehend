@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Extensions\Recovery as RecoveryExtension;
-use Vanderlee\Comprehend\Extensions\Recovery\RecoverUntil;
+use Vanderlee\Comprehend\Extensions\Recovery\Parser\RecoverUntil;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\Recovery;

@@ -5,6 +5,9 @@ the existing parser graph and recognition runtime, with lazy cached reductions a
 explicit commit effects. It does not enable left recursion or introduce a separate
 Pratt/LR recognition engine.
 
+`Operator` and `OperatorKind` live in `Extensions\Expression`; internal parser
+implementations live in `Extensions\Expression\Parser`.
+
 ```php
 use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Comprehend as C;

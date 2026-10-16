@@ -16,7 +16,7 @@ AI AGENTS MUST NOT USE THIS FILE!
   - Library to extensions?
   - Optimization extension?
 - Extension discovery
-- Special PHPStan classes?
+- Special PHPStan classes? Can we get rid of them?
 
 ## Future directions
 - Implement some known languages as examples?

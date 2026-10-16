@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Extensions\Extraction;
-use Vanderlee\Comprehend\Extensions\Extraction\ValueRepeat;
+use Vanderlee\Comprehend\Extensions\Extraction\Parser\ValueRepeat;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Source\ByteSource;

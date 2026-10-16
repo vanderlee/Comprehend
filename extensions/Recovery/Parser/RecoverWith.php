@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Extensions\Recovery;
+namespace Vanderlee\Comprehend\Extensions\Recovery\Parser;
 
 use Closure;
 use InvalidArgumentException;
@@ -13,6 +13,7 @@ use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Builder\ReusableSnapshot;
+use Vanderlee\Comprehend\Extensions\Recovery\RecoveryContext;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;

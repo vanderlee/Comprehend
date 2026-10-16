@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Src\Parser\Structure;
 
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Extensions\Extraction\ValueChoice;
+use Vanderlee\Comprehend\Extensions\Extraction\Parser\ValueChoice;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 

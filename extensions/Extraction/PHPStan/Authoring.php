@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Extensions\Extraction;
+namespace Vanderlee\Comprehend\Extensions\Extraction\PHPStan;
 
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;

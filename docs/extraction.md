@@ -22,6 +22,9 @@ attach the vocabulary to an existing facade, rule reference or object parser.
 Facade inputs retain their semantic value type; object-parser inputs remain
 conservatively mixed in static analysis.
 
+Parser implementations live in `Extraction\Parser`; analysis-only authoring signatures
+and type extensions live in `Extraction\PHPStan`.
+
 ## Operations
 
 | Operation | Selected value |
@@ -62,7 +65,7 @@ vocabulary factory to obtain the record's value directly.
 Run `php docs/examples/record.php` for a checked example.
 
 Concrete extraction classes are `Collect`, `Record`, `ValueChoice`, `ValueRepeat`
-and `OptionalValue` under `Vanderlee\Comprehend\Extensions\Extraction`. They can
+and `OptionalValue` under `Vanderlee\Comprehend\Extensions\Extraction\Parser`. They can
 be constructed directly without installing a vocabulary.
 
 Core provides `separatedBy()`, `thenIgnore()`, `ignoreThen()` and `between()` with

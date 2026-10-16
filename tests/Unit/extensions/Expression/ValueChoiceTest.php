@@ -6,7 +6,7 @@ namespace Tests\Extensions\Expression;
 
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use Vanderlee\Comprehend\Extensions\Expression\ValueChoice;
+use Vanderlee\Comprehend\Extensions\Expression\Parser\ValueChoice;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 
