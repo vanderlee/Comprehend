@@ -11,6 +11,7 @@ use Vanderlee\Comprehend\Runtime\Scope\PreferContextTrait;
 use Vanderlee\Comprehend\Runtime\Scope\SpacingContextTrait;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Span;
+use Vanderlee\Comprehend\Source\SourceMode;
 use InvalidArgumentException;
 use LogicException;
 
@@ -114,6 +115,20 @@ final class ParseSession
     {
         unset($this->activeParsers[spl_object_id($parser) . ':' . $offset]);
         --$this->depth;
+    }
+
+    /** @internal Charge validated literal units, retaining partial work and precise limit positions. */
+    public function consumeLiteralWork(string $text, int $units, int $byteOffset): void
+    {
+        $remaining = $this->limits->maxWork === null ? null : $this->limits->maxWork - $this->work;
+        if ($remaining !== null && $units > $remaining) {
+            $prefixBytes = $this->source->mode() === SourceMode::UTF8
+                ? strlen(mb_substr($text, 0, $remaining, 'UTF-8'))
+                : $remaining;
+            $this->work += $remaining;
+            $this->consumeWork(1, $byteOffset + $prefixBytes);
+        }
+        $this->consumeWork($units, $byteOffset);
     }
 
     public function pushLexeme(): void

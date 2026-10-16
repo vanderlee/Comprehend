@@ -219,8 +219,10 @@ abstract class Parser implements SnapshotParticipant
         $match = $this->recognizeWithDiagnostics($source, $offset, $session);
         $this->assertReturnedMatch($source, $offset, $match);
         $match = $this->wrapReturnedChild($source, $offset, $match);
+        $end = $match->accepted ? $offset + $match->length : $offset;
+        $span = $match->span;
         $match->setSourceMetadata(
-            $source->span($offset, $match->accepted ? $offset + $match->length : $offset),
+            $span !== null && $span->end === $end ? $span : $source->span($offset, $end),
             $session->farthestFailure(),
             $session->diagnostic(),
         );
@@ -235,7 +237,9 @@ abstract class Parser implements SnapshotParticipant
         if ($session->source() !== $source) {
             throw new InvalidArgumentException('Recognition must use the session source');
         }
-        $source->span($offset, $offset);
+        if ($offset < 0 || $offset > $source->byteLength()) {
+            throw new InvalidArgumentException('Span must satisfy 0 <= start <= end <= source byte length');
+        }
         if (!$source->isUnitBoundary($offset)) {
             throw new InvalidArgumentException('Parser position is inside a UTF-8 code point');
         }
@@ -274,7 +278,9 @@ abstract class Parser implements SnapshotParticipant
 
     private function assertReturnedMatch(Source $source, int $offset, AbstractMatch $match): void
     {
-        $source->span($offset, $offset + $match->length);
+        if ($match->length > $source->byteLength() - $offset) {
+            throw new InvalidArgumentException('Span must satisfy 0 <= start <= end <= source byte length');
+        }
         if ($match->span !== null && ($match->span->source !== $source || $match->span->start !== $offset)) {
             throw new LogicException('Recognition returned a foreign source or start position');
         }

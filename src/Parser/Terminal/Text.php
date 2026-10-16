@@ -33,6 +33,11 @@ class Text extends Parser implements AnalyzableParser
     private ?array $byteCharacters = null;
     /** @var list<string>|null */
     private ?array $utf8Characters = null;
+    private ?int $utf8Length = null;
+    /** @var array<string, list<string>> */
+    private array $foldedCharacters = [];
+    private ?bool $asciiLiteral = null;
+    private ?string $asciiFolded = null;
 
     public function __construct(string $text)
     {
@@ -57,27 +62,33 @@ class Text extends Parser implements AnalyzableParser
     {
         $this->pushCaseSensitivityToContext($session);
         try {
-            $literal = $this->characters($source->mode());
-            if (
-                $session->isCaseSensitive()
-                && $this->length <= $source->byteLength() - $byteOffset
-                && $source->sliceBytes($byteOffset, $byteOffset + $this->length) === $this->text
-            ) {
-                // Charge the same reads at the same byte positions as the unit path,
-                // including the position reported when a work budget is exhausted.
-                $position = $byteOffset;
-                foreach ($literal as $character) {
-                    $session->consumeWork(1, $position);
-                    $position += strlen($character);
-                }
-
-                return $this->success($source, $byteOffset, $this->length);
+            $mode = $source->mode();
+            $units = $mode === SourceMode::UTF8
+                ? $this->utf8Length ??= (new Utf8Source($this->text))->codePointLength()
+                : $this->length;
+            if ($session->isCaseSensitive()) {
+                return $this->recognizeSensitive($source, $byteOffset, $session, $units);
             }
 
+            $this->asciiLiteral ??= preg_match('/[\x80-\xff]/', $this->text) === 0;
+            if ($this->asciiLiteral && $this->length <= $source->byteLength() - $byteOffset) {
+                $subject = $source->sliceBytes($byteOffset, $byteOffset + $this->length);
+                $this->asciiFolded ??= strtolower($this->text);
+                if (preg_match('/[\x80-\xff]/', $subject) === 0 && strtolower($subject) === $this->asciiFolded) {
+                    $session->consumeLiteralWork($subject, $units, $byteOffset);
+
+                    return $this->success($source, $byteOffset, $this->length);
+                }
+            }
+
+            $literal = $this->foldedCharacters[$mode->value] ??= array_map(
+                $session->handleCase(...),
+                $this->characters($mode),
+            );
             $position = $byteOffset;
             foreach ($literal as $character) {
                 $unit = $session->readSourceUnit($position);
-                if ($unit === null || $session->handleCase($unit->rawText()) !== $session->handleCase($character)) {
+                if ($unit === null || $session->handleCase($unit->rawText()) !== $character) {
                     return $this->failure($source, $byteOffset, $position - $byteOffset);
                 }
                 $position = $unit->end;
@@ -89,6 +100,31 @@ class Text extends Parser implements AnalyzableParser
         }
     }
 
+    private function recognizeSensitive(Source $source, int $offset, ParseSession $session, int $units): AbstractMatch
+    {
+        $subject = $source->sliceBytes($offset, min($source->byteLength(), $offset + $this->length));
+        if ($subject === $this->text) {
+            $session->consumeLiteralWork($this->text, $units, $offset);
+
+            return $this->success($source, $offset, $this->length);
+        }
+
+        // XOR ends at the shorter operand. Back up an interior differing byte to
+        // the beginning of its code point before exposing diagnostic progress.
+        $length = $subject === '' || $subject[0] !== $this->text[0]
+            ? 0
+            : strspn($subject ^ $this->text, "\0");
+        while (!$source->isUnitBoundary($offset + $length)) {
+            --$length;
+        }
+        $prefix = substr($this->text, 0, $length);
+        $units = $source->mode() === SourceMode::UTF8 ? mb_strlen($prefix, 'UTF-8') : $length;
+        $session->consumeLiteralWork($prefix, $units, $offset);
+        $session->consumeWork(1, $offset + $length);
+
+        return $this->failure($source, $offset, $length);
+    }
+
     /** @return list<string> */
     private function characters(SourceMode $mode): array
     {
@@ -97,8 +133,7 @@ class Text extends Parser implements AnalyzableParser
         }
 
         if ($this->utf8Characters === null) {
-            // Keep UTF-8 validation lazy: arbitrary octets remain valid byte literals.
-            new Utf8Source($this->text);
+            // Only the case-insensitive fallback needs individual literal units.
             $this->utf8Characters = mb_str_split($this->text, 1, 'UTF-8');
         }
 

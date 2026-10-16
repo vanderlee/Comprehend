@@ -30,6 +30,8 @@ class Set extends Parser implements AnalyzableParser
 
     private string $set;
     private string $sourceSet;
+    /** @var array<string, array<string, true>> */
+    private array $memberships = [];
     /**
      * Match only characters inside the set (`true`) or outside (`false`).
      *
@@ -67,22 +69,27 @@ class Set extends Parser implements AnalyzableParser
 
     protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $characters = $session->source()->mode() === SourceMode::UTF8 ? mb_str_split(
-            (new Utf8Source($this->sourceSet))->sliceBytes(0, strlen($this->sourceSet)),
-            1,
-            'UTF-8',
-        ) : str_split($this->sourceSet);
-        $unit = $session->readSourceUnit($byteOffset);
-        if ($unit === null) {
-            return $this->failure($source, $byteOffset);
-        }
         $this->pushCaseSensitivityToContext($session);
         try {
-            $value = $session->handleCase($unit->rawText());
-            $inside = false;
-            foreach ($characters as $character) {
-                $inside = $inside || $session->handleCase($character) === $value;
+            $key = $source->mode()->value . ':' . (int) $session->isCaseSensitive();
+            if (!isset($this->memberships[$key])) {
+                $characters = $source->mode() === SourceMode::UTF8 ? mb_str_split(
+                    (new Utf8Source($this->sourceSet))->sliceBytes(0, strlen($this->sourceSet)),
+                    1,
+                    'UTF-8',
+                ) : str_split($this->sourceSet);
+                $membership = [];
+                foreach ($characters as $character) {
+                    $membership['unit:' . $session->handleCase($character)] = true;
+                }
+                $this->memberships[$key] = $membership;
             }
+            $unit = $session->readSourceUnit($byteOffset);
+            if ($unit === null) {
+                return $this->failure($source, $byteOffset);
+            }
+            $value = $session->handleCase($unit->rawText());
+            $inside = isset($this->memberships[$key]['unit:' . $value]);
 
             return $this->makeMatch($inside === $this->include, $source, $byteOffset, $unit->byteLength());
         } finally {

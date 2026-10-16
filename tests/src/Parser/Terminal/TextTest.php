@@ -109,3 +109,41 @@ test('literal work limits preserve byte positions and restore case scope', funct
         }
     }
 });
+
+test('block mismatches inside a code point report its start and charge the attempted unit', function () {
+    foreach ([['aé', 'aê', 1, 3], ['a🙂', 'a🙃', 1, 3], ['a🙂', 'a', 1, 3]] as [$literal, $input, $offset, $work]) {
+        $source = new Utf8Source($input);
+        $session = new ParseSession($source);
+        $result = (new Text($literal))->recognizeInSession($source, 0, $session);
+        $this->assertFalse($result->accepted);
+        $this->assertSame($offset, $result->length);
+        $this->assertSame($offset, $result->farthestFailure);
+        $this->assertSame($work, $session->workUsed());
+    }
+});
+
+test('ASCII folded success and Unicode fallback charge original source units', function () {
+    $parser = (new Text('KX'))->caseInsensitive();
+    foreach (['kx' => 2, 'Kx' => 4] as $input => $bytes) {
+        $source = new Utf8Source($input);
+        $session = new ParseSession($source);
+        $result = $parser->recognizeInSession($source, 0, $session);
+        $this->assertTrue($result->accepted);
+        $this->assertSame($bytes, $result->length);
+        $this->assertSame(3, $session->workUsed());
+    }
+    $this->assertFalse($parser->parseAll(new Utf8Source('ky'))->success);
+});
+
+test('batched ASCII folding reports work limits relative to the parse offset', function () {
+    $source = new Utf8Source('!!abcd');
+    $session = new ParseSession($source, limits: new ParseLimits(maxWork: 3));
+    try {
+        (new Text('ABCD'))->caseInsensitive()->recognizeInSession($source, 2, $session);
+        $this->fail('Expected work limit');
+    } catch (ParseLimitException $error) {
+        $this->assertSame(4, $error->byteOffset);
+        $this->assertSame(3, $session->workUsed());
+        $this->assertTrue($session->isCaseSensitive());
+    }
+});

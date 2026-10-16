@@ -30,6 +30,9 @@ class Regex extends Parser implements AnalyzableParser
 
     private string $pattern;
     private ?string $windowLiteral = null;
+    /** @var array<string, string> */
+    private array $preparedPatterns = [];
+    private ?int $utf8Window = null;
 
     public function __construct(string $pattern)
     {
@@ -90,14 +93,18 @@ class Regex extends Parser implements AnalyzableParser
     /** @return array{string, bool} Pattern and whether the source uses UTF-8. */
     private function recognitionPattern(ParseSession $context): array
     {
+        $textMode = $context->source()->mode() === SourceMode::UTF8;
         $this->pushCaseSensitivityToContext($context);
         try {
+            $key = $context->source()->mode()->value . ':' . (int) $context->isCaseSensitive();
+            if (isset($this->preparedPatterns[$key])) {
+                return [$this->preparedPatterns[$key], $textMode];
+            }
             $pattern = $this->pattern . ($context->isCaseSensitive() ? '' : 'i');
         } finally {
             $this->popCaseSensitivityFromContext($context);
         }
 
-        $textMode = $context->source()->mode() === SourceMode::UTF8;
         if (!$textMode && $this->usesUtf8()) {
             throw new InvalidArgumentException('UTF-8 regex cannot recognize a byte source');
         }
@@ -108,7 +115,10 @@ class Regex extends Parser implements AnalyzableParser
             throw new InvalidArgumentException('Text regex cannot use the byte escape \C');
         }
 
-        return [$pattern . ($textMode ? 'u' : ''), $textMode];
+        $pattern .= $textMode ? 'u' : '';
+        $this->preparedPatterns[$key] = $pattern;
+
+        return [$pattern, $textMode];
     }
 
     private function usesUtf8(): bool
@@ -157,10 +167,9 @@ class Regex extends Parser implements AnalyzableParser
             return [$input->sliceBytes(0, $input->byteLength()), $offset];
         }
 
-        if ($textMode) {
-            new Utf8Source($this->windowLiteral);
-        }
-        $window = $textMode ? 4 * mb_strlen($this->windowLiteral, 'UTF-8') : strlen($this->windowLiteral);
+        $window = $textMode
+            ? $this->utf8Window ??= 4 * (new Utf8Source($this->windowLiteral))->codePointLength()
+            : strlen($this->windowLiteral);
         $end = min($input->byteLength(), $offset + $window);
         while (!$input->isUnitBoundary($end)) {
             --$end;

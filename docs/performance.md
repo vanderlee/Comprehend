@@ -36,6 +36,55 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Inner-loop preparation and accounting (2026-10-16)
+
+The runtime now batches literal work charges while preserving partial work counts
+and exact byte offsets when a budget is exhausted. Case-sensitive literal failures
+use a byte-prefix comparison that retreats to a complete UTF-8 unit. ASCII
+case-insensitive successes have a bulk path; other case-insensitive matches retain
+per-unit folding with cached literal units. Set membership, regex patterns/windows
+and range bounds cache preparation separately for source mode and effective case
+policy. Validation remains lazy at recognition time.
+
+Checked delegation reuses valid immutable spans, unmapped semantic projections
+are created on first value access, and Repeat shares its child list until trivia
+requires a distinct concrete list. Custom-parser boundary checks, diagnostics,
+tree shape, cached values and explicit commit behavior remain in place.
+
+Windows/PHP 8.2.10/PCRE 10.40, two warmups and nine samples per case:
+
+| Workload | Before (`06c7328`) | After |
+| --- | ---: | ---: |
+| 64 KiB exact literal, UTF-8 memory | 9.409 ms | 0.008 ms |
+| 64 KiB literal, first-character failure | 0.017 ms | 0.011 ms |
+| 64 KiB literal, last-character failure | 99.613 ms | 0.320 ms |
+| 64 KiB ASCII literal, case-insensitive success | 138.033 ms | 0.035 ms |
+| 64 KiB, 64-unit Text children | 17.278 ms | 6.844 ms |
+| 64 KiB, 64-unit literal-window regex children | 18.676 ms | 8.272 ms |
+| 1,024 units, 1,024-member Set, member last | 200.380 ms | 7.911 ms |
+
+These combined changes were measured in separate runs on successive days, not
+isolated per-optimization experiments. Earlier repeat-heavy timings varied
+substantially, and tiny exact-match timings are especially sensitive to PHP string
+sharing: that fixture gives the source and terminal the same backing string.
+The literal/folding cases contain ASCII through a UTF-8 source; the Set contains
+unique Unicode members. Cold preparation and source setup are outside timing.
+Literal/repeat timings include result release; Set timings exclude it. No file
+or non-ASCII folding speedup is inferred from this table.
+
+[Raw before/after data](benchmarks/inner-loops-2026-10-16.json) records ranges,
+runtime, timings and commands. Run the maintained sweep with:
+
+```sh
+php tools/benchmark-inner-loops.php
+```
+
+It checks acceptance and late-literal failure positions, reports literal/repeat
+and Set sweeps, and includes an accounting-only microbenchmark. The latter is not
+a parsing speedup or an exhausted-budget equivalence test. Regression tests cover
+partial budgets, Unicode mismatch boundaries, byte/text cache separation, policy
+changes, invalid UTF-8, frozen graphs and retained trivia/effect order.
+
 ### Literal and callback allocation improvements (2026-10-15)
 
 On Windows, PHP 8.2.10 and PCRE 10.40, seven samples per case produced the

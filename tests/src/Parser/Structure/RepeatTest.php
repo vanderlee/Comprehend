@@ -167,3 +167,26 @@ test('repeat', function (Repeat $parser, $input, $offset, $match, $length) {
     $this->assertSame($match, $result->success, (string) $parser);
     $this->assertSame($match ? $length : 0, $result->consumedByteLength, (string) $parser);
 })->with(RepeatTest::repeatData());
+
+test('repeat retains earlier children and commits only accepted trivia after a spaced extension', function () {
+    $events = [];
+    $child = (new Text('a'))->onCommit(function () use (&$events) {
+        $events[] = 'a';
+    });
+    $space = (new Text(' '))->onCommit(function () use (&$events) {
+        $events[] = 'space';
+    });
+    $parser = Repeat::plus($child)->spacing(Repeat::optional($space));
+    $result = $parser->matchPrefix(new ByteSource('aa a '));
+    $this->assertTrue($result->success);
+    $this->assertSame('aa a', $result->rawText());
+    $this->assertSame(['a', '', 'a', ' ', 'a'], array_map(
+        static fn($node) => $node->rawText(),
+        $result->node->children,
+    ));
+    $this->assertNull($result->diagnostic);
+    $this->assertSame([], $events);
+    $this->assertTrue($result->commit());
+    $this->assertTrue($result->commit());
+    $this->assertSame(['a', 'a', 'space', 'a'], $events);
+});

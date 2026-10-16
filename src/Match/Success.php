@@ -151,7 +151,7 @@ class Success extends AbstractMatch
             $this->valueChild = null;
         }
 
-        $this->semanticProjection = new SemanticProjection($mapper);
+        $this->semanticProjection = $mapper === null ? null : new SemanticProjection($mapper);
     }
 
     public function getValue(): mixed

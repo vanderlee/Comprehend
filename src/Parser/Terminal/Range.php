@@ -30,6 +30,8 @@ class Range extends Parser implements AnalyzableParser
     private ?string $first;
     private ?string $last;
     private bool $in;
+    /** @var array<string, array{int, int|null}> */
+    private array $bounds = [];
 
     public function __construct(?string $first, ?string $last, bool $in = true)
     {
@@ -58,13 +60,16 @@ class Range extends Parser implements AnalyzableParser
     {
         $this->pushCaseSensitivityToContext($session);
         try {
-            $first = $this->first === null ? 0 : $this->sourceOrdinal($this->first, $session);
-            $last = $this->last === null ? null : $this->sourceOrdinal($this->last, $session);
+            $key = $source->mode()->value . ':' . (int) $session->isCaseSensitive();
+            [$first, $last] = $this->bounds[$key] ??= [
+                $this->first === null ? 0 : $this->sourceOrdinal($this->first, $session),
+                $this->last === null ? null : $this->sourceOrdinal($this->last, $session),
+            ];
             $unit = $session->readSourceUnit($byteOffset);
             if ($unit === null) {
                 return $this->failure($source, $byteOffset);
             }
-            $value = $this->sourceOrdinal($unit->rawText(), $session);
+            $value = $this->foldedOrdinal($unit->rawText(), $session);
             $inside = $first <= $value && ($last === null || $value <= $last);
 
             return $inside === $this->in
@@ -85,6 +90,12 @@ class Range extends Parser implements AnalyzableParser
         } elseif (strlen($character) !== 1) {
             throw new InvalidArgumentException('Byte Range requires single-octet bounds');
         }
+        return $this->foldedOrdinal($character, $context);
+    }
+
+    private function foldedOrdinal(string $character, ParseSession $context): int
+    {
+        $textMode = $context->source()->mode() === SourceMode::UTF8;
         $value = $context->handleCase($character);
         if ($textMode && mb_strlen($value, 'UTF-8') !== 1) {
             throw new InvalidArgumentException('Range case mapping must remain one code point');

@@ -15,8 +15,29 @@ use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Source\Utf8Source;
 
 uses(TestCase::class);
+
+test('batched literal work preserves every exhausted unit position and partial count', function (): void {
+    foreach ([new ByteSource('é🙂z'), new Utf8Source('é🙂z')] as $source) {
+        $positions = $source instanceof ByteSource ? range(0, 6) : [0, 2, 6];
+        foreach ($positions as $used => $position) {
+            $session = new ParseSession($source, limits: new ParseLimits(maxWork: $used + 1));
+            $session->consumeWork();
+            try {
+                $session->consumeLiteralWork('é🙂z', count($positions), 0);
+                $this->fail('Expected exhausted literal work');
+            } catch (ParseLimitException $error) {
+                $this->assertSame($position, $error->byteOffset);
+                $this->assertSame($used + 1, $session->workUsed());
+            }
+        }
+        $session = new ParseSession($source, limits: new ParseLimits(maxWork: count($positions)));
+        $session->consumeLiteralWork('é🙂z', count($positions), 0);
+        $this->assertSame(count($positions), $session->workUsed());
+    }
+});
 
 test('throwing trivia clears the output match and restores lexeme scope', function (): void {
     $source = new ByteSource(' ');

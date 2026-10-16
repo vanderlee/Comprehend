@@ -114,7 +114,7 @@ class Repeat extends Parser implements AnalyzableParser
     protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
         $childMatches = [];
-        $concreteMatches = [];
+        $concreteMatches = null;
         $this->pushSpacer($session);
         try {
             $acceptedByteLength = 0;
@@ -147,11 +147,14 @@ class Repeat extends Parser implements AnalyzableParser
                 // Retain trivia only after the following child has consumed input successfully.
                 if ($spacingMatch !== null) {
                     $match->addPrecedingMatch($spacingMatch);
+                    $concreteMatches ??= $childMatches;
                     $concreteMatches[] = $spacingMatch;
                 }
                 $acceptedByteLength += $skip + $match->length;
                 $childMatches[] = $match;
-                $concreteMatches[] = $match;
+                if ($concreteMatches !== null) {
+                    $concreteMatches[] = $match;
+                }
             }
         } finally {
             $this->popSpacer($session);
@@ -160,7 +163,9 @@ class Repeat extends Parser implements AnalyzableParser
             return $this->failure($source, $byteOffset, $acceptedByteLength);
         }
         $success = $this->success($source, $byteOffset, $acceptedByteLength, $childMatches);
-        $success->setConcreteMatches($concreteMatches);
+        if ($concreteMatches !== null) {
+            $success->setConcreteMatches($concreteMatches);
+        }
 
         return $success;
     }
