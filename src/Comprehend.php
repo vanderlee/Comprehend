@@ -24,32 +24,34 @@ use BadMethodCallException;
 /**
  * Provides immutable fluent grammar authoring over the shared Parser graph. Magic calls use
  * Syntax and Catalog to construct parsers; FrozenGrammar handles reusable execution.
+ * @template T = mixed
+ * @mixin \Vanderlee\Comprehend\Syntax\ValueMappings<T>
  *
- * @method static self text(string $text)
- * @method static self char(string $character, bool $include = true)
- * @method static self set(string $characters, bool $include = true)
- * @method static self range(?string $first, ?string $last, bool $in = true)
- * @method static self regex(string $pattern)
- * @method static self literalWindow(string $literal)
- * @method static self any()
- * @method static self nothing()
- * @method static self start()
- * @method static self end()
- * @method static self integer(?int $minimum = 0, ?int $maximum = null, int $base = 10, bool $allowLeadingZeros = false, string $digits = Integer::DIGITS)
- * @method static self binary(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
- * @method static self octal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
- * @method static self hexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
- * @method static self octet(bool $allowLeadingZeros = false)
- * @method static self sequence(self|Parser|string ...$parsers)
+ * @method static self<string> text(string $text)
+ * @method static self<string> char(string $character, bool $include = true)
+ * @method static self<string> set(string $characters, bool $include = true)
+ * @method static self<string> range(?string $first, ?string $last, bool $in = true)
+ * @method static self<string> regex(string $pattern)
+ * @method static self<string> literalWindow(string $literal)
+ * @method static self<string> any()
+ * @method static self<string> nothing()
+ * @method static self<string> start()
+ * @method static self<string> end()
+ * @method static self<string> integer(?int $minimum = 0, ?int $maximum = null, int $base = 10, bool $allowLeadingZeros = false, string $digits = Integer::DIGITS)
+ * @method static self<string> binary(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
+ * @method static self<string> octal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
+ * @method static self<string> hexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
+ * @method static self<string> octet(bool $allowLeadingZeros = false)
+ * @method static self<string> sequence(self|Parser|string ...$parsers)
  * @method static self collect(self|Parser|string ...$parsers)
  * @method static self valueChoice(self|Parser|string ...$parsers)
- * @method static self choice(self|Parser|string ...$parsers)
- * @method static self first(self|Parser|string ...$parsers)
- * @method static self longest(self|Parser|string ...$parsers)
- * @method static self shortest(self|Parser|string ...$parsers)
- * @method static self all(self|Parser|string ...$parsers)
- * @method static self except(self|Parser|string $match, self|Parser|string $not)
- * @method static self not(self|Parser|string $parser)
+ * @method static self<string> choice(self|Parser|string ...$parsers)
+ * @method static self<string> first(self|Parser|string ...$parsers)
+ * @method static self<string> longest(self|Parser|string ...$parsers)
+ * @method static self<string> shortest(self|Parser|string ...$parsers)
+ * @method static self<string> all(self|Parser|string ...$parsers)
+ * @method static self<string> except(self|Parser|string $match, self|Parser|string $not)
+ * @method static self<string> not(self|Parser|string $parser)
  * @method static self ref(AbstractRuleset $rules, string $name, mixed ...$arguments)
  * @method static self or(self|Parser|string ...$parsers)
  * @method static self repeat(mixed ...$arguments)
@@ -70,27 +72,24 @@ use BadMethodCallException;
  * @method static self maybe(mixed ...$arguments)
  * @method static self optional(mixed ...$arguments)
  * @method self then(self|Parser|string ...$next)
- * @method self thenIgnore(self|Parser|string $next)
+ * @method self<T> thenIgnore(self|Parser|string $next)
  * @method self ignoreThen(self|Parser|string $next)
- * @method self between(self|Parser|string $open, self|Parser|string $close)
+ * @method self<T> between(self|Parser|string $open, self|Parser|string $close)
  * @method self prepend(self|Parser|string ...$before)
- * @method self named(string|int|callable $name, ?string $group = null, bool $leaf = false)
- * @method self tag(string ...$tags)
- * @method self mapValue(callable $mapper)
- * @method self map(callable $mapper)
- * @method self mapText(callable $mapper)
- * @method self guard(callable $predicate)
- * @method self validateSemantic(callable $validator)
- * @method self onCommit(callable $effect)
- * @method self setResult(?string $key = null, mixed $value = null)
- * @method self concatResult(?string $key = null, mixed $value = null)
- * @method self pushResult(?string $key = null, mixed $value = null)
- * @method self diagnosticRule(string $name)
- * @method self caseSensitive(bool $sensitivity = true)
- * @method self prefer(ChoicePolicy $preference)
- * @method self spacing(self|Parser|null $trivia)
- * @method self lexeme()
- * @method self trivia()
+ * @method self<T> named(string|int|callable $name, ?string $group = null, bool $leaf = false)
+ * @method self<T> tag(string ...$tags)
+ * @method self<T> guard(callable $predicate)
+ * @method self<T> validateSemantic(callable $validator)
+ * @method self<T> onCommit(callable $effect)
+ * @method self<T> setResult(?string $key = null, mixed $value = null)
+ * @method self<T> concatResult(?string $key = null, mixed $value = null)
+ * @method self<T> pushResult(?string $key = null, mixed $value = null)
+ * @method self<T> diagnosticRule(string $name)
+ * @method self<T> caseSensitive(bool $sensitivity = true)
+ * @method self<T> prefer(ChoicePolicy $preference)
+ * @method self<T> spacing(self|Parser|null $trivia)
+ * @method self<T> lexeme()
+ * @method self<T> trivia()
  */
 final class Comprehend
 {
@@ -214,11 +213,13 @@ final class Comprehend
         return (new GraphSnapshot(false))->copy($this->parser);
     }
 
+    /** @return self<T> */
     public function assignTo(mixed &$variable): self
     {
         return $this->expression($this->parser()->assignTo($variable));
     }
 
+    /** @return FrozenGrammar<T> */
     public function freeze(): FrozenGrammar
     {
         if ($this->preparedGrammar !== null) {
@@ -232,7 +233,10 @@ final class Comprehend
         return $grammar;
     }
 
-    /** Complete-input parsing; reuse-capable graphs cache preparation, other graphs refresh. */
+    /**
+     * Complete-input parsing; reuse-capable graphs cache preparation, other graphs refresh.
+     * @return ParseResult<T>
+     */
     public function parse(
         string|Source $source,
         int $byteOffset = 0,
@@ -242,6 +246,7 @@ final class Comprehend
         return $this->parseAll($source, $byteOffset, $limits, $spacing);
     }
 
+    /** @return ParseResult<T> */
     public function parseAll(
         string|Source $source,
         int $byteOffset = 0,
@@ -253,6 +258,7 @@ final class Comprehend
         return $grammar->freeze()->parseAll($source, $byteOffset, $limits);
     }
 
+    /** @return ParseResult<T> */
     public function matchPrefix(
         string|Source $source,
         int $byteOffset = 0,

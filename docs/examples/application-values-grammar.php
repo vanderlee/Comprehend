@@ -22,6 +22,7 @@ final class Job
     }
 }
 
+/** @return C<Job> */
 function jobParser(): C
 {
     $name = C::regex('/[A-Za-z][A-Za-z0-9_]*/A');

@@ -14,6 +14,7 @@ use Vanderlee\Comprehend\Tree\ConcreteNode;
 /**
  * Exposes the canonical source-bound outcome of recognition. Wraps an internal match to provide
  * diagnostics, concrete and named trees, cached semantics, validation and explicit commit.
+ * @template-covariant T = mixed
  */
 final class ParseResult
 {
@@ -84,13 +85,19 @@ final class ParseResult
         return $diagnostics;
     }
 
-    /** Failed results have no value; successful unmapped results yield original text. */
+    /**
+     * Failed results have no value; successful unmapped results yield original text.
+     * @return T|null
+     */
     public function value(): mixed
     {
         return $this->match instanceof Success ? $this->match->getValue() : null;
     }
 
-    /** Short value access: original text by default, mapped value when configured. */
+    /**
+     * Short value access: original text by default, mapped value when configured.
+     * @return T|null
+     */
     public function output(): mixed
     {
         return $this->value();

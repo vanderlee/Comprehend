@@ -14,6 +14,7 @@ use Vanderlee\Comprehend\Source\Utf8Source;
 /**
  * Provides reusable parsing over a detached, resolved grammar snapshot. GraphSnapshot isolates
  * builder state and GraphAnalysis checks structural hazards before execution.
+ * @template-covariant T = mixed
  */
 final class FrozenGrammar
 {
@@ -47,6 +48,7 @@ final class FrozenGrammar
         return $this->reusable && GraphSnapshot::isReusableParser($parser);
     }
 
+    /** @return ParseResult<T> */
     public function matchPrefix(
         Source|string $source,
         int $byteOffset = 0,
@@ -59,6 +61,7 @@ final class FrozenGrammar
         );
     }
 
+    /** @return ParseResult<T> */
     public function parseAll(
         Source|string $source,
         int $byteOffset = 0,
@@ -71,6 +74,7 @@ final class FrozenGrammar
         );
     }
 
+    /** @return ParseResult<T> */
     public function parse(Source|string $source, int $byteOffset = 0, ?ParseLimits $limits = null): ParseResult
     {
         return $this->parseAll($source, $byteOffset, $limits);

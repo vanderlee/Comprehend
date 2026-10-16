@@ -86,7 +86,11 @@ branch is needed.
 
 Install development tools with `make install` (or `composer install`). GNU Make
 and PHP must be on your PATH. Use `make test` for Pest and `make phpstan` for
-static analysis, configured at level 10 for `src` and `extensions` in `phpstan.neon`.
+static analysis, configured at level 10 for `src`, `extensions`, value-type fixtures
+and the application-value tutorial grammar in `phpstan.neon`. The target also runs
+`php tools/check-value-types.php`, which verifies that incompatible mapping callbacks
+produce the expected PHPStan diagnostics. Intentionally invalid fixtures are checked
+separately; do not add them to the normal analysis paths or ignore their errors.
 CI runs both on pull requests and pushes to `master`; the release workflow also
 reuses these checks.
 

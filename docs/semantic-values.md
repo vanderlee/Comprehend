@@ -98,6 +98,60 @@ Accepted item validation, collections and explicit commit effects are preserved.
 CST nodes, trivia and byte spans remain intact. Run
 `php docs/examples/value-repetition.php` for a complete application object example.
 
+## Static value types
+
+The facade, frozen grammar and parse result carry a PHPDoc value type:
+`Comprehend<T>`, `FrozenGrammar<T>` and `ParseResult<T>`. Mapping signatures are
+provided through a PHPDoc mixin for tools that support generic mixins. PHPStan
+is not a runtime dependency.
+
+For PHPStan 2.1, include the bundled extension in your project's configuration:
+
+```yaml
+includes:
+    - vendor/vanderlee/comprehend/phpstan-extension.neon
+```
+
+The repository's configuration already includes it. The extension models magic
+factory and fluent calls, including list and optional-value projections. IDE
+support depends on the IDE's PHPDoc/mixin support; the PHPStan extension is not
+itself an IDE plugin.
+
+```php
+$number = C::integer()->mapText('intval'); // Comprehend<int>
+$doubled = $number->map(static fn(int $n): int => $n * 2);
+$list = $doubled->manyValues();           // Comprehend<list<int>>
+$optional = $number->optionalValue(default: false); // Comprehend<int|false>
+$result = $list->freeze()->parse('123');  // ParseResult<list<int>>
+$values = $result->value();              // list<int>|null
+```
+
+`map()` checks its callback against the current value type and infers the new
+type. `mapText()` accepts string callbacks; `mapValue()` accepts ParseResult
+callbacks for source/result inspection, not access to an earlier value projection.
+`someValues()` infers a nonempty list; bounded repetition and separated lists
+conservatively infer lists even with positive minimums. Optional values include
+the supplied default's type, or null when it is omitted.
+
+Explicit `collect()` operands infer tuple positions, and `valueChoice()` unions
+alternative value types. Names, spacing, delimiters and `thenIgnore()` preserve
+the selected value type. `ignoreThen()` forwards the right operand's type.
+`freeze()`, complete and prefix parsing, `value()` and `output()` retain it.
+The application tutorial's `jobParser()` declares `Comprehend<Job>` and is checked
+alongside the inference fixtures.
+
+`value()` and `output()` include null for failure, even after inspecting the boolean
+`success` property. Narrow the value itself when needed; successful parsers may
+also produce null. Static types do not guarantee semantic validity or prevent
+mapping exceptions. Low-level parser inputs, dynamic custom vocabularies and
+unpacked operand lists conservatively fall back to mixed; arbitrary runtime
+syntax registrations are not inferred. `FrozenGrammar::from()` remains mixed;
+use a facade's `freeze()` to retain its value type.
+
+Run `make phpstan` to check the implementation, positive type assertions and
+rejection of incompatible callbacks. Without Make, run the analysis command in
+[contributing](contribute.md) followed by `php tools/check-value-types.php`.
+
 ## Mappings and named collections
 
 `mapValue(callable(ParseResult): mixed)` adds a lazy typed mapping. `value()`

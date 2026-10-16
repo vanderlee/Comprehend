@@ -21,6 +21,7 @@ test:
 
 phpstan:
 	$(PHP) vendor/phpstan/phpstan/phpstan analyse --configuration=phpstan.neon --memory-limit=512M
+	$(PHP) tools/check-value-types.php
 
 cs:
 	$(PHP) vendor/squizlabs/php_codesniffer/bin/phpcs --standard=phpcs.xml.dist

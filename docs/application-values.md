@@ -148,3 +148,9 @@ The syntax tree and byte spans retain the source independently of the domain
 object. Keep mappings pure. Value access does not run commit effects; use
 `onCommit()` and explicit `commit()` for application effects. See
 [semantic values](semantic-values.md) and [lifecycle](lifecycle.md) for details.
+
+For static analysis, the example's factory declares `@return C<Job>`. With the
+[PHPStan extension](semantic-values.md#static-value-types), its mapping callbacks
+and tuple fields are checked and `jobParser()->freeze()->parse($input)->value()`
+has type `Job|null`. The nullable result accounts for recognition failure; checking
+the boolean success property alone does not narrow that value type.

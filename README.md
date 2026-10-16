@@ -148,6 +148,8 @@ the original syntax. See the [value composition example](docs/examples/value-com
 Use `manyValues()`, `someValues()` or bounded `repeatValues()` for lists of item
 values, and `optionalValue(default: ...)` for optional fields. See the
 [repeated and optional values example](docs/examples/value-repetition.php).
+PHPDoc generics and the bundled optional PHPStan extension preserve value types
+through composition and parsing; see [static value types](docs/semantic-values.md#static-value-types).
 
 Install with Composer, then run:
 
