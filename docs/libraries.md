@@ -1,8 +1,12 @@
-# Bundled RFC grammars
+# Bundled RFC and specification grammars
 
 Rfc2234, Rfc4234, Rfc5234 and Rfc7405 provide ABNF-related reusable rules.
 Rfc3513 and Rfc4291 provide IPv6 rules, Rfc3986 provides URI rules, and
 Rfc4408 and Rfc7208 provide SPF-related grammar assets.
+The library also includes email, MIME, DNS, JSON/JSONPath, HTTP structured fields,
+timestamps, UUIDs, encodings, language tags, URI extensions, DMARC, SemVer, XML
+and YAML. See the [specification catalog](specifications.md) for class names,
+root rules, coverage boundaries and upstream acceptance tests.
 They use the public facade with explicit Ruleset references and the same
 source runtime as application parsers.
 

@@ -1,0 +1,3577 @@
+[
+    {
+        "name": "basic, root",
+        "input_base64": "JA==",
+        "accepted": true
+    },
+    {
+        "name": "basic, no leading whitespace",
+        "input_base64": "ICQ=",
+        "accepted": false
+    },
+    {
+        "name": "basic, no trailing whitespace",
+        "input_base64": "JCA=",
+        "accepted": false
+    },
+    {
+        "name": "basic, name shorthand",
+        "input_base64": "JC5h",
+        "accepted": true
+    },
+    {
+        "name": "basic, name shorthand, extended unicode \u263a",
+        "input_base64": "JC7imLo=",
+        "accepted": true
+    },
+    {
+        "name": "basic, name shorthand, supplementary plane character",
+        "input_base64": "JC7wn5iA",
+        "accepted": true
+    },
+    {
+        "name": "basic, name shorthand, underscore",
+        "input_base64": "JC5f",
+        "accepted": true
+    },
+    {
+        "name": "basic, name shorthand, symbol",
+        "input_base64": "JC4m",
+        "accepted": false
+    },
+    {
+        "name": "basic, name shorthand, number",
+        "input_base64": "JC4x",
+        "accepted": false
+    },
+    {
+        "name": "basic, name shorthand, hyphen",
+        "input_base64": "JC5hLWI=",
+        "accepted": false
+    },
+    {
+        "name": "basic, name shorthand, absent data",
+        "input_base64": "JC5j",
+        "accepted": true
+    },
+    {
+        "name": "basic, name shorthand, array data",
+        "input_base64": "JC5h",
+        "accepted": true
+    },
+    {
+        "name": "basic, name shorthand, object data, nested",
+        "input_base64": "JC5hLmIuYw==",
+        "accepted": true
+    },
+    {
+        "name": "basic, wildcard shorthand, object data",
+        "input_base64": "JC4q",
+        "accepted": true
+    },
+    {
+        "name": "basic, wildcard shorthand, array data",
+        "input_base64": "JC4q",
+        "accepted": true
+    },
+    {
+        "name": "basic, wildcard selector, array data",
+        "input_base64": "JFsqXQ==",
+        "accepted": true
+    },
+    {
+        "name": "basic, wildcard shorthand, then name shorthand",
+        "input_base64": "JC4qLmE=",
+        "accepted": true
+    },
+    {
+        "name": "basic, multiple selectors",
+        "input_base64": "JFswLDJd",
+        "accepted": true
+    },
+    {
+        "name": "basic, multiple selectors, space instead of comma",
+        "input_base64": "JFswIDJd",
+        "accepted": false
+    },
+    {
+        "name": "basic, selector, leading comma",
+        "input_base64": "JFssMF0=",
+        "accepted": false
+    },
+    {
+        "name": "basic, selector, trailing comma",
+        "input_base64": "JFswLF0=",
+        "accepted": false
+    },
+    {
+        "name": "basic, selector, trailing comma, space",
+        "input_base64": "JFswLCBd",
+        "accepted": false
+    },
+    {
+        "name": "basic, multiple selectors, name and index, array data",
+        "input_base64": "JFsnYScsMV0=",
+        "accepted": true
+    },
+    {
+        "name": "basic, multiple selectors, name and index, object data",
+        "input_base64": "JFsnYScsMV0=",
+        "accepted": true
+    },
+    {
+        "name": "basic, multiple selectors, index and slice",
+        "input_base64": "JFsxLDU6N10=",
+        "accepted": true
+    },
+    {
+        "name": "basic, multiple selectors, index and slice, overlapping",
+        "input_base64": "JFsxLDA6M10=",
+        "accepted": true
+    },
+    {
+        "name": "basic, multiple selectors, duplicate index",
+        "input_base64": "JFsxLDFd",
+        "accepted": true
+    },
+    {
+        "name": "basic, multiple selectors, wildcard and index",
+        "input_base64": "JFsqLDFd",
+        "accepted": true
+    },
+    {
+        "name": "basic, multiple selectors, wildcard and name",
+        "input_base64": "JFsqLCdhJ10=",
+        "accepted": true
+    },
+    {
+        "name": "basic, multiple selectors, wildcard and slice",
+        "input_base64": "JFsqLDA6Ml0=",
+        "accepted": true
+    },
+    {
+        "name": "basic, multiple selectors, multiple wildcards",
+        "input_base64": "JFsqLCpd",
+        "accepted": true
+    },
+    {
+        "name": "basic, empty segment",
+        "input_base64": "JFtd",
+        "accepted": false
+    },
+    {
+        "name": "basic, descendant segment, index",
+        "input_base64": "JC4uWzFd",
+        "accepted": true
+    },
+    {
+        "name": "basic, descendant segment, name shorthand",
+        "input_base64": "JC4uYQ==",
+        "accepted": true
+    },
+    {
+        "name": "basic, name shorthand, true",
+        "input_base64": "JC50cnVl",
+        "accepted": true
+    },
+    {
+        "name": "basic, name shorthand, false",
+        "input_base64": "JC5mYWxzZQ==",
+        "accepted": true
+    },
+    {
+        "name": "basic, name shorthand, null",
+        "input_base64": "JC5udWxs",
+        "accepted": true
+    },
+    {
+        "name": "basic, descendant segment, wildcard shorthand, array data",
+        "input_base64": "JC4uKg==",
+        "accepted": true
+    },
+    {
+        "name": "basic, descendant segment, wildcard selector, array data",
+        "input_base64": "JC4uWypd",
+        "accepted": true
+    },
+    {
+        "name": "basic, descendant segment, wildcard selector, nested arrays",
+        "input_base64": "JC4uWypd",
+        "accepted": true
+    },
+    {
+        "name": "basic, descendant segment, wildcard selector, nested objects",
+        "input_base64": "JC4uWypd",
+        "accepted": true
+    },
+    {
+        "name": "basic, descendant segment, wildcard shorthand, object data",
+        "input_base64": "JC4uKg==",
+        "accepted": true
+    },
+    {
+        "name": "basic, descendant segment, wildcard shorthand, nested data",
+        "input_base64": "JC4uKg==",
+        "accepted": true
+    },
+    {
+        "name": "basic, descendant segment, multiple selectors",
+        "input_base64": "JC4uWydhJywnZCdd",
+        "accepted": true
+    },
+    {
+        "name": "basic, descendant segment, object traversal, multiple selectors",
+        "input_base64": "JC4uWydhJywnZCdd",
+        "accepted": true
+    },
+    {
+        "name": "basic, bald descendant segment",
+        "input_base64": "JC4u",
+        "accepted": false
+    },
+    {
+        "name": "basic, current node identifier without filter selector",
+        "input_base64": "JFtALmFd",
+        "accepted": false
+    },
+    {
+        "name": "basic, root node identifier in brackets without filter selector",
+        "input_base64": "JFskLmFd",
+        "accepted": false
+    },
+    {
+        "name": "filter, existence, without segments",
+        "input_base64": "JFs/QF0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, existence",
+        "input_base64": "JFs/QC5hXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, existence, present with null",
+        "input_base64": "JFs/QC5hXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, absolute existence, without segments",
+        "input_base64": "JFs/JF0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, absolute existence, with segments",
+        "input_base64": "JFs/JC4qLmFd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals string, single quotes",
+        "input_base64": "JFs/QC5hPT0nYidd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals numeric string, single quotes",
+        "input_base64": "JFs/QC5hPT0nMSdd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals string, double quotes",
+        "input_base64": "JFs/QC5hPT0iYiJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals numeric string, double quotes",
+        "input_base64": "JFs/QC5hPT0iMSJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number",
+        "input_base64": "JFs/QC5hPT0xXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals null",
+        "input_base64": "JFs/QC5hPT1udWxsXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals null, absent from data",
+        "input_base64": "JFs/QC5hPT1udWxsXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals true",
+        "input_base64": "JFs/QC5hPT10cnVlXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals false",
+        "input_base64": "JFs/QC5hPT1mYWxzZV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals self",
+        "input_base64": "JFs/QD09QF0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, absolute, equals self",
+        "input_base64": "JFs/JD09JF0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals, absent from index selector equals absent from name selector",
+        "input_base64": "JFs/QC5hYnNlbnQ9PUAubGlzdFs5XV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, deep equality, arrays",
+        "input_base64": "JFs/QC5hPT1ALmJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, deep equality, objects",
+        "input_base64": "JFs/QC5hPT1ALmJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals string, single quotes",
+        "input_base64": "JFs/QC5hIT0nYidd",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals numeric string, single quotes",
+        "input_base64": "JFs/QC5hIT0nMSdd",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals string, single quotes, different type",
+        "input_base64": "JFs/QC5hIT0nYidd",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals string, double quotes",
+        "input_base64": "JFs/QC5hIT0iYiJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals numeric string, double quotes",
+        "input_base64": "JFs/QC5hIT0iMSJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals string, double quotes, different types",
+        "input_base64": "JFs/QC5hIT0iYiJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals number",
+        "input_base64": "JFs/QC5hIT0xXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals number, different types",
+        "input_base64": "JFs/QC5hIT0xXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals null",
+        "input_base64": "JFs/QC5hIT1udWxsXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals null, absent from data",
+        "input_base64": "JFs/QC5hIT1udWxsXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals true",
+        "input_base64": "JFs/QC5hIT10cnVlXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, not-equals false",
+        "input_base64": "JFs/QC5hIT1mYWxzZV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than string, single quotes",
+        "input_base64": "JFs/QC5hPCdjJ10=",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than string, double quotes",
+        "input_base64": "JFs/QC5hPCJjIl0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than number",
+        "input_base64": "JFs/QC5hPDEwXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than null",
+        "input_base64": "JFs/QC5hPG51bGxd",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than true",
+        "input_base64": "JFs/QC5hPHRydWVd",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than false",
+        "input_base64": "JFs/QC5hPGZhbHNlXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than or equal to string, single quotes",
+        "input_base64": "JFs/QC5hPD0nYydd",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than or equal to string, double quotes",
+        "input_base64": "JFs/QC5hPD0iYyJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than or equal to number",
+        "input_base64": "JFs/QC5hPD0xMF0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than or equal to null",
+        "input_base64": "JFs/QC5hPD1udWxsXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than or equal to true",
+        "input_base64": "JFs/QC5hPD10cnVlXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than or equal to true, number",
+        "input_base64": "JFs/QC5hPD10cnVlXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, less than or equal to false",
+        "input_base64": "JFs/QC5hPD1mYWxzZV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than string, single quotes",
+        "input_base64": "JFs/QC5hPidjJ10=",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than string, double quotes",
+        "input_base64": "JFs/QC5hPiJjIl0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than number",
+        "input_base64": "JFs/QC5hPjEwXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than null",
+        "input_base64": "JFs/QC5hPm51bGxd",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than true",
+        "input_base64": "JFs/QC5hPnRydWVd",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than false",
+        "input_base64": "JFs/QC5hPmZhbHNlXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than false, number",
+        "input_base64": "JFs/QC5hPmZhbHNlXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than or equal to string, single quotes",
+        "input_base64": "JFs/QC5hPj0nYydd",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than or equal to string, double quotes",
+        "input_base64": "JFs/QC5hPj0iYyJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than or equal to number",
+        "input_base64": "JFs/QC5hPj0xMF0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than or equal to null",
+        "input_base64": "JFs/QC5hPj1udWxsXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than or equal to true",
+        "input_base64": "JFs/QC5hPj10cnVlXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, greater than or equal to false",
+        "input_base64": "JFs/QC5hPj1mYWxzZV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, exists and not-equals null, absent from data",
+        "input_base64": "JFs/QC5hJiZALmEhPW51bGxd",
+        "accepted": true
+    },
+    {
+        "name": "filter, exists and exists, data false",
+        "input_base64": "JFs/QC5hJiZALmJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, exists or exists, data false",
+        "input_base64": "JFs/QC5hfHxALmJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, and",
+        "input_base64": "JFs/QC5hPjAmJkAuYTwxMF0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, or",
+        "input_base64": "JFs/QC5hPT0nYid8fEAuYT09J2QnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, not expression",
+        "input_base64": "JFs/IShALmE9PSdiJyld",
+        "accepted": true
+    },
+    {
+        "name": "filter, not exists",
+        "input_base64": "JFs/IUAuYV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, not exists, data null",
+        "input_base64": "JFs/IUAuYV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, non-singular existence, wildcard",
+        "input_base64": "JFs/QC4qXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, non-singular existence, multiple",
+        "input_base64": "JFs/QFswLCAwLCAnYSddXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, non-singular existence, slice",
+        "input_base64": "JFs/QFswOjJdXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, non-singular existence, negated",
+        "input_base64": "JFs/IUAuKl0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, non-singular query in comparison, slice",
+        "input_base64": "JFs/QFswOjBdPT0wXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, non-singular query in comparison, all children",
+        "input_base64": "JFs/QFsqXT09MF0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, non-singular query in comparison, descendants",
+        "input_base64": "JFs/QC4uYT09MF0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, non-singular query in comparison, combined",
+        "input_base64": "JFs/QC5hWypdLmE9PTBd",
+        "accepted": false
+    },
+    {
+        "name": "filter, nested",
+        "input_base64": "JFs/QFs/QD4xXV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, name segment on primitive, selects nothing",
+        "input_base64": "JFs/QC5hID09IDFd",
+        "accepted": true
+    },
+    {
+        "name": "filter, name segment on array, selects nothing",
+        "input_base64": "JFs/QFsnMCddID09IDVd",
+        "accepted": true
+    },
+    {
+        "name": "filter, index segment on object, selects nothing",
+        "input_base64": "JFs/QFswXSA9PSA1XQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, followed by name selector",
+        "input_base64": "JFs/QC5hPT0xXS5iLng=",
+        "accepted": true
+    },
+    {
+        "name": "filter, followed by child segment that selects multiple elements",
+        "input_base64": "JFs/QC56PT0nXyddWyd4JywneSdd",
+        "accepted": true
+    },
+    {
+        "name": "filter, relative non-singular query, index, equal",
+        "input_base64": "JFs/KEBbMCwgMF09PTQyKV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, index, not equal",
+        "input_base64": "JFs/KEBbMCwgMF0hPTQyKV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, index, less-or-equal",
+        "input_base64": "JFs/KEBbMCwgMF08PTQyKV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, name, equal",
+        "input_base64": "JFs/KEBbJ2EnLCAnYSddPT00Mild",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, name, not equal",
+        "input_base64": "JFs/KEBbJ2EnLCAnYSddIT00Mild",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, name, less-or-equal",
+        "input_base64": "JFs/KEBbJ2EnLCAnYSddPD00Mild",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, combined, equal",
+        "input_base64": "JFs/KEBbMCwgJzAnXT09NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, combined, not equal",
+        "input_base64": "JFs/KEBbMCwgJzAnXSE9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, combined, less-or-equal",
+        "input_base64": "JFs/KEBbMCwgJzAnXTw9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, wildcard, equal",
+        "input_base64": "JFs/KEAuKj09NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, wildcard, not equal",
+        "input_base64": "JFs/KEAuKiE9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, wildcard, less-or-equal",
+        "input_base64": "JFs/KEAuKjw9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, slice, equal",
+        "input_base64": "JFs/KEBbMDowXT09NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, slice, not equal",
+        "input_base64": "JFs/KEBbMDowXSE9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, relative non-singular query, slice, less-or-equal",
+        "input_base64": "JFs/KEBbMDowXTw9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, index, equal",
+        "input_base64": "JFs/KCRbMCwgMF09PTQyKV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, index, not equal",
+        "input_base64": "JFs/KCRbMCwgMF0hPTQyKV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, index, less-or-equal",
+        "input_base64": "JFs/KCRbMCwgMF08PTQyKV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, name, equal",
+        "input_base64": "JFs/KCRbJ2EnLCAnYSddPT00Mild",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, name, not equal",
+        "input_base64": "JFs/KCRbJ2EnLCAnYSddIT00Mild",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, name, less-or-equal",
+        "input_base64": "JFs/KCRbJ2EnLCAnYSddPD00Mild",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, combined, equal",
+        "input_base64": "JFs/KCRbMCwgJzAnXT09NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, combined, not equal",
+        "input_base64": "JFs/KCRbMCwgJzAnXSE9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, combined, less-or-equal",
+        "input_base64": "JFs/KCRbMCwgJzAnXTw9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, wildcard, equal",
+        "input_base64": "JFs/KCQuKj09NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, wildcard, not equal",
+        "input_base64": "JFs/KCQuKiE9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, wildcard, less-or-equal",
+        "input_base64": "JFs/KCQuKjw9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, slice, equal",
+        "input_base64": "JFs/KCRbMDowXT09NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, slice, not equal",
+        "input_base64": "JFs/KCRbMDowXSE9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, absolute non-singular query, slice, less-or-equal",
+        "input_base64": "JFs/KCRbMDowXTw9NDIpXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, multiple selectors",
+        "input_base64": "JFs/QC5hLD9ALmJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, multiple selectors, comparison",
+        "input_base64": "JFs/QC5hPT0nYicsP0AuYj09J3gnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, multiple selectors, overlapping",
+        "input_base64": "JFs/QC5hLD9ALmRd",
+        "accepted": true
+    },
+    {
+        "name": "filter, multiple selectors, filter and index",
+        "input_base64": "JFs/QC5hLDFd",
+        "accepted": true
+    },
+    {
+        "name": "filter, multiple selectors, filter and wildcard",
+        "input_base64": "JFs/QC5hLCpd",
+        "accepted": true
+    },
+    {
+        "name": "filter, multiple selectors, filter and slice",
+        "input_base64": "JFs/QC5hLDE6XQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, multiple selectors, comparison filter, index and slice",
+        "input_base64": "JFsxLCA/QC5hPT0nYicsIDE6XQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, zero and negative zero",
+        "input_base64": "JFs/QC5hPT0wXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, negative zero and zero",
+        "input_base64": "JFs/QC5hPT0tMF0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, with and without decimal fraction",
+        "input_base64": "JFs/QC5hPT0xLjBd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, exponent",
+        "input_base64": "JFs/QC5hPT0xZTJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, exponent upper e",
+        "input_base64": "JFs/QC5hPT0xRTJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, positive exponent",
+        "input_base64": "JFs/QC5hPT0xZSsyXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, negative exponent",
+        "input_base64": "JFs/QC5hPT0xZS0yXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, exponent 0",
+        "input_base64": "JFs/QC5hPT0xZTBd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, exponent -0",
+        "input_base64": "JFs/QC5hPT0xZS0wXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, exponent +0",
+        "input_base64": "JFs/QC5hPT0xZSswXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, exponent leading -0",
+        "input_base64": "JFs/QC5hPT0xZS0wMl0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, exponent +00",
+        "input_base64": "JFs/QC5hPT0xZSswMF0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, decimal fraction",
+        "input_base64": "JFs/QC5hPT0xLjFd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, decimal fraction, trailing 0",
+        "input_base64": "JFs/QC5hPT0xLjEwXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, decimal fraction, exponent",
+        "input_base64": "JFs/QC5hPT0xLjFlMl0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, decimal fraction, positive exponent",
+        "input_base64": "JFs/QC5hPT0xLjFlKzJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, decimal fraction, negative exponent",
+        "input_base64": "JFs/QC5hPT0xLjFlLTJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals number, invalid plus",
+        "input_base64": "JFs/QC5hPT0rMV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid minus space",
+        "input_base64": "JFs/QC5hPT0tIDFd",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid double minus",
+        "input_base64": "JFs/QC5hPT0tLTFd",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid no int digit",
+        "input_base64": "JFs/QC5hPT0uMV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid minus no int digit",
+        "input_base64": "JFs/QC5hPT0tLjFd",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid 00",
+        "input_base64": "JFs/QC5hPT0wMF0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid leading 0",
+        "input_base64": "JFs/QC5hPT0wMV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid no fractional digit",
+        "input_base64": "JFs/QC5hPT0xLl0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid middle minus",
+        "input_base64": "JFs/QC5hPT0xLi0xXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid no fractional digit e",
+        "input_base64": "JFs/QC5hPT0xLmUxXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid no e digit",
+        "input_base64": "JFs/QC5hPT0xZV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid no e digit minus",
+        "input_base64": "JFs/QC5hPT0xZS1d",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid double e",
+        "input_base64": "JFs/QC5hPT0xZUUxXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid e digit double minus",
+        "input_base64": "JFs/QC5hPT0xZS0tMV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid e digit plus minus",
+        "input_base64": "JFs/QC5hPT0xZSstMV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid e decimal",
+        "input_base64": "JFs/QC5hPT0xZTIuM10=",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals number, invalid multi e",
+        "input_base64": "JFs/QC5hPT0xZTJlM10=",
+        "accepted": false
+    },
+    {
+        "name": "filter, equals, special nothing",
+        "input_base64": "JC52YWx1ZXNbP2xlbmd0aChALmEpID09IHZhbHVlKCQuLmMpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals, empty node list and empty node list",
+        "input_base64": "JFs/QC5hID09IEAuYl0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, equals, empty node list and special nothing",
+        "input_base64": "JFs/QC5hID09IGxlbmd0aChALmIpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, object data",
+        "input_base64": "JFs/QDwzXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, two consecutive ands",
+        "input_base64": "JFs/QC5hICYmIEAuYiAmJiBALmNd",
+        "accepted": true
+    },
+    {
+        "name": "filter, two consecutive ors",
+        "input_base64": "JFs/QC5hIHx8IEAuYiB8fCBALmNd",
+        "accepted": true
+    },
+    {
+        "name": "filter, multiple consecutive ands",
+        "input_base64": "JFs/QC5hICYmIEAuYiAmJiBALmMgJiYgQC5kICYmIEAuZV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, multiple consecutive ors",
+        "input_base64": "JFs/QC5hIHx8IEAuYiB8fCBALmMgfHwgQC5kIHx8IEAuZV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, multiple consecutive ors and ands",
+        "input_base64": "JFs/QC5hICYmIEAuYiAmJiBALmMgfHwgQC5kIHx8IEAuZV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, and binds more tightly than or",
+        "input_base64": "JFs/QC5hIHx8IEAuYiAmJiBALmNd",
+        "accepted": true
+    },
+    {
+        "name": "filter, left to right evaluation",
+        "input_base64": "JFs/QC5hICYmIEAuYiB8fCBALmNd",
+        "accepted": true
+    },
+    {
+        "name": "filter, group terms, left",
+        "input_base64": "JFs/KEAuYSB8fCBALmIpICYmIEAuY10=",
+        "accepted": true
+    },
+    {
+        "name": "filter, group terms, right",
+        "input_base64": "JFs/QC5hICYmIChALmIgfHwgQC5jKV0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, string literal, single quote in double quotes",
+        "input_base64": "JFs/QCA9PSAicXVvdGVkJyBsaXRlcmFsIl0=",
+        "accepted": true
+    },
+    {
+        "name": "filter, string literal, double quote in single quotes",
+        "input_base64": "JFs/QCA9PSAncXVvdGVkIiBsaXRlcmFsJ10=",
+        "accepted": true
+    },
+    {
+        "name": "filter, string literal, escaped single quote in single quotes",
+        "input_base64": "JFs/QCA9PSAncXVvdGVkXCcgbGl0ZXJhbCdd",
+        "accepted": true
+    },
+    {
+        "name": "filter, string literal, escaped double quote in double quotes",
+        "input_base64": "JFs/QCA9PSAicXVvdGVkXCIgbGl0ZXJhbCJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, literal true must be compared",
+        "input_base64": "JFs/dHJ1ZV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, literal false must be compared",
+        "input_base64": "JFs/ZmFsc2Vd",
+        "accepted": false
+    },
+    {
+        "name": "filter, literal string must be compared",
+        "input_base64": "JFs/J2FiYydd",
+        "accepted": false
+    },
+    {
+        "name": "filter, literal int must be compared",
+        "input_base64": "JFs/Ml0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, literal float must be compared",
+        "input_base64": "JFs/Mi4yXQ==",
+        "accepted": false
+    },
+    {
+        "name": "filter, literal null must be compared",
+        "input_base64": "JFs/bnVsbF0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, and, literals must be compared",
+        "input_base64": "JFs/dHJ1ZSAmJiBmYWxzZV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, or, literals must be compared",
+        "input_base64": "JFs/dHJ1ZSB8fCBmYWxzZV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, and, right hand literal must be compared",
+        "input_base64": "JFs/dHJ1ZSA9PSBmYWxzZSAmJiBmYWxzZV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, or, right hand literal must be compared",
+        "input_base64": "JFs/dHJ1ZSA9PSBmYWxzZSB8fCBmYWxzZV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, and, left hand literal must be compared",
+        "input_base64": "JFs/ZmFsc2UgJiYgdHJ1ZSA9PSBmYWxzZV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, or, left hand literal must be compared",
+        "input_base64": "JFs/ZmFsc2UgfHwgdHJ1ZSA9PSBmYWxzZV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, true, incorrectly capitalized",
+        "input_base64": "JFs/QD09VHJ1ZV0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, quoted True, double quotes",
+        "input_base64": "JFs/QC5hPT0iVHJ1ZSJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, quoted True, single quotes",
+        "input_base64": "JFs/QC5hPT0nVHJ1ZSdd",
+        "accepted": true
+    },
+    {
+        "name": "filter, false, incorrectly capitalized",
+        "input_base64": "JFs/QD09RmFsc2Vd",
+        "accepted": false
+    },
+    {
+        "name": "filter, quoted False, double quotes",
+        "input_base64": "JFs/QC5hPT0iRmFsc2UiXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, quoted False, single quotes",
+        "input_base64": "JFs/QC5hPT0nRmFsc2UnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "filter, null, incorrectly capitalized",
+        "input_base64": "JFs/QD09TnVsbF0=",
+        "accepted": false
+    },
+    {
+        "name": "filter, quoted Null, double quotes",
+        "input_base64": "JFs/QC5hPT0iTnVsbCJd",
+        "accepted": true
+    },
+    {
+        "name": "filter, quoted Null, single quotes",
+        "input_base64": "JFs/QC5hPT0nTnVsbCdd",
+        "accepted": true
+    },
+    {
+        "name": "index selector, first element",
+        "input_base64": "JFswXQ==",
+        "accepted": true
+    },
+    {
+        "name": "index selector, second element",
+        "input_base64": "JFsxXQ==",
+        "accepted": true
+    },
+    {
+        "name": "index selector, out of bound",
+        "input_base64": "JFsyXQ==",
+        "accepted": true
+    },
+    {
+        "name": "index selector, min exact index",
+        "input_base64": "JFstOTAwNzE5OTI1NDc0MDk5MV0=",
+        "accepted": true
+    },
+    {
+        "name": "index selector, max exact index",
+        "input_base64": "JFs5MDA3MTk5MjU0NzQwOTkxXQ==",
+        "accepted": true
+    },
+    {
+        "name": "index selector, min exact index - 1",
+        "input_base64": "JFstOTAwNzE5OTI1NDc0MDk5Ml0=",
+        "accepted": false
+    },
+    {
+        "name": "index selector, max exact index + 1",
+        "input_base64": "JFs5MDA3MTk5MjU0NzQwOTkyXQ==",
+        "accepted": false
+    },
+    {
+        "name": "index selector, overflowing index",
+        "input_base64": "JFsyMzE1ODQxNzg0NzQ2MzIzOTA4NDcxNDE5NzAwMTczNzU4MTU3MDY1Mzk5NjkzMzEyODExMjgwNzg5MTUxNjgwMTU4MjYyNTkyNzk4NzJd",
+        "accepted": false
+    },
+    {
+        "name": "index selector, not actually an index, overflowing index leads into general text",
+        "input_base64": "JFsyMzE1ODQxNzg0NzQ2MzIzOTA4NDcxNDE5NzAwMTczNzU4MTU3MDY1Mzk5NjkzMzEyODExMjgwNzg5MTUxNjhTb21lUmFuZG9tVGV4dF0=",
+        "accepted": false
+    },
+    {
+        "name": "index selector, negative",
+        "input_base64": "JFstMV0=",
+        "accepted": true
+    },
+    {
+        "name": "index selector, more negative",
+        "input_base64": "JFstMl0=",
+        "accepted": true
+    },
+    {
+        "name": "index selector, negative out of bound",
+        "input_base64": "JFstM10=",
+        "accepted": true
+    },
+    {
+        "name": "index selector, on object",
+        "input_base64": "JFswXQ==",
+        "accepted": true
+    },
+    {
+        "name": "index selector, leading 0",
+        "input_base64": "JFswMV0=",
+        "accepted": false
+    },
+    {
+        "name": "index selector, decimal",
+        "input_base64": "JFsxLjBd",
+        "accepted": false
+    },
+    {
+        "name": "index selector, plus",
+        "input_base64": "JFsrMV0=",
+        "accepted": false
+    },
+    {
+        "name": "index selector, minus space",
+        "input_base64": "JFstIDFd",
+        "accepted": false
+    },
+    {
+        "name": "index selector, -0",
+        "input_base64": "JFstMF0=",
+        "accepted": false
+    },
+    {
+        "name": "index selector, leading -0",
+        "input_base64": "JFstMDFd",
+        "accepted": false
+    },
+    {
+        "name": "index selector, null element",
+        "input_base64": "JFsxXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes",
+        "input_base64": "JFsiYSJd",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, absent data",
+        "input_base64": "JFsiYyJd",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, array data",
+        "input_base64": "JFsiYSJd",
+        "accepted": true
+    },
+    {
+        "name": "name selector, name, double quotes, contains single quote",
+        "input_base64": "JFsiYSciXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, name, double quotes, nested",
+        "input_base64": "JFsiYSJdWyJiIl1bImMiXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0000",
+        "input_base64": "JFsiACJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0001",
+        "input_base64": "JFsiASJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0002",
+        "input_base64": "JFsiAiJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0003",
+        "input_base64": "JFsiAyJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0004",
+        "input_base64": "JFsiBCJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0005",
+        "input_base64": "JFsiBSJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0006",
+        "input_base64": "JFsiBiJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0007",
+        "input_base64": "JFsiByJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0008",
+        "input_base64": "JFsiCCJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0009",
+        "input_base64": "JFsiCSJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+000A",
+        "input_base64": "JFsiCiJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+000B",
+        "input_base64": "JFsiCyJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+000C",
+        "input_base64": "JFsiDCJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+000D",
+        "input_base64": "JFsiDSJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+000E",
+        "input_base64": "JFsiDiJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+000F",
+        "input_base64": "JFsiDyJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0010",
+        "input_base64": "JFsiECJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0011",
+        "input_base64": "JFsiESJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0012",
+        "input_base64": "JFsiEiJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0013",
+        "input_base64": "JFsiEyJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0014",
+        "input_base64": "JFsiFCJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0015",
+        "input_base64": "JFsiFSJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0016",
+        "input_base64": "JFsiFiJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0017",
+        "input_base64": "JFsiFyJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0018",
+        "input_base64": "JFsiGCJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0019",
+        "input_base64": "JFsiGSJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+001A",
+        "input_base64": "JFsiGiJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+001B",
+        "input_base64": "JFsiGyJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+001C",
+        "input_base64": "JFsiHCJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+001D",
+        "input_base64": "JFsiHSJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+001E",
+        "input_base64": "JFsiHiJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+001F",
+        "input_base64": "JFsiHyJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded U+0020",
+        "input_base64": "JFsiICJd",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, embedded U+007F",
+        "input_base64": "JFsifyJd",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, supplementary plane character",
+        "input_base64": "JFsi8J2EniJd",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped double quote",
+        "input_base64": "JFsiXCIiXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped reverse solidus",
+        "input_base64": "JFsiXFwiXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped solidus",
+        "input_base64": "JFsiXC8iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped backspace",
+        "input_base64": "JFsiXGIiXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped form feed",
+        "input_base64": "JFsiXGYiXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped line feed",
+        "input_base64": "JFsiXG4iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped carriage return",
+        "input_base64": "JFsiXHIiXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped tab",
+        "input_base64": "JFsiXHQiXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped \u263a, upper case hex",
+        "input_base64": "JFsiXHUyNjNBIl0=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped \u263a, lower case hex",
+        "input_base64": "JFsiXHUyNjNhIl0=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped \u00e9, lower case hex e",
+        "input_base64": "JFsiXHUwMGU5Il0=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, escaped control character",
+        "input_base64": "JFsiXHUwMDFmIl0=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, surrogate pair \ud834\udd1e",
+        "input_base64": "JFsiXHVEODM0XHVERDFFIl0=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, surrogate pair \ud83d\ude00",
+        "input_base64": "JFsiXHVEODNEXHVERTAwIl0=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, before high surrogates",
+        "input_base64": "JFsiXHVEN0ZGXHVEN0ZGIl0=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, after low surrogates",
+        "input_base64": "JFsiXHVFMDAwXHVFMDAwIl0=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, double quotes, invalid escaped single quote",
+        "input_base64": "JFsiXCciXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, embedded double quote",
+        "input_base64": "JFsiIiJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, incomplete escape",
+        "input_base64": "JFsiXCJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, escape at end of line",
+        "input_base64": "JFsiXAoiXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, question mark escape",
+        "input_base64": "JFsiXD8iXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, bell escape",
+        "input_base64": "JFsiXGEiXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, vertical tab escape",
+        "input_base64": "JFsiXHYiXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, 0 escape",
+        "input_base64": "JFsiXDAiXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, x escape",
+        "input_base64": "JFsiXHgxMiJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, n escape",
+        "input_base64": "JFsiXE57TEFUSU4gQ0FQSVRBTCBMRVRURVIgQX0iXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, unicode escape no hex",
+        "input_base64": "JFsiXHUiXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, unicode escape too few hex",
+        "input_base64": "JFsiXHUxMjMiXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, unicode escape upper u",
+        "input_base64": "JFsiXFUxMjM0Il0=",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, unicode escape upper u long",
+        "input_base64": "JFsiXFUwMDEwRkZGRiJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, unicode escape plus",
+        "input_base64": "JFsiXHUrMTIzNCJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, unicode escape brackets",
+        "input_base64": "JFsiXHV7MTIzNH0iXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, unicode escape brackets long",
+        "input_base64": "JFsiXHV7MTBmZmZmfSJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, single high surrogate",
+        "input_base64": "JFsiXHVEODAwIl0=",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, single low surrogate",
+        "input_base64": "JFsiXHVEQzAwIl0=",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, high high surrogate",
+        "input_base64": "JFsiXHVEODAwXHVEODAwIl0=",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, low low surrogate",
+        "input_base64": "JFsiXHVEQzAwXHVEQzAwIl0=",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, surrogate non-surrogate",
+        "input_base64": "JFsiXHVEODAwXHUxMjM0Il0=",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, non-surrogate surrogate",
+        "input_base64": "JFsiXHUxMjM0XHVEQzAwIl0=",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, surrogate supplementary",
+        "input_base64": "JFsiXHVEODAw8J2EniJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, supplementary surrogate",
+        "input_base64": "JFsi8J2Enlx1REMwMCJd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, surrogate incomplete low",
+        "input_base64": "JFsiXHVEODAwXHVEQzAiXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes",
+        "input_base64": "JFsnYSdd",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, absent data",
+        "input_base64": "JFsnYydd",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, array data",
+        "input_base64": "JFsnYSdd",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0000",
+        "input_base64": "JFsnACdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0001",
+        "input_base64": "JFsnASdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0002",
+        "input_base64": "JFsnAidd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0003",
+        "input_base64": "JFsnAydd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0004",
+        "input_base64": "JFsnBCdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0005",
+        "input_base64": "JFsnBSdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0006",
+        "input_base64": "JFsnBidd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0007",
+        "input_base64": "JFsnBydd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0008",
+        "input_base64": "JFsnCCdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0009",
+        "input_base64": "JFsnCSdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+000A",
+        "input_base64": "JFsnCidd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+000B",
+        "input_base64": "JFsnCydd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+000C",
+        "input_base64": "JFsnDCdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+000D",
+        "input_base64": "JFsnDSdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+000E",
+        "input_base64": "JFsnDidd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+000F",
+        "input_base64": "JFsnDydd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0010",
+        "input_base64": "JFsnECdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0011",
+        "input_base64": "JFsnESdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0012",
+        "input_base64": "JFsnEidd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0013",
+        "input_base64": "JFsnEydd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0014",
+        "input_base64": "JFsnFCdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0015",
+        "input_base64": "JFsnFSdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0016",
+        "input_base64": "JFsnFidd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0017",
+        "input_base64": "JFsnFydd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0018",
+        "input_base64": "JFsnGCdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0019",
+        "input_base64": "JFsnGSdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+001A",
+        "input_base64": "JFsnGidd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+001B",
+        "input_base64": "JFsnGydd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+001C",
+        "input_base64": "JFsnHCdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+001D",
+        "input_base64": "JFsnHSdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+001E",
+        "input_base64": "JFsnHidd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+001F",
+        "input_base64": "JFsnHydd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded U+0020",
+        "input_base64": "JFsnICdd",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped single quote",
+        "input_base64": "JFsnXCcnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped reverse solidus",
+        "input_base64": "JFsnXFwnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped solidus",
+        "input_base64": "JFsnXC8nXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped backspace",
+        "input_base64": "JFsnXGInXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped form feed",
+        "input_base64": "JFsnXGYnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped line feed",
+        "input_base64": "JFsnXG4nXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped carriage return",
+        "input_base64": "JFsnXHInXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped tab",
+        "input_base64": "JFsnXHQnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped \u263a, upper case hex",
+        "input_base64": "JFsnXHUyNjNBJ10=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped \u263a, lower case hex",
+        "input_base64": "JFsnXHUyNjNhJ10=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped \u00e9, lower case hex e",
+        "input_base64": "JFsnXHUwMGU5J10=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, escaped control character",
+        "input_base64": "JFsnXHUwMDFmJ10=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, surrogate pair \ud834\udd1e",
+        "input_base64": "JFsnXHVEODM0XHVERDFFJ10=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, surrogate pair \ud83d\ude00",
+        "input_base64": "JFsnXHVEODNEXHVERTAwJ10=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, invalid escaped double quote",
+        "input_base64": "JFsnXCInXQ==",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, embedded single quote",
+        "input_base64": "JFsnJydd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, single quotes, incomplete escape",
+        "input_base64": "JFsnXCdd",
+        "accepted": false
+    },
+    {
+        "name": "name selector, double quotes, empty",
+        "input_base64": "JFsiIl0=",
+        "accepted": true
+    },
+    {
+        "name": "name selector, single quotes, empty",
+        "input_base64": "JFsnJ10=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, slice selector",
+        "input_base64": "JFsxOjNd",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, slice selector with step",
+        "input_base64": "JFsxOjY6Ml0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, slice selector with everything omitted, short form",
+        "input_base64": "JFs6XQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, slice selector with everything omitted, long form",
+        "input_base64": "JFs6Ol0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, slice selector with start omitted",
+        "input_base64": "JFs6Ml0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, slice selector with start and end omitted",
+        "input_base64": "JFs6OjJd",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, negative step with default start and end",
+        "input_base64": "JFs6Oi0xXQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, negative step with default start",
+        "input_base64": "JFs6MDotMV0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, negative step with default end",
+        "input_base64": "JFsyOjotMV0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, larger negative step",
+        "input_base64": "JFs6Oi0yXQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, negative range with default step",
+        "input_base64": "JFstMTotM10=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, negative range with negative step",
+        "input_base64": "JFstMTotMzotMV0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, negative range with larger negative step",
+        "input_base64": "JFstMTotNjotMl0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, larger negative range with larger negative step",
+        "input_base64": "JFstMTotNzotMl0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, negative from, positive to",
+        "input_base64": "JFstNTo3XQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, negative from",
+        "input_base64": "JFstMjpd",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, positive from, negative to",
+        "input_base64": "JFsxOi0xXQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, negative from, positive to, negative step",
+        "input_base64": "JFstMToxOi0xXQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, positive from, negative to, negative step",
+        "input_base64": "JFs3Oi01Oi0xXQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, in serial, on nested array",
+        "input_base64": "JFsxOjNdWzE6Ml0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, in serial, on flat array",
+        "input_base64": "JFsxOjNdWzo6XQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, negative from, negative to, positive step",
+        "input_base64": "JFstNTotMl0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, too many colons",
+        "input_base64": "JFsxOjI6Mzo0XQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, non-integer array index",
+        "input_base64": "JFsxOjI6YV0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, zero step",
+        "input_base64": "JFsxOjI6MF0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, empty range",
+        "input_base64": "JFsyOjJd",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, slice selector with everything omitted with empty array",
+        "input_base64": "JFs6XQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, negative step with empty array",
+        "input_base64": "JFs6Oi0xXQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, maximal range with positive step",
+        "input_base64": "JFswOjEwXQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, maximal range with negative step",
+        "input_base64": "JFs5OjA6LTFd",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, excessively large to value",
+        "input_base64": "JFsyOjExMzY2Nzc3NjAwNF0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, excessively small from value",
+        "input_base64": "JFstMTEzNjY3Nzc2MDA0OjFd",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, excessively large from value with negative step",
+        "input_base64": "JFsxMTM2Njc3NzYwMDQ6MDotMV0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, excessively small to value with negative step",
+        "input_base64": "JFszOi0xMTM2Njc3NzYwMDQ6LTFd",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, excessively large step",
+        "input_base64": "JFsxOjEwOjExMzY2Nzc3NjAwNF0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, excessively small step",
+        "input_base64": "JFstMTotMTA6LTExMzY2Nzc3NjAwNF0=",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, start, min exact",
+        "input_base64": "JFstOTAwNzE5OTI1NDc0MDk5MTo6XQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, start, max exact",
+        "input_base64": "JFs5MDA3MTk5MjU0NzQwOTkxOjpd",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, start, min exact - 1",
+        "input_base64": "JFstOTAwNzE5OTI1NDc0MDk5Mjo6XQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, start, max exact + 1",
+        "input_base64": "JFs5MDA3MTk5MjU0NzQwOTkyOjpd",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, end, min exact",
+        "input_base64": "JFs6LTkwMDcxOTkyNTQ3NDA5OTE6XQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, end, max exact",
+        "input_base64": "JFs6OTAwNzE5OTI1NDc0MDk5MTpd",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, end, min exact - 1",
+        "input_base64": "JFs6LTkwMDcxOTkyNTQ3NDA5OTI6XQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, end, max exact + 1",
+        "input_base64": "JFs6OTAwNzE5OTI1NDc0MDk5Mjpd",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, step, min exact",
+        "input_base64": "JFs6Oi05MDA3MTk5MjU0NzQwOTkxXQ==",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, step, max exact",
+        "input_base64": "JFs6OjkwMDcxOTkyNTQ3NDA5OTFd",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, step, min exact - 1",
+        "input_base64": "JFs6Oi05MDA3MTk5MjU0NzQwOTkyXQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, step, max exact + 1",
+        "input_base64": "JFs6OjkwMDcxOTkyNTQ3NDA5OTJd",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, overflowing to value",
+        "input_base64": "JFsyOjIzMTU4NDE3ODQ3NDYzMjM5MDg0NzE0MTk3MDAxNzM3NTgxNTcwNjUzOTk2OTMzMTI4MTEyODA3ODkxNTE2ODAxNTgyNjI1OTI3OTg3Ml0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, underflowing from value",
+        "input_base64": "JFstMjMxNTg0MTc4NDc0NjMyMzkwODQ3MTQxOTcwMDE3Mzc1ODE1NzA2NTM5OTY5MzMxMjgxMTI4MDc4OTE1MTY4MDE1ODI2MjU5Mjc5ODcyOjFd",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, overflowing from value with negative step",
+        "input_base64": "JFsyMzE1ODQxNzg0NzQ2MzIzOTA4NDcxNDE5NzAwMTczNzU4MTU3MDY1Mzk5NjkzMzEyODExMjgwNzg5MTUxNjgwMTU4MjYyNTkyNzk4NzI6MDotMV0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, underflowing to value with negative step",
+        "input_base64": "JFszOi0yMzE1ODQxNzg0NzQ2MzIzOTA4NDcxNDE5NzAwMTczNzU4MTU3MDY1Mzk5NjkzMzEyODExMjgwNzg5MTUxNjgwMTU4MjYyNTkyNzk4NzI6LTFd",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, overflowing step",
+        "input_base64": "JFsxOjEwOjIzMTU4NDE3ODQ3NDYzMjM5MDg0NzE0MTk3MDAxNzM3NTgxNTcwNjUzOTk2OTMzMTI4MTEyODA3ODkxNTE2ODAxNTgyNjI1OTI3OTg3Ml0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, underflowing step",
+        "input_base64": "JFstMTotMTA6LTIzMTU4NDE3ODQ3NDYzMjM5MDg0NzE0MTk3MDAxNzM3NTgxNTcwNjUzOTk2OTMzMTI4MTEyODA3ODkxNTE2ODAxNTgyNjI1OTI3OTg3Ml0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, start, leading 0",
+        "input_base64": "JFswMTo6XQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, start, decimal",
+        "input_base64": "JFsxLjA6Ol0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, start, plus",
+        "input_base64": "JFsrMTo6XQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, start, minus space",
+        "input_base64": "JFstIDE6Ol0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, start, -0",
+        "input_base64": "JFstMDo6XQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, start, leading -0",
+        "input_base64": "JFstMDE6Ol0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, end, leading 0",
+        "input_base64": "JFs6MDE6XQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, end, decimal",
+        "input_base64": "JFs6MS4wOl0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, end, plus",
+        "input_base64": "JFs6KzE6XQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, end, minus space",
+        "input_base64": "JFs6LSAxOl0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, end, -0",
+        "input_base64": "JFs6LTA6XQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, end, leading -0",
+        "input_base64": "JFs6LTAxOl0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, step, leading 0",
+        "input_base64": "JFs6OjAxXQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, step, decimal",
+        "input_base64": "JFs6OjEuMF0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, step, plus",
+        "input_base64": "JFs6OisxXQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, step, minus space",
+        "input_base64": "JFs6Oi0gMV0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, step, -0",
+        "input_base64": "JFs6Oi0wXQ==",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, step, leading -0",
+        "input_base64": "JFs6Oi0wMV0=",
+        "accepted": false
+    },
+    {
+        "name": "slice selector, explicit start, omitted end and step",
+        "input_base64": "JFs5Ojpd",
+        "accepted": true
+    },
+    {
+        "name": "slice selector, explicit start equal to length, omitted end and step",
+        "input_base64": "JFsxMDo6XQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, count, count function",
+        "input_base64": "JFs/Y291bnQoQC4uKik+Ml0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, count, single-node arg",
+        "input_base64": "JFs/Y291bnQoQC5hKT4xXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, count, multiple-selector arg",
+        "input_base64": "JFs/Y291bnQoQFsnYScsJ2QnXSk+MV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, count, non-query arg, number",
+        "input_base64": "JFs/Y291bnQoMSk+Ml0=",
+        "accepted": false
+    },
+    {
+        "name": "functions, count, non-query arg, string",
+        "input_base64": "JFs/Y291bnQoJ3N0cmluZycpPjJd",
+        "accepted": false
+    },
+    {
+        "name": "functions, count, non-query arg, true",
+        "input_base64": "JFs/Y291bnQodHJ1ZSk+Ml0=",
+        "accepted": false
+    },
+    {
+        "name": "functions, count, non-query arg, false",
+        "input_base64": "JFs/Y291bnQoZmFsc2UpPjJd",
+        "accepted": false
+    },
+    {
+        "name": "functions, count, non-query arg, null",
+        "input_base64": "JFs/Y291bnQobnVsbCk+Ml0=",
+        "accepted": false
+    },
+    {
+        "name": "functions, count, result must be compared",
+        "input_base64": "JFs/Y291bnQoQC4uKild",
+        "accepted": false
+    },
+    {
+        "name": "functions, count, no params",
+        "input_base64": "JFs/Y291bnQoKT09MV0=",
+        "accepted": false
+    },
+    {
+        "name": "functions, count, too many params",
+        "input_base64": "JFs/Y291bnQoQC5hLEAuYik9PTFd",
+        "accepted": false
+    },
+    {
+        "name": "functions, length, string data",
+        "input_base64": "JFs/bGVuZ3RoKEAuYSk+PTJd",
+        "accepted": true
+    },
+    {
+        "name": "functions, length, string data, unicode",
+        "input_base64": "JFs/bGVuZ3RoKEApPT0yXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, length, array data",
+        "input_base64": "JFs/bGVuZ3RoKEAuYSk+PTJd",
+        "accepted": true
+    },
+    {
+        "name": "functions, length, missing data",
+        "input_base64": "JFs/bGVuZ3RoKEAuYSk+PTJd",
+        "accepted": true
+    },
+    {
+        "name": "functions, length, number arg",
+        "input_base64": "JFs/bGVuZ3RoKDEpPj0yXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, length, true arg",
+        "input_base64": "JFs/bGVuZ3RoKHRydWUpPj0yXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, length, false arg",
+        "input_base64": "JFs/bGVuZ3RoKGZhbHNlKT49Ml0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, length, null arg",
+        "input_base64": "JFs/bGVuZ3RoKG51bGwpPj0yXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, length, result must be compared",
+        "input_base64": "JFs/bGVuZ3RoKEAuYSld",
+        "accepted": false
+    },
+    {
+        "name": "functions, length, no params",
+        "input_base64": "JFs/bGVuZ3RoKCk9PTFd",
+        "accepted": false
+    },
+    {
+        "name": "functions, length, too many params",
+        "input_base64": "JFs/bGVuZ3RoKEAuYSxALmIpPT0xXQ==",
+        "accepted": false
+    },
+    {
+        "name": "functions, length, non-singular query arg",
+        "input_base64": "JFs/bGVuZ3RoKEAuKik8M10=",
+        "accepted": false
+    },
+    {
+        "name": "functions, length, arg is a function expression",
+        "input_base64": "JC52YWx1ZXNbP2xlbmd0aChALmEpPT1sZW5ndGgodmFsdWUoJC4uYykpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, length, arg is special nothing",
+        "input_base64": "JFs/bGVuZ3RoKHZhbHVlKEAuYSkpPjBd",
+        "accepted": true
+    },
+    {
+        "name": "functions, length, non-singular query arg, multiple index selectors",
+        "input_base64": "JFs/bGVuZ3RoKEBbMSwgMl0pPDNd",
+        "accepted": false
+    },
+    {
+        "name": "functions, length, non-singular query arg, multiple name selectors",
+        "input_base64": "JFs/bGVuZ3RoKEBbJ2EnLCAnYiddKTwzXQ==",
+        "accepted": false
+    },
+    {
+        "name": "functions, match, found match",
+        "input_base64": "JFs/bWF0Y2goQC5hLCAnYS4qJyld",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, double quotes",
+        "input_base64": "JFs/bWF0Y2goQC5hLCAiYS4qIild",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, regex from the document",
+        "input_base64": "JC52YWx1ZXNbP21hdGNoKEAsICQucmVnZXgpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, don't select match",
+        "input_base64": "JFs/IW1hdGNoKEAuYSwgJ2EuKicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, not a match",
+        "input_base64": "JFs/bWF0Y2goQC5hLCAnYS4qJyld",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, select non-match",
+        "input_base64": "JFs/IW1hdGNoKEAuYSwgJ2EuKicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, non-string first arg",
+        "input_base64": "JFs/bWF0Y2goMSwgJ2EuKicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, non-string second arg",
+        "input_base64": "JFs/bWF0Y2goQC5hLCAxKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, filter, match function, unicode char class, uppercase",
+        "input_base64": "JFs/bWF0Y2goQCwgJ1xccHtMdX0nKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, filter, match function, unicode char class negated, uppercase",
+        "input_base64": "JFs/bWF0Y2goQCwgJ1xcUHtMdX0nKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, filter, match function, unicode, surrogate pair",
+        "input_base64": "JFs/bWF0Y2goQCwgJ2EuYicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, dot matcher on \\u2028",
+        "input_base64": "JFs/bWF0Y2goQCwgJy4nKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, dot matcher on \\u2029",
+        "input_base64": "JFs/bWF0Y2goQCwgJy4nKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, result cannot be compared",
+        "input_base64": "JFs/bWF0Y2goQC5hLCAnYS4qJyk9PXRydWVd",
+        "accepted": false
+    },
+    {
+        "name": "functions, match, too few params",
+        "input_base64": "JFs/bWF0Y2goQC5hKT09MV0=",
+        "accepted": false
+    },
+    {
+        "name": "functions, match, too many params",
+        "input_base64": "JFs/bWF0Y2goQC5hLEAuYixALmMpPT0xXQ==",
+        "accepted": false
+    },
+    {
+        "name": "functions, match, arg is a function expression",
+        "input_base64": "JC52YWx1ZXNbP21hdGNoKEAuYSwgdmFsdWUoJC4uWydyZWdleCddKSld",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, dot in character class",
+        "input_base64": "JFs/bWF0Y2goQCwgJ2FbLmJdYycpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, escaped dot",
+        "input_base64": "JFs/bWF0Y2goQCwgJ2FcXC5jJyld",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, escaped backslash before dot",
+        "input_base64": "JFs/bWF0Y2goQCwgJ2FcXFxcLmMnKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, escaped left square bracket",
+        "input_base64": "JFs/bWF0Y2goQCwgJ2FcXFsuYycpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, escaped right square bracket",
+        "input_base64": "JFs/bWF0Y2goQCwgJ2FbXFxdLl1jJyld",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, explicit caret",
+        "input_base64": "JFs/bWF0Y2goQCwgJ15hYi4qJyld",
+        "accepted": true
+    },
+    {
+        "name": "functions, match, explicit dollar",
+        "input_base64": "JFs/bWF0Y2goQCwgJy4qYmMkJyld",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, at the end",
+        "input_base64": "JFs/c2VhcmNoKEAuYSwgJ2EuKicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, double quotes",
+        "input_base64": "JFs/c2VhcmNoKEAuYSwgImEuKiIpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, at the start",
+        "input_base64": "JFs/c2VhcmNoKEAuYSwgJ2EuKicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, in the middle",
+        "input_base64": "JFs/c2VhcmNoKEAuYSwgJ2EuKicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, regex from the document",
+        "input_base64": "JC52YWx1ZXNbP3NlYXJjaChALCAkLnJlZ2V4KV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, don't select match",
+        "input_base64": "JFs/IXNlYXJjaChALmEsICdhLionKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, not a match",
+        "input_base64": "JFs/c2VhcmNoKEAuYSwgJ2EuKicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, select non-match",
+        "input_base64": "JFs/IXNlYXJjaChALmEsICdhLionKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, non-string first arg",
+        "input_base64": "JFs/c2VhcmNoKDEsICdhLionKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, non-string second arg",
+        "input_base64": "JFs/c2VhcmNoKEAuYSwgMSld",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, filter, search function, unicode char class, uppercase",
+        "input_base64": "JFs/c2VhcmNoKEAsICdcXHB7THV9Jyld",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, filter, search function, unicode char class negated, uppercase",
+        "input_base64": "JFs/c2VhcmNoKEAsICdcXFB7THV9Jyld",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, filter, search function, unicode, surrogate pair",
+        "input_base64": "JFs/c2VhcmNoKEAsICdhLmInKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, dot matcher on \\u2028",
+        "input_base64": "JFs/c2VhcmNoKEAsICcuJyld",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, dot matcher on \\u2029",
+        "input_base64": "JFs/c2VhcmNoKEAsICcuJyld",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, result cannot be compared",
+        "input_base64": "JFs/c2VhcmNoKEAuYSwgJ2EuKicpPT10cnVlXQ==",
+        "accepted": false
+    },
+    {
+        "name": "functions, search, too few params",
+        "input_base64": "JFs/c2VhcmNoKEAuYSld",
+        "accepted": false
+    },
+    {
+        "name": "functions, search, too many params",
+        "input_base64": "JFs/c2VhcmNoKEAuYSxALmIsQC5jKV0=",
+        "accepted": false
+    },
+    {
+        "name": "functions, search, arg is a function expression",
+        "input_base64": "JC52YWx1ZXNbP3NlYXJjaChALCB2YWx1ZSgkLi5bJ3JlZ2V4J10pKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, dot in character class",
+        "input_base64": "JFs/c2VhcmNoKEAsICdhWy5iXWMnKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, escaped dot",
+        "input_base64": "JFs/c2VhcmNoKEAsICdhXFwuYycpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, escaped backslash before dot",
+        "input_base64": "JFs/c2VhcmNoKEAsICdhXFxcXC5jJyld",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, escaped left square bracket",
+        "input_base64": "JFs/c2VhcmNoKEAsICdhXFxbLmMnKV0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, search, escaped right square bracket",
+        "input_base64": "JFs/c2VhcmNoKEAsICdhW1xcXS5dYycpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "functions, value, single-value nodelist",
+        "input_base64": "JFs/dmFsdWUoQC4qKT09NF0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, value, multi-value nodelist",
+        "input_base64": "JFs/dmFsdWUoQC4qKT09NF0=",
+        "accepted": true
+    },
+    {
+        "name": "functions, value, too few params",
+        "input_base64": "JFs/dmFsdWUoKT09NF0=",
+        "accepted": false
+    },
+    {
+        "name": "functions, value, too many params",
+        "input_base64": "JFs/dmFsdWUoQC5hLEAuYik9PTRd",
+        "accepted": false
+    },
+    {
+        "name": "functions, value, result must be compared",
+        "input_base64": "JFs/dmFsdWUoQC5hKV0=",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, filter, space between question mark and expression",
+        "input_base64": "JFs/IEAuYV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, newline between question mark and expression",
+        "input_base64": "JFs/CkAuYV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, tab between question mark and expression",
+        "input_base64": "JFs/CUAuYV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, return between question mark and expression",
+        "input_base64": "JFs/DUAuYV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, space between question mark and parenthesized expression",
+        "input_base64": "JFs/IChALmEpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, newline between question mark and parenthesized expression",
+        "input_base64": "JFs/CihALmEpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, tab between question mark and parenthesized expression",
+        "input_base64": "JFs/CShALmEpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, return between question mark and parenthesized expression",
+        "input_base64": "JFs/DShALmEpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, space between parenthesized expression and bracket",
+        "input_base64": "JFs/KEAuYSkgXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, newline between parenthesized expression and bracket",
+        "input_base64": "JFs/KEAuYSkKXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, tab between parenthesized expression and bracket",
+        "input_base64": "JFs/KEAuYSkJXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, return between parenthesized expression and bracket",
+        "input_base64": "JFs/KEAuYSkNXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, space between bracket and question mark",
+        "input_base64": "JFsgP0AuYV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, newline between bracket and question mark",
+        "input_base64": "JFsKP0AuYV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, tab between bracket and question mark",
+        "input_base64": "JFsJP0AuYV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, filter, return between bracket and question mark",
+        "input_base64": "JFsNP0AuYV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, space between function name and parenthesis",
+        "input_base64": "JFs/Y291bnQgKEAuKik9PTFd",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, functions, newline between function name and parenthesis",
+        "input_base64": "JFs/Y291bnQKKEAuKik9PTFd",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, functions, tab between function name and parenthesis",
+        "input_base64": "JFs/Y291bnQJKEAuKik9PTFd",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, functions, return between function name and parenthesis",
+        "input_base64": "JFs/Y291bnQNKEAuKik9PTFd",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, functions, space between parenthesis and arg",
+        "input_base64": "JFs/Y291bnQoIEAuKik9PTFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, newline between parenthesis and arg",
+        "input_base64": "JFs/Y291bnQoCkAuKik9PTFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, tab between parenthesis and arg",
+        "input_base64": "JFs/Y291bnQoCUAuKik9PTFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, return between parenthesis and arg",
+        "input_base64": "JFs/Y291bnQoDUAuKik9PTFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, space between arg and comma",
+        "input_base64": "JFs/c2VhcmNoKEAgLCdbYS16XSsnKV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, newline between arg and comma",
+        "input_base64": "JFs/c2VhcmNoKEAKLCdbYS16XSsnKV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, tab between arg and comma",
+        "input_base64": "JFs/c2VhcmNoKEAJLCdbYS16XSsnKV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, return between arg and comma",
+        "input_base64": "JFs/c2VhcmNoKEANLCdbYS16XSsnKV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, space between comma and arg",
+        "input_base64": "JFs/c2VhcmNoKEAsICdbYS16XSsnKV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, newline between comma and arg",
+        "input_base64": "JFs/c2VhcmNoKEAsCidbYS16XSsnKV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, tab between comma and arg",
+        "input_base64": "JFs/c2VhcmNoKEAsCSdbYS16XSsnKV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, return between comma and arg",
+        "input_base64": "JFs/c2VhcmNoKEAsDSdbYS16XSsnKV0=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, space between arg and parenthesis",
+        "input_base64": "JFs/Y291bnQoQC4qICk9PTFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, newline between arg and parenthesis",
+        "input_base64": "JFs/Y291bnQoQC4qCik9PTFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, tab between arg and parenthesis",
+        "input_base64": "JFs/Y291bnQoQC4qCSk9PTFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, return between arg and parenthesis",
+        "input_base64": "JFs/Y291bnQoQC4qDSk9PTFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, spaces in a relative singular selector",
+        "input_base64": "JFs/bGVuZ3RoKEAgLmEgLmIpID09IDNd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, newlines in a relative singular selector",
+        "input_base64": "JFs/bGVuZ3RoKEAKLmEKLmIpID09IDNd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, tabs in a relative singular selector",
+        "input_base64": "JFs/bGVuZ3RoKEAJLmEJLmIpID09IDNd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, returns in a relative singular selector",
+        "input_base64": "JFs/bGVuZ3RoKEANLmENLmIpID09IDNd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, spaces in an absolute singular selector",
+        "input_base64": "JC4uWz9sZW5ndGgoQCk9PWxlbmd0aCgkIFswXSAuYSld",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, newlines in an absolute singular selector",
+        "input_base64": "JC4uWz9sZW5ndGgoQCk9PWxlbmd0aCgkClswXQouYSld",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, tabs in an absolute singular selector",
+        "input_base64": "JC4uWz9sZW5ndGgoQCk9PWxlbmd0aCgkCVswXQkuYSld",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, functions, returns in an absolute singular selector",
+        "input_base64": "JC4uWz9sZW5ndGgoQCk9PWxlbmd0aCgkDVswXQ0uYSld",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space before ||",
+        "input_base64": "JFs/QC5hIHx8QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline before ||",
+        "input_base64": "JFs/QC5hCnx8QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab before ||",
+        "input_base64": "JFs/QC5hCXx8QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return before ||",
+        "input_base64": "JFs/QC5hDXx8QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space after ||",
+        "input_base64": "JFs/QC5hfHwgQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline after ||",
+        "input_base64": "JFs/QC5hfHwKQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab after ||",
+        "input_base64": "JFs/QC5hfHwJQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return after ||",
+        "input_base64": "JFs/QC5hfHwNQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space before &&",
+        "input_base64": "JFs/QC5hICYmQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline before &&",
+        "input_base64": "JFs/QC5hCiYmQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab before &&",
+        "input_base64": "JFs/QC5hCSYmQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return before &&",
+        "input_base64": "JFs/QC5hDSYmQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space after &&",
+        "input_base64": "JFs/QC5hJiYgQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline after &&",
+        "input_base64": "JFs/QC5hJiYgQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab after &&",
+        "input_base64": "JFs/QC5hJiYgQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return after &&",
+        "input_base64": "JFs/QC5hJiYgQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space before ==",
+        "input_base64": "JFs/QC5hID09QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline before ==",
+        "input_base64": "JFs/QC5hCj09QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab before ==",
+        "input_base64": "JFs/QC5hCT09QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return before ==",
+        "input_base64": "JFs/QC5hDT09QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space after ==",
+        "input_base64": "JFs/QC5hPT0gQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline after ==",
+        "input_base64": "JFs/QC5hPT0KQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab after ==",
+        "input_base64": "JFs/QC5hPT0JQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return after ==",
+        "input_base64": "JFs/QC5hPT0NQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space before !=",
+        "input_base64": "JFs/QC5hICE9QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline before !=",
+        "input_base64": "JFs/QC5hCiE9QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab before !=",
+        "input_base64": "JFs/QC5hCSE9QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return before !=",
+        "input_base64": "JFs/QC5hDSE9QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space after !=",
+        "input_base64": "JFs/QC5hIT0gQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline after !=",
+        "input_base64": "JFs/QC5hIT0KQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab after !=",
+        "input_base64": "JFs/QC5hIT0JQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return after !=",
+        "input_base64": "JFs/QC5hIT0NQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space before <",
+        "input_base64": "JFs/QC5hIDxALmJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline before <",
+        "input_base64": "JFs/QC5hCjxALmJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab before <",
+        "input_base64": "JFs/QC5hCTxALmJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return before <",
+        "input_base64": "JFs/QC5hDTxALmJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space after <",
+        "input_base64": "JFs/QC5hPCBALmJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline after <",
+        "input_base64": "JFs/QC5hPApALmJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab after <",
+        "input_base64": "JFs/QC5hPAlALmJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return after <",
+        "input_base64": "JFs/QC5hPA1ALmJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space before >",
+        "input_base64": "JFs/QC5iID5ALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline before >",
+        "input_base64": "JFs/QC5iCj5ALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab before >",
+        "input_base64": "JFs/QC5iCT5ALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return before >",
+        "input_base64": "JFs/QC5iDT5ALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space after >",
+        "input_base64": "JFs/QC5iPiBALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline after >",
+        "input_base64": "JFs/QC5iPgpALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab after >",
+        "input_base64": "JFs/QC5iPglALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return after >",
+        "input_base64": "JFs/QC5iPg1ALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space before <=",
+        "input_base64": "JFs/QC5hIDw9QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline before <=",
+        "input_base64": "JFs/QC5hCjw9QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab before <=",
+        "input_base64": "JFs/QC5hCTw9QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return before <=",
+        "input_base64": "JFs/QC5hDTw9QC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space after <=",
+        "input_base64": "JFs/QC5hPD0gQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline after <=",
+        "input_base64": "JFs/QC5hPD0KQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab after <=",
+        "input_base64": "JFs/QC5hPD0JQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return after <=",
+        "input_base64": "JFs/QC5hPD0NQC5iXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space before >=",
+        "input_base64": "JFs/QC5iID49QC5hXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline before >=",
+        "input_base64": "JFs/QC5iCj49QC5hXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab before >=",
+        "input_base64": "JFs/QC5iCT49QC5hXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return before >=",
+        "input_base64": "JFs/QC5iDT49QC5hXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space after >=",
+        "input_base64": "JFs/QC5iPj0gQC5hXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline after >=",
+        "input_base64": "JFs/QC5iPj0KQC5hXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab after >=",
+        "input_base64": "JFs/QC5iPj0JQC5hXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return after >=",
+        "input_base64": "JFs/QC5iPj0NQC5hXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space between logical not and test expression",
+        "input_base64": "JFs/ISBALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline between logical not and test expression",
+        "input_base64": "JFs/IQpALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab between logical not and test expression",
+        "input_base64": "JFs/IQlALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return between logical not and test expression",
+        "input_base64": "JFs/IQ1ALmFd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, space between logical not and parenthesized expression",
+        "input_base64": "JFs/ISAoQC5hPT0nYicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, newline between logical not and parenthesized expression",
+        "input_base64": "JFs/IQooQC5hPT0nYicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, tab between logical not and parenthesized expression",
+        "input_base64": "JFs/IQkoQC5hPT0nYicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, operators, return between logical not and parenthesized expression",
+        "input_base64": "JFs/IQ0oQC5hPT0nYicpXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, space between root and bracket",
+        "input_base64": "JCBbJ2EnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, newline between root and bracket",
+        "input_base64": "JApbJ2EnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, tab between root and bracket",
+        "input_base64": "JAlbJ2EnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, return between root and bracket",
+        "input_base64": "JA1bJ2EnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, space between bracket and bracket",
+        "input_base64": "JFsnYSddIFsnYidd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, newline between bracket and bracket",
+        "input_base64": "JFsnYSddIApbJ2InXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, tab between bracket and bracket",
+        "input_base64": "JFsnYSddIAlbJ2InXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, return between bracket and bracket",
+        "input_base64": "JFsnYSddIA1bJ2InXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, space between root and dot",
+        "input_base64": "JCAuYQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, newline between root and dot",
+        "input_base64": "JAouYQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, tab between root and dot",
+        "input_base64": "JAkuYQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, return between root and dot",
+        "input_base64": "JA0uYQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, space between dot and name",
+        "input_base64": "JC4gYQ==",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, selectors, newline between dot and name",
+        "input_base64": "JC4KYQ==",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, selectors, tab between dot and name",
+        "input_base64": "JC4JYQ==",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, selectors, return between dot and name",
+        "input_base64": "JC4NYQ==",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, selectors, space between recursive descent and name",
+        "input_base64": "JC4uIGE=",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, selectors, newline between recursive descent and name",
+        "input_base64": "JC4uCmE=",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, selectors, tab between recursive descent and name",
+        "input_base64": "JC4uCWE=",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, selectors, return between recursive descent and name",
+        "input_base64": "JC4uDWE=",
+        "accepted": false
+    },
+    {
+        "name": "whitespace, selectors, space between bracket and selector",
+        "input_base64": "JFsgJ2EnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, newline between bracket and selector",
+        "input_base64": "JFsKJ2EnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, tab between bracket and selector",
+        "input_base64": "JFsJJ2EnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, return between bracket and selector",
+        "input_base64": "JFsNJ2EnXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, space between selector and bracket",
+        "input_base64": "JFsnYScgXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, newline between selector and bracket",
+        "input_base64": "JFsnYScKXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, tab between selector and bracket",
+        "input_base64": "JFsnYScJXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, return between selector and bracket",
+        "input_base64": "JFsnYScNXQ==",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, space between selector and comma",
+        "input_base64": "JFsnYScgLCdiJ10=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, newline between selector and comma",
+        "input_base64": "JFsnYScKLCdiJ10=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, tab between selector and comma",
+        "input_base64": "JFsnYScJLCdiJ10=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, return between selector and comma",
+        "input_base64": "JFsnYScNLCdiJ10=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, space between comma and selector",
+        "input_base64": "JFsnYScsICdiJ10=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, newline between comma and selector",
+        "input_base64": "JFsnYScsCidiJ10=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, tab between comma and selector",
+        "input_base64": "JFsnYScsCSdiJ10=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, selectors, return between comma and selector",
+        "input_base64": "JFsnYScsDSdiJ10=",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, space between start and colon",
+        "input_base64": "JFsxIDo1OjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, newline between start and colon",
+        "input_base64": "JFsxCjo1OjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, tab between start and colon",
+        "input_base64": "JFsxCTo1OjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, return between start and colon",
+        "input_base64": "JFsxDTo1OjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, space between colon and end",
+        "input_base64": "JFsxOiA1OjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, newline between colon and end",
+        "input_base64": "JFsxOgo1OjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, tab between colon and end",
+        "input_base64": "JFsxOgk1OjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, return between colon and end",
+        "input_base64": "JFsxOg01OjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, space between end and colon",
+        "input_base64": "JFsxOjUgOjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, newline between end and colon",
+        "input_base64": "JFsxOjUKOjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, tab between end and colon",
+        "input_base64": "JFsxOjUJOjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, return between end and colon",
+        "input_base64": "JFsxOjUNOjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, space between colon and step",
+        "input_base64": "JFsxOjU6IDJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, newline between colon and step",
+        "input_base64": "JFsxOjU6CjJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, tab between colon and step",
+        "input_base64": "JFsxOjU6CTJd",
+        "accepted": true
+    },
+    {
+        "name": "whitespace, slice, return between colon and step",
+        "input_base64": "JFsxOjU6DTJd",
+        "accepted": true
+    }
+]
