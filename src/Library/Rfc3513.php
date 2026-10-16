@@ -2,15 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * RFC 3513 - Internet Protocol Version 6 (IPv6) Addressing Architecture.
- *
- * Obsoleted by RFC 4291
- * Obsoletes RFC 2373
- *
- * @see     https://tools.ietf.org/html/rfc4408
- */
-
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
@@ -19,8 +10,18 @@ use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
+ * Internet Protocol Version 6 (IPv6) Addressing Architecture.
+ *
+ * IPv6 addresses.
+ *
+ * Obsoleted by RFC 4291
+ * Obsoletes RFC 2373
+ *
  * Provides reusable IPv6 address rules, including compressed and embedded IPv4 forms. Composes
  * named parser rules so address syntax can be embedded in larger grammars.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc3513
+ * @link https://www.rfc-editor.org/rfc/rfc3513.txt
  */
 class Rfc3513 extends AbstractRuleset
 {

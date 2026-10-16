@@ -2,14 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * RFC 2234 - Augmented BNF for Syntax Specifications: ABNF.
- *
- * Obsoleted by RFC 4234
- *
- * @see     https://tools.ietf.org/html/rfc2234
- */
-
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
@@ -18,8 +10,18 @@ use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
+ * Augmented BNF for Syntax Specifications: ABNF.
+ *
+ * ABNF grammar syntax.
+ *
+ * Obsoleted by RFC 4234
+ *
  * Provides reusable ABNF core and grammar-syntax rules from RFC 2234. Builds named rules
  * through the shared authoring API and serves as the base for later ABNF ruleset revisions.
+ *
+ * @see Rfc4234 Supersedes this RFC.
+ * @see https://www.rfc-editor.org/rfc/rfc2234
+ * @link https://www.rfc-editor.org/rfc/rfc2234.txt
  */
 class Rfc2234 extends AbstractRuleset
 {

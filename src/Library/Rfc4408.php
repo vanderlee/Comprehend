@@ -2,15 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * RFC 4408 - Sender Policy Framework (SPF) for Authorizing Use of Domains in E-Mail, Version 1.
- *
- * Updated by RFC 6652
- * Obsoleted by RFC 7208
- *
- * @see     https://tools.ietf.org/html/rfc4408
- */
-
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
@@ -19,9 +10,19 @@ use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
+ * Sender Policy Framework (SPF) for Authorizing Use of Domains in E-Mail, Version 1.
+ *
+ * SPF email sender authorization.
+ *
+ * Updated by RFC 6652
+ * Obsoleted by RFC 7208
+ *
  * Provides named SPF record and related syntax rules from RFC 4408. Rewrites left-recursive
  * productions for the shared combinator runtime so they can be composed into application
  * grammars.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc4408
+ * @link https://www.rfc-editor.org/rfc/rfc4408.txt
  */
 class Rfc4408 extends AbstractRuleset
 {

@@ -2,14 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * RFC 7405 - Case-Sensitive String Support in ABNF.
- *
- * Updates RFC 5234
- *
- * @see     https://tools.ietf.org/html/rfc7405
- */
-
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\Definition;
@@ -17,8 +9,18 @@ use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
+ * Case-Sensitive String Support in ABNF.
+ *
+ * Case-sensitive strings in ABNF grammars.
+ *
+ * Updates RFC 5234
+ *
  * Extends Rfc5234 with explicit case-sensitive and case-insensitive ABNF string syntax.
  * Overrides string productions while retaining the inherited core and grammar rules.
+ *
+ * @see Rfc5234 Updated by this RFC.
+ * @see https://www.rfc-editor.org/rfc/rfc7405
+ * @link https://www.rfc-editor.org/rfc/rfc7405.txt
  */
 class Rfc7405 extends Rfc5234
 {

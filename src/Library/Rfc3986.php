@@ -2,12 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * RFC 3986 - Uniform Resource Identifier (URI): Generic Syntax.
- *
- * @see https://tools.ietf.org/html/rfc3986
- */
-
 namespace Vanderlee\Comprehend\Library;
 
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
@@ -16,8 +10,15 @@ use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
+ * Uniform Resource Identifier (URI): Generic Syntax.
+ *
+ * URIs (web addresses and other resource identifiers).
+ *
  * Provides named URI components and complete URI rules from RFC 3986. Composes reusable
  * terminals and address rules for applications that need structured URI recognition.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc3986
+ * @link https://www.rfc-editor.org/rfc/rfc3986.txt
  */
 class Rfc3986 extends AbstractRuleset
 {
