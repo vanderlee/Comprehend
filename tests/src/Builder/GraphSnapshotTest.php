@@ -18,6 +18,23 @@ use Vanderlee\Comprehend\Source\ByteSource;
 
 uses(TestCase::class);
 
+test('snapshot reuse excludes deferred definitions and custom participants', function () {
+    $owned = new GraphSnapshot();
+    $owned->copy(new Sequence(new Text('a'), new Text('b')));
+    $this->assertTrue($owned->isReusable());
+    $deferred = new GraphSnapshot();
+    $deferred->copy(new Implementation(new Definition(new Text('a'))));
+    $this->assertFalse($deferred->isReusable());
+    $custom = new GraphSnapshot();
+    $custom->copy(new class ('a') extends Text {
+        public function __toString(): string
+        {
+            return 'custom text';
+        }
+    });
+    $this->assertFalse($custom->isReusable());
+});
+
 test('value copies preserve sharing and caller owned dependencies', function (): void {
     $parser = new Text('a');
     $definition = new Definition($parser);

@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\FailureDiagnosticAtStart;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Source;
@@ -33,6 +34,15 @@ abstract class ParserTest extends TestCase
 }
 
 uses(ParserTest::class);
+
+test('explicit diagnostic names take precedence after the class label has been used', function () {
+    $parser = new Text('a');
+    $this->assertSame('Text', $parser->graphLabel());
+    $parser->diagnosticRule('letter');
+    $this->assertSame('letter', $parser->graphLabel());
+    $result = $parser->parseAll(new ByteSource('b'));
+    $this->assertSame([['letter']], $result->diagnostic->rulePaths);
+});
 
 test('base runtime binds custom recognition to the source', function (): void {
     $parser = $this->oneByteParser();

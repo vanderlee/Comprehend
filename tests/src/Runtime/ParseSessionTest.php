@@ -168,3 +168,21 @@ test('rejected entry does not retain parser or depth state', function (): void {
 
     $this->assertSame(2, $session->workUsed());
 });
+
+test('recursion protection distinguishes positions and releases completed frames', function () {
+    $session = new ParseSession(new ByteSource('ab'));
+    $parser = new Text('a');
+    $session->enterParser($parser, 0);
+    $session->enterParser($parser, 1);
+    try {
+        $session->enterParser($parser, 0);
+        $this->fail('Expected left recursion');
+    } catch (LogicException $error) {
+        $this->assertStringContainsString('Left recursion at byte 0', $error->getMessage());
+    }
+    $session->leaveParser($parser, 1);
+    $session->leaveParser($parser, 0);
+    $session->enterParser($parser, 0);
+    $session->leaveParser($parser, 0);
+    $this->assertSame(3, $session->workUsed());
+});

@@ -20,3 +20,15 @@ test('snapshot is independent of later parser mutations', function (): void {
     $this->assertSame('a', $frozen->matchPrefix('xab', 1)->rawText());
     $this->assertFalse($frozen->parseAll('xab', 1)->success);
 });
+
+test('only a built-in source can reuse a snapshot of an entirely built-in graph', function () {
+    $parser = new Text('a');
+    $frozen = FrozenGrammar::from($parser);
+    $this->assertTrue($frozen->canReuseFor($parser));
+    $this->assertFalse($frozen->canReuseFor(new class ('a') extends Text {
+        public function __toString(): string
+        {
+            return 'custom text';
+        }
+    }));
+});

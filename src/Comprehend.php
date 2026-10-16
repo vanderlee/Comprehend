@@ -79,6 +79,7 @@ use BadMethodCallException;
  */
 final class Comprehend
 {
+    private ?FrozenGrammar $preparedGrammar = null;
     private function __construct(private readonly Parser $parser, private readonly ?Syntax $syntax = null) {}
 
     public static function syntax(): Syntax
@@ -205,10 +206,18 @@ final class Comprehend
 
     public function freeze(): FrozenGrammar
     {
-        return $this->parser->freeze();
+        if ($this->preparedGrammar !== null) {
+            return $this->preparedGrammar;
+        }
+        $grammar = $this->parser->freeze();
+        if ($grammar->canReuseFor($this->parser)) {
+            $this->preparedGrammar = $grammar;
+        }
+
+        return $grammar;
     }
 
-    /** Complete-input parsing; strings are validated UTF-8. Freeze explicitly for reuse. */
+    /** Complete-input parsing; owned built-in graphs reuse preparation, deferred/custom graphs refresh. */
     public function parse(
         string|Source $source,
         int $byteOffset = 0,

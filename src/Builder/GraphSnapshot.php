@@ -6,6 +6,10 @@ namespace Vanderlee\Comprehend\Builder;
 
 use SplObjectStorage;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Parser\Terminal;
+use Vanderlee\Comprehend\Parser\Structure;
+use Vanderlee\Comprehend\Directive;
+use Vanderlee\Comprehend\Parser\Stub;
 use LogicException;
 
 /**
@@ -15,6 +19,34 @@ use LogicException;
  */
 final class GraphSnapshot
 {
+    /** Exact classes only: subclasses, deferred definitions and rule lookups may depend on external state. */
+    private const REUSABLE_PARSERS = [
+        Terminal\Any::class => true,
+        Terminal\Char::class => true,
+        Terminal\End::class => true,
+        Terminal\Integer::class => true,
+        Terminal\Nothing::class => true,
+        Terminal\Range::class => true,
+        Terminal\Regex::class => true,
+        Terminal\Set::class => true,
+        Terminal\Start::class => true,
+        Terminal\Text::class => true,
+        Structure\All::class => true,
+        Structure\Choice::class => true,
+        Structure\Except::class => true,
+        Structure\Not::class => true,
+        Structure\Repeat::class => true,
+        Structure\Sequence::class => true,
+        Directive\CaseSensitive::class => true,
+        Directive\Lexeme::class => true,
+        Directive\Prefer::class => true,
+        Directive\Space::class => true,
+        Directive\Trivia::class => true,
+        Stub::class => true,
+    ];
+
+    private bool $reusable = true;
+
     /**
      * @var SplObjectStorage<Parser|Definition, Parser|Definition>
      */
@@ -30,6 +62,18 @@ final class GraphSnapshot
     {
         $this->copies = new SplObjectStorage();
         $this->snapshotting = new SplObjectStorage();
+    }
+
+    /** @internal Built-in nodes whose authoring copies own all graph dependencies. */
+    public static function isReusableParser(Parser $parser): bool
+    {
+        return isset(self::REUSABLE_PARSERS[$parser::class]);
+    }
+
+    /** @internal Whether this copy traversed only owned, non-deferred built-in nodes. */
+    public function isReusable(): bool
+    {
+        return $this->reusable;
     }
 
     public function copy(Parser $parser): Parser
@@ -102,6 +146,9 @@ final class GraphSnapshot
     /** @return ($object is Parser ? Parser : Definition) */
     private function copyObject(Parser|Definition $object): Parser|Definition
     {
+        if ($this->reusable && (!$object instanceof Parser || !self::isReusableParser($object))) {
+            $this->reusable = false;
+        }
         if (isset($this->copies[$object])) {
             $copy = $this->copies[$object];
             if (($object instanceof Parser) !== ($copy instanceof Parser)) {

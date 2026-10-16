@@ -36,6 +36,56 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Small facades and URI grammar (2026-10-16)
+
+Owned built-in facade graphs now retain one prepared FrozenGrammar per immutable
+expression. Deferred rules, Definition implementations and custom classes still
+prepare freshly. No recognition results or semantic/effect state are shared by
+this cache. Session setup also reuses immutable default limits, recursion tracking
+uses integer parser/position keys, default diagnostic labels are cached, and plain
+leaf execution state avoids empty child filtering. Already-frozen tiny parsers
+showed no substantial, consistent isolated speedup from these smaller changes.
+
+The URI grammar uses cheaper lexical implementations for `unreserved`, `scheme`,
+`h16` and `dec_octet`, with the original combinator rules preserved in comments.
+The accompanying RFC fixes cover IPv6 compression, hexadecimal case, IPvFuture,
+generic host ambiguity and standalone path selection. See [URI syntax](uri.md)
+for scope, named rule overrides and the changed lexical CST interiors.
+
+Representative valid inputs, microseconds per parse:
+
+| Input and entry point | Before (`0ea7613`) | After |
+| --- | ---: | ---: |
+| `alice@example.com`, facade | 142.43 | 53.49 |
+| `+31612345678`, facade | 30.73 | 14.72 |
+| `https://example.com`, facade | 4805.26 | 3658.99 |
+| `https://example.com`, frozen | 2961.66 | 1891.01 |
+| `alice@example.com`, frozen | 56.35 | 57.23 |
+| `+31612345678`, frozen | 15.85 | 15.31 |
+
+Windows/PHP 8.2.10/PCRE 10.40. Each table entry is the median of three worker
+medians. For each worker/input there are ten warmups and seven batches of ten
+measured calls. Baseline and current workers alternate for each scenario; the
+baseline autoloader reads copies of the eight changed implementation files from
+`0ea7613`, with unchanged files shared. Timings include fresh UTF-8 sources, full
+recognition/CST construction, acceptance assertions and result release. They
+exclude PHP startup, class loading and initial grammar construction. The facade
+rows include automatic preparation behavior; frozen rows reuse an explicit
+snapshot. Email/phone fixtures are intentionally limited application grammars,
+not comprehensive protocol validation.
+
+The first non-alternating run was visibly affected by host variation, so it was
+not used for this table. Even the alternating frozen-email worker medians ranged
+56.86–111.23 microseconds after the changes, compared with 55.56–58.14 before.
+Treat small differences as noise, not latency guarantees. URI improvements do
+not demonstrate transparent caching of mutable references: those remain fresh.
+The before URI grammar rejected the intended-valid IPv6 fixture; that input is
+reported as an acceptance mismatch, not included as successful validation.
+
+[Raw alternating-worker reports](benchmarks/small-facades-uri-2026-10-16.json)
+include the fixture driver, source-copy manifest, ranges and reproduction steps.
+Run `php docs/examples/uri.php` for a quick acceptance/source-round-trip check.
+
 ### Sparse execution state and session subjects (2026-10-16)
 
 Successful syntax remains an immutable CST. Mutable collection, value, validation

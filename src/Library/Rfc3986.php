@@ -33,6 +33,8 @@ class Rfc3986 extends AbstractRuleset
     public function __construct($overwrites = [])
     {
         $abnf = new Rfc2234();
+        // A left-prefix hextet must not consume the first colon of the :: separator.
+        $h16Colon = C::sequence($this->rule('h16'), C::not(C::text('::')), C::text(':'));
         // Defined out-of-order for performance reasons
         $rules = [
             // 2.1.  Percent-Encoding
@@ -46,7 +48,10 @@ class Rfc3986 extends AbstractRuleset
             'gen_delims' => C::set(':/?#[]@'),
             'reserved' => C::choice($this->rule('gen_delims'), $this->rule('sub_delims')),
             // 2.3.  Unreserved Characters
+            /* Original combinator rule (RFC syntax documentation):
             'unreserved' => C::choice($abnf->rule('ALPHA'), $abnf->rule('DIGIT'), C::set('-._~')),
+            */
+            'unreserved' => C::set('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'),
             // 3.3.  Path
             'pchar' => C::choice(
                 $this->rule('unreserved'),
@@ -80,7 +85,17 @@ class Rfc3986 extends AbstractRuleset
                 C::sequence(C::text('/'), $this->rule('segment'))->many(),
             ),
             'path_empty' => C::nothing(),
+            /* Original combinator rule (RFC syntax documentation):
             'path' => C::choice(
+                $this->rule('path_abempty'),
+                $this->rule('path_absolute'),
+                $this->rule('path_noscheme'),
+                $this->rule('path_rootless'),
+                $this->rule('path_empty'),
+            ),
+            */
+            // A nullable first alternative must not hide a nonempty rootless path.
+            'path' => C::longest(
                 $this->rule('path_abempty'),
                 $this->rule('path_absolute'),
                 $this->rule('path_noscheme'),
@@ -118,6 +133,7 @@ class Rfc3986 extends AbstractRuleset
                 C::sequence(C::text('#'), $this->rule('fragment'))->maybe(),
             ),
             // 3.1.  Scheme
+            /* Original combinator rule (RFC syntax documentation):
             'scheme' => C::sequence(
                 $abnf->rule('ALPHA'),
                 C::choice(
@@ -128,6 +144,8 @@ class Rfc3986 extends AbstractRuleset
                     C::text('.'),
                 )->many(),
             ),
+            */
+            'scheme' => C::regex('/[A-Za-z][A-Za-z0-9+.-]*/A'),
             // 3.2.  Authority
             'authority' => C::sequence(
                 C::sequence($this->rule('userinfo'), C::text('@'))->maybe(),
@@ -144,11 +162,15 @@ class Rfc3986 extends AbstractRuleset
             // 3.2.3.  Port
             'port' => $abnf->rule('DIGIT')->many(),
             // 3.2.2.  Host
+            /* Original combinator rule (RFC syntax documentation):
             'h16' => $abnf->rule('HEXDIG')->repeat(1, 4),
+            */
+            'h16' => C::regex('/[0-9A-Fa-f]{1,4}/A'),
             'ls32' => C::choice(
                 C::sequence($this->rule('h16'), C::text(':'), $this->rule('h16')),
                 $this->rule('IPv4address'),
             ),
+            /* Original combinator rule (RFC syntax documentation):
             'IPv6address' => C::choice(
                 C::sequence(
                     C::sequence($this->rule('h16'), C::text(':'))->repeat(6, 6),
@@ -217,6 +239,76 @@ class Rfc3986 extends AbstractRuleset
                     C::text('::'),
                 ),
             ),
+            */
+            'IPv6address' => C::choice(
+                C::sequence(
+                    $h16Colon->repeat(6, 6),
+                    $this->rule('ls32'),
+                ),
+                C::sequence(
+                    C::text('::'),
+                    $h16Colon->repeat(5, 5),
+                    $this->rule('ls32'),
+                ),
+                C::sequence(
+                    $this->rule('h16')->maybe(),
+                    C::text('::'),
+                    $h16Colon->repeat(4, 4),
+                    $this->rule('ls32'),
+                ),
+                C::sequence(
+                    C::sequence(
+                        $h16Colon->maybe(),
+                        $this->rule('h16'),
+                    )->maybe(),
+                    C::text('::'),
+                    $h16Colon->repeat(3, 3),
+                    $this->rule('ls32'),
+                ),
+                C::sequence(
+                    C::sequence(
+                        $h16Colon->repeat(0, 2),
+                        $this->rule('h16'),
+                    )->maybe(),
+                    C::text('::'),
+                    $h16Colon->repeat(2, 2),
+                    $this->rule('ls32'),
+                ),
+                C::sequence(
+                    C::sequence(
+                        $h16Colon->repeat(0, 3),
+                        $this->rule('h16'),
+                    )->maybe(),
+                    C::text('::'),
+                    $this->rule('h16'),
+                    C::text(':'),
+                    $this->rule('ls32'),
+                ),
+                C::sequence(
+                    C::sequence(
+                        $h16Colon->repeat(0, 4),
+                        $this->rule('h16'),
+                    )->maybe(),
+                    C::text('::'),
+                    $this->rule('ls32'),
+                ),
+                C::sequence(
+                    C::sequence(
+                        $h16Colon->repeat(0, 5),
+                        $this->rule('h16'),
+                    )->maybe(),
+                    C::text('::'),
+                    $this->rule('h16'),
+                ),
+                C::sequence(
+                    C::sequence(
+                        $h16Colon->repeat(0, 6),
+                        $this->rule('h16'),
+                    )->maybe(),
+                    C::text('::'),
+                ),
+            ),
+            /* Original combinator rule (RFC syntax documentation):
             'dec_octet' => C::choice(
                 C::sequence(C::text('25'), C::range('0', '5')),
                 C::sequence(C::text('2'), C::range('0', '4'), $abnf->rule('DIGIT')),
@@ -224,6 +316,8 @@ class Rfc3986 extends AbstractRuleset
                 C::sequence(C::range('1', '9'), $abnf->rule('DIGIT')),
                 $abnf->rule('DIGIT'),
             ),
+            */
+            'dec_octet' => C::regex('/(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])/A'),
             'IPv4address' => C::sequence(
                 $this->rule('dec_octet'),
                 C::text('.'),
@@ -233,8 +327,16 @@ class Rfc3986 extends AbstractRuleset
                 C::text('.'),
                 $this->rule('dec_octet'),
             ),
+            /* Original combinator rule (RFC syntax documentation):
             'IPvFuture' => C::sequence(
                 C::text('v'),
+                $abnf->rule('HEXDIG')->some(),
+                C::text('.'),
+                C::choice($this->rule('unreserved'), $this->rule('sub_delims'), C::text(':'))->some(),
+            ),
+            */
+            'IPvFuture' => C::sequence(
+                C::text('v')->caseSensitive(false),
                 $abnf->rule('HEXDIG')->some(),
                 C::text('.'),
                 C::choice($this->rule('unreserved'), $this->rule('sub_delims'), C::text(':'))->some(),
@@ -249,9 +351,24 @@ class Rfc3986 extends AbstractRuleset
                 $this->rule('pct_encoded'),
                 $this->rule('sub_delims'),
             )->many(),
+            /* Original combinator rule (RFC syntax documentation):
             'host' => C::choice(
                 $this->rule('IP_literal'),
                 $this->rule('IPv4address'),
+                $this->rule('reg_name'),
+            ),
+            */
+            'host' => C::choice(
+                $this->rule('IP_literal'),
+                // An IPv4-looking prefix is a reg-name when more host characters follow.
+                C::sequence(
+                    $this->rule('IPv4address'),
+                    C::not(C::choice(
+                        $this->rule('unreserved'),
+                        $this->rule('pct_encoded'),
+                        $this->rule('sub_delims'),
+                    )),
+                ),
                 $this->rule('reg_name'),
             ),
             // 4.2.  Relative Reference

@@ -30,6 +30,8 @@ class Success extends AbstractMatch
     use CallbackTrait;
 
     private ?ExecutionState $state = null;
+    /** @var (Closure(self): bool)|null */
+    private static ?Closure $retainState = null;
 
     /**
      * Create a new match.
@@ -274,10 +276,16 @@ class Success extends AbstractMatch
         if ($state === null) {
             return;
         }
-        $retain = static fn(self $match): bool => $match->state !== null;
-        $state->successes = array_values(array_filter($state->successes, $retain));
-        $state->concreteMatches = array_values(array_filter($state->concreteMatches, $retain));
-        $state->precedingMatches = array_values(array_filter($state->precedingMatches, $retain));
+        $retain = self::$retainState ??= static fn(self $match): bool => $match->state !== null;
+        if ($state->successes !== []) {
+            $state->successes = array_values(array_filter($state->successes, $retain));
+        }
+        if ($state->concreteMatches !== []) {
+            $state->concreteMatches = array_values(array_filter($state->concreteMatches, $retain));
+        }
+        if ($state->precedingMatches !== []) {
+            $state->precedingMatches = array_values(array_filter($state->precedingMatches, $retain));
+        }
         if ($state->isEmpty()) {
             $this->state = null;
         }

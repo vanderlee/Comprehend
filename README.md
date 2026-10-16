@@ -48,8 +48,10 @@ Both return `ParseResult`; every public offset and span uses bytes. Choose
 `Utf8Source` for validated Unicode code-point recognition or `ByteSource` for
 arbitrary octets. The facade's `parse()` requires complete input; `parseAll()`
 and `matchPrefix()` also accept strings as validated UTF-8 and freeze the current
-grammar automatically. Freeze once for repeated parsing; FrozenGrammar accepts
-strings too. Facade composition treats string arguments as Text literals.
+grammar automatically. Facades made entirely of owned built-in nodes reuse their
+prepared snapshot after the first call. Deferred rules, definitions and custom
+parsers still refresh; freeze those explicitly for stable repeated parsing.
+FrozenGrammar accepts strings too. Facade composition treats string arguments as Text literals.
 Object constructors still take explicit parsers; arrays are not grammar syntax.
 
 ## Source, syntax and meaning

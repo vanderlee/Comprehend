@@ -45,13 +45,14 @@ final class ParseSession
     private int $failureRevision = 0;
     private int $lexemeDepth = 0;
     /**
-     * @var array<string, true>
+     * @var array<int, array<int, true>>
      */
     private array $activeParsers = [];
     private int $work = 0;
     private int $depth = 0;
     private readonly ParseLimits $limits;
     private ?string $regexSubject = null;
+    private static ?ParseLimits $defaultLimits = null;
 
     public function __construct(
         Source $source,
@@ -62,11 +63,10 @@ final class ParseSession
         private readonly ?ParseMetrics $metrics = null,
     ) {
         $this->source = $source;
-        $this->limits = $limits ?? new ParseLimits();
-
-        $this->pushSpacer($trivia);
-        $this->pushCaseSensitivity($caseSensitive);
-        $this->pushPreference($preference);
+        $this->limits = $limits ?? (self::$defaultLimits ??= new ParseLimits());
+        $this->spacers = [$trivia];
+        $this->caseSensitivityStack = [$caseSensitive];
+        $this->preferenceStack = [$preference];
     }
 
     public function workUsed(): int
@@ -91,8 +91,8 @@ final class ParseSession
 
     public function enterParser(Parser $parser, int $offset): void
     {
-        $key = spl_object_id($parser) . ':' . $offset;
-        if (isset($this->activeParsers[$key])) {
+        $id = spl_object_id($parser);
+        if (isset($this->activeParsers[$id][$offset])) {
             throw new LogicException(
                 'Left recursion at byte ' . $offset . ': ' . implode(' -> ', $this->path)
                 . ' -> ' . $parser->graphLabel(),
@@ -112,7 +112,7 @@ final class ParseSession
 
         // Only successful entry owns a matching leaveParser() call.
         ++$this->depth;
-        $this->activeParsers[$key] = true;
+        $this->activeParsers[$id][$offset] = true;
     }
 
     public function consumeWork(int $amount = 1, int $byteOffset = 0): void
@@ -129,7 +129,7 @@ final class ParseSession
 
     public function leaveParser(Parser $parser, int $offset): void
     {
-        unset($this->activeParsers[spl_object_id($parser) . ':' . $offset]);
+        unset($this->activeParsers[spl_object_id($parser)][$offset]);
         --$this->depth;
     }
 

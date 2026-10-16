@@ -306,10 +306,18 @@ such as `assignTo()` for referenced assignments.
 
 ### Direct parsing and numeric factories
 
-`parse()` is a complete-input alias for `parseAll()`. Facade entry points freeze
-the current graph on each call, so deferred definitions and factories are resolved
-using their current state. Retain `freeze()` once for repeated parsing with stable
-definitions. Strings always mean validated UTF-8, never automatic encoding detection;
+`parse()` is a complete-input alias for `parseAll()`. A facade made entirely of
+owned built-in parser nodes prepares its snapshot once and reuses it for later
+calls, including explicit `freeze()` calls. This cache belongs to that immutable
+expression; composition and metadata changes create a new expression. Recognition
+results, semantic caches and effects remain separate for every parse.
+
+Deferred rule references, Definition implementations and custom parser classes
+still freeze freshly on each call, so builder edits and factory state changes
+remain visible. Custom subclasses do not inherit built-in cache eligibility.
+Retain `freeze()` once when those graphs should use stable definitions. Per-call
+spacing composition creates a separate expression rather than a global cache.
+Strings always mean validated UTF-8, never automatic encoding detection;
 pass ByteSource for arbitrary bytes. Offsets and limits keep their canonical contracts.
 
 Facade `parse()`, `parseAll()` and `matchPrefix()` also accept a fourth optional

@@ -17,20 +17,34 @@ use Vanderlee\Comprehend\Source\Utf8Source;
  */
 final class FrozenGrammar
 {
+    private readonly bool $reusable;
     /**
      * @param list<string> $analysisWarnings
      */
-    private function __construct(private readonly Parser $root, public readonly array $analysisWarnings) {}
+    private function __construct(
+        private readonly Parser $root,
+        public readonly array $analysisWarnings,
+        bool $reusable,
+    ) {
+        $this->reusable = $reusable;
+    }
 
     public static function from(Comprehend|Parser $parser): self
     {
         if ($parser instanceof Comprehend) {
             $parser = $parser->parser();
         }
-        $root = (new GraphSnapshot())->copy($parser);
+        $snapshot = new GraphSnapshot();
+        $root = $snapshot->copy($parser);
         $warnings = (new GraphAnalysis())->validate($root);
 
-        return new self($root, $warnings);
+        return new self($root, $warnings, $snapshot->isReusable());
+    }
+
+    /** @internal A custom freeze override must not opt its mutable source into facade caching. */
+    public function canReuseFor(Parser $parser): bool
+    {
+        return $this->reusable && GraphSnapshot::isReusableParser($parser);
     }
 
     public function matchPrefix(

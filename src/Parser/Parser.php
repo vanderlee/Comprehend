@@ -56,6 +56,7 @@ abstract class Parser implements SnapshotParticipant
     private ?string $nodeGroup = null;
     private bool $semanticLeaf = false;
     private ?string $ruleName = null;
+    private ?string $classLabel = null;
 
     protected static function parseCharacter(string $character): string
     {
@@ -106,9 +107,15 @@ abstract class Parser implements SnapshotParticipant
 
     protected function diagnosticName(): string
     {
+        if ($this->ruleName !== null) {
+            return $this->ruleName;
+        }
+        if ($this->classLabel !== null) {
+            return $this->classLabel;
+        }
         $separator = strrpos(static::class, '\\');
 
-        return $this->ruleName ?? ($separator === false ? static::class : substr(static::class, $separator + 1));
+        return $this->classLabel = $separator === false ? static::class : substr(static::class, $separator + 1);
     }
 
     public function name(string|int|callable $name, ?string $group = null, bool $leaf = false): static

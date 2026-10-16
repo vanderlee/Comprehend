@@ -58,7 +58,9 @@ class Rfc2234 extends AbstractRuleset
             'CRLF' => C::text("\r\n"),
             'DIGIT' => C::set('0123456789'),
             'DQUOTE' => C::char('"'),
-            'HEXDIG' => C::set('0123456789ABCDEF'),
+            // Original: 'HEXDIG' => C::set('0123456789ABCDEF').
+            // ABNF's quoted A-F literals are case-insensitive (RFC 5234, Appendix B.1).
+            'HEXDIG' => C::set('0123456789ABCDEFabcdef'),
             'HTAB' => C::char("\t"),
             'LF' => C::char("\n"),
             'LWSP' => C::regex("/(?:[ \t]|(?:\r\n[ \t]))*/"),

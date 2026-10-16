@@ -37,7 +37,9 @@ abstract class Rfc2234TestCase extends ParserTestCase
             [$abnf->ref('HEXDIG'), 'A', true, 1],
             [$abnf->ref('HEXDIG'), 'F', true, 1],
             [$abnf->ref('HEXDIG'), 'G', false, 0],
-            [$abnf->ref('HEXDIG'), 'a', false, 0],
+            [$abnf->ref('HEXDIG'), 'a', true, 1],
+            [$abnf->ref('HEXDIG'), 'f', true, 1],
+            [$abnf->ref('HEXDIG'), 'g', false, 0],
             // ABNF rules
             [$abnf->ref('hex_val'), 'x01', true, 3],
             [$abnf->ref('hex_val'), 'x01F', true, 4],
