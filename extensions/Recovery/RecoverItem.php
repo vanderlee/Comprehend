@@ -7,7 +7,7 @@ namespace Vanderlee\Comprehend\Extensions\Recovery;
 use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
-use Vanderlee\Comprehend\Extensions\Binding\SeparatedList;
+use Vanderlee\Comprehend\Parser\Structure\SeparatedList;
 use Vanderlee\Comprehend\Source\Span;
 
 /** A separated list that preserves malformed nonempty items and leaves its close to its owner. */

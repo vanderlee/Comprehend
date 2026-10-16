@@ -72,9 +72,9 @@ spl_autoload_register(static function (string $class) use ($loadDirectory): void
     }
 }, true, true);
 require_once __DIR__ . '/../docs/examples/application-values-grammar.php';
-require_once __DIR__ . '/binding/grammars.php';
-require_once __DIR__ . '/binding/cases.php';
-require_once __DIR__ . '/binding/runtime.php';
+require_once __DIR__ . '/extraction/grammars.php';
+require_once __DIR__ . '/extraction/cases.php';
+require_once __DIR__ . '/extraction/runtime.php';
 
 $caseName = $options['case'] ?? 'nested';
 $corpus = cases($size);

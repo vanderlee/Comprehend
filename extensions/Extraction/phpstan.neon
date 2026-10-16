@@ -1,15 +1,15 @@
 services:
     -
-        class: Vanderlee\Comprehend\Extensions\Binding\MethodsExtension
+        class: Vanderlee\Comprehend\Extensions\Extraction\MethodsExtension
         tags:
             - phpstan.broker.methodsClassReflectionExtension
     -
-        class: Vanderlee\Comprehend\Extensions\Binding\ValueTypeExtension
+        class: Vanderlee\Comprehend\Extensions\Extraction\ValueTypeExtension
         tags:
             - phpstan.broker.dynamicMethodReturnTypeExtension
             - phpstan.broker.dynamicStaticMethodReturnTypeExtension
     -
-        class: Vanderlee\Comprehend\Extensions\Binding\ValueTypeExtension
+        class: Vanderlee\Comprehend\Extensions\Extraction\ValueTypeExtension
         arguments:
             className: Vanderlee\Comprehend\Syntax
         tags:

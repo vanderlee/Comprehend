@@ -8,7 +8,7 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Vanderlee\Comprehend\Builder\Ruleset;
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Extensions\Expression\Operator as O;
 use Vanderlee\Comprehend\Extensions\Expressions;
 use Vanderlee\Comprehend\Match\AbstractMatch;
@@ -26,9 +26,9 @@ use Vanderlee\Comprehend\Source\Utf8FileSource;
 uses(TestCase::class);
 
 test('grouped expressions preserve recursive values and parentheses', function (): void {
-    $syntax = Binding::syntax()->extend(new Expressions());
+    $syntax = Extraction::syntax()->extend(new Expressions());
     $rules = new Ruleset();
-    $number = Binding::syntax()->regex('/[0-9]+/A')->named('number')->mapText('intval');
+    $number = Extraction::syntax()->regex('/[0-9]+/A')->named('number')->mapText('intval');
     $primary = $syntax->expressionChoice($number, $syntax->of($rules->rule('expr'))->between('(', ')'));
     $rules->define('expr', $syntax->operatorExpression(
         $primary,
@@ -36,7 +36,7 @@ test('grouped expressions preserve recursive values and parentheses', function (
         O::infixLeft('*', 20, static fn(int $a, int $b): int => $a * $b),
         O::prefix('-', 30, static fn(int $a): int => -$a),
         O::infixRight('^', 40, static fn(int $a, int $b): int => $a ** $b),
-    )->spacing(Binding::syntax()->text(' ')->many()))->root('expr');
+    )->spacing(Extraction::syntax()->text(' ')->many()))->root('expr');
     $grammar = $rules->freeze();
     foreach (['(2+3)*4' => 20, '2*(3+4)' => 14, '((2))' => 2, '-(2+3)^2' => -25] as $input => $value) {
         $result = $grammar->parse($input);
@@ -49,8 +49,8 @@ test('grouped expressions preserve recursive values and parentheses', function (
 });
 
 test('reductions can build typed domain trees instead of evaluating numbers', function (): void {
-    $syntax = Binding::syntax()->extend(new Expressions());
-    $primary = Binding::syntax()->regex('/[a-z]/A')->mapText(static fn(string $name): array => ['variable', $name]);
+    $syntax = Extraction::syntax()->extend(new Expressions());
+    $primary = Extraction::syntax()->regex('/[a-z]/A')->mapText(static fn(string $name): array => ['variable', $name]);
     $parser = $syntax->operatorExpression(
         $primary,
         O::infixLeft('+', 10, static fn(array $a, array $b): array => ['add', $a, $b]),
@@ -63,10 +63,10 @@ test('reductions can build typed domain trees instead of evaluating numbers', fu
 });
 
 test('expression reduction is lazy cached and replaceable by an explicit outer mapping', function (): void {
-    $syntax = Binding::syntax()->extend(new Expressions());
+    $syntax = Extraction::syntax()->extend(new Expressions());
     $calls = [];
     $parser = $syntax->operatorExpression(
-        Binding::syntax()->regex('/[0-9]+/A')->mapText('intval'),
+        Extraction::syntax()->regex('/[0-9]+/A')->mapText('intval'),
         O::infixLeft('+', 1, static function (int $a, int $b) use (&$calls): int {
             $calls[] = [$a, $b];
             return $a + $b;
@@ -86,10 +86,10 @@ test('expression reduction is lazy cached and replaceable by an explicit outer m
 });
 
 test('right reduction order and retained exceptions are local to a recognition', function (): void {
-    $syntax = Binding::syntax()->extend(new Expressions());
+    $syntax = Extraction::syntax()->extend(new Expressions());
     $calls = [];
     $parser = $syntax->operatorExpression(
-        Binding::syntax()->regex('/[0-9]/A')->mapText('intval'),
+        Extraction::syntax()->regex('/[0-9]/A')->mapText('intval'),
         O::infixRight('^', 1, static function (int $a, int $b) use (&$calls): int {
             $calls[] = [$a, $b];
             return $a ** $b;
@@ -116,20 +116,20 @@ test('right reduction order and retained exceptions are local to a recognition',
 });
 
 test('operator syntax values stay lazy while all selected syntax retains validation and effects', function (): void {
-    $syntax = Binding::syntax()->extend(new Expressions());
+    $syntax = Extraction::syntax()->extend(new Expressions());
     $events = [];
     $effect = static function (ParseResult $result) use (&$events): void {
         $events[] = $result->rawText();
     };
-    $operator = Binding::syntax()->text('+')->named('plus')->pushResult('operators')->onCommit($effect)
+    $operator = Extraction::syntax()->text('+')->named('plus')->pushResult('operators')->onCommit($effect)
         ->mapText(static function (): never {
             throw new RuntimeException('Operator value should not be needed for reduction');
         });
-    $operand = Binding::syntax()->text('a')->named('operand')->pushResult('operands')->onCommit($effect);
+    $operand = Extraction::syntax()->text('a')->named('operand')->pushResult('operands')->onCommit($effect);
     $parser = $syntax->operatorExpression(
         $operand,
         O::infixLeft($operator, 10, static fn(string $a, string $b): string => $a . $b),
-    )->spacing(Binding::syntax()->text(' ')->onCommit($effect));
+    )->spacing(Extraction::syntax()->text(' ')->onCommit($effect));
     $result = $parser->parse('a + a');
     $this->assertSame('aa', $result->value());
     $this->assertSame(['operands' => ['a', 'a'], 'operators' => ['+']], $result->results());
@@ -138,7 +138,7 @@ test('operator syntax values stay lazy while all selected syntax retains validat
     $this->assertTrue($result->commit());
     $this->assertSame(['a', ' ', '+', ' ', 'a'], $events);
     $invalid = $syntax->operatorExpression('a', O::infixLeft(
-        Binding::syntax()->text('+')->validateSemantic(static fn(): string => 'bad operator'),
+        Extraction::syntax()->text('+')->validateSemantic(static fn(): string => 'bad operator'),
         10,
         static fn($a, $b) => $a,
     ))->parse('a+a');
@@ -147,9 +147,9 @@ test('operator syntax values stay lazy while all selected syntax retains validat
 });
 
 test('abandoned tails and branches contribute no reductions validation or effects', function (): void {
-    $syntax = Binding::syntax()->extend(new Expressions());
+    $syntax = Extraction::syntax()->extend(new Expressions());
     $calls = 0;
-    $op = Binding::syntax()->text('+')->validateSemantic(static fn(): string => 'discarded')->onCommit(
+    $op = Extraction::syntax()->text('+')->validateSemantic(static fn(): string => 'discarded')->onCommit(
         static function () use (&$calls): void {
             ++$calls;
         },
@@ -157,7 +157,7 @@ test('abandoned tails and branches contribute no reductions validation or effect
     $parser = $syntax->operatorExpression('a', O::infixLeft($op, 1, static function () use (&$calls): string {
         ++$calls;
         return 'reduced';
-    }))->spacing(Binding::syntax()->text(' ')->many());
+    }))->spacing(Extraction::syntax()->text(' ')->many());
     $prefix = $parser->matchPrefix('a + x');
     $this->assertSame('a', $prefix->rawText());
     $this->assertSame('a', $prefix->value());
@@ -169,10 +169,10 @@ test('abandoned tails and branches contribute no reductions validation or effect
 });
 
 test('expression syntax retains utf8 byte spans across file and byte sources', function (): void {
-    $syntax = Binding::syntax()->extend(new Expressions());
+    $syntax = Extraction::syntax()->extend(new Expressions());
     $parser = $syntax->operatorExpression(
-        Binding::syntax()->text('é')->named('operand'),
-        O::infixLeft(Binding::syntax()->text('⊕')->named('operator'), 10, static fn($a, $b): string => $a . $b),
+        Extraction::syntax()->text('é')->named('operand'),
+        O::infixLeft(Extraction::syntax()->text('⊕')->named('operator'), 10, static fn($a, $b): string => $a . $b),
     );
     $stream = tmpfile();
     fwrite($stream, 'é⊕é');
@@ -188,8 +188,8 @@ test('expression syntax retains utf8 byte spans across file and byte sources', f
     $this->assertSame(9, $parser->matchPrefix('xxé⊕é!', byteOffset: 2)->end);
 });
 
-test('expression bindings honor declaration order and scoped longest choice', function (): void {
-    $syntax = Binding::syntax()->extend(new Expressions());
+test('expression extractions honor declaration order and scoped longest choice', function (): void {
+    $syntax = Extraction::syntax()->extend(new Expressions());
     $parser = $syntax->operatorExpression(
         'a',
         O::infixLeft('*', 1, static fn($a, $b): string => 'short'),
@@ -200,7 +200,7 @@ test('expression bindings honor declaration order and scoped longest choice', fu
 });
 
 test('expression graph isolation retains snapshots and respects local spacing overrides', function (): void {
-    $syntax = Binding::syntax()->extend(new Expressions());
+    $syntax = Extraction::syntax()->extend(new Expressions());
     $operator = new Sequence(new Text('+'));
     $primary = new Sequence(new Text('a'));
     $parser = $syntax->operatorExpression($primary, O::infixLeft($operator, 1, static fn($a, $b) => $a . $b));
@@ -209,13 +209,13 @@ test('expression graph isolation retains snapshots and respects local spacing ov
     $primary->add(new Text('b'));
     $this->assertSame('aa', $frozen->parse('a+a')->value());
     $this->assertSame('aa', $parser->parse('a+a')->value());
-    $this->assertSame('aa', $parser->parse('a + a', spacing: Binding::syntax()->text(' '))->value());
-    $this->assertFalse($parser->lexeme()->parse('a + a', spacing: Binding::syntax()->text(' '))->success);
-    $this->assertFalse($parser->spacing(null)->parse('a + a', spacing: Binding::syntax()->text(' '))->success);
+    $this->assertSame('aa', $parser->parse('a + a', spacing: Extraction::syntax()->text(' '))->value());
+    $this->assertFalse($parser->lexeme()->parse('a + a', spacing: Extraction::syntax()->text(' '))->success);
+    $this->assertFalse($parser->spacing(null)->parse('a + a', spacing: Extraction::syntax()->text(' '))->success);
 });
 
 test('expression parsing uses shared limits and excludes nullable custom operators at runtime', function (): void {
-    $syntax = Binding::syntax()->extend(new Expressions());
+    $syntax = Extraction::syntax()->extend(new Expressions());
     $opaque = new class ('unused') extends Text {
         protected function recognize(Source $source, int $offset, ParseSession $session): AbstractMatch
         {

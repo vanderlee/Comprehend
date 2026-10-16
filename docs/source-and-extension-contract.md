@@ -270,7 +270,7 @@ Existing custom composites that previously relied on reflected fields must add
 `copyDependencies()`; returning those fields from `children()` alone is insufficient.
 
 Built-in participants retain their distinct rules: RuleReference owns parameterized
-identity and target binding; Implementation resets cached targets before fresh
+identity and target extraction; Implementation resets cached targets before fresh
 materialization; AbstractRuleset keeps only its freshly resolved root when freezing.
 
 ## Optional preparation reuse

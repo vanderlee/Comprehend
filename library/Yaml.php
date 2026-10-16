@@ -15,7 +15,7 @@ use Vanderlee\Comprehend\Tree\ConcreteNode;
  *
  * YAML streams, block collections, flow collections and scalars.
  *
- * Preserves source syntax. Scalar resolution, tag construction, alias binding and
+ * Preserves source syntax. Scalar resolution, tag construction, alias extraction and
  * mapping-key equality are separate semantic operations. Indentation is recognized
  * by a source-aware Parser on the same session and byte-coordinate runtime.
  *

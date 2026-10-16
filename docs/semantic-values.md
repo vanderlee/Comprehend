@@ -2,8 +2,8 @@
 
 ## Composing application values
 
-These helpers belong to the optional [Binding expansion](binding.md).
-Use `Binding::syntax()` or `C::syntax()->extend(new Binding())` to author them.
+These helpers belong to the optional [Extraction expansion](extraction.md).
+Use `Extraction::syntax()` or `C::syntax()->extend(new Extraction())` to author them.
 
 Follow [Parse application values](application-values.md) for a complete domain-object
 example with optional settings, alternatives and nested lists.
@@ -22,17 +22,17 @@ including null. First/longest/shortest policies and diagnostics remain unchanged
 discarded alternatives' mappings are not evaluated to select a match.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 
 
-$amount = Binding::syntax()->integer()->mapText('intval');
-$currency = Binding::syntax()->valueChoice('USD', 'EUR');
-$money = Binding::syntax()->collect($currency, $amount)
+$amount = Extraction::syntax()->integer()->mapText('intval');
+$currency = Extraction::syntax()->valueChoice('USD', 'EUR');
+$money = Extraction::syntax()->collect($currency, $amount)
     ->map(static fn(array $parts): object => (object) [
         'currency' => $parts[0],
         'amount' => $parts[1],
     ])
-    ->spacing(Binding::syntax()->text(' ')->many());
+    ->spacing(Extraction::syntax()->text(' ')->many());
 
 $result = $money->parse('USD 12');
 $result->value()->amount; // 12 (int)
@@ -44,7 +44,7 @@ vocabularies expose them too. Fluent `$a->collect($b)` and `$a->valueChoice($b)`
 include `$a` as the first operand and preserve nesting. Ordinary `sequence()`,
 `then()` and `choice()` retain their raw-text defaults.
 Low-level constructors are `new Collect(Parser ...$operands)` and
-`new ValueChoice(Parser ...$alternatives)` in `Extensions\Binding`.
+`new ValueChoice(Parser ...$alternatives)` in `Extensions\Extraction`.
 
 These operations preserve the complete CST, source spans, named collections,
 semantic validators and explicit commit effects. Value inspection never commits.
@@ -53,7 +53,7 @@ An outer `mapText()` or `mapValue()` can replace collection/choice projection
 without evaluating its operand mappings. Run `php docs/examples/value-composition.php`.
 
 These names are local expansion registrations, not reserved core built-ins.
-Installing Binding follows the ordinary Syntax replacement and isolation rules.
+Installing Extraction follows the ordinary Syntax replacement and isolation rules.
 
 ## Repeated and optional values
 
@@ -70,9 +70,9 @@ and object values: callables are never invoked, and objects are not cloned or
 constructed afresh per parse. Use a pure `map()` if a fresh application object is needed.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 
-$digit = Binding::syntax()->range('0', '9')->mapText('intval');
+$digit = Extraction::syntax()->range('0', '9')->mapText('intval');
 $digit->manyValues()->parse('123')->value(); // [1, 2, 3]
 $digit->manyValues()->parse('')->value();    // []
 $digit->someValues()->parse('')->success;   // false
@@ -86,7 +86,7 @@ Static and Syntax forms accept facades, Parser objects or literal strings:
 `C::optionalValue($item, default: 'missing')`. These four names are reserved
 built-ins; custom Syntax registrations with those names must be renamed.
 Existing `many()`, `some()`, `repeat()`, `maybe()` and `optional()` keep their
-raw-text defaults. Low-level constructors in `Extensions\Binding` are
+raw-text defaults. Low-level constructors in `Extensions\Extraction` are
 `new ValueRepeat(Parser $item, int $min = 0, ?int $max = null)` and
 `new OptionalValue(Parser $item, mixed $default = null)`.
 
@@ -108,7 +108,7 @@ CST nodes, trivia and byte spans remain intact. Run
 
 The facade, frozen grammar and parse result carry a PHPDoc value type:
 `Comprehend<T>`, `FrozenGrammar<T>` and `ParseResult<T>`. Mapping signatures are
-provided through PHPDoc for core projections and Binding's separate PHPStan
+provided through PHPDoc for core projections and Extraction's separate PHPStan
 reflection support for its vocabulary. PHPStan is not a runtime dependency.
 
 For PHPStan 2.1, include the bundled extension in your project's configuration:
@@ -116,18 +116,18 @@ For PHPStan 2.1, include the bundled extension in your project's configuration:
 ```yaml
 includes:
     - vendor/vanderlee/comprehend/phpstan-extension.neon
-    - vendor/vanderlee/comprehend/extensions/Binding/phpstan.neon
+    - vendor/vanderlee/comprehend/extensions/Extraction/phpstan.neon
 ```
 
-The repository's configuration includes both. Binding support models magic
+The repository's configuration includes both. Extraction support models magic
 factory and fluent calls, including list and optional-value projections. IDE
 support depends on its PHPDoc and PHPStan integration; enabling PHPStan support
-does not itself install an IDE plugin or activate Binding at runtime.
+does not itself install an IDE plugin or activate Extraction at runtime.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 
-$number = Binding::syntax()->integer()->mapText('intval'); // Comprehend<int>
+$number = Extraction::syntax()->integer()->mapText('intval'); // Comprehend<int>
 $doubled = $number->map(static fn(int $n): int => $n * 2);
 $list = $doubled->manyValues();           // Comprehend<list<int>>
 $optional = $number->optionalValue(default: false); // Comprehend<int|false>

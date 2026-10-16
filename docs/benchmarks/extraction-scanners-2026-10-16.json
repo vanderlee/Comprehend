@@ -6,13 +6,13 @@
     "pcre": "10.40 2022-04-14",
     "mbstring_native": true,
     "mb_internal_encoding": "UTF-8",
-    "binding_version": "0.8.3",
-    "binding_reference": "e5b0a763e26e89de39a0790e949b8ff7f0909d73",
+    "extraction_version": "0.8.3",
+    "extraction_reference": "e5b0a763e26e89de39a0790e949b8ff7f0909d73",
     "runtime_source_sha256": "f9d7d03485fa20640643b8865c983c7cd3b39219ae4e3f5dc85054e6b3f5ce83",
     "grammar_sha256": "6cbfe1e888f7a96b2a2b9c607b785a10a4f548b4d44fbd13dcc74988e6d177e7",
     "harness_sha256": "18c5c0058cc9f957b78c743945788433e77c1663ba197004b4ebb742d03ce19e",
     "case_sha256": "c0bc87b52bc972e2dc3edd24d546e99e8b8823a30b57b299f853d9388efcd800",
-    "command": "php tools\/compare-binding.php --samples=8 --iterations=30 --warmups=3 --size=128 --scanners",
+    "command": "php tools\/compare-extraction.php --samples=8 --iterations=30 --warmups=3 --size=128 --scanners",
     "samples": 8,
     "iterations": 30,
     "warmups": 3,
@@ -22,7 +22,7 @@
         "comprehend",
         "comprehend-spacing",
         "comprehend-scanners",
-        "binding"
+        "extraction"
     ],
     "worker_php_options": [
         "memory_limit=512M",
@@ -942,8 +942,8 @@
                 }
             }
         },
-        "binding": {
-            "library": "binding",
+        "extraction": {
+            "library": "extraction",
             "cases": {
                 "record": {
                     "accepted": true,
@@ -1281,7 +1281,7 @@
         },
         {
             "sample": 0,
-            "library": "binding",
+            "library": "extraction",
             "case": "record",
             "input_bytes": 34,
             "pcov_enabled": false,
@@ -1489,7 +1489,7 @@
         },
         {
             "sample": 0,
-            "library": "binding",
+            "library": "extraction",
             "case": "default",
             "input_bytes": 16,
             "pcov_enabled": false,
@@ -1697,7 +1697,7 @@
         },
         {
             "sample": 0,
-            "library": "binding",
+            "library": "extraction",
             "case": "nested",
             "input_bytes": 427,
             "pcov_enabled": false,
@@ -1905,7 +1905,7 @@
         },
         {
             "sample": 0,
-            "library": "binding",
+            "library": "extraction",
             "case": "malformed-field",
             "input_bytes": 23,
             "pcov_enabled": false,
@@ -2113,7 +2113,7 @@
         },
         {
             "sample": 0,
-            "library": "binding",
+            "library": "extraction",
             "case": "multiline-error",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -2321,7 +2321,7 @@
         },
         {
             "sample": 0,
-            "library": "binding",
+            "library": "extraction",
             "case": "trailing-input",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -2477,7 +2477,7 @@
         },
         {
             "sample": 1,
-            "library": "binding",
+            "library": "extraction",
             "case": "record",
             "input_bytes": 34,
             "pcov_enabled": false,
@@ -2685,7 +2685,7 @@
         },
         {
             "sample": 1,
-            "library": "binding",
+            "library": "extraction",
             "case": "default",
             "input_bytes": 16,
             "pcov_enabled": false,
@@ -2893,7 +2893,7 @@
         },
         {
             "sample": 1,
-            "library": "binding",
+            "library": "extraction",
             "case": "nested",
             "input_bytes": 427,
             "pcov_enabled": false,
@@ -3101,7 +3101,7 @@
         },
         {
             "sample": 1,
-            "library": "binding",
+            "library": "extraction",
             "case": "malformed-field",
             "input_bytes": 23,
             "pcov_enabled": false,
@@ -3309,7 +3309,7 @@
         },
         {
             "sample": 1,
-            "library": "binding",
+            "library": "extraction",
             "case": "multiline-error",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -3517,7 +3517,7 @@
         },
         {
             "sample": 1,
-            "library": "binding",
+            "library": "extraction",
             "case": "trailing-input",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -3673,7 +3673,7 @@
         },
         {
             "sample": 2,
-            "library": "binding",
+            "library": "extraction",
             "case": "record",
             "input_bytes": 34,
             "pcov_enabled": false,
@@ -3881,7 +3881,7 @@
         },
         {
             "sample": 2,
-            "library": "binding",
+            "library": "extraction",
             "case": "default",
             "input_bytes": 16,
             "pcov_enabled": false,
@@ -4089,7 +4089,7 @@
         },
         {
             "sample": 2,
-            "library": "binding",
+            "library": "extraction",
             "case": "nested",
             "input_bytes": 427,
             "pcov_enabled": false,
@@ -4297,7 +4297,7 @@
         },
         {
             "sample": 2,
-            "library": "binding",
+            "library": "extraction",
             "case": "malformed-field",
             "input_bytes": 23,
             "pcov_enabled": false,
@@ -4505,7 +4505,7 @@
         },
         {
             "sample": 2,
-            "library": "binding",
+            "library": "extraction",
             "case": "multiline-error",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -4713,7 +4713,7 @@
         },
         {
             "sample": 2,
-            "library": "binding",
+            "library": "extraction",
             "case": "trailing-input",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -4869,7 +4869,7 @@
         },
         {
             "sample": 3,
-            "library": "binding",
+            "library": "extraction",
             "case": "record",
             "input_bytes": 34,
             "pcov_enabled": false,
@@ -5077,7 +5077,7 @@
         },
         {
             "sample": 3,
-            "library": "binding",
+            "library": "extraction",
             "case": "default",
             "input_bytes": 16,
             "pcov_enabled": false,
@@ -5285,7 +5285,7 @@
         },
         {
             "sample": 3,
-            "library": "binding",
+            "library": "extraction",
             "case": "nested",
             "input_bytes": 427,
             "pcov_enabled": false,
@@ -5493,7 +5493,7 @@
         },
         {
             "sample": 3,
-            "library": "binding",
+            "library": "extraction",
             "case": "malformed-field",
             "input_bytes": 23,
             "pcov_enabled": false,
@@ -5701,7 +5701,7 @@
         },
         {
             "sample": 3,
-            "library": "binding",
+            "library": "extraction",
             "case": "multiline-error",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -5909,7 +5909,7 @@
         },
         {
             "sample": 3,
-            "library": "binding",
+            "library": "extraction",
             "case": "trailing-input",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -6117,7 +6117,7 @@
         },
         {
             "sample": 4,
-            "library": "binding",
+            "library": "extraction",
             "case": "record",
             "input_bytes": 34,
             "pcov_enabled": false,
@@ -6325,7 +6325,7 @@
         },
         {
             "sample": 4,
-            "library": "binding",
+            "library": "extraction",
             "case": "default",
             "input_bytes": 16,
             "pcov_enabled": false,
@@ -6533,7 +6533,7 @@
         },
         {
             "sample": 4,
-            "library": "binding",
+            "library": "extraction",
             "case": "nested",
             "input_bytes": 427,
             "pcov_enabled": false,
@@ -6741,7 +6741,7 @@
         },
         {
             "sample": 4,
-            "library": "binding",
+            "library": "extraction",
             "case": "malformed-field",
             "input_bytes": 23,
             "pcov_enabled": false,
@@ -6949,7 +6949,7 @@
         },
         {
             "sample": 4,
-            "library": "binding",
+            "library": "extraction",
             "case": "multiline-error",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -7157,7 +7157,7 @@
         },
         {
             "sample": 4,
-            "library": "binding",
+            "library": "extraction",
             "case": "trailing-input",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -7417,7 +7417,7 @@
         },
         {
             "sample": 5,
-            "library": "binding",
+            "library": "extraction",
             "case": "record",
             "input_bytes": 34,
             "pcov_enabled": false,
@@ -7625,7 +7625,7 @@
         },
         {
             "sample": 5,
-            "library": "binding",
+            "library": "extraction",
             "case": "default",
             "input_bytes": 16,
             "pcov_enabled": false,
@@ -7833,7 +7833,7 @@
         },
         {
             "sample": 5,
-            "library": "binding",
+            "library": "extraction",
             "case": "nested",
             "input_bytes": 427,
             "pcov_enabled": false,
@@ -8041,7 +8041,7 @@
         },
         {
             "sample": 5,
-            "library": "binding",
+            "library": "extraction",
             "case": "malformed-field",
             "input_bytes": 23,
             "pcov_enabled": false,
@@ -8249,7 +8249,7 @@
         },
         {
             "sample": 5,
-            "library": "binding",
+            "library": "extraction",
             "case": "multiline-error",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -8457,7 +8457,7 @@
         },
         {
             "sample": 5,
-            "library": "binding",
+            "library": "extraction",
             "case": "trailing-input",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -8717,7 +8717,7 @@
         },
         {
             "sample": 6,
-            "library": "binding",
+            "library": "extraction",
             "case": "record",
             "input_bytes": 34,
             "pcov_enabled": false,
@@ -8925,7 +8925,7 @@
         },
         {
             "sample": 6,
-            "library": "binding",
+            "library": "extraction",
             "case": "default",
             "input_bytes": 16,
             "pcov_enabled": false,
@@ -9133,7 +9133,7 @@
         },
         {
             "sample": 6,
-            "library": "binding",
+            "library": "extraction",
             "case": "nested",
             "input_bytes": 427,
             "pcov_enabled": false,
@@ -9341,7 +9341,7 @@
         },
         {
             "sample": 6,
-            "library": "binding",
+            "library": "extraction",
             "case": "malformed-field",
             "input_bytes": 23,
             "pcov_enabled": false,
@@ -9549,7 +9549,7 @@
         },
         {
             "sample": 6,
-            "library": "binding",
+            "library": "extraction",
             "case": "multiline-error",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -9757,7 +9757,7 @@
         },
         {
             "sample": 6,
-            "library": "binding",
+            "library": "extraction",
             "case": "trailing-input",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -10017,7 +10017,7 @@
         },
         {
             "sample": 7,
-            "library": "binding",
+            "library": "extraction",
             "case": "record",
             "input_bytes": 34,
             "pcov_enabled": false,
@@ -10225,7 +10225,7 @@
         },
         {
             "sample": 7,
-            "library": "binding",
+            "library": "extraction",
             "case": "default",
             "input_bytes": 16,
             "pcov_enabled": false,
@@ -10433,7 +10433,7 @@
         },
         {
             "sample": 7,
-            "library": "binding",
+            "library": "extraction",
             "case": "nested",
             "input_bytes": 427,
             "pcov_enabled": false,
@@ -10641,7 +10641,7 @@
         },
         {
             "sample": 7,
-            "library": "binding",
+            "library": "extraction",
             "case": "malformed-field",
             "input_bytes": 23,
             "pcov_enabled": false,
@@ -10849,7 +10849,7 @@
         },
         {
             "sample": 7,
-            "library": "binding",
+            "library": "extraction",
             "case": "multiline-error",
             "input_bytes": 15,
             "pcov_enabled": false,
@@ -11057,7 +11057,7 @@
         },
         {
             "sample": 7,
-            "library": "binding",
+            "library": "extraction",
             "case": "trailing-input",
             "input_bytes": 15,
             "pcov_enabled": false,

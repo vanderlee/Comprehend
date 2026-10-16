@@ -7,7 +7,7 @@ namespace Tests\Unit\src\Parser\Structure;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Extensions\Binding\ValueRepeat;
+use Vanderlee\Comprehend\Extensions\Extraction\ValueRepeat;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Extensions\Binding;
+namespace Vanderlee\Comprehend\Extensions\Extraction;
 
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;

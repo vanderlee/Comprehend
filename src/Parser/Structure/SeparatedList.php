@@ -193,7 +193,9 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
      */
     protected function prepareListValue(Success $success, array $items, array $selected): void
     {
-        // Ordinary syntax lists retain their raw-text projection.
+        $success->setValueMapper(
+            static fn(): array => array_map(static fn(Success $item): mixed => $item->getValue(), $items),
+        );
     }
 
     /**

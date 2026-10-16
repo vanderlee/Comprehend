@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Extensions\Expression;
 
-/** One binding behavior per precedence level. */
+/** One extraction behavior per precedence level. */
 enum OperatorKind
 {
     case PREFIX;

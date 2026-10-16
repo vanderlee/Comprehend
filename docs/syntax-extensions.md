@@ -19,8 +19,8 @@ The original `$base` and global `C::asciiIdentifier()` have no such factory.
 Expressions constructed through `$syntax` retain that vocabulary, so extension
 factories can also be chained like other static factories. A chained factory
 appends its parser; it does not automatically select that parser's value. Use
-Binding's `ignoreThen()` when that value is wanted; install the
-[Binding expansion](binding.md) on the vocabulary first.
+Extraction's `ignoreThen()` when that value is wanted; install the
+[Extraction expansion](extraction.md) on the vocabulary first.
 
 ## Writing an extension
 
@@ -72,7 +72,7 @@ the current Comprehend expression before user arguments and runs only during
 grammar authoring. Fluent-only extensions return an empty iterable from `rules()`.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 
 final class Delimiters implements SyntaxExtension
@@ -88,7 +88,7 @@ final class Delimiters implements SyntaxExtension
     }
 }
 
-$syntax = Binding::syntax()->extend(new Delimiters());
+$syntax = Extraction::syntax()->extend(new Delimiters());
 $result = $syntax->text('hello')->parenthesized()->parse('(hello)');
 ```
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Parser\Terminal\ReadWhile;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
@@ -114,8 +114,8 @@ test('skip scanners discard values while retaining source and trees', function (
     [C::skipUntil(';')],
 ]);
 
-test('scanner composition retains delimiters, spacing and binding values', function (): void {
-    $parser = Binding::syntax()->readUntil(';')->thenIgnore(';');
+test('scanner composition retains delimiters, spacing and extraction values', function (): void {
+    $parser = Extraction::syntax()->readUntil(';')->thenIgnore(';');
     $this->assertSame('abc', $parser->parse('abc;')->value());
     $this->assertFalse($parser->parse('abc')->success);
     $this->assertSame('x y', C::text('x')->text('y')->spacing(C::readWhileSet(' '))->parse('x y')->rawText());

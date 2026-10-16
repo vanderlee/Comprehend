@@ -65,19 +65,19 @@ final class Expressions implements SyntaxExtension
     }
 
     /** @param non-empty-list<Operator> $operators */
-    private static function bindings(array $operators): Parser
+    private static function extractions(array $operators): Parser
     {
-        $bindings = [];
+        $extractions = [];
         foreach ($operators as $operator) {
             $reduce = $operator->reduce;
             // Exactly one consuming operator, even when its neighboring operand consumes input.
-            $bindings[] = new ReductionSequence(
+            $extractions[] = new ReductionSequence(
                 static fn(array $children): Closure => $reduce,
                 new Repeat($operator->parser(), 1, 1),
             );
         }
 
-        return new ValueChoice(...$bindings);
+        return new ValueChoice(...$extractions);
     }
 
     /** @param non-empty-list<Operator> $operators */
@@ -97,7 +97,7 @@ final class Expressions implements SyntaxExtension
                 return $value;
             },
             $operand,
-            new ValueRepeat(self::bindings($operators), 1),
+            new ValueRepeat(self::extractions($operators), 1),
             max: 1,
             allowLeading: true,
         );
@@ -118,7 +118,7 @@ final class Expressions implements SyntaxExtension
                 return $value;
             },
             $operand,
-            new ValueRepeat(self::bindings($operators), 1),
+            new ValueRepeat(self::extractions($operators), 1),
             max: 1,
             allowTrailing: true,
         );
@@ -148,32 +148,32 @@ final class Expressions implements SyntaxExtension
                 return $value;
             },
             $operand,
-            self::bindings($operators),
+            self::extractions($operators),
             max: $kind === OperatorKind::NON_ASSOCIATIVE ? 2 : null,
         );
     }
 
-    private static function reducer(ParseResult $binding): Closure
+    private static function reducer(ParseResult $extraction): Closure
     {
-        $reduce = $binding->value();
+        $reduce = $extraction->value();
         if (!$reduce instanceof Closure) {
-            throw new LogicException('Expression operator binding must contain a reducer');
+            throw new LogicException('Expression operator extraction must contain a reducer');
         }
 
         return $reduce;
     }
 
     /** @return list<Closure> */
-    private static function unaryReducers(ParseResult $bindings): array
+    private static function unaryReducers(ParseResult $extractions): array
     {
-        $values = $bindings->value();
+        $values = $extractions->value();
         if (!is_array($values)) {
-            throw new LogicException('Expression unary bindings must contain a list of reducers');
+            throw new LogicException('Expression unary extractions must contain a list of reducers');
         }
         $reducers = [];
         foreach ($values as $value) {
             if (!$value instanceof Closure) {
-                throw new LogicException('Expression unary binding must contain a reducer');
+                throw new LogicException('Expression unary extraction must contain a reducer');
             }
             $reducers[] = $value;
         }

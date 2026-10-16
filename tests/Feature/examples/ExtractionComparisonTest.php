@@ -8,27 +8,27 @@ use function ComprehendComparison\accepted;
 use function ComprehendComparison\cases;
 use function ComprehendComparison\comprehendJob;
 use function ComprehendComparison\diagnostic;
-use function ComprehendComparison\bindingJob;
+use function ComprehendComparison\extractionJob;
 use function ComprehendComparison\recognize;
 use function ComprehendComparison\value;
 use function ComprehendComparison\verify;
 
 require_once __DIR__ . '/../../../docs/examples/application-values-grammar.php';
-require_once __DIR__ . '/../../../tools/binding/grammars.php';
-require_once __DIR__ . '/../../../tools/binding/cases.php';
-require_once __DIR__ . '/../../../tools/binding/runtime.php';
+require_once __DIR__ . '/../../../tools/extraction/grammars.php';
+require_once __DIR__ . '/../../../tools/extraction/cases.php';
+require_once __DIR__ . '/../../../tools/extraction/runtime.php';
 
 uses(TestCase::class);
 
 test('comparison grammars satisfy the independent acceptance and output oracle', function (string $library): void {
-    if ($library === 'binding') {
-        $autoload = __DIR__ . '/../../../build/binding/vendor/autoload.php';
+    if ($library === 'extraction') {
+        $autoload = __DIR__ . '/../../../build/extraction/vendor/autoload.php';
         if (!is_file($autoload)) {
-            $this->markTestSkipped('Optional Binding comparison dependency is not installed');
+            $this->markTestSkipped('Optional Extraction comparison dependency is not installed');
         }
         require_once $autoload;
     }
-    $parser = $library === 'binding' ? bindingJob() : comprehendJob(
+    $parser = $library === 'extraction' ? extractionJob() : comprehendJob(
         scanSpacing: $library !== 'comprehend',
         scanTokens: $library === 'comprehend-scanners',
     )->freeze();
@@ -53,7 +53,7 @@ test('comparison grammars satisfy the independent acceptance and output oracle',
             $this->assertNotEmpty($failure['message']);
         }
     }
-})->with(['comprehend', 'comprehend-spacing', 'comprehend-scanners', 'binding']);
+})->with(['comprehend', 'comprehend-spacing', 'comprehend-scanners', 'extraction']);
 
 test('comparison oracle detects wrong acceptance and wrong domain values', function (bool $wrongAcceptance): void {
     $parser = comprehendJob()->freeze();

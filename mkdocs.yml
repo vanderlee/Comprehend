@@ -55,7 +55,7 @@ nav:
       - Lifecycle and effects: lifecycle.md
       - Serialization: serialization.md
   - Extensions:
-      - Binding: binding.md
+      - Extraction: extraction.md
       - Syntax extensions: syntax-extensions.md
       - Expressions: expressions.md
   - Reference:
@@ -69,6 +69,6 @@ nav:
       - Contributing: contribute.md
       - Performance: performance.md
       - Extraction profiling: extraction-profiling.md
-      - Binding comparison: binding-comparison.md
+      - Extraction comparison: extraction-comparison.md
       - Breaking release: breaking-release.md
       - Canonical runtime: canonical-runtime.md

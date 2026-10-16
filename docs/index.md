@@ -18,13 +18,13 @@ migration requirements of the 2.0.0 redesign.
 
 ## Quick start
 
-The following example activates the optional [Binding expansion](binding.md).
+The following example activates the optional [Extraction expansion](extraction.md).
 
 ```php
 require 'vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Binding;
-$age = Binding::syntax()->integer(0, 150)
+use Vanderlee\Comprehend\Extensions\Extraction;
+$age = Extraction::syntax()->integer(0, 150)
     ->named('age')
     ->mapText(static fn(string $text): int => (int) $text);
 

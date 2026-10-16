@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
-use Vanderlee\Comprehend\Extensions\Binding\ValueSequence;
+use Vanderlee\Comprehend\Parser\Structure\ValueSequence;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;

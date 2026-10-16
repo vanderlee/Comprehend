@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Examples\ApplicationValues;
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 
 final class Job
 {
@@ -26,17 +26,17 @@ final class Job
 /** @return C<Job> */
 function jobParser(): C
 {
-    $name = Binding::syntax()->regex('/[A-Za-z][A-Za-z0-9_]*/A');
-    $number = Binding::syntax()->integer(0, 999)->mapText('intval');
-    $retryValue = Binding::syntax()->valueChoice(
-        Binding::syntax()->integer(0, 9)->mapText('intval'),
-        Binding::syntax()->text('off')->map(static fn(string $text): bool => false),
+    $name = Extraction::syntax()->regex('/[A-Za-z][A-Za-z0-9_]*/A');
+    $number = Extraction::syntax()->integer(0, 999)->mapText('intval');
+    $retryValue = Extraction::syntax()->valueChoice(
+        Extraction::syntax()->integer(0, 9)->mapText('intval'),
+        Extraction::syntax()->text('off')->map(static fn(string $text): bool => false),
     );
-    $retries = Binding::syntax()->text('retry=')->ignoreThen($retryValue)->optionalValue(default: 3);
+    $retries = Extraction::syntax()->text('retry=')->ignoreThen($retryValue)->optionalValue(default: 3);
     $batch = $number->separatedBy(',')->between('[', ']');
     $batches = $batch->separatedBy(',')->between('[', ']');
 
-    return Binding::syntax()->collect($name, $retries, $batches)
+    return Extraction::syntax()->collect($name, $retries, $batches)
         ->map(static fn(array $parts): Job => new Job($parts[0], $parts[1], $parts[2]))
-        ->spacing(Binding::syntax()->set(" \t\r\n")->many());
+        ->spacing(Extraction::syntax()->set(" \t\r\n")->many());
 }

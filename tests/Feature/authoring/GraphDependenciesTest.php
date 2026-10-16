@@ -119,7 +119,7 @@ test('custom collection can expose dependencies without analyzer changes', funct
     (new GraphAnalysis())->validate($parser);
 });
 
-test('stub children track binding and cycles', function (): void {
+test('stub children track extraction and cycles', function (): void {
     $stub = new Stub();
     $this->assertSame([], $stub->children());
     $stub->setParser($stub);

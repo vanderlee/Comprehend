@@ -5,9 +5,9 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 
-$content = Binding::syntax()->readUntil('*/')->thenIgnore('*/');
+$content = Extraction::syntax()->readUntil('*/')->thenIgnore('*/');
 $result = $content->parse('a comment */');
 if (!$result->success || $result->value() !== 'a comment ') {
     throw new RuntimeException('Comment scanner failed');

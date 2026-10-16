@@ -13,7 +13,7 @@ use Vanderlee\Comprehend\Source\ByteSource;
 
 uses(TestCase::class);
 
-test('binding a target detaches the reference from redefinitions', function (): void {
+test('extraction a target detaches the reference from redefinitions', function (): void {
     $rules = new Ruleset(['item' => new Text('a')]);
     $reference = new RuleReference($rules, 'item');
     $reference->bindSnapshotTarget($reference->graphTarget());

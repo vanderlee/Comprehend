@@ -2,9 +2,9 @@
 
 The extraction profile separates recognition and CST construction from lazy
 application values, cached access, result release and cycle collection. It uses
-the existing [Binding comparison](binding-comparison.md) grammar and independent
+the existing [Extraction comparison](extraction-comparison.md) grammar and independent
 expected values. The profiler itself requires only the root development
-dependencies; installing Binding is unnecessary.
+dependencies; installing Extraction is unnecessary.
 
 ## Reproduce
 
@@ -106,7 +106,7 @@ Median-of-worker-median recognition time was 11.976 ms before and 12.472 ms afte
 for nested input; record time was 1.326 ms before and 1.315 ms after. These local
 measurements do not demonstrate a speed improvement. The change is retained for
 its lower allocation count and retained memory, with no claim that it closes
-the extraction throughput gap with Binding. Regression cases cover shared and
+the extraction throughput gap with Extraction. Regression cases cover shared and
 different multibyte intervals, both single-child authoring forms, independent
 cached values and deferred, idempotent effects.
 

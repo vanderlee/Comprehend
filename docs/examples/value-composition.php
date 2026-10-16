@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 
-$amount = Binding::syntax()->integer()->mapText('intval')->map(static fn(int $n): int => $n * 100);
-$money = Binding::syntax()->collect(Binding::syntax()->valueChoice('USD', 'EUR'), $amount)
+$amount = Extraction::syntax()->integer()->mapText('intval')->map(static fn(int $n): int => $n * 100);
+$money = Extraction::syntax()->collect(Extraction::syntax()->valueChoice('USD', 'EUR'), $amount)
     ->map(static fn(array $parts): object => (object) ['currency' => $parts[0], 'cents' => $parts[1]])
-    ->spacing(Binding::syntax()->text(' ')->many());
+    ->spacing(Extraction::syntax()->text(' ')->many());
 $result = $money->parse('EUR 12');
 if (
     !$result->success || $result->value()->cents !== 1200 || $result->value()->currency !== 'EUR'

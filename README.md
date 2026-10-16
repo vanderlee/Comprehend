@@ -6,16 +6,16 @@ MIT licensed. Requires JSON and mbstring. DOM is optional, needed only for XML o
 
 ## Quick start
 
-This value-extraction example uses the optional [Binding expansion](docs/binding.md).
-It is bundled with the library and activated explicitly with `Binding::syntax()`.
+This value-extraction example uses the optional [Extraction expansion](docs/extraction.md).
+It is bundled with the library and activated explicitly with `Extraction::syntax()`.
 
 ```php
 require 'vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 // Build a parser and describe the value to extract.
-$age = Binding::syntax()->integer(0, 150)
+$age = Extraction::syntax()->integer(0, 150)
     ->named('age')
     ->mapText(static fn(string $text): int => (int) $text);
 
@@ -143,7 +143,7 @@ supported PHP versions and the gated publication workflow.
 - [Semantic values](docs/semantic-values.md) and [lifecycle](docs/lifecycle.md)
 - [RFC libraries](docs/libraries.md), [contributing](docs/contribute.md)
 - [Phase 2A removal inventory](docs/canonical-runtime.md)
-- [Binding comparison](docs/binding-comparison.md): reproducible application-value extraction measurements
+- [Extraction comparison](docs/extraction-comparison.md): reproducible application-value extraction measurements
 
 For application values, `map()` transforms an existing value, `collect()` builds
 an ordered list of operand values, and `valueChoice()` forwards the selected

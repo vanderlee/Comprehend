@@ -39,7 +39,7 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
-The [Binding application-value comparison](binding-comparison.md) checks two
+The [Extraction application-value comparison](extraction-comparison.md) checks two
 independent grammars against one output oracle and records extraction timings,
 memory retention, diagnostics and static-analysis observations. It includes
 Comprehend's mandatory CST cost and an isolated optional dependency.

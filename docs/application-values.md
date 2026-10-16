@@ -1,7 +1,7 @@
 # Parse application values
 
-This tutorial uses the opt-in [Binding expansion](binding.md). Start expressions
-with `Binding::syntax()` or install `new Binding()` on an existing Syntax vocabulary.
+This tutorial uses the opt-in [Extraction expansion](extraction.md). Start expressions
+with `Extraction::syntax()` or install `new Extraction()` on an existing Syntax vocabulary.
 
 Build a parser that returns a domain object directly. This tutorial uses a small
 job format with an optional retry setting and nested lists of batch IDs:
@@ -51,10 +51,10 @@ retries. Application values do not require naming AST nodes or traversing syntax
 ## Recognize text and convert numbers
 
 ```php
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 
-$name = Binding::syntax()->regex('/[A-Za-z][A-Za-z0-9_]*/A');
-$number = Binding::syntax()->integer(0, 999)->mapText('intval');
+$name = Extraction::syntax()->regex('/[A-Za-z][A-Za-z0-9_]*/A');
+$number = Extraction::syntax()->integer(0, 999)->mapText('intval');
 ```
 
 An unmapped parser returns its matched text. `mapText()` converts the number's
@@ -65,13 +65,13 @@ digits and underscores and must begin with a letter.
 ## Preserve values from alternatives
 
 ```php
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 
-$retryValue = Binding::syntax()->valueChoice(
-    Binding::syntax()->integer(0, 9)->mapText('intval'),
-    Binding::syntax()->text('off')->map(static fn(string $text): bool => false),
+$retryValue = Extraction::syntax()->valueChoice(
+    Extraction::syntax()->integer(0, 9)->mapText('intval'),
+    Extraction::syntax()->text('off')->map(static fn(string $text): bool => false),
 );
-$retries = Binding::syntax()->text('retry=')->ignoreThen($retryValue)->optionalValue(default: 3);
+$retries = Extraction::syntax()->text('retry=')->ignoreThen($retryValue)->optionalValue(default: 3);
 ```
 
 `valueChoice()` forwards the successful alternative's value. Ordinary `choice()`
@@ -104,11 +104,11 @@ item values too; ordinary `many()` and `some()` retain raw-text defaults.
 ## Collect fields and construct the object
 
 ```php
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 
-$job = Binding::syntax()->collect($name, $retries, $batches)
+$job = Extraction::syntax()->collect($name, $retries, $batches)
     ->map(static fn(array $parts): Job => new Job($parts[0], $parts[1], $parts[2]))
-    ->spacing(Binding::syntax()->set(" \t\r\n")->many());
+    ->spacing(Extraction::syntax()->set(" \t\r\n")->many());
 ```
 
 `collect()` supplies the direct operand values in order: name, retry setting,

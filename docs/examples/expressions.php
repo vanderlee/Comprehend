@@ -5,18 +5,18 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Builder\Ruleset;
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Extensions\Expression\Operator as O;
 use Vanderlee\Comprehend\Extensions\Expressions;
 
-$syntax = Binding::syntax()->extend(new Expressions());
+$syntax = Extraction::syntax()->extend(new Expressions());
 $fluent = $syntax->regex('/[0-9]+/A')->mapText('intval')->expressionChoice(
-    Binding::syntax()->text('one')->mapText(static fn(): int => 1),
+    Extraction::syntax()->text('one')->mapText(static fn(): int => 1),
 )->operatorExpression(O::infixLeft('+', 10, static fn(int $a, int $b): int => $a + $b));
 if ($fluent->parse('one+2')->value() !== 3) {
     throw new RuntimeException('Fluent expression composition failed');
 }
-$number = Binding::syntax()->regex('/[0-9]+/A')->named('number')->mapText('intval');
+$number = Extraction::syntax()->regex('/[0-9]+/A')->named('number')->mapText('intval');
 $rules = new Ruleset();
 $primary = $syntax->expressionChoice($number, $syntax->of($rules->rule('expr'))->between('(', ')'));
 $rules->define('expr', $syntax->operatorExpression(
@@ -26,7 +26,7 @@ $rules->define('expr', $syntax->operatorExpression(
     O::infixLeft('*', 20, static fn(int $a, int $b): int => $a * $b),
     O::prefix('-', 30, static fn(int $a): int => -$a),
     O::infixRight('^', 40, static fn(int $a, int $b): int => $a ** $b),
-)->spacing(Binding::syntax()->text(' ')->many()))->root('expr');
+)->spacing(Extraction::syntax()->text(' ')->many()))->root('expr');
 $grammar = $rules->freeze();
 foreach (['2 + 3 * 4' => 14, '(2+3)*4' => 20, '10-3-2' => 5, '2^3^2' => 512, '-2^2' => -4] as $text => $value) {
     $result = $grammar->parse($text);

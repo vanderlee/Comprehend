@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Extensions\Binding;
+namespace Vanderlee\Comprehend\Extensions\Extraction;
 
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /**
- * PHPStan signatures for the opt-in Binding vocabulary.
+ * PHPStan signatures for the opt-in Extraction vocabulary.
  * @template T = mixed
  * @method static C collect(C|Parser|string ...$parsers)
  * @method static C valueChoice(C|Parser|string ...$parsers)
@@ -16,14 +16,16 @@ use Vanderlee\Comprehend\Parser\Parser;
  * @method static C manyValues(mixed ...$arguments)
  * @method static C someValues(mixed ...$arguments)
  * @method static C optionalValue(mixed ...$arguments)
- * @method static C separatedBy(mixed ...$arguments)
- * @method C<T> thenIgnore(C|Parser|string $next)
- * @method C ignoreThen(C|Parser|string $next)
- * @method C<T> between(C|Parser|string $open, C|Parser|string $close)
  * @internal
  */
 abstract class Authoring
 {
+    /**
+     * @param array<array-key, C|Parser|string> $fields
+     * @return C<array<array-key, mixed>>
+     */
+    abstract public static function record(array $fields): C;
+
     /**
      * @template U
      * @param callable(T): U $mapper

@@ -20,6 +20,8 @@ use Vanderlee\Comprehend\Parser\Structure\Except;
 use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Structure\SeparatedList;
+use Vanderlee\Comprehend\Parser\Structure\ValueSequence;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
 use Vanderlee\Comprehend\Parser\Terminal\End;
@@ -69,6 +71,7 @@ final class Catalog
         'hexadecimal',
         'octet',
         'literalwindow',
+        'separatedby',
         'sequence',
         'choice',
         'first',
@@ -86,6 +89,9 @@ final class Catalog
     ];
 
     private const FLUENTS = [
+        'thenignore',
+        'ignorethen',
+        'between',
         'then',
         'prepend',
         'named',
@@ -184,6 +190,21 @@ final class Catalog
                 $allowLeadingZeros,
             ),
             'literalwindow' => static fn(string $literal): Parser => Regex::literalWindow($literal),
+            'separatedby' => static fn(
+                Comprehend|Parser|string $item,
+                Comprehend|Parser|string $separator,
+                int $min = 0,
+                ?int $max = null,
+                bool $allowLeading = false,
+                bool $allowTrailing = false,
+            ): Parser => new SeparatedList(
+                self::parser($item),
+                self::parser($separator),
+                $min,
+                $max,
+                $allowLeading,
+                $allowTrailing,
+            ),
             'sequence' => static fn(Comprehend|Parser|string ...$parsers): Parser => self::sequence($parsers),
 
             'choice', 'or' => static fn(Comprehend|Parser|string ...$parsers): Parser => self::choice($parsers),
@@ -222,6 +243,36 @@ final class Catalog
     public static function builtinFluent(string $name): ?Closure
     {
         return match (self::canonicalName($name)) {
+            'thenignore' => static fn(Comprehend $item, Comprehend|Parser|string $next): Parser => new ValueSequence(
+                0,
+                $item->parser(),
+                self::parser($next),
+            ),
+            'ignorethen' => static fn(Comprehend $item, Comprehend|Parser|string $next): Parser => new ValueSequence(
+                1,
+                $item->parser(),
+                self::parser($next),
+            ),
+            'between' => static fn(
+                Comprehend $item,
+                Comprehend|Parser|string $open,
+                Comprehend|Parser|string $close,
+            ): Parser => new ValueSequence(1, self::parser($open), $item->parser(), self::parser($close)),
+            'separatedby' => static fn(
+                Comprehend $item,
+                Comprehend|Parser|string $separator,
+                int $min = 0,
+                ?int $max = null,
+                bool $allowLeading = false,
+                bool $allowTrailing = false,
+            ): Parser => new SeparatedList(
+                $item->parser(),
+                self::parser($separator),
+                $min,
+                $max,
+                $allowLeading,
+                $allowTrailing,
+            ),
             'then' => static fn(
                 Comprehend $item,
                 Comprehend|Parser|string ...$next,

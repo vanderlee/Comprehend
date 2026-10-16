@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../docs/examples/application-values-grammar.php';
-require_once __DIR__ . '/binding/grammars.php';
-require_once __DIR__ . '/binding/cases.php';
-require_once __DIR__ . '/binding/runtime.php';
+require_once __DIR__ . '/extraction/grammars.php';
+require_once __DIR__ . '/extraction/cases.php';
+require_once __DIR__ . '/extraction/runtime.php';
 
 use Composer\InstalledVersions;
 use Vanderlee\Comprehend\Result\ParseResult;
@@ -16,7 +16,7 @@ use function ComprehendComparison\cases;
 use function ComprehendComparison\comprehendJob;
 use function ComprehendComparison\diagnostic;
 use function ComprehendComparison\nodeCount;
-use function ComprehendComparison\bindingJob;
+use function ComprehendComparison\extractionJob;
 use function ComprehendComparison\recognize;
 use function ComprehendComparison\value;
 use function ComprehendComparison\verify;
@@ -43,8 +43,8 @@ if ($samples === false || $iterations === false || $warmups === false || $size =
 }
 $corpus = cases($size);
 $libraries = isset($options['scanners'])
-    ? ['comprehend', 'comprehend-spacing', 'comprehend-scanners', 'binding']
-    : ['comprehend', 'binding'];
+    ? ['comprehend', 'comprehend-spacing', 'comprehend-scanners', 'extraction']
+    : ['comprehend', 'extraction'];
 $benchmarkCases = ['record', 'default', 'nested', 'malformed-field', 'multiline-error', 'trailing-input'];
 if (isset($options['case'])) {
     if (!is_string($options['case']) || !isset($corpus[$options['case']])) {
@@ -52,16 +52,16 @@ if (isset($options['case'])) {
     }
     $benchmarkCases = [$options['case']];
 }
-$bindingAutoload = __DIR__ . '/../build/binding/vendor/autoload.php';
-if (!is_file($bindingAutoload)) {
+$extractionAutoload = __DIR__ . '/../build/extraction/vendor/autoload.php';
+if (!is_file($extractionAutoload)) {
     throw new RuntimeException(
-        'Install the optional dependency: composer install --working-dir=tools/binding --no-scripts',
+        'Install the optional dependency: composer install --working-dir=tools/extraction --no-scripts',
     );
 }
-if (!isset($options['worker']) || $options['worker'] === 'binding') {
-    require_once $bindingAutoload;
+if (!isset($options['worker']) || $options['worker'] === 'extraction') {
+    require_once $extractionAutoload;
     if (InstalledVersions::getPrettyVersion('parsica-php/parsica') !== '0.8.3') {
-        throw new RuntimeException('This comparison requires the pinned Binding 0.8.3');
+        throw new RuntimeException('This comparison requires the pinned Extraction 0.8.3');
     }
 }
 
@@ -71,7 +71,7 @@ if (isset($options['worker'])) {
         throw new InvalidArgumentException('Unknown worker library');
     }
     $prepareStart = hrtime(true);
-    $parser = $library === 'binding' ? bindingJob() : comprehendJob(
+    $parser = $library === 'extraction' ? extractionJob() : comprehendJob(
         scanSpacing: $library !== 'comprehend',
         scanTokens: $library === 'comprehend-scanners',
     )->freeze();
@@ -192,13 +192,13 @@ $report = [
     'schema' => 1, 'generated_utc' => gmdate('c'), 'php' => PHP_VERSION, 'os' => PHP_OS_FAMILY,
     'pcre' => PCRE_VERSION, 'mbstring_native' => extension_loaded('mbstring'),
     'mb_internal_encoding' => mb_internal_encoding(),
-    'binding_version' => InstalledVersions::getPrettyVersion('parsica-php/parsica'),
-    'binding_reference' => InstalledVersions::getReference('parsica-php/parsica'),
+    'extraction_version' => InstalledVersions::getPrettyVersion('parsica-php/parsica'),
+    'extraction_reference' => InstalledVersions::getReference('parsica-php/parsica'),
     'runtime_source_sha256' => hash('sha256', json_encode($sourceHashes, JSON_THROW_ON_ERROR)),
-    'grammar_sha256' => hash_file('sha256', __DIR__ . '/binding/grammars.php'),
+    'grammar_sha256' => hash_file('sha256', __DIR__ . '/extraction/grammars.php'),
     'harness_sha256' => hash_file('sha256', __FILE__),
-    'case_sha256' => hash_file('sha256', __DIR__ . '/binding/cases.php'),
-    'command' => 'php tools/compare-binding.php --samples=' . $samples . ' --iterations=' . $iterations
+    'case_sha256' => hash_file('sha256', __DIR__ . '/extraction/cases.php'),
+    'command' => 'php tools/compare-extraction.php --samples=' . $samples . ' --iterations=' . $iterations
         . ' --warmups=' . $warmups . ' --size=' . $size
         . (isset($options['case']) ? ' --case=' . $options['case'] : '')
         . (isset($options['scanners']) ? ' --scanners' : '')

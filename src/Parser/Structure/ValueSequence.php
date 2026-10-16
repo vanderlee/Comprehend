@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Extensions\Binding;
+namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use InvalidArgumentException;
 use LogicException;
 use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;

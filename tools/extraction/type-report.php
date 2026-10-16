@@ -29,7 +29,7 @@ foreach ($data['files'] as $path => $file) {
             'file' => str_replace('\\', '/', substr($path, strlen($root) + 1)),
             'line' => $message['line'], 'identifier' => $message['identifier'],
             // Reports use the comparison label; installed package identifiers stay in Composer metadata.
-            'message' => str_replace('Parsica\\Parsica\\', 'Binding\\', $message['message']),
+            'message' => str_replace('Parsica\\Parsica\\', 'Extraction\\', $message['message']),
         ];
     }
 }
@@ -38,7 +38,7 @@ if (count($dumps) !== 8) {
     throw new RuntimeException('Type probe did not report all eight expected observations');
 }
 $report = [
-    'command' => 'php tools/binding/type-report.php', 'phpstan_exit_code' => $exit,
+    'command' => 'php tools/extraction/type-report.php', 'phpstan_exit_code' => $exit,
     'phpstan_version' => Composer\InstalledVersions::getPrettyVersion('phpstan/phpstan'),
     'grammar_sha256' => hash_file('sha256', __DIR__ . '/grammars.php'),
     'probe_sha256' => hash_file('sha256', __DIR__ . '/types.php'),

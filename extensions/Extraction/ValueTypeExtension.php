@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Extensions\Binding;
+namespace Vanderlee\Comprehend\Extensions\Extraction;
 
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\MethodCall;
@@ -30,8 +30,8 @@ use Vanderlee\Comprehend\Syntax;
 final class ValueTypeExtension implements DynamicMethodReturnTypeExtension, DynamicStaticMethodReturnTypeExtension
 {
     private const METHODS = [
-        'manyvalues', 'somevalues', 'repeatvalues', 'separatedby', 'optionalvalue',
-        'collect', 'valuechoice', 'ignorethen',
+        'manyvalues', 'somevalues', 'repeatvalues', 'optionalvalue',
+        'collect', 'valuechoice', 'record',
     ];
 
     /** @var class-string */
@@ -96,7 +96,12 @@ final class ValueTypeExtension implements DynamicMethodReturnTypeExtension, Dyna
             }
         }
         $item = $receiver ?? $this->valueType($this->argument($args, 0, ['parser', 'item'], $scope));
-        if ($name === 'collect' || $name === 'valuechoice') {
+        if ($name === 'record') {
+            // Instance terminal chaining appends a record to an ordinary raw-text sequence.
+            $value = $receiver === null
+                ? $this->recordType($this->argument($args, 0, ['fields'], $scope))
+                : new StringType();
+        } elseif ($name === 'collect' || $name === 'valuechoice') {
             $values = $receiver === null ? [] : [$receiver];
             foreach ($args as $arg) {
                 $values[] = $this->valueType($scope->getType($arg->value));
@@ -113,8 +118,6 @@ final class ValueTypeExtension implements DynamicMethodReturnTypeExtension, Dyna
         } elseif ($name === 'optionalvalue') {
             $default = $this->argument($args, $receiver === null ? 1 : 0, ['default'], $scope, new NullType());
             $value = TypeCombinator::union($item, $default);
-        } elseif ($name === 'ignorethen') {
-            $value = $this->valueType($this->argument($args, 0, ['next'], $scope));
         } else {
             $value = TypeCombinator::intersect(new ArrayType(new IntegerType(), $item), new AccessoryArrayListType());
             if ($name === 'somevalues') {
@@ -134,6 +137,28 @@ final class ValueTypeExtension implements DynamicMethodReturnTypeExtension, Dyna
         return (new ObjectType(Comprehend::class))->isSuperTypeOf($type)->yes()
             ? $type->getTemplateType(Comprehend::class, 'T')
             : new MixedType();
+    }
+
+    private function recordType(Type $fields): Type
+    {
+        $arrays = $fields->getConstantArrays();
+        if (!$fields->isConstantArray()->yes()) {
+            return new ArrayType($fields->getIterableKeyType(), $this->valueType($fields->getIterableValueType()));
+        }
+        $records = [];
+        foreach ($arrays as $array) {
+            $builder = ConstantArrayTypeBuilder::createEmpty();
+            foreach ($array->getKeyTypes() as $index => $key) {
+                $builder->setOffsetValueType(
+                    $key,
+                    $this->valueType($array->getValueTypes()[$index]),
+                    $array->isOptionalKey($index),
+                );
+            }
+            $records[] = $builder->getArray();
+        }
+
+        return TypeCombinator::union(...$records);
     }
 
     /**

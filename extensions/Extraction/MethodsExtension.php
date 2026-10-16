@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Extensions\Binding;
+namespace Vanderlee\Comprehend\Extensions\Extraction;
 
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassReflection;
@@ -11,10 +11,10 @@ use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\MixedType;
 use Vanderlee\Comprehend\Comprehend;
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Syntax;
 
-/** Analysis-only authoring support, enabled with Binding's separate PHPStan configuration. */
+/** Analysis-only authoring support, enabled with Extraction's separate PHPStan configuration. */
 final class MethodsExtension implements MethodsClassReflectionExtension
 {
     private readonly ReflectionProvider $reflectionProvider;
@@ -29,7 +29,7 @@ final class MethodsExtension implements MethodsClassReflectionExtension
         if (!in_array($classReflection->getName(), [Comprehend::class, Syntax::class], true)) {
             return false;
         }
-        $extension = new Binding();
+        $extension = new Extraction();
         $factories = $classReflection->getName() === Syntax::class
             ? $extension->rules()
             : [...$extension->rules(), ...$extension->fluents()];

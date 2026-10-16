@@ -6,20 +6,20 @@ explicit commit effects. It does not enable left recursion or introduce a separa
 Pratt/LR recognition engine.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Extensions\Expression\Operator as O;
 use Vanderlee\Comprehend\Extensions\Expressions;
 
-$syntax = Binding::syntax()->extend(new Expressions());
-$number = Binding::syntax()->regex('/[0-9]+/A')->mapText('intval');
+$syntax = Extraction::syntax()->extend(new Expressions());
+$number = Extraction::syntax()->regex('/[0-9]+/A')->mapText('intval');
 $expression = $syntax->operatorExpression(
     $number,
     O::infixLeft('+', 10, static fn(int $a, int $b): int => $a + $b),
     O::infixLeft('*', 20, static fn(int $a, int $b): int => $a * $b),
     O::prefix('-', 30, static fn(int $a): int => -$a),
     O::infixRight('^', 40, static fn(int $a, int $b): int => $a ** $b),
-)->spacing(Binding::syntax()->text(' ')->many());
+)->spacing(Extraction::syntax()->text(' ')->many());
 
 $result = $expression->parse('2 + 3 * 4');
 $result->value();   // 14, lazy and cached
@@ -84,7 +84,7 @@ numeric types; overflow, division and arithmetic exceptions follow normal PHP ru
 Use explicit recursive Ruleset references for grouping:
 
 ```php
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Builder\Ruleset;
 
 $rules = new Ruleset();
@@ -96,7 +96,7 @@ $rules->define('expr', $syntax->operatorExpression(
     $primary,
     O::infixLeft('+', 10, static fn(int $a, int $b): int => $a + $b),
     O::infixLeft('*', 20, static fn(int $a, int $b): int => $a * $b),
-)->spacing(Binding::syntax()->text(' ')->many()))->root('expr');
+)->spacing(Extraction::syntax()->text(' ')->many()))->root('expr');
 
 $rules->freeze()->parse('(2+3)*4')->value(); // 20
 ```

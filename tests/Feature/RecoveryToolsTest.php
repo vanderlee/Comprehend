@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Extensions\Recovery as RecoveryExtension;
 use Vanderlee\Comprehend\Extensions\Recovery\RecoverDelimited;
 use Vanderlee\Comprehend\Extensions\Recovery\RecoverItem;
@@ -19,7 +19,7 @@ use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
 beforeEach(function (): void {
-    $this->syntax = Binding::syntax()->extend(new RecoveryExtension());
+    $this->syntax = Extraction::syntax()->extend(new RecoveryExtension());
 });
 
 test('delimited recovery preserves valid values and owns both delimiters', function () {
@@ -35,8 +35,8 @@ test('delimited recovery preserves valid values and owns both delimiters', funct
 
 test('delimited recovery ignores nested closes in strings and comments', function () {
     $ignore = $this->syntax->choice(
-        Binding::syntax()->regex('/"(?:[^"\\\\]|\\\\.)*"/A'),
-        Binding::syntax()->regex('~/\*.*?\*/~As'),
+        Extraction::syntax()->regex('/"(?:[^"\\\\]|\\\\.)*"/A'),
+        Extraction::syntax()->regex('~/\*.*?\*/~As'),
     );
     $grammar = $this->syntax->text('valid')->recoverDelimited('(', ')', ignore: $ignore)->then('tail');
     $text = '(bad(nested) ")" /* ) */)tail';

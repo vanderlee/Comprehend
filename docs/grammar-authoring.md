@@ -144,7 +144,7 @@ The bundled RFC grammars import the facade as `C` with
 | `some()` / `plus()`, `many()` / `star()` / `kleene()`, `maybe()` / `optional()` | One or more, zero or more, zero or one |
 | `some(item)`, `many(item)`, `maybe(item)`, `repeat(item, min, max)` | Static repetition factories accepting a facade, Parser or literal string |
 | `named(string\|int\|callable)`, `tag(...tags)`, `mapValue()` | Fixed or pure dynamic names, tags and semantic mappings on a detached graph |
-| Binding's `mapText(callable)` | Opt-in text mapping; activate the [Binding expansion](binding.md) first |
+| Extraction's `mapText(callable)` | Opt-in text mapping; activate the [Extraction expansion](extraction.md) first |
 | `guard()`, `validateSemantic()`, `onCommit()`, `assignTo()` | Pure recognition predicate, selected semantic validation, explicit committed effects and assignments |
 | `setResult()`, `concatResult()`, `pushResult()` | Cached named result collections, independent of source text |
 | `diagnosticRule(name)` | A readable rule label for failures |
@@ -197,9 +197,9 @@ policies and callbacks on the current expression stay attached to that subtree.
 The returned expression retains its custom syntax scope.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 
-$word = Binding::syntax()->text('hello')->mapText('strtoupper');
+$word = Extraction::syntax()->text('hello')->mapText('strtoupper');
 $word->parse('hello')->output(); // 'HELLO'; rawText() remains 'hello'
 $wrapped = $word->prepend('[')->text(']');
 $wrapped->parse('[hello]')->rawText(); // '[hello]'; $word still matches 'hello'

@@ -30,7 +30,7 @@ test('operator definitions detach mutable syntax and do not evaluate their reduc
     $this->assertSame(3, ($operator->reduce)(1, 2));
 });
 
-test('operator factories declare their binding kind', function (string $factory, OperatorKind $kind): void {
+test('operator factories declare their extraction kind', function (string $factory, OperatorKind $kind): void {
     $operator = Operator::$factory('!', -5, static fn(int $value): int => $value);
     $this->assertSame($kind, $operator->kind);
     $this->assertSame(-5, $operator->precedence);

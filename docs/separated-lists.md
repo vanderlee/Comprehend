@@ -1,22 +1,20 @@
 # Separated lists
 
-The value-returning helpers on this page belong to the optional
-[Binding expansion](binding.md). Core `Parser\Structure\SeparatedList` retains
-the same recognition behavior and defaults to raw text; Binding's subclass
-adds item-value projection.
+Separated lists are available in core, without installing an extension.
+`Parser\Structure\SeparatedList` recognizes the list and lazily projects item values.
 
 `$item->separatedBy($separator, min: 0, max: null, allowLeading: false,
 allowTrailing: false)` recognizes consuming items separated by another parser.
 The facade accepts literal strings for either operand; static
 `Comprehend::separatedBy($item, $separator, ...)` and Syntax vocabularies expose
 the same operation. Low-level object grammars use
-`new Extensions\Binding\SeparatedList(Parser $item, Parser $separator, ...)`.
+`new Parser\Structure\SeparatedList(Parser $item, Parser $separator, ...)`.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Binding;
+use Vanderlee\Comprehend\Extensions\Extraction;
 
 
-$numbers = Binding::syntax()->integer()->mapText(static fn(string $text): int => (int) $text)
+$numbers = Extraction::syntax()->integer()->mapText(static fn(string $text): int => (int) $text)
     ->separatedBy(',', min: 1, allowTrailing: true);
 $result = $numbers->parse('10,20,');
 $result->value();   // [10, 20], lazy and cached

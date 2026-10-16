@@ -10,15 +10,14 @@ use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Syntax;
 use Vanderlee\Comprehend\Syntax\Catalog;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
-use Vanderlee\Comprehend\Extensions\Binding\Collect;
-use Vanderlee\Comprehend\Extensions\Binding\ValueChoice;
-use Vanderlee\Comprehend\Extensions\Binding\ValueRepeat;
-use Vanderlee\Comprehend\Extensions\Binding\OptionalValue;
-use Vanderlee\Comprehend\Extensions\Binding\ValueSequence;
-use Vanderlee\Comprehend\Extensions\Binding\SeparatedList;
+use Vanderlee\Comprehend\Extensions\Extraction\Collect;
+use Vanderlee\Comprehend\Extensions\Extraction\Record;
+use Vanderlee\Comprehend\Extensions\Extraction\ValueChoice;
+use Vanderlee\Comprehend\Extensions\Extraction\ValueRepeat;
+use Vanderlee\Comprehend\Extensions\Extraction\OptionalValue;
 
 /** Optional application-value authoring over the shared recognition and projection runtime. */
-final class Binding implements SyntaxExtension
+final class Extraction implements SyntaxExtension
 {
     public static function syntax(): Syntax
     {
@@ -27,6 +26,7 @@ final class Binding implements SyntaxExtension
 
     public function rules(): iterable
     {
+        yield 'record' => self::record(...);
         yield 'collect' => static fn(Comprehend|Parser|string ...$parsers): Parser => new Collect(
             ...array_values(array_map(Catalog::parser(...), $parsers)),
         );
@@ -49,21 +49,6 @@ final class Binding implements SyntaxExtension
             Comprehend|Parser|string $parser,
             mixed $default = null,
         ): Parser => new OptionalValue(Catalog::parser($parser), $default);
-        yield 'separatedby' => static fn(
-            Comprehend|Parser|string $item,
-            Comprehend|Parser|string $separator,
-            int $min = 0,
-            ?int $max = null,
-            bool $allowLeading = false,
-            bool $allowTrailing = false,
-        ): Parser => new SeparatedList(
-            Catalog::parser($item),
-            Catalog::parser($separator),
-            $min,
-            $max,
-            $allowLeading,
-            $allowTrailing,
-        );
     }
 
     public function fluents(): iterable
@@ -80,21 +65,6 @@ final class Binding implements SyntaxExtension
             ...array_values(array_map(Catalog::parser(...), $next)),
         );
         yield 'map' => static fn(Comprehend $item, callable $mapper): Parser => $item->parser()->map($mapper);
-        yield 'thenignore' => static fn(Comprehend $item, Comprehend|Parser|string $next): Parser => new ValueSequence(
-            0,
-            $item->parser(),
-            Catalog::parser($next),
-        );
-        yield 'ignorethen' => static fn(Comprehend $item, Comprehend|Parser|string $next): Parser => new ValueSequence(
-            1,
-            $item->parser(),
-            Catalog::parser($next),
-        );
-        yield 'between' => static fn(
-            Comprehend $item,
-            Comprehend|Parser|string $open,
-            Comprehend|Parser|string $close,
-        ): Parser => new ValueSequence(1, Catalog::parser($open), $item->parser(), Catalog::parser($close));
         yield 'repeatvalues' => static fn(Comprehend $item, int $min = 0, ?int $max = null): Parser => new ValueRepeat(
             $item->parser(),
             $min,
@@ -106,23 +76,19 @@ final class Binding implements SyntaxExtension
             $item->parser(),
             $default,
         );
-        yield 'separatedby' => static fn(
-            Comprehend $item,
-            Comprehend|Parser|string $separator,
-            int $min = 0,
-            ?int $max = null,
-            bool $allowLeading = false,
-            bool $allowTrailing = false,
-        ): Parser => new SeparatedList(
-            $item->parser(),
-            Catalog::parser($separator),
-            $min,
-            $max,
-            $allowLeading,
-            $allowTrailing,
-        );
         yield 'maptext' => static fn(Comprehend $item, callable $mapper): Parser => $item->parser()->mapValue(
             static fn(ParseResult $result): mixed => $mapper($result->rawText()),
         );
+    }
+
+    /** @param array<array-key, Comprehend|Parser|string> $fields */
+    private static function record(array $fields): Record
+    {
+        $parsers = [];
+        foreach ($fields as $key => $field) {
+            $parsers[$key] = Catalog::parser($field);
+        }
+
+        return new Record($parsers);
     }
 }
