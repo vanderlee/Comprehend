@@ -18,6 +18,15 @@ failure adds EOF at the accepted endpoint unless an observed failure is farther.
 Successful results may retain useful observed failures; the presence of a
 diagnostic alone does not mean the selected syntax failed.
 
+Separated lists keep abandoned item/separator failure details separately from
+successful termination diagnostics. If the enclosing recognition or complete-input
+check fails, the farthest of these details and the ordinary failure is reported;
+tied expectations and rule paths are combined. For example, `report\n[[1,\n?]]`
+in the application-value comparison now reports the invalid item on line 3,
+column 1 rather than the opening bracket on line 2. Successful prefixes and
+complete lists do not expose these termination probes. Optional, repetition,
+lookahead and recovery probe checkpoints also restore these deferred details.
+
 Explicit [error recovery](recovery.md) retains each recovered region's original
 failure separately. Use `diagnostics()` for that selected list and `hasRecovery()`
 to distinguish recovered acceptance from ordinary acceptance. Synchronization

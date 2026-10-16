@@ -121,6 +121,27 @@ test('diagnostics merge ties and can be restored after a probe', function (): vo
     $this->assertSame(2, $session->failureRevision());
 });
 
+test('deferred list failures merge ties only on request and follow diagnostic checkpoints', function (): void {
+    $session = new ParseSession(new ByteSource('abc'));
+    $checkpoint = $session->diagnosticState();
+    $session->pushRule('item');
+    $session->recordFailure(2, 'item');
+    $session->popRule();
+    $session->deferListDiagnostics($checkpoint);
+    $this->assertNull($session->diagnostic());
+    $this->assertNull($session->farthestFailure());
+    $session->pushRule('close');
+    $session->recordFailure(2, 'close');
+    $session->popRule();
+    $failure = $session->diagnostic(true);
+    $this->assertSame(['close', 'item'], $failure->expected);
+    $this->assertSame([['close'], ['item']], $failure->rulePaths);
+    $session->recordFailure(3, 'farther');
+    $this->assertSame(['farther'], $session->diagnostic(true)->expected);
+    $session->restoreDiagnostics($checkpoint);
+    $this->assertNull($session->diagnostic(true));
+});
+
 test('failed work charge does not consume the remaining budget', function (): void {
     $session = new ParseSession(new ByteSource('a'), limits: new ParseLimits(maxWork: 2));
     $session->consumeWork(1);

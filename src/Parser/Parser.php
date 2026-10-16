@@ -240,10 +240,11 @@ abstract class Parser implements SnapshotParticipant
         $match = $this->wrapReturnedChild($source, $offset, $match);
         $end = $match->accepted ? $offset + $match->length : $offset;
         $span = $match->span;
+        $diagnostic = $session->diagnostic(!$match->accepted);
         $match->setSourceMetadata(
             $span !== null && $span->end === $end ? $span : $source->span($offset, $end),
-            $session->farthestFailure(),
-            $session->diagnostic(),
+            $diagnostic?->byteOffset,
+            $diagnostic,
         );
 
         return $match instanceof Success
@@ -438,19 +439,24 @@ abstract class Parser implements SnapshotParticipant
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
     ): ParseResult {
-        $match = $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits));
+        $session = new ParseSession($source, limits: $limits);
+        $match = $this->recognizeInSession($source, $byteOffset, $session);
         if (!$match->accepted || $byteOffset + $match->length === $source->byteLength()) {
             return new ParseResult($match);
         }
 
-        return new ParseResult($this->trailingInputFailure($source, $byteOffset, $match));
+        return new ParseResult($this->trailingInputFailure($source, $byteOffset, $match, $session->diagnostic(true)));
     }
 
-    private function trailingInputFailure(Source $source, int $byteOffset, AbstractMatch $match): Failure
-    {
+    private function trailingInputFailure(
+        Source $source,
+        int $byteOffset,
+        AbstractMatch $match,
+        ?Diagnostic $diagnostic,
+    ): Failure {
         $end = $byteOffset + $match->length;
-        $position = max($match->farthestFailure ?? $end, $end);
-        $previous = $match->diagnostic;
+        $previous = $diagnostic ?? $match->diagnostic;
+        $position = max($previous->byteOffset ?? $end, $end);
         $expected = $position === $end ? ['end'] : [];
         if ($previous !== null && $previous->byteOffset === $position) {
             $expected = array_values(array_unique(array_merge($previous->expected, $expected)));

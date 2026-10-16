@@ -47,7 +47,7 @@ final class RecoveryContext
     public static function attempt(Parser $parser, Source $source, int $offset, ParseSession $session): AbstractMatch
     {
         $diagnostics = $session->diagnosticState();
-        $session->restoreDiagnostics([null, [], [], $session->failureRevision()]);
+        $session->restoreDiagnostics([null, [], [], $session->failureRevision(), null]);
         try {
             return $parser->recognizeInSession($source, $offset, $session);
         } finally {

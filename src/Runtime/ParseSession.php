@@ -30,6 +30,7 @@ final class ParseSession
 
     private readonly Source $source;
     private ?int $farthestFailure = null;
+    private ?Diagnostic $deferredListFailure = null;
     /**
      * @var list<string>
      */
@@ -178,26 +179,62 @@ final class ParseSession
     }
 
     /**
-     * @return array{int|null, list<string>, list<list<string>>, int}
+     * @return array{int|null, list<string>, list<list<string>>, int, Diagnostic|null}
      */
     public function diagnosticState(): array
     {
-        return [$this->farthestFailure, $this->expectations, $this->rulePaths, $this->failureRevision];
+        return [
+            $this->farthestFailure, $this->expectations, $this->rulePaths,
+            $this->failureRevision, $this->deferredListFailure,
+        ];
     }
 
     /**
-     * @param array{int|null, list<string>, list<list<string>>, int} $state
+     * @param array{int|null, list<string>, list<list<string>>, int, Diagnostic|null} $state
      */
     public function restoreDiagnostics(array $state): void
     {
-        [$this->farthestFailure, $this->expectations, $this->rulePaths, $this->failureRevision] = $state;
+        [
+            $this->farthestFailure, $this->expectations, $this->rulePaths,
+            $this->failureRevision, $this->deferredListFailure,
+        ] = $state;
     }
 
-    public function diagnostic(): ?Diagnostic
+    /**
+     * Roll back list syntax probes while keeping their failure available to a failed enclosing parse.
+     * @param array{int|null, list<string>, list<list<string>>, int, Diagnostic|null} $state
+     */
+    public function deferListDiagnostics(array $state): void
     {
-        return $this->farthestFailure === null
+        $failure = $this->diagnostic(true);
+        $this->restoreDiagnostics($state);
+        $this->deferredListFailure = $this->mergeDiagnostics($this->deferredListFailure, $failure);
+    }
+
+    public function diagnostic(bool $includeDeferredLists = false): ?Diagnostic
+    {
+        $diagnostic = $this->farthestFailure === null
             ? null
             : new Diagnostic($this->source, $this->farthestFailure, $this->expectations, $this->rulePaths);
+
+        return $includeDeferredLists ? $this->mergeDiagnostics($diagnostic, $this->deferredListFailure) : $diagnostic;
+    }
+
+    private function mergeDiagnostics(?Diagnostic $left, ?Diagnostic $right): ?Diagnostic
+    {
+        if ($left === null || ($right !== null && $right->byteOffset > $left->byteOffset)) {
+            return $right;
+        }
+        if ($right === null || $left->byteOffset > $right->byteOffset) {
+            return $left;
+        }
+
+        return new Diagnostic(
+            $this->source,
+            $left->byteOffset,
+            array_values(array_unique(array_merge($left->expected, $right->expected))),
+            array_values(array_unique(array_merge($left->rulePaths, $right->rulePaths), SORT_REGULAR)),
+        );
     }
 
     public function source(): Source

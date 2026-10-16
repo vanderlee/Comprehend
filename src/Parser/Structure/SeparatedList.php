@@ -107,7 +107,7 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
                         $hasSeparator = true;
                     } elseif ($items !== []) {
                         if (count($items) >= $this->min) {
-                            $session->restoreDiagnostics($diagnostics);
+                            $session->deferListDiagnostics($diagnostics);
                         }
                         break;
                     } else {
@@ -131,7 +131,7 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
                 );
                 if (!$item instanceof Success) {
                     if (count($items) >= $this->min) {
-                        $session->restoreDiagnostics($diagnostics);
+                        $session->deferListDiagnostics($diagnostics);
                         // A leading separator alone never constitutes a list.
                         if ($items !== [] && $this->allowTrailing) {
                             array_push($selected, ...$separatorSelected);

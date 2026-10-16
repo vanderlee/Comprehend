@@ -121,6 +121,12 @@ Comprehend reports line 2 and Binding line 3. These examples exercise different
 tab and newline conventions. A consumer must not compare those coordinates as
 though they used one common convention.
 
+These observations describe the recorded run. The current Comprehend runtime
+retains abandoned list failures separately and uses them when an enclosing parse
+fails. The multiline fixture now reports line 3, column 1 (byte 12). The original
+report remains historical evidence; acceptance, values and prefix consumption
+are unchanged. See [structured diagnostics](diagnostics.md).
+
 ## Static analysis observations
 
 The optional type probe uses PHPStan 2.3.1 at level 10, with Comprehend's bundled
@@ -147,9 +153,9 @@ analyzer workflow was not run, so this is not a comparison with its usual toolin
 
 ## Implications
 
-The current APIs can express this extraction task in both libraries. The measured
-next priority is profiling Comprehend's complete parse/value path and retained
-syntax costs, using the same oracle before and after any optimization. The
-multiline list diagnostic is also a concrete usability case for future work.
+The current APIs can express this extraction task in both libraries. Comprehend's
+parse/value path and retained syntax costs are covered by the
+[extraction profile](extraction-profiling.md). The multiline list diagnostic has
+subsequently been improved as described above.
 The comparison does not justify adding more authoring helpers or changing the
 runtime's tree, lazy-value or effect contracts without separate evidence.

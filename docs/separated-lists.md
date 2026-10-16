@@ -45,7 +45,11 @@ separators. Boundary whitespace remains explicit. Local `spacing()` and
 abandoned pair is rolled back; with an accepted trailing separator, spacing
 before that separator is retained, while spacing after it is not. Ordinary
 failed extension probes do not pollute diagnostics; failures needed to satisfy
-the minimum retain their expectations.
+the minimum retain their expectations. Abandoned item/separator diagnostics are
+also retained separately for a failed enclosing parse or complete-input check.
+The farthest failure wins, with tied expectations combined. Successful prefix
+and complete parses still suppress ordinary termination probes; this changes
+diagnostics only, without committing to a separator or consuming failed items.
 
 ## Trees and lifecycle
 

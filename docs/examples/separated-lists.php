@@ -21,3 +21,8 @@ if (!$prefix->success || $prefix->rawText() !== '10,' || $prefix->value() !== [1
     throw new RuntimeException('Trailing separator prefix behavior changed');
 }
 echo "Separated list values, spacing, malformed input and source round trips agree.\n";
+
+$malformed = C::text('abc')->separatedBy(',')->between('[', ']')->parse('[abc,abx]');
+if ($malformed->success || $malformed->diagnostic?->byteOffset !== 7) {
+    throw new RuntimeException('Malformed item diagnostic lost during list rollback');
+}
