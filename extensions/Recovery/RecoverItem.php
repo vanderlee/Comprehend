@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Parser\Structure;
+namespace Vanderlee\Comprehend\Extensions\Recovery;
 
 use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Parser\Parser;
-use Vanderlee\Comprehend\Recovery\BoundedItem;
-use Vanderlee\Comprehend\Recovery\RecoveryContext;
+use Vanderlee\Comprehend\Parser\Structure\Choice;
+use Vanderlee\Comprehend\Parser\Structure\SeparatedList;
 use Vanderlee\Comprehend\Source\Span;
 
 /** A separated list that preserves malformed nonempty items and leaves its close to its owner. */

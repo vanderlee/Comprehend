@@ -32,7 +32,7 @@
 | Value selection | Fluent `thenIgnore(next)`, `ignoreThen(next)`, `between(open, close)`; object `ValueSequence(int, Parser...)`; [delimiters and lifecycle](value-selection.md) |
 | Lifecycle | `guard(callable)`, `validateSemantic(callable)`, `onCommit(callable)`, assignments |
 | Results | ParseResult, Diagnostic, ValidationResult, immutable ConcreteNode and AstNode |
-| Error recovery | Core `RecoverUntil`, `RecoverDelimited`, `RecoverItem`, `RecoverWith`; static/fluent factories, selected recovery records and diagnostics; [recovery contracts](recovery.md) |
+| Error recovery | Optional `Extensions\Recovery`: `RecoverUntil`, `RecoverDelimited`, `RecoverItem`, `RecoverWith` under `Extensions\Recovery`; rule/fluent factories, shared recovery records and diagnostics; [recovery contracts](recovery.md) |
 | Simple result access | Readonly `ok` aliases `success`; `output()` aliases lazy typed `value()`, returning null on syntax failure without committing effects |
 | AST navigation | `child()`, `firstChild()`, `lastChild()`, `firstNamed()`, `allNamed()`, `firstInGroup()`, `allInGroup()`, `descendants()` |
 | Tree metadata | `tag()`, fixed or callable `named()`, `hasTag()`, `firstTagged()`, `allTagged()`, AST preamble/postamble spans and text helpers |

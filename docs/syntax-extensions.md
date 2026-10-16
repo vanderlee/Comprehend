@@ -136,6 +136,9 @@ Values remain lazy, trees preserve syntax, and effects require explicit commit.
 
 Run `php docs/examples/syntax-extensions.php` for checked examples.
 
+The optional [Recovery extension](recovery.md) registers `recoverUntil()`,
+`recoverDelimited()`, `recoverItem()` and `recoverWith()` as rules and fluents.
+
 ## Expression tables
 
 The optional [Expressions extension](expressions.md) installs `operatorExpression()`

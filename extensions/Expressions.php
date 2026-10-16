@@ -25,8 +25,7 @@ final class Expressions implements SyntaxExtension
 {
     public function fluents(): iterable
     {
-        yield 'operatorExpression' => self::expression(...);
-        yield 'expressionChoice' => self::choice(...);
+        return $this->rules();
     }
 
     public function rules(): iterable

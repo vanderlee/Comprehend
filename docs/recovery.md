@@ -1,13 +1,16 @@
 # Error recovery
 
 Recovery lets a grammar continue through invalid input while retaining errors and
-original source bytes. It is a core operation, enabled explicitly at a grammar
+original source bytes. It is an optional extension, enabled explicitly at a grammar
 boundary. Ordinary parsers remain strict.
 
 ```php
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Recovery;
 
-$statement = C::text('ok;')->recoverUntil(';', consumeBoundary: true);
+$syntax = C::syntax()->extend(new Recovery());
+
+$statement = $syntax->text('ok;')->recoverUntil(';', consumeBoundary: true);
 $result = $statement->some()->parse('ok;bad;wrong;ok;');
 
 $result->success;          // true: the whole input was accepted
@@ -23,14 +26,27 @@ foreach ($result->diagnostics() as $diagnostic) {
 
 ## Authoring
 
+Install `Extensions\Recovery` with `Syntax::extend()` before authoring recovery.
+The extension registers `recoverUntil`, `recoverDelimited`, `recoverItem` and
+`recoverWith` as both rules and fluents. Fluent calls require an expression
+constructed through the extended vocabulary. Use `$syntax->recoverUntil($parser, ...)`
+to wrap an existing expression from another vocabulary.
+
+The parser classes, `RecoveryContext` and internal `BoundedItem` now live under
+`Vanderlee\Comprehend\Extensions\Recovery` in `extensions/Recovery/`. The former
+core class names and global `C::recover*()` factories are removed. Update imports
+and install the extension when migrating. `Result\Recovery`, selected diagnostics,
+and validation/commit protection remain shared core result contracts; the core
+does not depend on the extension or register it automatically.
+
 Both static and fluent factories construct the same typed parser:
 
 ```php
-C::recoverUntil($parser, $boundary, consumeBoundary: false, allowEof: false, maxSkippedBytes: null);
+$syntax->recoverUntil($parser, $boundary, consumeBoundary: false, allowEof: false, maxSkippedBytes: null);
 $parser->recoverUntil($boundary, consumeBoundary: false, allowEof: false, maxSkippedBytes: null);
 ```
 
-The object API is `new Parser\Structure\RecoverUntil(Parser $parser, Parser
+The object API is `new Extensions\Recovery\RecoverUntil(Parser $parser, Parser
 $boundary, bool $consumeBoundary = false, bool $allowEof = false,
 ?int $maxSkippedBytes = null)`.
 
@@ -85,7 +101,7 @@ recovery records from discarded successful prefixes.
 Wrap the complete choice of valid statements, rather than the first alternative:
 
 ```php
-$statement = C::choice($assignment, $declaration)->recoverUntil(';', true);
+$statement = $syntax->choice($assignment, $declaration)->recoverUntil(';', true);
 ```
 
 A recovered alternative counts as accepted under existing choice policies, so
@@ -103,8 +119,8 @@ Missing-token insertion and deletion/retry are not provided.
 without applying `between()` first:
 
 ```php
-$ignore = C::choice($quotedString, $comment);
-$group = $expression->recoverDelimited('(', ')', ignore: $ignore);
+$ignore = $syntax->choice($quotedString, $comment);
+$group = $syntax->recoverDelimited($expression, '(', ')', ignore: $ignore);
 ```
 
 On valid input this behaves like `$expression->between('(', ')')`, including
@@ -124,7 +140,7 @@ region is not recognized and its content is scanned normally.
 Signatures, available statically or fluently:
 
 ```php
-C::recoverDelimited($parser, $open, $close, ignore: null, allowEof: false, maxSkippedBytes: null);
+$syntax->recoverDelimited($parser, $open, $close, ignore: null, allowEof: false, maxSkippedBytes: null);
 $parser->recoverDelimited($open, $close, ignore: null, allowEof: false, maxSkippedBytes: null);
 ```
 
@@ -139,11 +155,11 @@ closing and ignore probes must all consume input when they succeed.
 delimiter is a synchronization boundary left for the enclosing grammar:
 
 ```php
-$values = C::regex('/[0-9]+/A')->mapText('intval')
+$values = $syntax->regex('/[0-9]+/A')->mapText('intval')
     ->recoverItem(separator: ',', close: ']')
     ->between('[', ']');
 
-$result = $values->spacing(C::text(' ')->many())->parse('[10, ???, 30]');
+$result = $values->spacing($syntax->text(' ')->many())->parse('[10, ???, 30]');
 // value(): [10, Recovery for "???", 30]
 ```
 
@@ -160,7 +176,7 @@ nonempty item counts toward `min` and `max`; recovery can neither exceed the ite
 bound nor manufacture a required item at EOF.
 
 ```php
-C::recoverItem($item, $separator, $close, min: 0, max: null,
+$syntax->recoverItem($item, $separator, $close, min: 0, max: null,
     allowTrailing: false, ignore: null, maxSkippedBytes: null);
 $item->recoverItem($separator, $close, min: 0, max: null,
     allowTrailing: false, ignore: null, maxSkippedBytes: null);
@@ -180,12 +196,12 @@ recovered region, or null to retain the original failure. Callable objects with
 `__invoke(RecoveryContext): ?Span` can encapsulate reusable strategies.
 
 ```php
-use Vanderlee\Comprehend\Recovery\RecoveryContext;
+use Vanderlee\Comprehend\Extensions\Recovery\RecoveryContext;
 use Vanderlee\Comprehend\Source\Span;
 
-$declaration = $validDeclaration->recoverWith(
+$declaration = $syntax->recoverWith($validDeclaration,
     static fn(RecoveryContext $context): ?Span => $context->scanUntil('next'),
-    probes: ['next' => C::text('function')],
+    probes: ['next' => $syntax->text('function')],
 );
 ```
 
@@ -193,7 +209,7 @@ This simple example resumes before the next literal `function`; it does not chec
 keyword boundaries, nesting or strings. Register an appropriate grammar probe and
 implement those policies when the language needs them.
 
-Both `C::recoverWith($parser, $strategy, probes: [], maxSkippedBytes: null)` and
+Both `$syntax->recoverWith($parser, $strategy, probes: [], maxSkippedBytes: null)` and
 `$parser->recoverWith($strategy, probes: [], maxSkippedBytes: null)` are supported.
 Facade probe values may be expressions, Parser objects or literal strings, keyed
 by nonempty names. The `RecoverWith` object constructor accepts Parser probe

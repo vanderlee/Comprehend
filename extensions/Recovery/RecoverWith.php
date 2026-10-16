@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Parser\Structure;
+namespace Vanderlee\Comprehend\Extensions\Recovery;
 
 use Closure;
 use InvalidArgumentException;
@@ -16,7 +16,6 @@ use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
-use Vanderlee\Comprehend\Recovery\RecoveryContext;
 use Vanderlee\Comprehend\Result\Diagnostic;
 use Vanderlee\Comprehend\Result\Recovery;
 use Vanderlee\Comprehend\Runtime\ParseSession;

@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Parser\Structure;
+namespace Vanderlee\Comprehend\Extensions\Recovery;
 
 use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Parser\Parser;
-use Vanderlee\Comprehend\Recovery\RecoveryContext;
 use Vanderlee\Comprehend\Source\Span;
 
 /** Preserves invalid input through an explicit synchronization boundary. */

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Recovery;
+namespace Vanderlee\Comprehend\Extensions\Recovery;
 
 use InvalidArgumentException;
 use LogicException;

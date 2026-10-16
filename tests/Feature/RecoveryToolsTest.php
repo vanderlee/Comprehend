@@ -3,12 +3,13 @@
 declare(strict_types=1);
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Parser\Structure\RecoverDelimited;
-use Vanderlee\Comprehend\Parser\Structure\RecoverItem;
-use Vanderlee\Comprehend\Parser\Structure\RecoverWith;
+use Vanderlee\Comprehend\Extensions\Recovery as RecoveryExtension;
+use Vanderlee\Comprehend\Extensions\Recovery\RecoverDelimited;
+use Vanderlee\Comprehend\Extensions\Recovery\RecoverItem;
+use Vanderlee\Comprehend\Extensions\Recovery\RecoverWith;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
-use Vanderlee\Comprehend\Recovery\RecoveryContext;
+use Vanderlee\Comprehend\Extensions\Recovery\RecoveryContext;
 use Vanderlee\Comprehend\Result\Recovery;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
@@ -17,8 +18,12 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
+beforeEach(function (): void {
+    $this->syntax = C::syntax()->extend(new RecoveryExtension());
+});
+
 test('delimited recovery preserves valid values and owns both delimiters', function () {
-    $grammar = C::regex('/[0-9]+/A')->mapText('intval')->recoverDelimited('(', ')');
+    $grammar = $this->syntax->regex('/[0-9]+/A')->mapText('intval')->recoverDelimited('(', ')');
     $valid = $grammar->parse('(42)');
     expect($valid->success)->toBeTrue();
     expect($valid->hasRecovery())->toBeFalse();
@@ -29,8 +34,8 @@ test('delimited recovery preserves valid values and owns both delimiters', funct
 });
 
 test('delimited recovery ignores nested closes in strings and comments', function () {
-    $ignore = C::choice(C::regex('/"(?:[^"\\\\]|\\\\.)*"/A'), C::regex('~/\*.*?\*/~As'));
-    $grammar = C::text('valid')->recoverDelimited('(', ')', ignore: $ignore)->then('tail');
+    $ignore = $this->syntax->choice(C::regex('/"(?:[^"\\\\]|\\\\.)*"/A'), C::regex('~/\*.*?\*/~As'));
+    $grammar = $this->syntax->text('valid')->recoverDelimited('(', ')', ignore: $ignore)->then('tail');
     $text = '(bad(nested) ")" /* ) */)tail';
     $result = $grammar->parse($text);
     expect($result->success)->toBeTrue();
@@ -42,32 +47,34 @@ test('delimited recovery ignores nested closes in strings and comments', functio
 });
 
 test('delimited recovery has explicit eof and byte limit policies', function () {
-    expect(C::text('ok')->recoverDelimited('(', ')')->parse('(bad')->success)->toBeFalse();
-    expect(C::text('ok')->recoverDelimited('(', ')', allowEof: true)->parse('(bad')->success)->toBeTrue();
-    expect(C::text('ok')->recoverDelimited('(', ')', maxSkippedBytes: 5)->parse('(bad)')->success)->toBeTrue();
-    expect(C::text('ok')->recoverDelimited('(', ')', maxSkippedBytes: 4)->parse('(bad)')->success)->toBeFalse();
-    $limited = C::text('ok')->recoverDelimited('(', ')', allowEof: true, maxSkippedBytes: 2);
+    expect($this->syntax->text('ok')->recoverDelimited('(', ')')->parse('(bad')->success)->toBeFalse();
+    expect($this->syntax->text('ok')->recoverDelimited('(', ')', allowEof: true)->parse('(bad')->success)->toBeTrue();
+    expect($this->syntax->text('ok')->recoverDelimited('(', ')', maxSkippedBytes: 5)
+        ->parse('(bad)')->success)->toBeTrue();
+    expect($this->syntax->text('ok')->recoverDelimited('(', ')', maxSkippedBytes: 4)
+        ->parse('(bad)')->success)->toBeFalse();
+    $limited = $this->syntax->text('ok')->recoverDelimited('(', ')', allowEof: true, maxSkippedBytes: 2);
     expect($limited->parse('((bad')->success)->toBeFalse();
 });
 
 test('delimited recovery matches multibyte and multicharacter delimiters', function () {
-    $result = C::recoverDelimited('ok', '«', '»')->matchPrefix('x«é«bad»😀»tail', 1);
+    $result = $this->syntax->recoverDelimited('ok', '«', '»')->matchPrefix('x«é«bad»😀»tail', 1);
     expect($result->success)->toBeTrue();
     expect($result->rawText())->toBe('«é«bad»😀»');
     expect($result->recoveries()[0]->span->start)->toBe(1);
-    expect(C::recoverDelimited('ok', 'BEGIN', 'END')->parse('BEGINxBEGINyENDzEND')->success)->toBeTrue();
+    expect($this->syntax->recoverDelimited('ok', 'BEGIN', 'END')->parse('BEGINxBEGINyENDzEND')->success)->toBeTrue();
 });
 
 test('delimited recovery applies scoped spacing during valid recognition', function () {
-    $result = C::text('ok')->mapValue(fn() => 42)->recoverDelimited('(', ')')
-        ->spacing(C::text(' ')->many())->parse('( ok )');
+    $result = $this->syntax->text('ok')->mapValue(fn() => 42)->recoverDelimited('(', ')')
+        ->spacing($this->syntax->text(' ')->many())->parse('( ok )');
     expect($result->success)->toBeTrue();
     expect($result->value())->toBe(42);
     expect($result->hasRecovery())->toBeFalse();
 });
 
 test('item recovery returns a typed list with explicit error values', function () {
-    $items = C::regex('/[0-9]+/A')->mapText('intval')->recoverItem(',', ']')->between('[', ']');
+    $items = $this->syntax->regex('/[0-9]+/A')->mapText('intval')->recoverItem(',', ']')->between('[', ']');
     $result = $items->parse('[1,???,3]');
     expect($result->success)->toBeTrue();
     $values = $result->value();
@@ -82,7 +89,7 @@ test('item recovery returns a typed list with explicit error values', function (
 });
 
 test('item recovery treats invalid suffixes as part of the malformed item', function () {
-    $list = C::regex('/[0-9]+/A')->mapText('intval')->recoverItem(',', ']')->between('[', ']');
+    $list = $this->syntax->regex('/[0-9]+/A')->mapText('intval')->recoverItem(',', ']')->between('[', ']');
     $result = $list->parse('[12oops,3,broken]');
     expect($result->success)->toBeTrue();
     expect(array_map(fn(Recovery $r) => $r->span->rawText(), $result->recoveries()))->toBe(['12oops', 'broken']);
@@ -90,11 +97,11 @@ test('item recovery treats invalid suffixes as part of the malformed item', func
 });
 
 test('item recovery distinguishes missing items trailing separators and the closing delimiter', function () {
-    $list = C::regex('/[0-9]+/A')->recoverItem(',', ']')->between('[', ']');
+    $list = $this->syntax->regex('/[0-9]+/A')->recoverItem(',', ']')->between('[', ']');
     expect($list->parse('[1,,3]')->success)->toBeFalse();
     expect($list->parse('[,1]')->success)->toBeFalse();
     expect($list->parse('[1,]')->success)->toBeFalse();
-    $trailing = C::regex('/[0-9]+/A')->recoverItem(',', ']', allowTrailing: true)->between('[', ']');
+    $trailing = $this->syntax->regex('/[0-9]+/A')->recoverItem(',', ']', allowTrailing: true)->between('[', ']');
     expect($trailing->parse('[1,]')->success)->toBeTrue();
     expect($trailing->parse('[1,]')->hasRecovery())->toBeFalse();
     expect($trailing->parse('[1,,]')->success)->toBeFalse();
@@ -102,8 +109,8 @@ test('item recovery distinguishes missing items trailing separators and the clos
 });
 
 test('item recovery honors bounds spacing and the outer closing delimiter', function () {
-    $list = C::regex('/[0-9]+/A')->mapText('intval')->recoverItem(',', ']', min: 1, max: 2)
-        ->between('[', ']')->spacing(C::text(' ')->many());
+    $list = $this->syntax->regex('/[0-9]+/A')->mapText('intval')->recoverItem(',', ']', min: 1, max: 2)
+        ->between('[', ']')->spacing($this->syntax->text(' ')->many());
     $result = $list->parse('[ 1 , bad ]');
     expect($result->success)->toBeTrue();
     expect($result->value()[0])->toBe(1);
@@ -114,7 +121,8 @@ test('item recovery honors bounds spacing and the outer closing delimiter', func
 });
 
 test('item recovery can ignore separators inside complete quoted regions', function () {
-    $list = C::text('ok')->recoverItem(',', ']', ignore: C::regex('/"[^"]*"/A'))->between('[', ']');
+    $list = $this->syntax->text('ok')->recoverItem(',', ']', ignore: $this->syntax->regex('/"[^"]*"/A'))
+        ->between('[', ']');
     $result = $list->parse('[bad"a,b]c",ok]');
     expect($result->success)->toBeTrue();
     expect($result->value()[1])->toBe('ok');
@@ -123,12 +131,12 @@ test('item recovery can ignore separators inside complete quoted regions', funct
 
 test('custom recovery receives the original diagnostic and uses registered probes', function () {
     $seen = null;
-    $grammar = C::text('valid')->recoverWith(
+    $grammar = $this->syntax->text('valid')->recoverWith(
         function (RecoveryContext $context) use (&$seen): ?Span {
             $seen = $context->failure;
             return $context->scanUntil('declaration');
         },
-        probes: ['declaration' => C::text('function')],
+        probes: ['declaration' => $this->syntax->text('function')],
     )->then('function');
     $result = $grammar->parse('broken function');
     expect($result->success)->toBeTrue();
@@ -139,7 +147,7 @@ test('custom recovery receives the original diagnostic and uses registered probe
 
 test('custom recovery can decline and never runs after valid recognition', function () {
     $calls = 0;
-    $parser = C::text('ok')->recoverWith(function (RecoveryContext $context) use (&$calls): ?Span {
+    $parser = $this->syntax->text('ok')->recoverWith(function (RecoveryContext $context) use (&$calls): ?Span {
         ++$calls;
         return null;
     });
@@ -158,28 +166,30 @@ test('custom recovery rejects foreign empty reversed and partial code point regi
         fn(RecoveryContext $c): Span => $c->source->span($c->start, $c->start + 1),
     ];
     foreach ($strategies as $strategy) {
-        expect(fn() => C::text('ok')->recoverWith($strategy)->parse('ébad'))->toThrow(LogicException::class);
+        expect(fn() => $this->syntax->text('ok')->recoverWith($strategy)
+        ->parse('ébad'))->toThrow(LogicException::class);
     }
-    expect(fn() => C::text('ok')->recoverWith(fn() => 42)->parse('bad'))->toThrow(TypeError::class);
+    expect(fn() => $this->syntax->text('ok')->recoverWith(fn() => 42)->parse('bad'))->toThrow(TypeError::class);
 });
 
 test('custom recovery contexts expire and enforce registered probe names', function () {
     $saved = null;
-    $parser = C::text('ok')->recoverWith(function (RecoveryContext $c) use (&$saved): ?Span {
+    $parser = $this->syntax->text('ok')->recoverWith(function (RecoveryContext $c) use (&$saved): ?Span {
         $saved = $c;
         return $c->regionTo($c->source->byteLength());
     });
     expect($parser->parse('bad')->success)->toBeTrue();
     expect(fn() => $saved->readUnit(0))->toThrow(LogicException::class);
-    expect(fn() => C::text('ok')->recoverWith(fn(RecoveryContext $c) => $c->probe('missing', 0))->parse('bad'))
+    expect(fn() => $this->syntax->text('ok')->recoverWith(fn(RecoveryContext $c) => $c->probe('missing', 0))
+        ->parse('bad'))
         ->toThrow(InvalidArgumentException::class);
 });
 
 test('all recovery strategies account for work and enforce consuming probes', function () {
-    $delimited = C::text('ok')->recoverDelimited('(', ')');
+    $delimited = $this->syntax->text('ok')->recoverDelimited('(', ')');
     expect(fn() => $delimited->parse('(' . str_repeat('x', 200) . ')', limits: new ParseLimits(maxWork: 25)))
         ->toThrow(ParseLimitException::class);
-    expect(fn() => C::text('ok')->recoverWith(function (RecoveryContext $c): ?Span {
+    expect(fn() => $this->syntax->text('ok')->recoverWith(function (RecoveryContext $c): ?Span {
         $c->consumeWork(100);
         return $c->regionTo(1);
     })->parse('bad', limits: new ParseLimits(maxWork: 10)))->toThrow(ParseLimitException::class);
@@ -193,7 +203,7 @@ test('registered probes are snapshotted and do not run semantic operations or ef
     $probe = new Text(';');
     $probe->mapValue(fn() => throw new LogicException('value'));
     $probe->onCommit(fn() => throw new LogicException('effect'));
-    $parser = C::text('ok')->recoverWith(
+    $parser = $this->syntax->text('ok')->recoverWith(
         fn(RecoveryContext $c): ?Span => $c->scanUntil('stop', true),
         ['stop' => $probe],
     );

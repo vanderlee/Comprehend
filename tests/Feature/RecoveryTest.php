@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Parser\Structure\RecoverUntil;
+use Vanderlee\Comprehend\Extensions\Recovery as RecoveryExtension;
+use Vanderlee\Comprehend\Extensions\Recovery\RecoverUntil;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\Recovery;
@@ -13,10 +14,14 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
+beforeEach(function (): void {
+    $this->syntax = C::syntax()->extend(new RecoveryExtension());
+});
+
 test('recovery is explicit and valid operands preserve lazy values and effects', function () {
     $calls = 0;
     $effects = 0;
-    $valid = C::text('ok;')->mapValue(function () use (&$calls) {
+    $valid = $this->syntax->text('ok;')->mapValue(function () use (&$calls) {
         ++$calls;
         return 42;
     })->onCommit(function () use (&$effects) {
@@ -32,13 +37,13 @@ test('recovery is explicit and valid operands preserve lazy values and effects',
     expect($calls)->toBe(1);
     expect($result->commit())->toBeTrue();
     expect($effects)->toBe(1);
-    expect(C::text('ok;')->parse('bad;')->success)->toBeFalse();
+    expect($this->syntax->text('ok;')->parse('bad;')->success)->toBeFalse();
 });
 
 test('recovery preserves error regions and blocks validation callbacks and all commit effects', function () {
     $effects = 0;
     $validations = 0;
-    $statement = C::text('ok;')->onCommit(function () use (&$effects) {
+    $statement = $this->syntax->text('ok;')->onCommit(function () use (&$effects) {
         ++$effects;
     });
     $grammar = $statement->recoverUntil(';', consumeBoundary: true)->some()
@@ -66,18 +71,18 @@ test('recovery preserves error regions and blocks validation callbacks and all c
 });
 
 test('a recovered value is an explicit record rather than a fabricated operand value', function () {
-    $operand = C::text('ok')->mapValue(fn() => throw new LogicException('invalid value'));
-    $result = C::recoverUntil($operand, ';', true)->parse('bad;');
+    $operand = $this->syntax->text('ok')->mapValue(fn() => throw new LogicException('invalid value'));
+    $result = $this->syntax->recoverUntil($operand, ';', true)->parse('bad;');
     expect($result->value())->toBeInstanceOf(Recovery::class);
     expect($result->value())->toBe($result->recoveries()[0]);
     expect($result->value()->span->rawText())->toBe('bad;');
 });
 
 test('boundary probes do not retain values effects validation or diagnostics', function () {
-    $boundary = C::text(';')->mapValue(fn() => throw new LogicException('probe value'))
+    $boundary = $this->syntax->text(';')->mapValue(fn() => throw new LogicException('probe value'))
         ->validateSemantic(fn() => throw new LogicException('probe validation'))
         ->onCommit(fn() => throw new LogicException('probe effect'));
-    $result = C::recoverUntil('ok', $boundary, true)->then('end')->parse('bad;end');
+    $result = $this->syntax->recoverUntil('ok', $boundary, true)->then('end')->parse('bad;end');
     expect($result->success)->toBeTrue();
     expect($result->diagnostics()[0]->expected)->toBe(['"ok"']);
     expect($result->validate()->valid)->toBeFalse();
@@ -85,40 +90,41 @@ test('boundary probes do not retain values effects validation or diagnostics', f
 });
 
 test('discarded recovered branches and lookahead do not leak records', function () {
-    $recover = C::recoverUntil('ok', ';', true);
-    $result = C::choice($recover->then('!'), 'bad;')->parse('bad;');
+    $recover = $this->syntax->recoverUntil('ok', ';', true);
+    $result = $this->syntax->choice($recover->then('!'), 'bad;')->parse('bad;');
     expect($result->success)->toBeTrue();
     expect($result->recoveries())->toBe([]);
     expect($result->diagnostics())->toBe([]);
-    expect(C::not($recover)->parse('bad;')->hasRecovery())->toBeFalse();
+    expect($this->syntax->not($recover)->parse('bad;')->hasRecovery())->toBeFalse();
 });
 
 test('a retained boundary is available to the enclosing grammar', function () {
-    $result = C::recoverUntil('ok', '}')->then('}')->parse('bad}');
+    $result = $this->syntax->recoverUntil('ok', '}')->then('}')->parse('bad}');
     expect($result->success)->toBeTrue();
     expect($result->recoveries()[0]->span->rawText())->toBe('bad');
-    expect(C::recoverUntil('ok', '}')->matchPrefix('}')->success)->toBeFalse();
-    expect(C::recoverUntil('ok', '}', true)->parse('}')->success)->toBeTrue();
+    expect($this->syntax->recoverUntil('ok', '}')->matchPrefix('}')->success)->toBeFalse();
+    expect($this->syntax->recoverUntil('ok', '}', true)->parse('}')->success)->toBeTrue();
 });
 
 test('eof recovery is explicit and cannot create zero width repairs', function () {
-    expect(C::recoverUntil('ok', ';')->parse('bad')->success)->toBeFalse();
-    $result = C::recoverUntil('ok', ';', allowEof: true)->parse('bad');
+    expect($this->syntax->recoverUntil('ok', ';')->parse('bad')->success)->toBeFalse();
+    $result = $this->syntax->recoverUntil('ok', ';', allowEof: true)->parse('bad');
     expect($result->success)->toBeTrue();
     expect($result->recoveries()[0]->span->rawText())->toBe('bad');
-    expect(C::recoverUntil('ok', ';', allowEof: true)->parse('')->success)->toBeFalse();
-    expect(C::recoverUntil('ok', ';')->parse('bad')->diagnostics())->toHaveCount(1);
+    expect($this->syntax->recoverUntil('ok', ';', allowEof: true)->parse('')->success)->toBeFalse();
+    expect($this->syntax->recoverUntil('ok', ';')->parse('bad')->diagnostics())->toHaveCount(1);
 });
 
 test('skip limits include consumed boundaries and count bytes', function () {
-    expect(C::recoverUntil('ok', ';', true, maxSkippedBytes: 4)->parse('bad;')->success)->toBeTrue();
-    expect(C::recoverUntil('ok', ';', true, maxSkippedBytes: 3)->parse('bad;')->success)->toBeFalse();
-    expect(C::recoverUntil('ok', ';', allowEof: true, maxSkippedBytes: 2)->parse('bad')->success)->toBeFalse();
-    expect(C::recoverUntil('ok', ';', maxSkippedBytes: 0)->parse('bad;')->success)->toBeFalse();
+    expect($this->syntax->recoverUntil('ok', ';', true, maxSkippedBytes: 4)->parse('bad;')->success)->toBeTrue();
+    expect($this->syntax->recoverUntil('ok', ';', true, maxSkippedBytes: 3)->parse('bad;')->success)->toBeFalse();
+    expect($this->syntax->recoverUntil('ok', ';', allowEof: true, maxSkippedBytes: 2)
+        ->parse('bad')->success)->toBeFalse();
+    expect($this->syntax->recoverUntil('ok', ';', maxSkippedBytes: 0)->parse('bad;')->success)->toBeFalse();
 });
 
 test('recovery honors runtime work limits', function () {
-    C::recoverUntil('ok', ';')->parse(str_repeat('x', 1000), limits: new ParseLimits(maxWork: 20));
+    $this->syntax->recoverUntil('ok', ';')->parse(str_repeat('x', 1000), limits: new ParseLimits(maxWork: 20));
 })->throws(ParseLimitException::class);
 
 test('recovery scans source units and retains byte coordinates', function () {
@@ -144,17 +150,17 @@ test('negative recovery limits are rejected', function () {
 })->throws(InvalidArgumentException::class);
 
 test('the original failure is retained without synchronization probe expectations', function () {
-    $result = C::sequence('a', '!')->recoverUntil(';', true)->parse('ax;');
+    $result = $this->syntax->sequence('a', '!')->recoverUntil(';', true)->parse('ax;');
     expect($result->diagnostics()[0]->byteOffset)->toBe(1);
     expect($result->diagnostics()[0]->expected)->toBe(['"!"']);
-    $failed = C::sequence('a', '!')->recoverUntil(';')->parse('ax');
+    $failed = $this->syntax->sequence('a', '!')->recoverUntil(';')->parse('ax');
     expect($failed->success)->toBeFalse();
     expect($failed->diagnostic->byteOffset)->toBe(1);
     expect($failed->diagnostic->expected)->toBe(['"!"']);
 });
 
 test('valid operands preserve ordinary speculative diagnostics', function () {
-    $operand = C::choice(C::sequence('ab', '!'), 'a');
+    $operand = $this->syntax->choice($this->syntax->sequence('ab', '!'), 'a');
     $plain = $operand->then('?')->parse('abx');
     $wrapped = $operand->recoverUntil(';')->then('?')->parse('abx');
     expect($wrapped->diagnostic->byteOffset)->toBe($plain->diagnostic->byteOffset);
@@ -162,8 +168,8 @@ test('valid operands preserve ordinary speculative diagnostics', function () {
 });
 
 test('recovery retains selected trivia errors and serializes error node tags', function () {
-    $trivia = C::recoverUntil(' ', '~', true);
-    $result = C::sequence('a', 'b')->spacing($trivia)->parse('ax~b');
+    $trivia = $this->syntax->recoverUntil(' ', '~', true);
+    $result = $this->syntax->sequence('a', 'b')->spacing($trivia)->parse('ax~b');
     expect($result->success)->toBeTrue();
     expect($result->hasRecovery())->toBeTrue();
     expect($result->recoveries())->toHaveCount(1);
@@ -172,16 +178,16 @@ test('recovery retains selected trivia errors and serializes error node tags', f
 });
 
 test('trivia and operand recovery diagnostics stay in source order without duplicates', function () {
-    $trivia = C::recoverUntil(' ', '~', true);
-    $item = C::recoverUntil('ok', ';', true);
-    $result = C::sequence('a', $item, $item)->spacing($trivia)->parse('ax~bad;y~bad;');
+    $trivia = $this->syntax->recoverUntil(' ', '~', true);
+    $item = $this->syntax->recoverUntil('ok', ';', true);
+    $result = $this->syntax->sequence('a', $item, $item)->spacing($trivia)->parse('ax~bad;y~bad;');
     expect($result->success)->toBeTrue();
     expect(array_map(fn(Recovery $r) => $r->span->start, $result->recoveries()))->toBe([1, 3, 7, 9]);
 });
 
 test('recovery snapshots detach both operands and keep per parse records separate', function () {
     $boundary = new Text(';');
-    $parser = C::recoverUntil('ok', $boundary, true);
+    $parser = $this->syntax->recoverUntil('ok', $boundary, true);
     $boundary->guard(fn() => false);
     $first = $parser->parse('bad;');
     $second = $parser->parse('bad;');
@@ -204,7 +210,7 @@ test('probe exceptions restore diagnostics and leave the session usable', functi
 
 test('recovery records require a nonempty region from their diagnostic source', function () {
     $source = new Utf8Source('bad');
-    $diagnostic = C::text('ok')->parse($source)->diagnostic;
+    $diagnostic = $this->syntax->text('ok')->parse($source)->diagnostic;
     expect(fn() => new Recovery($source->span(0, 0), $diagnostic))->toThrow(InvalidArgumentException::class);
     $other = new Utf8Source('bad');
     expect(fn() => new Recovery($other->span(0, 3), $diagnostic))->toThrow(InvalidArgumentException::class);
