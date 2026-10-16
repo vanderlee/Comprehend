@@ -35,9 +35,12 @@ typed objects / Ruleset factories / RFC imports
 | Compatibility-only fixtures and obsolete documentation | Canonical behavior fixtures, updated contracts and runnable examples | Full suite, PHP syntax/API gate and example execution |
 | Free Library functions (`s`, `c`, `star`, `plus`, `opt`, `repeat` and terminal factories) | Immutable `Comprehend` factories/composition, accepted directly by Ruleset; `parser()` exports for Parser-only boundaries | Grammar factory/RFC tests and canonical API gate |
 
-Internal `Match\AbstractMatch`, Success and Failure are selected execution records,
-not additional public result shapes. They retain lazy operations and observed
-recognition progress; consumers use ParseResult and immutable source trees.
+Internal `Match\AbstractMatch`, Success and Failure are execution records,
+not additional public result shapes. Success allocates mutable `ExecutionState`
+only where needed. After tree construction and guards, plain child records can
+be released; records with deferred state remain on the selected collection/effect
+and concrete validation paths. They retain lazy operations and observed recognition
+progress; consumers use ParseResult and immutable source trees.
 
 ## Breaking changes
 

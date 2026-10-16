@@ -29,27 +29,7 @@ class Success extends AbstractMatch
     use ResultTrait;
     use CallbackTrait;
 
-    /**
-     * Selected children used for named collections and effect traversal.
-     *
-     * @var Success[]
-     */
-    private array $successes;
-    /**
-     * All retained recognition children, including trivia and intersection checks.
-     * Used for concrete syntax and semantic validation.
-     * @var Success[]
-     */
-    private array $concreteMatches;
-    /**
-     * @var list<callable>
-     */
-    private array $semanticValidators = [];
-    private ?ValidationResult $validation = null;
-    private bool $validating = false;
-    private ?Throwable $validationError = null;
-    private ?SemanticProjection $semanticProjection = null;
-    private ?self $valueChild = null;
+    private ?ExecutionState $state = null;
 
     /**
      * Create a new match.
@@ -60,8 +40,11 @@ class Success extends AbstractMatch
     public function __construct($length = 0, $successes = [])
     {
         parent::__construct($length);
-        $this->successes = $successes;
-        $this->concreteMatches = $successes;
+        if ($successes !== []) {
+            $state = $this->executionState();
+            $state->successes = array_values($successes);
+            $state->concreteMatches = $state->successes;
+        }
     }
 
     /**
@@ -70,7 +53,8 @@ class Success extends AbstractMatch
      */
     public function setConcreteMatches(array $matches): void
     {
-        $this->concreteMatches = $matches;
+        $state = $this->executionState();
+        $state->concreteMatches = $matches;
     }
 
     /**
@@ -128,7 +112,7 @@ class Success extends AbstractMatch
     private function concreteChildNodes(): array
     {
         $children = [];
-        foreach ($this->concreteMatches as $match) {
+        foreach ($this->state->concreteMatches ?? [] as $match) {
             if ($match->node === null) {
                 throw new LogicException('Concrete children require source-bound recognition');
             }
@@ -141,28 +125,37 @@ class Success extends AbstractMatch
 
     public function inheritValueFrom(self $child): void
     {
-        $this->valueChild = $child;
+        if ($child->state === null && $child->node !== null) {
+            return;
+        }
+        $state = $this->executionState();
+        $state->valueChild = $child;
     }
 
     /** @internal Bind mapping and cache lifetime to this recognition, not the grammar. */
     public function setValueMapper(?callable $mapper): void
     {
+        if ($mapper === null && $this->state === null) {
+            return;
+        }
+        $state = $this->executionState();
         if ($mapper !== null) {
-            $this->valueChild = null;
+            $state->valueChild = null;
         }
 
-        $this->semanticProjection = $mapper === null ? null : new SemanticProjection($mapper);
+        $state->semanticProjection = $mapper === null ? null : new SemanticProjection($mapper);
     }
 
     public function getValue(): mixed
     {
-        if ($this->valueChild !== null) {
-            return $this->valueChild->getValue();
+        $state = $this->executionState();
+        if ($state->valueChild !== null) {
+            return $state->valueChild->getValue();
         }
 
-        $this->semanticProjection ??= new SemanticProjection(null);
+        $state->semanticProjection ??= new SemanticProjection(null);
 
-        return $this->semanticProjection->value(new ParseResult($this));
+        return $state->semanticProjection->value(new ParseResult($this));
     }
 
     /**
@@ -170,7 +163,11 @@ class Success extends AbstractMatch
      */
     public function addSemanticValidators(array $validators): void
     {
-        $this->semanticValidators = array_merge($this->semanticValidators, $validators);
+        if ($validators === []) {
+            return;
+        }
+        $state = $this->executionState();
+        $state->semanticValidators = array_merge($state->semanticValidators, $validators);
     }
 
     /** Explicit commits are idempotent; a failed effect sequence is never retried. */
@@ -186,30 +183,31 @@ class Success extends AbstractMatch
 
     public function validateSemantic(): ValidationResult
     {
-        if ($this->validationError !== null) {
-            throw $this->validationError;
+        $state = $this->executionState();
+        if ($state->validationError !== null) {
+            throw $state->validationError;
         }
 
-        if ($this->validation !== null) {
-            return $this->validation;
+        if ($state->validation !== null) {
+            return $state->validation;
         }
 
-        if ($this->validating) {
+        if ($state->validating) {
             throw new LogicException('Recursive semantic validation');
         }
 
-        $this->validating = true;
+        $state->validating = true;
         try {
             // Retain child-before-parent order even when a child reports rejection.
             $errors = $this->childValidationErrors();
             $errors = array_merge($errors, $this->localValidationErrors());
 
-            return $this->validation = new ValidationResult($errors === [], $errors);
+            return $state->validation = new ValidationResult($errors === [], $errors);
         } catch (Throwable $error) {
-            $this->validationError = $error;
+            $state->validationError = $error;
             throw $error;
         } finally {
-            $this->validating = false;
+            $state->validating = false;
         }
     }
 
@@ -219,9 +217,10 @@ class Success extends AbstractMatch
      */
     private function childValidationErrors(): array
     {
+        $state = $this->executionState();
         $errors = [];
         $seen = [];
-        foreach ($this->concreteMatches as $child) {
+        foreach ($state->concreteMatches as $child) {
             $id = spl_object_id($child);
             if (isset($seen[$id])) {
                 continue;
@@ -241,9 +240,10 @@ class Success extends AbstractMatch
      */
     private function localValidationErrors(): array
     {
+        $state = $this->executionState();
         $errors = [];
         $result = new ParseResult($this);
-        foreach ($this->semanticValidators as $validator) {
+        foreach ($state->semanticValidators as $validator) {
             $outcome = $validator($result);
             if ($outcome === false) {
                 $errors[] = 'Semantic validation failed';
@@ -260,5 +260,26 @@ class Success extends AbstractMatch
     public function isCommitted(): bool
     {
         return $this->effectExecution()->isCompleted();
+    }
+
+    private function executionState(): ExecutionState
+    {
+        return $this->state ??= new ExecutionState();
+    }
+
+    /** @internal After CST construction, retain only children with deferred execution state. */
+    public function retainExecutionState(): void
+    {
+        $state = $this->state;
+        if ($state === null) {
+            return;
+        }
+        $retain = static fn(self $match): bool => $match->state !== null;
+        $state->successes = array_values(array_filter($state->successes, $retain));
+        $state->concreteMatches = array_values(array_filter($state->concreteMatches, $retain));
+        $state->precedingMatches = array_values(array_filter($state->precedingMatches, $retain));
+        if ($state->isEmpty()) {
+            $this->state = null;
+        }
     }
 }

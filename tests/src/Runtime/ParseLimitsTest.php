@@ -33,3 +33,10 @@ test('nonpositive limits are rejected', function (?int $depth, ?int $work): void
 
     new ParseLimits($depth, $work);
 })->with(ParseLimitsTest::invalidLimits());
+
+test('regex subject caching has a finite default and can be disabled', function () {
+    $this->assertSame(8388608, (new ParseLimits())->maxRegexSubjectBytes);
+    $this->assertSame(0, (new ParseLimits(maxRegexSubjectBytes: 0))->maxRegexSubjectBytes);
+    $this->expectException(InvalidArgumentException::class);
+    new ParseLimits(maxRegexSubjectBytes: -1);
+});

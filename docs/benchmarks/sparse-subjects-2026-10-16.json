@@ -1,0 +1,287 @@
+{
+    "measured_on":  "2026-10-16",
+    "description":  "Sparse execution state and bounded session-owned full regex subjects",
+    "retention_before":  {
+                             "scenario":  "retention",
+                             "summary":  {
+                                             "parse_ms":  {
+                                                              "median":  683.004,
+                                                              "min":  632.5115,
+                                                              "max":  729.562
+                                                          },
+                                             "result_bytes":  {
+                                                                  "median":  46146544,
+                                                                  "min":  46146544,
+                                                                  "max":  46146544
+                                                              },
+                                             "tree_only_bytes":  {
+                                                                     "median":  19927760,
+                                                                     "min":  19927760,
+                                                                     "max":  19927760
+                                                                 }
+                                         },
+                             "samples":  [
+                                             {
+                                                 "parse_ms":  729.562,
+                                                 "result_bytes":  46146544,
+                                                 "tree_only_bytes":  19927760
+                                             },
+                                             {
+                                                 "parse_ms":  709.8183,
+                                                 "result_bytes":  46146544,
+                                                 "tree_only_bytes":  19927760
+                                             },
+                                             {
+                                                 "parse_ms":  683.004,
+                                                 "result_bytes":  46146544,
+                                                 "tree_only_bytes":  19927760
+                                             },
+                                             {
+                                                 "parse_ms":  632.5115,
+                                                 "result_bytes":  46146544,
+                                                 "tree_only_bytes":  19927760
+                                             },
+                                             {
+                                                 "parse_ms":  671.553,
+                                                 "result_bytes":  46146544,
+                                                 "tree_only_bytes":  19927760
+                                             },
+                                             {
+                                                 "parse_ms":  641.0905,
+                                                 "result_bytes":  46146544,
+                                                 "tree_only_bytes":  19927760
+                                             },
+                                             {
+                                                 "parse_ms":  705.3989,
+                                                 "result_bytes":  46146544,
+                                                 "tree_only_bytes":  19927760
+                                             }
+                                         ]
+                         },
+    "retention_after":  {
+                            "scenario":  "retention",
+                            "summary":  {
+                                            "parse_ms":  {
+                                                             "median":  689.9776,
+                                                             "min":  648.8932,
+                                                             "max":  690.9419
+                                                         },
+                                            "result_bytes":  {
+                                                                 "median":  19927768,
+                                                                 "min":  19927768,
+                                                                 "max":  19927768
+                                                             },
+                                            "tree_only_bytes":  {
+                                                                    "median":  19927760,
+                                                                    "min":  19927760,
+                                                                    "max":  19927760
+                                                                }
+                                        },
+                            "samples":  [
+                                            {
+                                                "parse_ms":  690.9419,
+                                                "result_bytes":  19927768,
+                                                "tree_only_bytes":  19927760
+                                            },
+                                            {
+                                                "parse_ms":  659.688,
+                                                "result_bytes":  19927768,
+                                                "tree_only_bytes":  19927760
+                                            },
+                                            {
+                                                "parse_ms":  690.2483,
+                                                "result_bytes":  19927768,
+                                                "tree_only_bytes":  19927760
+                                            },
+                                            {
+                                                "parse_ms":  648.8932,
+                                                "result_bytes":  19927768,
+                                                "tree_only_bytes":  19927760
+                                            },
+                                            {
+                                                "parse_ms":  656.1771,
+                                                "result_bytes":  19927768,
+                                                "tree_only_bytes":  19927760
+                                            },
+                                            {
+                                                "parse_ms":  690.3661,
+                                                "result_bytes":  19927768,
+                                                "tree_only_bytes":  19927760
+                                            },
+                                            {
+                                                "parse_ms":  689.9776,
+                                                "result_bytes":  19927768,
+                                                "tree_only_bytes":  19927760
+                                            }
+                                        ]
+                        },
+    "regex_before":  {
+                         "php":  "8.2.10",
+                         "os":  "Windows",
+                         "pcre":  "10.40 2022-04-14",
+                         "size":  262144,
+                         "recognition_includes_cst":  true,
+                         "file_fixture_included_in_source_time":  true,
+                         "command":  "php tools/benchmark.php --source=file-utf8 --iterations=7 --size=262144 --case=regex --mode=recognition",
+                         "results":  [
+                                         {
+                                             "case":  "regex",
+                                             "mode":  "recognition",
+                                             "source":  "file-utf8",
+                                             "input_bytes":  262144,
+                                             "accepted":  true,
+                                             "iterations":  7,
+                                             "median_ms":  1079.2931,
+                                             "min_ms":  1030.0069,
+                                             "max_ms":  1188.9803,
+                                             "source_median_ms":  59.053,
+                                             "process_peak_bytes":  6291456,
+                                             "profile":  null
+                                         }
+                                     ]
+                     },
+    "regex_after":  {
+                        "php":  "8.2.10",
+                        "os":  "Windows",
+                        "pcre":  "10.40 2022-04-14",
+                        "size":  262144,
+                        "recognition_includes_cst":  true,
+                        "file_fixture_included_in_source_time":  true,
+                        "command":  "php tools/benchmark.php --source=file-utf8 --iterations=7 --size=262144 --case=regex --mode=recognition",
+                        "results":  [
+                                        {
+                                            "case":  "regex",
+                                            "mode":  "recognition",
+                                            "source":  "file-utf8",
+                                            "input_bytes":  262144,
+                                            "accepted":  true,
+                                            "iterations":  7,
+                                            "median_ms":  123.3035,
+                                            "min_ms":  109.5658,
+                                            "max_ms":  129.5496,
+                                            "source_median_ms":  67.8197,
+                                            "process_peak_bytes":  6291456,
+                                            "profile":  null
+                                        }
+                                    ]
+                    },
+    "window_after":  {
+                         "php":  "8.2.10",
+                         "os":  "Windows",
+                         "pcre":  "10.40 2022-04-14",
+                         "size":  262144,
+                         "recognition_includes_cst":  true,
+                         "file_fixture_included_in_source_time":  true,
+                         "command":  "php tools/benchmark.php --source=file-utf8 --iterations=7 --size=262144 --case=regex-window --mode=recognition",
+                         "results":  [
+                                         {
+                                             "case":  "regex-window",
+                                             "mode":  "recognition",
+                                             "source":  "file-utf8",
+                                             "input_bytes":  262144,
+                                             "accepted":  true,
+                                             "iterations":  7,
+                                             "median_ms":  77.4429,
+                                             "min_ms":  71.5715,
+                                             "max_ms":  115.8921,
+                                             "source_median_ms":  65.1689,
+                                             "process_peak_bytes":  6291456,
+                                             "profile":  null
+                                         }
+                                     ]
+                     },
+    "text_after":  {
+                       "php":  "8.2.10",
+                       "os":  "Windows",
+                       "pcre":  "10.40 2022-04-14",
+                       "size":  65536,
+                       "recognition_includes_cst":  true,
+                       "file_fixture_included_in_source_time":  false,
+                       "command":  "php tools/benchmark.php --source=memory --iterations=7 --size=65536 --case=text --mode=recognition",
+                       "results":  [
+                                       {
+                                           "case":  "text",
+                                           "mode":  "recognition",
+                                           "source":  "memory",
+                                           "input_bytes":  65536,
+                                           "accepted":  true,
+                                           "iterations":  7,
+                                           "median_ms":  696.7942,
+                                           "min_ms":  650.992,
+                                           "max_ms":  718.8278,
+                                           "source_median_ms":  0.465,
+                                           "process_peak_bytes":  37748736,
+                                           "profile":  null
+                                       }
+                                   ]
+                   },
+    "outputs_after":  {
+                          "php":  "8.2.10",
+                          "os":  "Windows",
+                          "pcre":  "10.40 2022-04-14",
+                          "size":  65536,
+                          "recognition_includes_cst":  true,
+                          "file_fixture_included_in_source_time":  false,
+                          "command":  "php tools/benchmark.php --source=memory --iterations=7 --size=65536 --case=large",
+                          "results":  [
+                                          {
+                                              "case":  "large",
+                                              "mode":  "recognition",
+                                              "source":  "memory",
+                                              "input_bytes":  65536,
+                                              "accepted":  true,
+                                              "iterations":  7,
+                                              "median_ms":  11.383,
+                                              "min_ms":  9.058,
+                                              "max_ms":  19.7297,
+                                              "source_median_ms":  0.4281,
+                                              "process_peak_bytes":  4194304,
+                                              "profile":  null
+                                          },
+                                          {
+                                              "case":  "large",
+                                              "mode":  "cst",
+                                              "source":  "memory",
+                                              "input_bytes":  65536,
+                                              "accepted":  true,
+                                              "iterations":  7,
+                                              "median_ms":  12.5942,
+                                              "min_ms":  11.9579,
+                                              "max_ms":  18.614,
+                                              "source_median_ms":  0.5275,
+                                              "process_peak_bytes":  4194304,
+                                              "profile":  null
+                                          },
+                                          {
+                                              "case":  "large",
+                                              "mode":  "ast",
+                                              "source":  "memory",
+                                              "input_bytes":  65536,
+                                              "accepted":  true,
+                                              "iterations":  7,
+                                              "median_ms":  11.5174,
+                                              "min_ms":  9.5142,
+                                              "max_ms":  15.2871,
+                                              "source_median_ms":  0.4992,
+                                              "process_peak_bytes":  4194304,
+                                              "profile":  null
+                                          },
+                                          {
+                                              "case":  "large",
+                                              "mode":  "semantic",
+                                              "source":  "memory",
+                                              "input_bytes":  65536,
+                                              "accepted":  true,
+                                              "iterations":  7,
+                                              "median_ms":  9.8973,
+                                              "min_ms":  8.7523,
+                                              "max_ms":  14.4458,
+                                              "source_median_ms":  0.411,
+                                              "process_peak_bytes":  4194304,
+                                              "profile":  null
+                                          }
+                                      ]
+                      },
+    "retention_probe_source":  "\u003c?php\ndeclare(strict_types=1);\nrequire __DIR__ . \u0027/../vendor/autoload.php\u0027;\nuse Vanderlee\\Comprehend\\Parser\\Terminal\\Text;\nuse Vanderlee\\Comprehend\\Parser\\Structure\\Repeat;\nuse Vanderlee\\Comprehend\\Parser\\Structure\\Choice;\nuse Vanderlee\\Comprehend\\Parser\\Structure\\Sequence;\nuse Vanderlee\\Comprehend\\Source\\Utf8Source;\nuse Vanderlee\\Comprehend\\Runtime\\ParseSession;\nuse Vanderlee\\Comprehend\\Runtime\\ParseMetrics;\nuse Vanderlee\\Comprehend\\Library\\Rfc3986;\nuse Vanderlee\\Comprehend\\Comprehend as C;\n\n$scenario = $argv[1];\n$samples = [];\nfor ($i = 0; $i \u003c 9; ++$i) {\n    gc_collect_cycles();\n    if ($scenario === \u0027retention\u0027 || $scenario === \u0027named-projection\u0027) {\n        $size = $scenario === \u0027retention\u0027 ? 65536 : 16384;\n        $unit = new Text(\u0027a\u0027);\n        if ($scenario === \u0027named-projection\u0027) { $unit-\u003ename(\u0027letter\u0027); }\n        $parser = Repeat::exact($unit, $size)-\u003ename(\u0027document\u0027);\n        $source = new Utf8Source(str_repeat(\u0027a\u0027, $size));\n        $base = memory_get_usage(false);\n        $start = hrtime(true);\n        $result = $parser-\u003eparseAll($source);\n        $parsed = hrtime(true);\n        if (!$result-\u003esuccess || $result-\u003econsumedByteLength !== $size) { throw new RuntimeException(\u0027Acceptance changed\u0027); }\n        $retained = memory_get_usage(false) - $base;\n        if ($scenario === \u0027named-projection\u0027) {\n            $ast = $result-\u003east();\n            $projected = hrtime(true);\n            if (count($ast-\u003echildren) !== $size) { throw new RuntimeException(\u0027Projection changed\u0027); }\n            $astMemory = memory_get_usage(false) - $base - $retained;\n            $arrayStart = hrtime(true);\n            $array = $result-\u003enode-\u003etoArray();\n            $arrayEnd = hrtime(true);\n            $row = [\u0027parse_ms\u0027=\u003e($parsed-$start)/1e6, \u0027ast_ms\u0027=\u003e($projected-$parsed)/1e6,\n                \u0027array_ms\u0027=\u003e($arrayEnd-$arrayStart)/1e6, \u0027parse_bytes\u0027=\u003e$retained,\n                \u0027ast_extra_bytes\u0027=\u003e$astMemory, \u0027array_extra_bytes\u0027=\u003ememory_get_usage(false)-$base-$retained-$astMemory];\n            unset($ast, $array);\n        } else {\n            $tree = $result-\u003enode;\n            unset($result);\n            gc_collect_cycles();\n            $row = [\u0027parse_ms\u0027=\u003e($parsed-$start)/1e6, \u0027result_bytes\u0027=\u003e$retained,\n                \u0027tree_only_bytes\u0027=\u003ememory_get_usage(false)-$base];\n            unset($tree);\n        }\n        unset($result, $parser, $source, $unit);\n    } elseif ($scenario === \u0027freeze\u0027) {\n        $facade = C::of((new Rfc3986())-\u003eref(\u0027URI\u0027));\n        $frozen = $facade-\u003efreeze();\n        $source = new Utf8Source(\u0027https://example.com/path?q=42\u0027);\n        $row = [];\n        foreach ([\u0027facade\u0027=\u003e$facade, \u0027frozen\u0027=\u003e$frozen] as $name=\u003e$grammar) {\n            $start=hrtime(true);\n            for ($j=0;$j\u003c20;++$j) {\n                $result=$grammar-\u003eparseAll($source);\n                if (!$result-\u003esuccess) { throw new RuntimeException(\u0027URI rejected\u0027); }\n                unset($result);\n            }\n            $row[$name.\u0027_ms_per_parse\u0027]=(hrtime(true)-$start)/1e6/20;\n        }\n        unset($grammar, $facade, $frozen, $source);\n    } else {\n        $prefix=Repeat::exact(new Text(\u0027a\u0027), 2048);\n        $suffixes=[];\n        for($j=0;$j\u003c8;++$j) { $suffixes[]=new Text(chr(98+$j)); }\n        $unfactored=new Choice(...array_map(static fn($s)=\u003enew Sequence($prefix,$s),$suffixes));\n        $factored=new Sequence($prefix,new Choice(...$suffixes));\n        $source=new Utf8Source(str_repeat(\u0027a\u0027,2048).\u0027i\u0027);\n        $row=[];\n        foreach([\u0027unfactored\u0027=\u003e$unfactored,\u0027factored\u0027=\u003e$factored] as $name=\u003e$parser) {\n            $start=hrtime(true);\n            $result=$parser-\u003eparseAll($source);\n            $row[$name.\u0027_ms\u0027]=(hrtime(true)-$start)/1e6;\n            if(!$result-\u003esuccess) { throw new RuntimeException(\u0027Choice rejected\u0027); }\n            unset($result);\n            if($i===8) {\n                $metrics=new ParseMetrics(32768);\n                $session=new ParseSession($source,metrics:$metrics);\n                $match=$parser-\u003erecognizeInSession($source,0,$session);\n                $row[$name.\u0027_profile\u0027]=$metrics-\u003esnapshot()+[\u0027work\u0027=\u003e$session-\u003eworkUsed()];\n                unset($match,$session,$metrics);\n            }\n        }\n        unset($parser,$unfactored,$factored,$source,$prefix,$suffixes);\n    }\n    if ($i\u003e=2) { $samples[]=$row; }\n}\n$summary=[];\nforeach(array_keys($samples[0]) as $key) {\n    $values=array_column($samples,$key);sort($values);\n    $summary[$key]=[\u0027median\u0027=\u003e$values[3],\u0027min\u0027=\u003e$values[0],\u0027max\u0027=\u003e$values[6]];\n}\necho json_encode([\u0027scenario\u0027=\u003e$scenario,\u0027summary\u0027=\u003e$summary,\u0027samples\u0027=\u003e$samples],JSON_PRETTY_PRINT|JSON_THROW_ON_ERROR),\"\\n\";\n",
+    "reproduction":  "Save retention_probe_source as build/architecture-probe.php; run php -d memory_limit=512M build/architecture-probe.php retention. Other cases retain their commands."
+}

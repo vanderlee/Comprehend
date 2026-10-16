@@ -14,21 +14,6 @@ use Throwable;
 trait ResultTrait
 {
     /**
-     * Completed collection, including an empty collection; null means it has not been cached.
-     *
-     * @var array<array-key, mixed>|null
-     */
-    private ?array $resultCache = null;
-    private ?Throwable $resultError = null;
-    private bool $evaluatingResults = false;
-    /**
-     * Ordered operations that update a collection shared with selected children.
-     *
-     * @var callable[]
-     */
-    private array $resultCallbacks = [];
-
-    /**
      * Register a collection operation for lazy result reads, independently of commit.
      *
      * @param callable $callback
@@ -37,7 +22,8 @@ trait ResultTrait
      */
     public function addResultCallback(callable $callback)
     {
-        $this->resultCallbacks[] = $callback;
+        $state = $this->executionState();
+        $state->resultCallbacks[] = $callback;
 
         return $this;
     }
@@ -57,26 +43,27 @@ trait ResultTrait
      */
     public function getResults(): array
     {
-        if ($this->resultError !== null) {
-            throw $this->resultError;
+        $state = $this->executionState();
+        if ($state->resultError !== null) {
+            throw $state->resultError;
         }
-        if ($this->resultCache !== null) {
-            return $this->resultCache;
+        if ($state->resultCache !== null) {
+            return $state->resultCache;
         }
-        if ($this->evaluatingResults) {
+        if ($state->evaluatingResults) {
             throw new LogicException('Recursive named result evaluation');
         }
-        $this->evaluatingResults = true;
+        $state->evaluatingResults = true;
         try {
             $results = [];
             $this->applyResultOperations($results);
 
-            return $this->resultCache = $results;
+            return $state->resultCache = $results;
         } catch (Throwable $error) {
-            $this->resultError = $error;
+            $state->resultError = $error;
             throw $error;
         } finally {
-            $this->evaluatingResults = false;
+            $state->evaluatingResults = false;
         }
     }
 
@@ -89,11 +76,12 @@ trait ResultTrait
      */
     private function applyResultOperations(array &$results): void
     {
+        $state = $this->executionState();
         /** @var self $success */
-        foreach ($this->successes as $success) {
+        foreach ($state->successes as $success) {
             $success->applyResultOperations($results);
         }
-        foreach ($this->resultCallbacks as $callback) {
+        foreach ($state->resultCallbacks as $callback) {
             $callback($results);
         }
     }

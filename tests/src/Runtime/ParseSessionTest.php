@@ -19,6 +19,14 @@ use Vanderlee\Comprehend\Source\Utf8Source;
 
 uses(TestCase::class);
 
+test('regex subject ownership is local to each session', function () {
+    $first = new ParseSession(new ByteSource('first'));
+    $second = new ParseSession(new ByteSource('second'));
+    $this->assertSame('first', $first->regexSubject());
+    $this->assertSame('second', $second->regexSubject());
+    $this->assertSame('first', $first->regexSubject());
+});
+
 test('batched literal work preserves every exhausted unit position and partial count', function (): void {
     foreach ([new ByteSource('é🙂z'), new Utf8Source('é🙂z')] as $source) {
         $positions = $source instanceof ByteSource ? range(0, 6) : [0, 2, 6];

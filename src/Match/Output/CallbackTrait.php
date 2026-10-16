@@ -14,16 +14,6 @@ use Vanderlee\Comprehend\Match\EffectExecution;
 trait CallbackTrait
 {
     /**
-     * List of ordinary callbacks to process.
-     *
-     * @var callable[]
-     */
-    private array $customCallbacks = [];
-    /** @var Success[] */
-    private array $precedingMatches = [];
-    private ?EffectExecution $effectExecution = null;
-
-    /**
      * Retain accepted effects before this match's callbacks, without adding
      * named collections. Used for trivia and processed rules.
      *
@@ -31,7 +21,8 @@ trait CallbackTrait
      */
     public function addPrecedingMatch(Success $match): void
     {
-        $this->precedingMatches[] = $match;
+        $state = $this->executionState();
+        $state->precedingMatches[] = $match;
     }
 
     /**
@@ -43,7 +34,8 @@ trait CallbackTrait
      */
     public function addCustomCallback(callable $callback)
     {
-        $this->customCallbacks[] = $callback;
+        $state = $this->executionState();
+        $state->customCallbacks[] = $callback;
 
         return $this;
     }
@@ -63,22 +55,24 @@ trait CallbackTrait
 
     private function effectExecution(): EffectExecution
     {
-        return $this->effectExecution ??= new EffectExecution();
+        $state = $this->executionState();
+        return $state->effectExecution ??= new EffectExecution();
     }
 
     private function runSelectedEffects(): void
     {
+        $state = $this->executionState();
         // Preceding matches retain trivia and processed-rule effects outside the collection graph.
-        foreach ($this->precedingMatches as $match) {
+        foreach ($state->precedingMatches as $match) {
             $match->processCustomCallbacks();
         }
 
         /** @var self $success */
-        foreach ($this->successes as $success) {
+        foreach ($state->successes as $success) {
             $success->processCustomCallbacks();
         }
 
-        foreach ($this->customCallbacks as $callback) {
+        foreach ($state->customCallbacks as $callback) {
             $callback();
         }
     }

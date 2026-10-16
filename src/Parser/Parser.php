@@ -378,6 +378,8 @@ abstract class Parser implements SnapshotParticipant
             }
         }
 
+        $match->retainExecutionState();
+
         return $match;
     }
 

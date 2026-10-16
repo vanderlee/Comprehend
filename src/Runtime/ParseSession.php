@@ -51,6 +51,7 @@ final class ParseSession
     private int $work = 0;
     private int $depth = 0;
     private readonly ParseLimits $limits;
+    private ?string $regexSubject = null;
 
     public function __construct(
         Source $source,
@@ -71,6 +72,21 @@ final class ParseSession
     public function workUsed(): int
     {
         return $this->work;
+    }
+
+    /** @internal A bounded, session-owned full subject; large subjects retain uncached access. */
+    public function regexSubject(): string
+    {
+        // A cached string must not make a closed file snapshot readable again.
+        $this->source->isUnitBoundary(0);
+        if (
+            $this->limits->maxRegexSubjectBytes === 0
+            || $this->source->byteLength() > $this->limits->maxRegexSubjectBytes
+        ) {
+            return $this->source->sliceBytes(0, $this->source->byteLength());
+        }
+
+        return $this->regexSubject ??= $this->source->sliceBytes(0, $this->source->byteLength());
     }
 
     public function enterParser(Parser $parser, int $offset): void

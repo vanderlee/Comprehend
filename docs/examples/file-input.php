@@ -63,3 +63,20 @@ try {
     $encoded->close();
 }
 echo "Explicit file encoding, dynamic names, tags and surrounding syntax examples passed.\n";
+
+$stream = tmpfile();
+fwrite($stream, 'ab42');
+$source = new Utf8FileSource($stream, 4);
+fclose($stream);
+try {
+    $grammar = C::regex('/ab/A')->then(C::integer())->freeze();
+    foreach ([0, 8] as $cacheBytes) {
+        $result = $grammar->parseAll($source, limits: new ParseLimits(maxRegexSubjectBytes: $cacheBytes));
+        if (!$result->success || $result->rawText() !== 'ab42') {
+            throw new RuntimeException('Regex subject ownership example failed');
+        }
+    }
+} finally {
+    $source->close();
+}
+echo "Shared regex subjects and explicit cache caps passed.\n";

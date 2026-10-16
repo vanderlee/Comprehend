@@ -164,7 +164,7 @@ class Regex extends Parser implements AnalyzableParser
         if ($this->windowLiteral === null) {
             $context->consumeWork(max(1, $input->byteLength()), $offset);
 
-            return [$input->sliceBytes(0, $input->byteLength()), $offset];
+            return [$context->regexSubject(), $offset];
         }
 
         $window = $textMode

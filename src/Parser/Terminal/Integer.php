@@ -102,7 +102,7 @@ class Integer extends Parser implements AnalyzableParser
             $this->popCaseSensitivityFromContext($session);
         }
         $session->consumeWork(max(1, $source->byteLength()), $byteOffset);
-        $subject = $source->sliceBytes(0, $source->byteLength());
+        $subject = $session->regexSubject();
         $status = preg_match($pattern, $subject, $match, 0, $byteOffset);
         if ($status === false) {
             throw new RuntimeException('Integer recognition failed: ' . preg_last_error_msg());

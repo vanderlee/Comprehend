@@ -36,6 +36,56 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Sparse execution state and session subjects (2026-10-16)
+
+Successful syntax remains an immutable CST. Mutable collection, value, validation
+and effect state now lives in a lazily allocated `ExecutionState`. Once a parent
+has built its CST and completed guards, it retains only execution children with
+deferred state. Plain child execution records can be released while their syntax
+nodes remain available. Selected-child and validation-child relationships stay
+distinct; semantic errors, cached values and commit transitions are still local
+to each recognition. Grammars with operations on every node still need per-node
+state, so savings depend on the grammar.
+
+General Regex and Integer share a session-owned full subject for sources up to
+`ParseLimits::maxRegexSubjectBytes`, 8 MiB by default. A zero cap disables caching;
+larger sources retain uncached reads. Literal windows do not materialize this
+subject. Each full-subject attempt still charges its original logical work,
+including cache hits. See [file input](file-input.md#regex-boundaries) for ownership
+and memory limits.
+
+Local Windows/PHP 8.2.10/PCRE 10.40 measurements:
+
+| Workload | Before | After |
+| --- | ---: | ---: |
+| 64 KiB, one Text child per byte: retained used memory | 44.01 MiB | 19.00 MiB |
+| Same fixture: median parse | 683.00 ms | 689.98 ms |
+| 256 KiB UTF-8 file, general regex chunks: median parse | 1079.29 ms | 123.30 ms |
+
+The retention probe uses two warmups and seven measured samples, and reports
+incremental `memory_get_usage(false)` over a prepared source and grammar. These
+are retained used bytes, not allocator peaks or OS RSS. It keeps the complete
+ParseResult live; keeping only the CST uses 19.00 MiB both before and after. The
+fixture has no per-node semantic/effect registrations. There is no demonstrated
+parse-speed improvement for that character-node fixture.
+
+The regex benchmark uses seven samples with no explicit warmup, excludes source
+setup and result release, and includes CST construction. Its allocated process
+peak remains 6 MiB at PHP's allocation granularity. Literal-window matching on the
+same file measured 77.44 ms after these changes versus 69.55 ms in the earlier
+run; the subject cache is a benefit for arbitrary full-subject matching, not a
+replacement for bounded literal windows. Before/after runs are separate local
+samples, not isolated attribution or latency guarantees.
+
+[Raw reports](benchmarks/sparse-subjects-2026-10-16.json) include ranges and the
+retention probe source. Reproduce the standard fixture with:
+
+```sh
+php tools/benchmark.php --source=file-utf8 --case=regex --size=262144 --iterations=7 --mode=recognition
+php tools/benchmark.php --source=memory --case=text --size=65536 --iterations=7 --mode=recognition
+php docs/examples/file-input.php
+```
+
 ### Inner-loop preparation and accounting (2026-10-16)
 
 The runtime now batches literal work charges while preserving partial work counts
@@ -185,9 +235,11 @@ separate increment. Parser/byte-position counts alone do not justify those risks
 - File source copying and validation use bounded chunks; random reads retain one
   configured page. The stable snapshot occupies O(input size) temporary disk.
 - Requested byte slices allocate their requested size. General Regex and Integer
-  allocate complete subjects; bounded literal regex reads a finite safe window.
-- Every accepted parse retains its CST and selected execution/semantic/effect
-  records. Tree memory grows with matched nodes; the 1 MiB example's 52 MiB peak
+  allocate complete subjects, shared within the configured session cache cap;
+  bounded literal regex reads a finite safe window.
+- Every accepted parse retains its CST and deferred execution/semantic/effect
+  records where needed. Plain execution children can be released after tree
+  construction. Tree memory grows with matched nodes; the earlier 1 MiB example's 52 MiB peak
   demonstrates why this is not constant-memory streaming.
 - ASTs, arrays, JSON/XML, raw text and semantic values add output-dependent
   retention. Diagnostic line starts are scanned lazily in bounded chunks, but

@@ -74,9 +74,18 @@ $source->close();
 ## Regex boundaries
 
 General Regex uses the complete original subject, preserving offsets, `^`, `$`,
-lookbehind and other context-sensitive behavior. Integer currently uses a
-full-subject regex too. On a file source these operations allocate the subject;
-they are not bounded-memory matching and repeated regex calls can reread it.
+lookbehind and other context-sensitive behavior. Integer uses a full-subject
+regex too. Both share one lazily materialized subject per ParseSession when the
+source fits `ParseLimits::maxRegexSubjectBytes` (8 MiB by default). The cache is
+released with the session; ordinary results retain the source snapshot, not the
+session's cached string. Explicit source closure still invalidates reads.
+
+Set `new ParseLimits(maxRegexSubjectBytes: 0)` to disable caching, or set a
+nonnegative byte cap appropriate to the application. Sources above the cap use
+uncached full-subject reads. This cap bounds retained cache storage, not the
+temporary memory needed by a single regex match. Work still charges the complete
+subject on every attempt, even when cached. Arbitrary regex is not bounded-memory
+matching; choose literal windows when bounded subject reads are required.
 
 `Regex::literalWindow(string)` is an explicit opt-in for quoted literals only.
 It escapes metacharacters, anchors at the supplied start and reads a proven
