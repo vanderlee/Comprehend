@@ -2,7 +2,6 @@
 AI AGENTS MUST NOT USE THIS FILE!
 
 ## To do
-- MkDocs page
 - Implement some known languages as examples?
 - Implement usability features
   - keywords/identifiers

@@ -251,6 +251,10 @@ All repetition bounds, nullable-child checks and deferred references are unchang
 
 ### Scoped expandable syntax
 
+Optional factory bundles can implement `Syntax\SyntaxExtension` and be installed
+with `$syntax->extend($extension)`. See [Syntax extensions](syntax-extensions.md)
+for generator-based authoring and the optional ASCII identifier/keyword vocabulary.
+
 ```php
 $syntax = Comprehend::syntax()->define('word',
     static fn(): Comprehend => Comprehend::range('a', 'z')->some()->lexeme()->named('word'));

@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend;
 
 use Closure;
 use Vanderlee\Comprehend\Syntax\Catalog;
+use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 
 /**
  * Defines an immutable vocabulary of custom grammar factories and fluent operations. Delegates
@@ -24,6 +25,17 @@ final class Syntax
     public function define(string $name, callable $factory): self
     {
         return new self($this->catalog->define($name, $factory));
+    }
+
+    /** Install factories through define(); the original vocabulary survives installation errors. */
+    public function extend(SyntaxExtension $extension): self
+    {
+        $syntax = $this;
+        foreach ($extension->factories() as $name => $factory) {
+            $syntax = $syntax->define($name, $factory);
+        }
+
+        return $syntax;
     }
 
     /** Callbacks receive the current facade before user arguments. */
