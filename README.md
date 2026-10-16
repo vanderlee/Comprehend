@@ -140,6 +140,7 @@ supported PHP versions and the gated publication workflow.
 - [Semantic values](docs/semantic-values.md) and [lifecycle](docs/lifecycle.md)
 - [RFC libraries](docs/libraries.md), [contributing](docs/contribute.md)
 - [Phase 2A removal inventory](docs/canonical-runtime.md)
+- [Binding comparison](docs/binding-comparison.md): reproducible application-value extraction measurements
 
 For application values, `map()` transforms an existing value, `collect()` builds
 an ordered list of operand values, and `valueChoice()` forwards the selected

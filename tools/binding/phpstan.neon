@@ -1,0 +1,14 @@
+includes:
+    - ../../phpstan-extension.neon
+
+parameters:
+    level: 10
+    phpVersion: 80100
+    paths:
+        - grammars.php
+        - types.php
+    scanFiles:
+        - ../../docs/examples/application-values-grammar.php
+    bootstrapFiles:
+        - ../../build/binding/vendor/autoload.php
+    tmpDir: ../../build/binding/phpstan

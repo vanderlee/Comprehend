@@ -66,5 +66,6 @@ nav:
   - Project:
       - Contributing: contribute.md
       - Performance: performance.md
+      - Binding comparison: binding-comparison.md
       - Breaking release: breaking-release.md
       - Canonical runtime: canonical-runtime.md

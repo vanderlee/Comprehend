@@ -1,0 +1,101 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "7fe049d8793449e530cb63fc48f56534",
+    "packages": [
+        {
+            "name": "parsica-php/parsica",
+            "version": "0.8.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/parsica-php/parsica.git",
+                "reference": "e5b0a763e26e89de39a0790e949b8ff7f0909d73"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/parsica-php/parsica/zipball/e5b0a763e26e89de39a0790e949b8ff7f0909d73",
+                "reference": "e5b0a763e26e89de39a0790e949b8ff7f0909d73",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "ext-json": "*",
+                "mathiasverraes/uptodocs": "dev-main",
+                "phpbench/phpbench": "^1.0.1",
+                "phpunit/phpunit": "^9.0",
+                "psr/event-dispatcher": "^1.0",
+                "vimeo/psalm": "^4.30"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/characters.php",
+                    "src/combinators.php",
+                    "src/numeric.php",
+                    "src/predicates.php",
+                    "src/primitives.php",
+                    "src/recursion.php",
+                    "src/sideEffects.php",
+                    "src/space.php",
+                    "src/strings.php",
+                    "src/Expression/expression.php",
+                    "src/Internal/FP.php",
+                    "src/Curry/functions.php"
+                ],
+                "psr-4": {
+                    "Parsica\\Parsica\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mathias Verraes",
+                    "email": "mathias@verraes.net",
+                    "homepage": "https://verraes.net"
+                },
+                {
+                    "name": "Toon Daelman",
+                    "email": "spinnewebber_toon@hotmail.com",
+                    "homepage": "https://github.com/turanct"
+                }
+            ],
+            "description": "The easiest way to build robust parsers in PHP.",
+            "homepage": "https://parsica-php.github.io/",
+            "keywords": [
+                "parser",
+                "parser combinator",
+                "parser-combinator",
+                "parsing"
+            ],
+            "support": {
+                "issues": "https://github.com/parsica-php/parsica/issues",
+                "source": "https://github.com/parsica-php/parsica/tree/0.8.3"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/turanct",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-07-09T08:39:51+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
+}

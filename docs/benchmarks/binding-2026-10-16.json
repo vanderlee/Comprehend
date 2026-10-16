@@ -1,0 +1,1797 @@
+{
+    "schema": 1,
+    "generated_utc": "2026-10-16T18:07:54+00:00",
+    "php": "8.2.10",
+    "os": "Windows",
+    "pcre": "10.40 2022-04-14",
+    "mbstring_native": true,
+    "mb_internal_encoding": "UTF-8",
+    "binding_version": "0.8.3",
+    "binding_reference": "e5b0a763e26e89de39a0790e949b8ff7f0909d73",
+    "runtime_source_sha256": "588410c0fd94ce2cdb934e8856218f7c416e7c525a005c3f40ce8c768faa9e29",
+    "grammar_sha256": "1c3d400229dba7aba99e7a1e0fe8510f2fd84bf11b8e3480de11e2f20493dd1d",
+    "harness_sha256": "2ac524b1238c618b26ffbcd9aa05e243deccb7aeba0f20762fa24730af6ba0c7",
+    "case_sha256": "c0bc87b52bc972e2dc3edd24d546e99e8b8823a30b57b299f853d9388efcd800",
+    "command": "php tools\/compare-binding.php --samples=3 --iterations=10 --warmups=2 --size=128",
+    "samples": 3,
+    "iterations": 10,
+    "warmups": 2,
+    "size": 128,
+    "comprehend_includes_cst": true,
+    "timing": "Fresh UTF-8 source\/stream, full recognition and domain value; excludes preparation, assertions, diagnostics formatting, result release and cycle collection",
+    "memory": "Same warmed worker; retained result and domain object; peaks include baseline process allocations. Peak reset is unavailable on PHP 8.1.",
+    "corpus": {
+        "record": {
+            "input": "report retry=off [[1, 2], [], [3]]",
+            "expected": [
+                "report",
+                false,
+                [
+                    [
+                        1,
+                        2
+                    ],
+                    [],
+                    [
+                        3
+                    ]
+                ]
+            ]
+        },
+        "default": {
+            "input": "report [[0,999]]",
+            "expected": [
+                "report",
+                3,
+                [
+                    [
+                        0,
+                        999
+                    ]
+                ]
+            ]
+        },
+        "zero": {
+            "input": "report retry=0 []",
+            "expected": [
+                "report",
+                0,
+                []
+            ]
+        },
+        "empty": {
+            "input": "report [[]]",
+            "expected": [
+                "report",
+                3,
+                [
+                    []
+                ]
+            ]
+        },
+        "nested": {
+            "input": "report retry=2 [[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127],[],[3]]",
+            "expected": [
+                "report",
+                2,
+                [
+                    [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6,
+                        7,
+                        8,
+                        9,
+                        10,
+                        11,
+                        12,
+                        13,
+                        14,
+                        15,
+                        16,
+                        17,
+                        18,
+                        19,
+                        20,
+                        21,
+                        22,
+                        23,
+                        24,
+                        25,
+                        26,
+                        27,
+                        28,
+                        29,
+                        30,
+                        31,
+                        32,
+                        33,
+                        34,
+                        35,
+                        36,
+                        37,
+                        38,
+                        39,
+                        40,
+                        41,
+                        42,
+                        43,
+                        44,
+                        45,
+                        46,
+                        47,
+                        48,
+                        49,
+                        50,
+                        51,
+                        52,
+                        53,
+                        54,
+                        55,
+                        56,
+                        57,
+                        58,
+                        59,
+                        60,
+                        61,
+                        62,
+                        63,
+                        64,
+                        65,
+                        66,
+                        67,
+                        68,
+                        69,
+                        70,
+                        71,
+                        72,
+                        73,
+                        74,
+                        75,
+                        76,
+                        77,
+                        78,
+                        79,
+                        80,
+                        81,
+                        82,
+                        83,
+                        84,
+                        85,
+                        86,
+                        87,
+                        88,
+                        89,
+                        90,
+                        91,
+                        92,
+                        93,
+                        94,
+                        95,
+                        96,
+                        97,
+                        98,
+                        99,
+                        100,
+                        101,
+                        102,
+                        103,
+                        104,
+                        105,
+                        106,
+                        107,
+                        108,
+                        109,
+                        110,
+                        111,
+                        112,
+                        113,
+                        114,
+                        115,
+                        116,
+                        117,
+                        118,
+                        119,
+                        120,
+                        121,
+                        122,
+                        123,
+                        124,
+                        125,
+                        126,
+                        127
+                    ],
+                    [],
+                    [
+                        3
+                    ]
+                ]
+            ]
+        },
+        "malformed-field": {
+            "input": "report retry=unknown []",
+            "expected": null
+        },
+        "missing-field-value": {
+            "input": "report retry= []",
+            "expected": null
+        },
+        "retry-bound": {
+            "input": "report retry=10 []",
+            "expected": null
+        },
+        "leading-zero": {
+            "input": "report [[01]]",
+            "expected": null
+        },
+        "id-bound": {
+            "input": "report [[1000]]",
+            "expected": null
+        },
+        "negative-zero": {
+            "input": "report [[-0]]",
+            "expected": null
+        },
+        "trailing-separator": {
+            "input": "report [[1,]]",
+            "expected": null
+        },
+        "outer-trailing-separator": {
+            "input": "report [[1],]",
+            "expected": null
+        },
+        "missing-close": {
+            "input": "report [[1]",
+            "expected": null
+        },
+        "trailing-input": {
+            "input": "report [] extra",
+            "expected": null
+        },
+        "leading-space": {
+            "input": " report []",
+            "expected": null
+        },
+        "trailing-space": {
+            "input": "report [] ",
+            "expected": null
+        },
+        "multiline": {
+            "input": "report\nretry=2\t[[1,\r\n2]]",
+            "expected": [
+                "report",
+                2,
+                [
+                    [
+                        1,
+                        2
+                    ]
+                ]
+            ]
+        },
+        "multiline-error": {
+            "input": "report\n[[1,\n?]]",
+            "expected": null
+        },
+        "tab-error": {
+            "input": "report\t[[1,?]]",
+            "expected": null
+        },
+        "crlf-error": {
+            "input": "report\r\n[[1,?]]",
+            "expected": null
+        }
+    },
+    "correctness": {
+        "comprehend": {
+            "library": "comprehend",
+            "cases": {
+                "record": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "default": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "zero": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "empty": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "nested": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "malformed-field": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 7,
+                        "line": 1,
+                        "column": 8,
+                        "expected": [
+                            "\"[\""
+                        ],
+                        "message": "Expected \"[\" at line 1, column 8 (byte 7)"
+                    }
+                },
+                "missing-field-value": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 7,
+                        "line": 1,
+                        "column": 8,
+                        "expected": [
+                            "\"[\""
+                        ],
+                        "message": "Expected \"[\" at line 1, column 8 (byte 7)"
+                    }
+                },
+                "retry-bound": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 14,
+                        "line": 1,
+                        "column": 15,
+                        "expected": [
+                            "\"[\""
+                        ],
+                        "message": "Expected \"[\" at line 1, column 15 (byte 14)"
+                    }
+                },
+                "leading-zero": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 8,
+                        "line": 1,
+                        "column": 9,
+                        "expected": [
+                            "\"]\""
+                        ],
+                        "message": "Expected \"]\" at line 1, column 9 (byte 8)"
+                    }
+                },
+                "id-bound": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 8,
+                        "line": 1,
+                        "column": 9,
+                        "expected": [
+                            "\"]\""
+                        ],
+                        "message": "Expected \"]\" at line 1, column 9 (byte 8)"
+                    }
+                },
+                "negative-zero": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 8,
+                        "line": 1,
+                        "column": 9,
+                        "expected": [
+                            "\"]\""
+                        ],
+                        "message": "Expected \"]\" at line 1, column 9 (byte 8)"
+                    }
+                },
+                "trailing-separator": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 8,
+                        "line": 1,
+                        "column": 9,
+                        "expected": [
+                            "\"]\""
+                        ],
+                        "message": "Expected \"]\" at line 1, column 9 (byte 8)"
+                    }
+                },
+                "outer-trailing-separator": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 11,
+                        "line": 1,
+                        "column": 12,
+                        "expected": [
+                            "\"]\""
+                        ],
+                        "message": "Expected \"]\" at line 1, column 12 (byte 11)"
+                    }
+                },
+                "missing-close": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 11,
+                        "line": 1,
+                        "column": 12,
+                        "expected": [
+                            "\"]\""
+                        ],
+                        "message": "Expected \"]\" at line 1, column 12 (byte 11)"
+                    }
+                },
+                "trailing-input": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 9,
+                        "line": 1,
+                        "column": 10,
+                        "expected": [
+                            "end"
+                        ],
+                        "message": "Expected end at line 1, column 10 (byte 9)"
+                    }
+                },
+                "leading-space": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 0,
+                        "line": 1,
+                        "column": 1,
+                        "expected": [
+                            "\/[A-Za-z][A-Za-z0-9_]*\/A"
+                        ],
+                        "message": "Expected \/[A-Za-z][A-Za-z0-9_]*\/A at line 1, column 1 (byte 0)"
+                    }
+                },
+                "trailing-space": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 9,
+                        "line": 1,
+                        "column": 10,
+                        "expected": [
+                            "end"
+                        ],
+                        "message": "Expected end at line 1, column 10 (byte 9)"
+                    }
+                },
+                "multiline": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "multiline-error": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 8,
+                        "line": 2,
+                        "column": 2,
+                        "expected": [
+                            "\"]\""
+                        ],
+                        "message": "Expected \"]\" at line 2, column 2 (byte 8)"
+                    }
+                },
+                "tab-error": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 8,
+                        "line": 1,
+                        "column": 9,
+                        "expected": [
+                            "\"]\""
+                        ],
+                        "message": "Expected \"]\" at line 1, column 9 (byte 8)"
+                    }
+                },
+                "crlf-error": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": 9,
+                        "line": 2,
+                        "column": 2,
+                        "expected": [
+                            "\"]\""
+                        ],
+                        "message": "Expected \"]\" at line 2, column 2 (byte 9)"
+                    }
+                }
+            }
+        },
+        "binding": {
+            "library": "binding",
+            "cases": {
+                "record": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "default": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "zero": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "empty": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "nested": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "malformed-field": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 8,
+                        "expected": "'['",
+                        "message": "<input>:1:8\n  |\n1 | ...retry=unknown []\n  |    ^\u2014 column 8\nUnexpected 'r'\nExpecting '['"
+                    }
+                },
+                "missing-field-value": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 8,
+                        "expected": "'['",
+                        "message": "<input>:1:8\n  |\n1 | ...retry= []\n  |    ^\u2014 column 8\nUnexpected 'r'\nExpecting '['"
+                    }
+                },
+                "retry-bound": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 15,
+                        "expected": "'['",
+                        "message": "<input>:1:15\n  |\n1 | ...0 []\n  |    ^\u2014 column 15\nUnexpected '0'\nExpecting '['"
+                    }
+                },
+                "leading-zero": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 9,
+                        "expected": "']'",
+                        "message": "<input>:1:9\n  |\n1 | ...[01]]\n  |    ^\u2014 column 9\nUnexpected '['\nExpecting ']'"
+                    }
+                },
+                "id-bound": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 9,
+                        "expected": "']'",
+                        "message": "<input>:1:9\n  |\n1 | ...[1000]]\n  |    ^\u2014 column 9\nUnexpected '['\nExpecting ']'"
+                    }
+                },
+                "negative-zero": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 9,
+                        "expected": "']'",
+                        "message": "<input>:1:9\n  |\n1 | ...[-0]]\n  |    ^\u2014 column 9\nUnexpected '['\nExpecting ']'"
+                    }
+                },
+                "trailing-separator": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 9,
+                        "expected": "']'",
+                        "message": "<input>:1:9\n  |\n1 | ...[1,]]\n  |    ^\u2014 column 9\nUnexpected '['\nExpecting ']'"
+                    }
+                },
+                "outer-trailing-separator": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 12,
+                        "expected": "']'",
+                        "message": "<input>:1:12\n  |\n1 | ...,]\n  |    ^\u2014 column 12\nUnexpected ','\nExpecting ']'"
+                    }
+                },
+                "missing-close": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 12,
+                        "expected": "']'",
+                        "message": "<input>:1:12\n  |\n1 | ...<EOF>\n  |    ^\u2014 column 12\nUnexpected <EOF>\nExpecting ']'"
+                    }
+                },
+                "trailing-input": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 10,
+                        "expected": "<EOF>",
+                        "message": "<input>:1:10\n  |\n1 | ... extra\n  |    ^\u2014 column 10\nUnexpected <space>\nExpecting <EOF>"
+                    }
+                },
+                "leading-space": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 1,
+                        "expected": "satisfy(predicate)",
+                        "message": "<input>:1:1\n  |\n1 |  report []\n  | ^\u2014 column 1\nUnexpected <space>\nExpecting satisfy(predicate)"
+                    }
+                },
+                "trailing-space": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 10,
+                        "expected": "<EOF>",
+                        "message": "<input>:1:10\n  |\n1 | ... \n  |    ^\u2014 column 10\nUnexpected <space>\nExpecting <EOF>"
+                    }
+                },
+                "multiline": {
+                    "accepted": true,
+                    "diagnostic": null
+                },
+                "multiline-error": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 2,
+                        "column": 2,
+                        "expected": "']'",
+                        "message": "<input>:2:2\n  |\n2 | ...[1,\n  |    ^\u2014 column 2\nUnexpected '['\nExpecting ']'"
+                    }
+                },
+                "tab-error": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 1,
+                        "column": 10,
+                        "expected": "']'",
+                        "message": "<input>:1:10\n  |\n1 | ...[1,?]]\n  |    ^\u2014 column 10\nUnexpected '['\nExpecting ']'"
+                    }
+                },
+                "crlf-error": {
+                    "accepted": false,
+                    "diagnostic": {
+                        "byte_offset": null,
+                        "line": 3,
+                        "column": 2,
+                        "expected": "']'",
+                        "message": "<input>:3:2\n  |\n3 | ...[1,?]]\n  |    ^\u2014 column 2\nUnexpected '['\nExpecting ']'"
+                    }
+                }
+            }
+        }
+    },
+    "measurements": [
+        {
+            "sample": 0,
+            "library": "comprehend",
+            "case": "record",
+            "input_bytes": 34,
+            "prepare_ms": 10.1646,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 1239.9,
+            "min_us": 1206.7,
+            "max_us": 3002.7,
+            "times_us": [
+                1206.7,
+                1349.4,
+                1228,
+                1251.8,
+                1210.4,
+                1208.1,
+                1354.6,
+                3002.7,
+                1219.2,
+                1334.6
+            ],
+            "baseline_used_bytes": 2744360,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 71912,
+            "peak_used_bytes": 2832424,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 69
+        },
+        {
+            "sample": 0,
+            "library": "binding",
+            "case": "record",
+            "input_bytes": 34,
+            "prepare_ms": 0.971,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 124.2,
+            "min_us": 122.1,
+            "max_us": 133.3,
+            "times_us": [
+                133.3,
+                125.5,
+                125.1,
+                132.5,
+                123.7,
+                122.1,
+                122.9,
+                124.7,
+                123.6,
+                123.1
+            ],
+            "baseline_used_bytes": 2352624,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 1064,
+            "peak_used_bytes": 2359712,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 0,
+            "library": "comprehend",
+            "case": "default",
+            "input_bytes": 16,
+            "prepare_ms": 12.7534,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 802.4000000000001,
+            "min_us": 586.3,
+            "max_us": 1244.7,
+            "times_us": [
+                816.1,
+                1244.7,
+                1075.9,
+                1240.1,
+                871.9,
+                655.9,
+                586.3,
+                655.2,
+                749.3,
+                788.7
+            ],
+            "baseline_used_bytes": 2744360,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 32640,
+            "peak_used_bytes": 2787472,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 32
+        },
+        {
+            "sample": 0,
+            "library": "binding",
+            "case": "default",
+            "input_bytes": 16,
+            "prepare_ms": 0.6108,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 74.9,
+            "min_us": 72.2,
+            "max_us": 83.5,
+            "times_us": [
+                83.5,
+                77.3,
+                76.2,
+                76.1,
+                75.7,
+                74.1,
+                72.4,
+                73.8,
+                72.2,
+                73.2
+            ],
+            "baseline_used_bytes": 2352624,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 848,
+            "peak_used_bytes": 2357712,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 0,
+            "library": "comprehend",
+            "case": "nested",
+            "input_bytes": 427,
+            "prepare_ms": 11.0403,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 12527.6,
+            "min_us": 11887.2,
+            "max_us": 14317.8,
+            "times_us": [
+                12337.2,
+                12757,
+                14317.8,
+                12586.5,
+                12040.2,
+                12468.7,
+                12670.2,
+                13610.5,
+                12040.1,
+                11887.2
+            ],
+            "baseline_used_bytes": 2744360,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 600792,
+            "peak_used_bytes": 3471232,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 822
+        },
+        {
+            "sample": 0,
+            "library": "binding",
+            "case": "nested",
+            "input_bytes": 427,
+            "prepare_ms": 0.5876,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 1427.4,
+            "min_us": 1334.4,
+            "max_us": 1526.2,
+            "times_us": [
+                1465.8,
+                1334.4,
+                1526.2,
+                1427.1,
+                1431,
+                1371.9,
+                1385,
+                1364,
+                1427.7,
+                1428.6
+            ],
+            "baseline_used_bytes": 2352624,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 3464,
+            "peak_used_bytes": 2362912,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 0,
+            "library": "comprehend",
+            "case": "malformed-field",
+            "input_bytes": 23,
+            "prepare_ms": 9.9565,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 204.65,
+            "min_us": 202.5,
+            "max_us": 213.1,
+            "times_us": [
+                213.1,
+                208.9,
+                204.2,
+                206.1,
+                202.5,
+                204.5,
+                209.8,
+                204.2,
+                204.8,
+                203.4
+            ],
+            "baseline_used_bytes": 2744376,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 1384,
+            "peak_used_bytes": 2757312,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 0
+        },
+        {
+            "sample": 0,
+            "library": "binding",
+            "case": "malformed-field",
+            "input_bytes": 23,
+            "prepare_ms": 0.5848,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 26.7,
+            "min_us": 26.2,
+            "max_us": 35,
+            "times_us": [
+                35,
+                29.4,
+                27.5,
+                27.3,
+                26.9,
+                26.5,
+                26.4,
+                26.3,
+                26.2,
+                26.2
+            ],
+            "baseline_used_bytes": 2352640,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 304,
+            "peak_used_bytes": 2357040,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 0,
+            "library": "comprehend",
+            "case": "multiline-error",
+            "input_bytes": 15,
+            "prepare_ms": 9.1813,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 442.75,
+            "min_us": 440,
+            "max_us": 541.8,
+            "times_us": [
+                541.8,
+                452.8,
+                442.3,
+                453.6,
+                441.4,
+                442.1,
+                440.3,
+                443.2,
+                440,
+                488.5
+            ],
+            "baseline_used_bytes": 2744376,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 1544,
+            "peak_used_bytes": 2770776,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 0
+        },
+        {
+            "sample": 0,
+            "library": "binding",
+            "case": "multiline-error",
+            "input_bytes": 15,
+            "prepare_ms": 0.5711,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 60.1,
+            "min_us": 55.5,
+            "max_us": 110.3,
+            "times_us": [
+                74,
+                67,
+                65.8,
+                110.3,
+                61.6,
+                58.6,
+                56.8,
+                55.9,
+                56.1,
+                55.5
+            ],
+            "baseline_used_bytes": 2352640,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 288,
+            "peak_used_bytes": 2357720,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 0,
+            "library": "comprehend",
+            "case": "trailing-input",
+            "input_bytes": 15,
+            "prepare_ms": 9.449,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 273.2,
+            "min_us": 265,
+            "max_us": 640.6,
+            "times_us": [
+                300,
+                274.2,
+                272.2,
+                268.1,
+                269.7,
+                269,
+                277.1,
+                265,
+                382.7,
+                640.6
+            ],
+            "baseline_used_bytes": 2744376,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 704,
+            "peak_used_bytes": 2769592,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 0
+        },
+        {
+            "sample": 0,
+            "library": "binding",
+            "case": "trailing-input",
+            "input_bytes": 15,
+            "prepare_ms": 0.599,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 37,
+            "min_us": 36,
+            "max_us": 44.5,
+            "times_us": [
+                44.5,
+                38.8,
+                37.7,
+                37.9,
+                37,
+                37,
+                37,
+                36.7,
+                36.8,
+                36
+            ],
+            "baseline_used_bytes": 2352640,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 288,
+            "peak_used_bytes": 2357024,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 1,
+            "library": "binding",
+            "case": "record",
+            "input_bytes": 34,
+            "prepare_ms": 1.1019,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 128.3,
+            "min_us": 127,
+            "max_us": 193.2,
+            "times_us": [
+                146.7,
+                139.9,
+                129.4,
+                127.8,
+                127,
+                193.2,
+                127.5,
+                127.3,
+                128.7,
+                127.9
+            ],
+            "baseline_used_bytes": 2352624,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 1064,
+            "peak_used_bytes": 2359712,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 1,
+            "library": "comprehend",
+            "case": "record",
+            "input_bytes": 34,
+            "prepare_ms": 9.4005,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 1186.6999999999998,
+            "min_us": 1167.7,
+            "max_us": 1671.5,
+            "times_us": [
+                1204.4,
+                1167.7,
+                1569.8,
+                1671.5,
+                1186.3,
+                1191.6,
+                1181.7,
+                1177.7,
+                1187.1,
+                1171.3
+            ],
+            "baseline_used_bytes": 2744360,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 71912,
+            "peak_used_bytes": 2832424,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 69
+        },
+        {
+            "sample": 1,
+            "library": "binding",
+            "case": "default",
+            "input_bytes": 16,
+            "prepare_ms": 0.7177,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 71.9,
+            "min_us": 71.2,
+            "max_us": 80,
+            "times_us": [
+                80,
+                74.3,
+                73.2,
+                71.8,
+                71.3,
+                72.4,
+                71.2,
+                71.2,
+                72,
+                71.7
+            ],
+            "baseline_used_bytes": 2352624,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 848,
+            "peak_used_bytes": 2357712,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 1,
+            "library": "comprehend",
+            "case": "default",
+            "input_bytes": 16,
+            "prepare_ms": 8.9397,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 590.55,
+            "min_us": 566.6,
+            "max_us": 915.3,
+            "times_us": [
+                915.3,
+                720,
+                602.8,
+                723.1,
+                591.4,
+                589.7,
+                570.5,
+                566.6,
+                574.5,
+                575.4
+            ],
+            "baseline_used_bytes": 2744360,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 32640,
+            "peak_used_bytes": 2787472,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 32
+        },
+        {
+            "sample": 1,
+            "library": "binding",
+            "case": "nested",
+            "input_bytes": 427,
+            "prepare_ms": 0.5894,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 1383.85,
+            "min_us": 1373.8,
+            "max_us": 1521.5,
+            "times_us": [
+                1501.8,
+                1387,
+                1379,
+                1392.5,
+                1373.8,
+                1521.5,
+                1376.5,
+                1395.1,
+                1378.2,
+                1380.7
+            ],
+            "baseline_used_bytes": 2352624,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 3464,
+            "peak_used_bytes": 2362912,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 1,
+            "library": "comprehend",
+            "case": "nested",
+            "input_bytes": 427,
+            "prepare_ms": 10.0176,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 12996.25,
+            "min_us": 11956.3,
+            "max_us": 14993.2,
+            "times_us": [
+                12359.9,
+                14413.6,
+                13261.9,
+                12776.6,
+                12445,
+                12570.3,
+                13215.9,
+                11956.3,
+                14398.7,
+                14993.2
+            ],
+            "baseline_used_bytes": 2744360,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 600792,
+            "peak_used_bytes": 3471232,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 822
+        },
+        {
+            "sample": 1,
+            "library": "binding",
+            "case": "malformed-field",
+            "input_bytes": 23,
+            "prepare_ms": 0.5942,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 26.8,
+            "min_us": 26.3,
+            "max_us": 33.9,
+            "times_us": [
+                33.9,
+                29.2,
+                28,
+                27.5,
+                26.4,
+                26.5,
+                27,
+                26.6,
+                26.3,
+                26.5
+            ],
+            "baseline_used_bytes": 2352640,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 304,
+            "peak_used_bytes": 2357040,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 1,
+            "library": "comprehend",
+            "case": "malformed-field",
+            "input_bytes": 23,
+            "prepare_ms": 9.1908,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 216.7,
+            "min_us": 205.9,
+            "max_us": 233.5,
+            "times_us": [
+                233.5,
+                221,
+                219.2,
+                220.3,
+                214.2,
+                205.9,
+                210.4,
+                211.5,
+                220.9,
+                209.8
+            ],
+            "baseline_used_bytes": 2744376,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 1384,
+            "peak_used_bytes": 2757312,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 0
+        },
+        {
+            "sample": 1,
+            "library": "binding",
+            "case": "multiline-error",
+            "input_bytes": 15,
+            "prepare_ms": 0.5723,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 59.25,
+            "min_us": 57.4,
+            "max_us": 315.8,
+            "times_us": [
+                67.7,
+                60.9,
+                58.1,
+                57.9,
+                58,
+                57.4,
+                315.8,
+                66.4,
+                60.4,
+                57.5
+            ],
+            "baseline_used_bytes": 2352640,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 288,
+            "peak_used_bytes": 2357720,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 1,
+            "library": "comprehend",
+            "case": "multiline-error",
+            "input_bytes": 15,
+            "prepare_ms": 8.4292,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 449.35,
+            "min_us": 437.6,
+            "max_us": 826.7,
+            "times_us": [
+                443.7,
+                643.6,
+                826.7,
+                669.9,
+                492.8,
+                446.1,
+                443.6,
+                452.6,
+                441.1,
+                437.6
+            ],
+            "baseline_used_bytes": 2744376,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 1544,
+            "peak_used_bytes": 2770776,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 0
+        },
+        {
+            "sample": 1,
+            "library": "binding",
+            "case": "trailing-input",
+            "input_bytes": 15,
+            "prepare_ms": 0.5967,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 40.4,
+            "min_us": 38.6,
+            "max_us": 71.6,
+            "times_us": [
+                49.1,
+                43,
+                40.5,
+                40,
+                40.3,
+                40.6,
+                39.8,
+                38.6,
+                39.9,
+                71.6
+            ],
+            "baseline_used_bytes": 2352640,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 288,
+            "peak_used_bytes": 2357024,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 1,
+            "library": "comprehend",
+            "case": "trailing-input",
+            "input_bytes": 15,
+            "prepare_ms": 9.1068,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 272.25,
+            "min_us": 267.8,
+            "max_us": 353.5,
+            "times_us": [
+                353.5,
+                332,
+                301.9,
+                279.1,
+                268.9,
+                269,
+                268.7,
+                274.8,
+                269.7,
+                267.8
+            ],
+            "baseline_used_bytes": 2744376,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 704,
+            "peak_used_bytes": 2769592,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 0
+        },
+        {
+            "sample": 2,
+            "library": "comprehend",
+            "case": "record",
+            "input_bytes": 34,
+            "prepare_ms": 9.7572,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 1226.5500000000002,
+            "min_us": 1190.4,
+            "max_us": 1354.8,
+            "times_us": [
+                1280,
+                1224.7,
+                1228.4,
+                1354.8,
+                1222.6,
+                1353.4,
+                1209.3,
+                1190.4,
+                1206.3,
+                1308
+            ],
+            "baseline_used_bytes": 2744360,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 71912,
+            "peak_used_bytes": 2832424,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 69
+        },
+        {
+            "sample": 2,
+            "library": "binding",
+            "case": "record",
+            "input_bytes": 34,
+            "prepare_ms": 0.5797,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 124,
+            "min_us": 122.2,
+            "max_us": 132.6,
+            "times_us": [
+                132.6,
+                126.4,
+                125.5,
+                124.7,
+                124.2,
+                123.8,
+                123.7,
+                122.2,
+                123.2,
+                123.3
+            ],
+            "baseline_used_bytes": 2352624,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 1064,
+            "peak_used_bytes": 2359712,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 2,
+            "library": "comprehend",
+            "case": "default",
+            "input_bytes": 16,
+            "prepare_ms": 8.9805,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 592.55,
+            "min_us": 555,
+            "max_us": 1132.7,
+            "times_us": [
+                583.6,
+                555,
+                559.4,
+                573.6,
+                557.4,
+                1132.7,
+                620,
+                601.5,
+                622.8,
+                608.1
+            ],
+            "baseline_used_bytes": 2744360,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 32640,
+            "peak_used_bytes": 2787472,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 32
+        },
+        {
+            "sample": 2,
+            "library": "binding",
+            "case": "default",
+            "input_bytes": 16,
+            "prepare_ms": 0.654,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 74.05000000000001,
+            "min_us": 72.4,
+            "max_us": 144.4,
+            "times_us": [
+                144.4,
+                144.2,
+                109.8,
+                73.5,
+                73.7,
+                72.8,
+                73.1,
+                82,
+                74.4,
+                72.4
+            ],
+            "baseline_used_bytes": 2352624,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 848,
+            "peak_used_bytes": 2357712,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 2,
+            "library": "comprehend",
+            "case": "nested",
+            "input_bytes": 427,
+            "prepare_ms": 8.9228,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 12821.6,
+            "min_us": 12304.2,
+            "max_us": 16668.4,
+            "times_us": [
+                12528.2,
+                12716.6,
+                12349.7,
+                12304.2,
+                12750,
+                13241.8,
+                12893.2,
+                16668.4,
+                15184.4,
+                14023.3
+            ],
+            "baseline_used_bytes": 2744360,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 600792,
+            "peak_used_bytes": 3471232,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 822
+        },
+        {
+            "sample": 2,
+            "library": "binding",
+            "case": "nested",
+            "input_bytes": 427,
+            "prepare_ms": 0.6143,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 1359.6,
+            "min_us": 1337.6,
+            "max_us": 1546.5,
+            "times_us": [
+                1375.7,
+                1357.5,
+                1341.1,
+                1337.6,
+                1546.5,
+                1361.7,
+                1389.1,
+                1351.1,
+                1377.4,
+                1352.8
+            ],
+            "baseline_used_bytes": 2352624,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 3464,
+            "peak_used_bytes": 2362912,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 2,
+            "library": "comprehend",
+            "case": "malformed-field",
+            "input_bytes": 23,
+            "prepare_ms": 9.33,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 206.5,
+            "min_us": 205.2,
+            "max_us": 224,
+            "times_us": [
+                224,
+                206.8,
+                206.2,
+                205.2,
+                206.2,
+                213.6,
+                206.2,
+                207.6,
+                206.8,
+                205.8
+            ],
+            "baseline_used_bytes": 2744376,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 1384,
+            "peak_used_bytes": 2757312,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 0
+        },
+        {
+            "sample": 2,
+            "library": "binding",
+            "case": "malformed-field",
+            "input_bytes": 23,
+            "prepare_ms": 0.5984,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 27,
+            "min_us": 26.2,
+            "max_us": 34.5,
+            "times_us": [
+                34.5,
+                29.6,
+                27.5,
+                27.2,
+                26.9,
+                27.1,
+                26.8,
+                26.4,
+                26.2,
+                26.3
+            ],
+            "baseline_used_bytes": 2352640,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 304,
+            "peak_used_bytes": 2357040,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 2,
+            "library": "comprehend",
+            "case": "multiline-error",
+            "input_bytes": 15,
+            "prepare_ms": 9.5324,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 451.1,
+            "min_us": 439.7,
+            "max_us": 525.2,
+            "times_us": [
+                444.8,
+                439.7,
+                444.4,
+                525.2,
+                463.8,
+                457.4,
+                462.4,
+                500.4,
+                443.3,
+                440.8
+            ],
+            "baseline_used_bytes": 2744376,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 1544,
+            "peak_used_bytes": 2770776,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 0
+        },
+        {
+            "sample": 2,
+            "library": "binding",
+            "case": "multiline-error",
+            "input_bytes": 15,
+            "prepare_ms": 0.7364,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 56.6,
+            "min_us": 55.3,
+            "max_us": 65.1,
+            "times_us": [
+                63.8,
+                59,
+                57.6,
+                56.7,
+                56.2,
+                55.9,
+                65.1,
+                56.4,
+                56.5,
+                55.3
+            ],
+            "baseline_used_bytes": 2352640,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 288,
+            "peak_used_bytes": 2357720,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        },
+        {
+            "sample": 2,
+            "library": "comprehend",
+            "case": "trailing-input",
+            "input_bytes": 15,
+            "prepare_ms": 8.2954,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 284.15,
+            "min_us": 277.2,
+            "max_us": 407.5,
+            "times_us": [
+                285.3,
+                288,
+                279.2,
+                278.6,
+                279.9,
+                285.6,
+                277.2,
+                283,
+                407.5,
+                331.5
+            ],
+            "baseline_used_bytes": 2744376,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 704,
+            "peak_used_bytes": 2769592,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": 0
+        },
+        {
+            "sample": 2,
+            "library": "binding",
+            "case": "trailing-input",
+            "input_bytes": 15,
+            "prepare_ms": 0.7082,
+            "iterations": 10,
+            "warmups": 2,
+            "median_us": 39,
+            "min_us": 38.4,
+            "max_us": 54.2,
+            "times_us": [
+                47.8,
+                54.2,
+                40.8,
+                39.7,
+                38.8,
+                39.2,
+                38.6,
+                38.5,
+                38.4,
+                38.5
+            ],
+            "baseline_used_bytes": 2352640,
+            "baseline_allocated_bytes": 4194304,
+            "retained_used_delta_bytes": 288,
+            "peak_used_bytes": 2357024,
+            "peak_allocated_bytes": 4194304,
+            "peak_reset_after_warmup": true,
+            "retained_cst_nodes": null
+        }
+    ]
+}

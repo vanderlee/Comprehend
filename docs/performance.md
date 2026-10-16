@@ -36,6 +36,11 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+The [Binding application-value comparison](binding-comparison.md) checks two
+independent grammars against one output oracle and records extraction timings,
+memory retention, diagnostics and static-analysis observations. It includes
+Comprehend's mandatory CST cost and an isolated optional dependency.
+
 ### Small facades and URI grammar (2026-10-16)
 
 Owned built-in facade graphs now retain one prepared FrozenGrammar per immutable
