@@ -21,6 +21,10 @@ trait CallbackTrait
      */
     public function addPrecedingMatch(Success $match): void
     {
+        // A completed stateless child has no deferred operations to retain.
+        if ($match->state === null) {
+            return;
+        }
         $state = $this->executionState();
         $state->precedingMatches[] = $match;
     }

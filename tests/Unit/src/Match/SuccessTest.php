@@ -9,8 +9,46 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use WeakReference;
 
 uses(TestCase::class);
+
+test('preceding syntax without deferred operations is not retained by the execution graph', function (): void {
+    $source = new ByteSource(' ');
+    $child = (new Text(' '))->recognizeInSession($source, 0, new ParseSession($source));
+    $this->assertInstanceOf(Success::class, $child);
+    $reference = WeakReference::create($child);
+    $parent = new Success();
+    $parent->addPrecedingMatch($child);
+    unset($child);
+
+    $this->assertNull($reference->get());
+});
+
+test('preceding deferred effects are retained and run before local effects exactly once', function (): void {
+    $calls = [];
+    $source = new ByteSource(' ');
+    $parser = (new Text(' '))->onCommit(static function () use (&$calls): void {
+        $calls[] = 'trivia';
+    });
+    $child = $parser->recognizeInSession($source, 0, new ParseSession($source));
+    $this->assertInstanceOf(Success::class, $child);
+    $reference = WeakReference::create($child);
+    $parent = new Success();
+    $parent->setSourceMetadata($source->span(0, 0), null);
+    $parent->addPrecedingMatch($child);
+    $parent->addCustomCallback(static function () use (&$calls): void {
+        $calls[] = 'parent';
+    });
+    unset($child);
+
+    $this->assertNotNull($reference->get());
+    $this->assertSame([], $calls);
+    $parent->commit();
+    $parent->commit();
+    $this->assertSame(['trivia', 'parent'], $calls);
+});
 
 test('concrete nodes require source metadata', function (): void {
     $success = new Success(1);

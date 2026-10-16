@@ -109,3 +109,32 @@ its lower allocation count and retained memory, with no claim that it closes
 the extraction throughput gap with Binding. Regression cases cover shared and
 different multibyte intervals, both single-child authoring forms, independent
 cached values and deferred, idempotent effects.
+
+## Avoiding state for stateless preceding matches
+
+`Success::addPrecedingMatch()` now skips a recognized child without execution
+state. Such a child has no deferred operations to run before the following
+match. Its concrete syntax remains in the enclosing parser's CST children.
+Previously, retaining it created state on the following match and could keep an
+otherwise unnecessary execution graph alive. Children with deferred operations
+still retain their original ordering and commit lifecycle.
+
+The [state allocation artifact](benchmarks/state-allocation-2026-10-16.json)
+compares this change against span reuse, using five fresh workers per
+variant/case, 15 observations per worker and alternating order. Nested recognition
+creates 417 execution states instead of 550 (24.2% fewer). Other source allocation
+counts, parser-entry metrics and serialized CST hashes are unchanged.
+
+| Measurement | Nested before | Nested after | Record before | Record after |
+| --- | ---: | ---: | ---: | ---: |
+| Recognition/CST median | 12.602 ms | 12.314 ms | 1.234 ms | 1.187 ms |
+| First value median | 189.3 us | 189.5 us | 25.4 us | 25.0 us |
+| Retained bytes after value | 574,392 | 398,144 | 69,416 | 56,848 |
+
+Times are medians of worker medians in this local environment. Recognition was
+2.3% faster for nested input and 3.8% for the record in this run; these small
+timing differences do not establish a universal speedup. Retained memory fell
+30.7% and 18.1% respectively. Tests cover releasing stateless preceding matches,
+retaining effectful ones, empty and nonempty selected trivia, abandoned extension
+trivia, deferred execution and repeated commits. This does not remove execution
+state required by values, validation, recovery or effects.

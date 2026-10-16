@@ -11,6 +11,24 @@ use Vanderlee\Comprehend\Source\ByteSource;
 
 uses(TestCase::class);
 
+test('repetition retains only selected trivia effects including empty trivia', function (string $input): void {
+    $calls = [];
+    $trivia = C::text(' ')->many()->onCommit(static function (ParseResult $result) use (&$calls): void {
+        $calls[] = 'trivia:' . $result->rawText();
+    });
+    $item = C::text('a')->onCommit(static function () use (&$calls): void {
+        $calls[] = 'item';
+    });
+    $result = $item->manyValues()->spacing($trivia)->matchPrefix($input);
+    $this->assertTrue($result->success);
+    $this->assertSame(['a', 'a'], $result->value());
+    $this->assertSame([], $calls);
+    $result->commit();
+    $result->commit();
+    $this->assertSame(['item', 'trivia:' . ($input === 'aa x' ? '' : ' '), 'item'], $calls);
+    $this->assertSame($input === 'aa x' ? 'aa' : 'a a', $result->rawText());
+})->with(['aa x', 'a a x']);
+
 test('value repetition factories work through static fluent and syntax authoring', function (): void {
     $syntax = C::syntax();
     $item = C::char('1')->mapText('intval');
