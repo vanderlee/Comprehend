@@ -18,6 +18,10 @@ typed objects / Ruleset factories / RFC imports
 
 ## Closed removal inventory
 
+CST construction remains the default. Explicit `trees: false` uses this same
+runtime with source spans and cached semantics but no CST or AST output; see
+[optional tree retention](tree-retention.md) for callback and parser requirements.
+
 | Removed surface | Supported replacement | Verification |
 |---|---|---|
 | String/context runtime and protected `parse(&$input, ...)` | Typed `recognize(Source, int, ParseSession)` and one checked delegation path | Terminal/combinator fixtures, Unicode and custom extension tests |

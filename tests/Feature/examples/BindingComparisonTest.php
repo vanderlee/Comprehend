@@ -20,7 +20,10 @@ require_once __DIR__ . '/../../../tools/binding/runtime.php';
 
 uses(TestCase::class);
 
-test('comparison grammars satisfy the independent acceptance and output oracle', function (string $library): void {
+test('comparison grammars satisfy the independent acceptance and output oracle', function (
+    string $library,
+    bool $trees,
+): void {
     if ($library === 'binding') {
         $autoload = __DIR__ . '/../../../build/binding/vendor/autoload.php';
         if (!is_file($autoload)) {
@@ -30,10 +33,13 @@ test('comparison grammars satisfy the independent acceptance and output oracle',
     }
     $parser = $library === 'comprehend' ? comprehendJob()->freeze() : bindingJob();
     foreach (cases(4) as $case) {
-        $result = recognize($parser, $case['input']);
+        $result = recognize($parser, $case['input'], $trees);
         $output = accepted($result) ? value($result) : null;
         verify($result, $output, $case);
         $this->assertSame($case['expected'] !== null, accepted($result), $case['input']);
+        if ($library === 'comprehend' && !$trees) {
+            $this->assertNull($result->node);
+        }
         if (!accepted($result)) {
             $failure = diagnostic($result);
             $this->assertNotNull($failure);
@@ -42,7 +48,7 @@ test('comparison grammars satisfy the independent acceptance and output oracle',
             $this->assertNotEmpty($failure['message']);
         }
     }
-})->with(['comprehend', 'binding']);
+})->with([['comprehend', true], ['comprehend', false], ['binding', true]]);
 
 test('comparison oracle detects wrong acceptance and wrong domain values', function (bool $wrongAcceptance): void {
     $parser = comprehendJob()->freeze();

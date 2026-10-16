@@ -10,6 +10,12 @@ exports; those objects remain mutable and are not facade expressions.
 One typed contract serves every built-in and custom parser. There is no source
 opt-in, class allowlist, legacy offset fallback or mutable string input hook.
 Recognition uses byte positions on a stable Source and one per-run ParseSession.
+
+For [tree-free recognition](tree-retention.md), custom recognizers honor
+`ParseSession::treesEnabled()` and override `Parser::requiresTree()` if they need
+child CSTs. Preserve parent requirements. Core checked delegation rejects known
+tree-dependent parsers when `trees: false`; ordinary `success()` helpers support
+both modes without a separate recognition path.
 See the [closed removal inventory](canonical-runtime.md).
 
 ```php

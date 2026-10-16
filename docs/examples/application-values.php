@@ -21,3 +21,13 @@ if (
     throw new RuntimeException('Application value tutorial failed');
 }
 echo "Application value tutorial verified\n";
+
+$valuesOnly = $grammar->parse($input, trees: false);
+if (
+    !$valuesOnly->success || $valuesOnly->node !== null || $valuesOnly->ast() !== null
+    || !$valuesOnly->value() instanceof Job
+    || $valuesOnly->value()->batches !== [[1, 2], [], [3]]
+    || $valuesOnly->rawText() !== $input
+) {
+    throw new RuntimeException('Value-only application extraction failed');
+}

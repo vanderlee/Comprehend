@@ -49,6 +49,7 @@ nav:
   - Trees and semantics:
       - Parse results: parse-results.md
       - Concrete syntax trees: concrete-trees.md
+      - Optional tree retention: tree-retention.md
       - Abstract syntax trees: ast.md
       - Semantic values: semantic-values.md
       - Lifecycle and effects: lifecycle.md

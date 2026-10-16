@@ -19,7 +19,8 @@ use function ComprehendComparison\comprehendJob;
 use function ComprehendComparison\nodeCount;
 use function ComprehendComparison\verify;
 
-$options = getopt('', ['case:', 'size:', 'iterations:', 'trace', 'source-dir:', 'output:']);
+$options = getopt('', ['case:', 'size:', 'iterations:', 'trace', 'source-dir:', 'output:', 'without-trees']);
+$trees = !isset($options['without-trees']);
 $size = filter_var($options['size'] ?? 128, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 $iterations = filter_var($options['iterations'] ?? 9, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 if ($size === false || $iterations === false) {
@@ -86,7 +87,7 @@ $grammar = comprehendJob()->freeze();
 $parser = comprehendJob()->parser();
 // Warm the prepared graph; preparation and correctness checks are not timed.
 for ($i = 0; $i < 2; ++$i) {
-    $result = $grammar->parse($case['input']);
+    $result = $grammar->parse($case['input'], trees: $trees);
     verify($result, $result->value(), $case);
     unset($result);
 }
@@ -101,7 +102,7 @@ for ($iteration = 0; $iteration < $iterations; ++$iteration) {
     $source = new Utf8Source($case['input']);
     $sourceNs = hrtime(true) - $start;
     $start = hrtime(true);
-    $result = $grammar->parse($source);
+    $result = $grammar->parse($source, trees: $trees);
     $recognitionNs = hrtime(true) - $start;
     $recognizedBytes = memory_get_usage(false) - $baseline;
     $recognitionTrace = $trace ? MethodTrace::stop() : null;
@@ -121,7 +122,8 @@ for ($iteration = 0; $iteration < $iterations; ++$iteration) {
         throw new RuntimeException('Cached domain value changed');
     }
     $nodes = nodeCount($result->node);
-    $treeHash = hash('sha256', json_encode($result->node->toArray(), JSON_THROW_ON_ERROR));
+    $treeHash = $result->node === null ? null
+        : hash('sha256', json_encode($result->node->toArray(), JSON_THROW_ON_ERROR));
     $start = hrtime(true);
     unset($cached, $value, $result, $source);
     $releaseNs = hrtime(true) - $start;
@@ -143,7 +145,7 @@ for ($iteration = 0; $iteration < $iterations; ++$iteration) {
 // Count parser entries separately so metrics retention does not affect phase memory/timing.
 $source = new Utf8Source($case['input']);
 $metrics = new ParseMetrics(100000);
-$session = new ParseSession($source, metrics: $metrics);
+$session = new ParseSession($source, metrics: $metrics, trees: $trees);
 $match = $parser->recognizeInSession($source, 0, $session);
 $result = new ParseResult($match);
 verify($result, $result->value(), $case);
@@ -169,6 +171,7 @@ $report = [
     'generated_utc' => gmdate('c'), 'profiler_sha256' => hash_file('sha256', __FILE__),
     'instrumenter_sha256' => hash_file('sha256', __DIR__ . '/profiling/InstrumentMethods.php'),
     'case' => $caseName, 'size' => $size, 'input_bytes' => strlen($case['input']), 'trace' => $trace,
+    'trees' => $trees,
     'source_sha256' => hash('sha256', json_encode($sourceHashes, JSON_THROW_ON_ERROR)),
     'metrics' => $metrics->snapshot(), 'work_units' => $session->workUsed(),
     'boundary_probe' => [

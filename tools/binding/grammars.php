@@ -24,6 +24,10 @@ use function Parsica\Parsica\takeWhile1;
 /** @return C<Job> */
 function comprehendJob(): C
 {
+    require_once __DIR__ . '/TakeWhile.php';
+    $space = getenv('COMPREHEND_TAKE_WHILE') === '1'
+        ? C::of(new TakeWhile(static fn(string $unit): bool => str_contains(" \t\r\n", $unit)))
+        : Binding::syntax()->set(" \t\r\n")->many();
     $name = Binding::syntax()->regex('/[A-Za-z][A-Za-z0-9_]*/A');
     $number = Binding::syntax()->regex('/(?:0|[1-9][0-9]{0,2})/A')->mapText('intval');
     $retryValue = Binding::syntax()->valueChoice(
@@ -36,7 +40,7 @@ function comprehendJob(): C
 
     return Binding::syntax()->collect($name, $retries, $batches)
         ->map(static fn(array $parts): Job => new Job($parts[0], $parts[1], $parts[2]))
-        ->spacing(Binding::syntax()->set(" \t\r\n")->many());
+        ->spacing($space);
 }
 
 /** @return BindingParser<Job> */

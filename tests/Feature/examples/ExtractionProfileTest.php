@@ -6,13 +6,16 @@ use PHPUnit\Framework\TestCase;
 
 uses(TestCase::class);
 
-test('source instrumentation retains the same selected tree values and parser entry count', function (): void {
+test('source instrumentation retains selected values parser entries and optional trees', function (bool $trees): void {
     $reports = [];
     foreach ([false, true] as $trace) {
         $command = [PHP_BINARY, '-d', 'memory_limit=512M', __DIR__ . '/../../../tools/profile-extraction.php',
             '--case=record', '--iterations=1', '--size=4'];
         if ($trace) {
             $command[] = '--trace';
+        }
+        if (!$trees) {
+            $command[] = '--without-trees';
         }
         $process = proc_open($command, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
         $this->assertIsResource($process);
@@ -32,4 +35,7 @@ test('source instrumentation retains the same selected tree values and parser en
     $allocations = $reports[1]['observations'][0]['source_allocations'];
     $this->assertGreaterThan(0, $allocations['Vanderlee\\Comprehend\\Source\\Span']);
     $this->assertGreaterThan(0, $allocations['Vanderlee\\Comprehend\\Match\\ExecutionState']);
-});
+    $nodesCreated = $allocations['Vanderlee\\Comprehend\\Tree\\ConcreteNode'] ?? 0;
+    $this->assertSame($trees, $nodesCreated > 0);
+    $this->assertSame($trees, $reports[1]['observations'][0]['cst_nodes'] > 0);
+})->with([true, false]);

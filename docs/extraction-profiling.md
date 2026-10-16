@@ -12,6 +12,7 @@ dependencies; installing Binding is unnecessary.
 php tools/profile-extraction.php --case=nested --size=128 --iterations=15
 php tools/profile-extraction.php --case=record --iterations=15
 php tools/profile-extraction.php --case=nested --iterations=1 --trace
+php tools/profile-extraction.php --case=nested --iterations=1 --trace --without-trees
 ```
 
 Use `--output=path.json` to save a report. `--source-dir=path/to/src` loads an
@@ -39,6 +40,10 @@ and memory, so use untraced workers for performance conclusions. Instrumented
 self-times help locate candidates but do not establish native CPU percentages.
 
 ## Local result, 2026-10-16
+
+`--without-trees` now exercises [tree-free recognition](tree-retention.md).
+Reports identify the `trees` setting; disabled runs report zero CST nodes and a
+null tree hash. Earlier artifacts below used the default tree-enabled mode.
 
 The [raw artifact](benchmarks/extraction-profile-2026-10-16.json) records PHP
 8.2.10 on Windows, five fresh workers per variant and case, with 15 observations

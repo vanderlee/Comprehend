@@ -232,8 +232,9 @@ final class Comprehend
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
         self|Parser|null $spacing = null,
+        bool $trees = true,
     ): ParseResult {
-        return $this->parseAll($source, $byteOffset, $limits, $spacing);
+        return $this->parseAll($source, $byteOffset, $limits, $spacing, $trees);
     }
 
     /** @return ParseResult<T> */
@@ -242,10 +243,11 @@ final class Comprehend
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
         self|Parser|null $spacing = null,
+        bool $trees = true,
     ): ParseResult {
         $grammar = $spacing === null ? $this : $this->spacing($spacing);
 
-        return $grammar->freeze()->parseAll($source, $byteOffset, $limits);
+        return $grammar->freeze()->parseAll($source, $byteOffset, $limits, $trees);
     }
 
     /** @return ParseResult<T> */
@@ -254,9 +256,10 @@ final class Comprehend
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
         self|Parser|null $spacing = null,
+        bool $trees = true,
     ): ParseResult {
         $grammar = $spacing === null ? $this : $this->spacing($spacing);
 
-        return $grammar->freeze()->matchPrefix($source, $byteOffset, $limits);
+        return $grammar->freeze()->matchPrefix($source, $byteOffset, $limits, $trees);
     }
 }

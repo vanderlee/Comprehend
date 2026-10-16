@@ -23,7 +23,10 @@ use function ComprehendComparison\verify;
 
 mb_internal_encoding('UTF-8');
 
-$options = getopt('', ['worker:', 'verify-only', 'case:', 'samples:', 'iterations:', 'warmups:', 'size:', 'output:']);
+$options = getopt('', [
+    'worker:', 'verify-only', 'case:', 'samples:', 'iterations:', 'warmups:', 'size:', 'output:', 'without-trees',
+]);
+$trees = !isset($options['without-trees']);
 $samples = filter_var($options['samples'] ?? 3, FILTER_VALIDATE_INT, [
     'options' => ['min_range' => 1, 'max_range' => 50],
 ]);
@@ -71,7 +74,7 @@ if (isset($options['worker'])) {
     $prepareMs = (hrtime(true) - $prepareStart) / 1e6;
     $observations = [];
     foreach ($corpus as $name => $case) {
-        $result = recognize($parser, $case['input']);
+        $result = recognize($parser, $case['input'], $trees);
         $value = accepted($result) ? value($result) : null;
         verify($result, $value, $case);
         $observations[$name] = ['accepted' => accepted($result), 'diagnostic' => diagnostic($result)];
@@ -84,7 +87,7 @@ if (isset($options['worker'])) {
     $name = $benchmarkCases[0];
     $case = $corpus[$name];
     for ($i = 0; $i < $warmups; ++$i) {
-        $result = recognize($parser, $case['input']);
+        $result = recognize($parser, $case['input'], $trees);
         $value = accepted($result) ? value($result) : null;
         verify($result, $value, $case);
         unset($result, $value);
@@ -99,7 +102,7 @@ if (isset($options['worker'])) {
     }
     for ($i = 0; $i < $iterations; ++$i) {
         $start = hrtime(true);
-        $result = recognize($parser, $case['input']);
+        $result = recognize($parser, $case['input'], $trees);
         $value = accepted($result) ? value($result) : null;
         $times[$i] = (hrtime(true) - $start) / 1e3;
         verify($result, $value, $case);
@@ -128,7 +131,10 @@ if (isset($options['worker'])) {
     exit;
 }
 
-$run = static function (array $arguments): array {
+$run = static function (array $arguments) use ($trees): array {
+    if (!$trees) {
+        $arguments[] = '--without-trees';
+    }
     $command = [PHP_BINARY, '-d', 'memory_limit=512M', __FILE__, ...$arguments];
     $process = proc_open($command, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
     if (!is_resource($process)) {
@@ -185,9 +191,11 @@ $report = [
     'command' => 'php tools/compare-binding.php --samples=' . $samples . ' --iterations=' . $iterations
         . ' --warmups=' . $warmups . ' --size=' . $size
         . (isset($options['case']) ? ' --case=' . $options['case'] : '')
+        . (!$trees ? ' --without-trees' : '')
         . (isset($options['verify-only']) ? ' --verify-only' : ''),
     'samples' => $samples, 'iterations' => $iterations, 'warmups' => $warmups, 'size' => $size,
-    'comprehend_includes_cst' => true,
+    'comprehend_includes_cst' => $trees,
+    'comprehend_take_while_prototype' => getenv('COMPREHEND_TAKE_WHILE') === '1',
     'timing' => 'Fresh UTF-8 source/stream, full recognition and domain value; '
         . 'excludes preparation, assertions, diagnostics formatting, result release and cycle collection',
     'memory' => 'Same warmed worker; retained result and domain object; peaks include baseline process allocations. '

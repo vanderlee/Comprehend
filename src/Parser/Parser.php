@@ -21,6 +21,7 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Span;
 use Closure;
+use SplObjectStorage;
 
 /**
  * Defines the shared source-based recognition contract for terminals, combinators and
@@ -215,10 +216,37 @@ abstract class Parser implements SnapshotParticipant
         Source $source,
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
+        bool $trees = true,
     ): ParseResult {
+        if (!$trees) {
+            $this->assertTreeFree();
+        }
         return new ParseResult(
-            $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits)),
+            $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits, trees: $trees)),
         );
+    }
+
+    /** Custom recognizers that inspect child CSTs must also declare that requirement. */
+    public function requiresTree(): bool
+    {
+        return $this->guards !== [] || $this->nodeName instanceof Closure;
+    }
+
+    private function assertTreeFree(): void
+    {
+        $seen = new SplObjectStorage();
+        $pending = [$this];
+        while ($pending !== []) {
+            $parser = array_pop($pending);
+            if (isset($seen[$parser])) {
+                continue;
+            }
+            $seen[$parser] = true;
+            if ($parser->requiresTree()) {
+                throw new LogicException('Trees are disabled but parser requires a CST: ' . $parser->graphLabel());
+            }
+            array_push($pending, ...$parser->children());
+        }
     }
 
     /** @internal The only delegation path; custom parsers implement recognize(). */
@@ -234,6 +262,10 @@ abstract class Parser implements SnapshotParticipant
 
     private function recognizeChecked(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
+        // Check dynamically supplied parsers too, beyond the declared dependency graph.
+        if (!$session->treesEnabled() && $this->requiresTree()) {
+            throw new LogicException('Trees are disabled but parser requires a CST: ' . $this->graphLabel());
+        }
         $this->assertRecognitionPosition($source, $offset, $session);
         $match = $this->recognizeWithDiagnostics($source, $offset, $session);
         $this->assertReturnedMatch($source, $offset, $match);
@@ -313,7 +345,7 @@ abstract class Parser implements SnapshotParticipant
     {
         // A directive may return an existing child execution record. Always
         // wrap it so its span, value cache, naming and lifecycle remain stable.
-        if ($match instanceof Success && $match->node !== null) {
+        if ($match instanceof Success && $match->isPrepared()) {
             $child = $match;
             $match = $this->success($source, $offset, $child->length, $child);
             if ($this->valueMapper === null) {
@@ -389,13 +421,15 @@ abstract class Parser implements SnapshotParticipant
         ParseSession $session,
         Success $match,
     ): AbstractMatch {
-        $match->buildConcreteNode(
-            $this,
-            $this->nodeName,
-            $this->nodeGroup,
-            $this->semanticLeaf,
-            $this->nodeTags,
-        );
+        if ($session->treesEnabled()) {
+            $match->buildConcreteNode(
+                $this,
+                $this->nodeName,
+                $this->nodeGroup,
+                $this->semanticLeaf,
+                $this->nodeTags,
+            );
+        }
         // Explicit mappings override defaults installed by a recognizer (for example lists).
         if ($this->valueMapper !== null) {
             $match->setValueMapper($this->valueMapper);
@@ -412,6 +446,7 @@ abstract class Parser implements SnapshotParticipant
         }
 
         $match->retainExecutionState();
+        $match->markPrepared();
 
         return $match;
     }
@@ -438,8 +473,12 @@ abstract class Parser implements SnapshotParticipant
         Source $source,
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
+        bool $trees = true,
     ): ParseResult {
-        $session = new ParseSession($source, limits: $limits);
+        if (!$trees) {
+            $this->assertTreeFree();
+        }
+        $session = new ParseSession($source, limits: $limits, trees: $trees);
         $match = $this->recognizeInSession($source, $byteOffset, $session);
         if (!$match->accepted || $byteOffset + $match->length === $source->byteLength()) {
             return new ParseResult($match);

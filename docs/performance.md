@@ -308,7 +308,8 @@ separate increment. Parser/byte-position counts alone do not justify those risks
 - Runtime budgets count cooperative recognition work/depth, not wall-clock CPU,
   source construction or arbitrary semantic/effect callbacks.
 
-Optional CST retention is deferred: ASTs, raw source reconstruction, serialization,
-validation and semantic callbacks currently rely on that tree contract. A
-recognition-only mode needs its own output/diagnostic contract before removing
-nodes. The benchmark does not label the existing runtime as tree-free parsing.
+Optional CST retention is now available through `trees: false`; see
+[tree retention](tree-retention.md) for its callback and result contracts.
+Earlier measurements on this page include trees unless explicitly stated.
+The option skips CST construction and AST availability while preserving source
+spans and lazy semantic operations. It does not imply constant-memory streaming.

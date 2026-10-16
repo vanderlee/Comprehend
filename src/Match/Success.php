@@ -31,6 +31,7 @@ class Success extends AbstractMatch
     use CallbackTrait;
 
     private ?ExecutionState $state = null;
+    private bool $prepared = false;
     /** @var (Closure(self): bool)|null */
     private static ?Closure $retainState = null;
 
@@ -161,11 +162,23 @@ class Success extends AbstractMatch
 
     public function inheritValueFrom(self $child): void
     {
-        if ($child->state === null && $child->node !== null) {
+        if ($child->state === null && $child->isPrepared()) {
             return;
         }
         $state = $this->executionState();
         $state->valueChild = $child;
+    }
+
+    /** @internal Recognition completion must not depend on optional tree retention. */
+    public function isPrepared(): bool
+    {
+        return $this->prepared || $this->node !== null;
+    }
+
+    /** @internal Called only after the parser's projections, guards and retention are prepared. */
+    public function markPrepared(): void
+    {
+        $this->prepared = true;
     }
 
     /** @internal Bind mapping and cache lifetime to this recognition, not the grammar. */

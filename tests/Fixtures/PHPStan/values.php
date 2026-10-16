@@ -64,6 +64,8 @@ function inferredValues(): void
     assertType('int|null', $number->freeze()->matchPrefix('1x')->output());
     assertType('Vanderlee\Comprehend\Comprehend<Examples\ApplicationValues\Job>', jobParser());
     assertType('Examples\ApplicationValues\Job|null', jobParser()->freeze()->parse('report []')->value());
+    assertType('Examples\ApplicationValues\Job|null', jobParser()->parse('report []', trees: false)->value());
+    assertType('Examples\ApplicationValues\Job|null', jobParser()->freeze()->parse('report []', trees: false)->value());
 }
 
 /** @param list<C<int>> $items */

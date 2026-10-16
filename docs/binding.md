@@ -22,6 +22,10 @@ attach the vocabulary to an existing facade, rule reference or object parser.
 Facade inputs retain their semantic value type; object-parser inputs remain
 conservatively mixed in static analysis.
 
+For value-only parsing, use `$list->parse('[1,2]', trees: false)` to skip CST and
+AST support for that result. See [optional tree retention](tree-retention.md)
+for callback requirements and the unchanged source/value lifecycle.
+
 ## Operations
 
 | Operation | Selected value |

@@ -128,7 +128,7 @@ class RecoverWith extends Parser implements AnalyzableParser, ReusableSnapshot
                     throw new LogicException('Recovery strategy returned a foreign, empty or over-budget region');
                 }
 
-                return $this->recovered($source, $span, $diagnostic);
+                return $this->recovered($source, $span, $diagnostic, $session);
             }
         } finally {
             $context->close();
@@ -145,12 +145,14 @@ class RecoverWith extends Parser implements AnalyzableParser, ReusableSnapshot
         }
     }
 
-    private function recovered(Source $source, Span $span, Diagnostic $diagnostic): Success
+    private function recovered(Source $source, Span $span, Diagnostic $diagnostic, ParseSession $session): Success
     {
         $recovery = new Recovery($span, $diagnostic);
         $error = new Success($span->byteLength());
         $error->setSourceMetadata($span, null);
-        $error->setConcreteNode(new ConcreteNode(static::class, $span, tags: ['error', 'recovered']));
+        if ($session->treesEnabled()) {
+            $error->setConcreteNode(new ConcreteNode(static::class, $span, tags: ['error', 'recovered']));
+        }
         $error->addRecovery($recovery);
         $error->setValueMapper(static fn(): Recovery => $recovery);
         $match = $this->success($source, $span->start, $span->byteLength(), $error);

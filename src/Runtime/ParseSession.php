@@ -62,6 +62,7 @@ final class ParseSession
         ChoicePolicy $preference = ChoicePolicy::FIRST,
         ?ParseLimits $limits = null,
         private readonly ?ParseMetrics $metrics = null,
+        private readonly bool $trees = true,
     ) {
         $this->source = $source;
         $this->limits = $limits ?? (self::$defaultLimits ??= new ParseLimits());
@@ -73,6 +74,11 @@ final class ParseSession
     public function workUsed(): int
     {
         return $this->work;
+    }
+
+    public function treesEnabled(): bool
+    {
+        return $this->trees;
     }
 
     /** @internal A bounded, session-owned full subject; large subjects retain uncached access. */

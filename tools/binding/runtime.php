@@ -13,9 +13,11 @@ use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 
-function recognize(FrozenGrammar|BindingParser $parser, string $input): ParseResult|BindingResult
+function recognize(FrozenGrammar|BindingParser $parser, string $input, bool $trees = true): ParseResult|BindingResult
 {
-    return $parser instanceof FrozenGrammar ? $parser->parse($input) : $parser->run(new StringStream($input));
+    return $parser instanceof FrozenGrammar
+        ? $parser->parse($input, trees: $trees)
+        : $parser->run(new StringStream($input));
 }
 
 function accepted(ParseResult|BindingResult $result): bool

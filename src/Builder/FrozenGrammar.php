@@ -53,11 +53,13 @@ final class FrozenGrammar
         Source|string $source,
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
+        bool $trees = true,
     ): ParseResult {
         return $this->root->matchPrefix(
             is_string($source) ? new Utf8Source($source) : $source,
             $byteOffset,
             $limits,
+            $trees,
         );
     }
 
@@ -66,17 +68,23 @@ final class FrozenGrammar
         Source|string $source,
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
+        bool $trees = true,
     ): ParseResult {
         return $this->root->parseAll(
             is_string($source) ? new Utf8Source($source) : $source,
             $byteOffset,
             $limits,
+            $trees,
         );
     }
 
     /** @return ParseResult<T> */
-    public function parse(Source|string $source, int $byteOffset = 0, ?ParseLimits $limits = null): ParseResult
-    {
-        return $this->parseAll($source, $byteOffset, $limits);
+    public function parse(
+        Source|string $source,
+        int $byteOffset = 0,
+        ?ParseLimits $limits = null,
+        bool $trees = true,
+    ): ParseResult {
+        return $this->parseAll($source, $byteOffset, $limits, $trees);
     }
 }

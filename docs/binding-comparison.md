@@ -21,11 +21,15 @@ the installation in ignored `build/binding/vendor`.
 composer install --working-dir=tools/binding --no-interaction --prefer-dist --no-scripts
 php tools/compare-binding.php --verify-only --output=build/binding-correctness.json
 php tools/compare-binding.php --samples=3 --iterations=10 --warmups=2 --size=128 --output=build/binding-comparison.json
+php tools/compare-binding.php --without-trees --samples=3 --iterations=10 --warmups=2 --size=128 --output=build/binding-values.json
 php tools/binding/type-report.php --output=build/binding-types.json
 ```
 
 The harness does not install dependencies automatically. A missing dependency,
 worker failure, acceptance mismatch or wrong domain output fails the command.
+`--without-trees` passes `trees: false` to every Comprehend correctness,
+warmup and timed parse. Binding is unchanged. Reports record this setting as
+`comprehend_includes_cst`; retained CST node counts must be zero in this mode.
 Use `--case=record` for a focused timing run; correctness checks still cover the
 entire corpus. `--size` controls the number of IDs in the generated nested case.
 The supplied regression test always checks Comprehend and skips only its Binding
@@ -111,6 +115,37 @@ inputs, diagnostics, measurements, dependency reference, source hashes and the
 reproduction command. These data demonstrate an extraction-cost gap on these
 workloads; they do not establish a universal speed ratio or attribute the gap
 solely to tree construction.
+
+## Tree-retention comparison: 2026-10-16
+
+The [tree-retention report](benchmarks/binding-tree-retention-2026-10-16.json)
+compares the current checkout in both modes against Binding 0.8.3 on Windows,
+PHP 8.2.10. Six fresh workers per variant/case each perform two warmups and 15
+timed parses. All six execution permutations of the three variants are used
+across samples to balance ordering. Each worker verifies the full 21-case oracle.
+Times below are medians of worker medians; they include fresh source construction,
+complete recognition and the domain value. Tree-free compatibility checking is
+inside the timed parse. AST projection is not requested in either mode.
+
+| Case | Comprehend with CST | Comprehend without CST | Binding | Time reduction from disabling trees |
+| --- | ---: | ---: | ---: | ---: |
+| Record | 1.284 ms | 1.159 ms | 0.125 ms | 9.7% |
+| Omitted setting/default | 0.607 ms | 0.552 ms | 0.076 ms | 9.0% |
+| Larger nested list | 13.667 ms | 12.002 ms | 1.406 ms | 12.2% |
+| Malformed optional field | 0.220 ms | 0.209 ms | 0.027 ms | 5.0% |
+| Multiline malformed list | 0.470 ms | 0.451 ms | 0.056 ms | 4.1% |
+| Trailing input | 0.289 ms | 0.272 ms | 0.037 ms | 5.9% |
+
+Retained used memory falls from 57,424 to 33,888 bytes for the record (41.0%),
+and from 402,752 to 132,440 bytes for the nested case (67.1%). Binding retains
+1,064 and 3,464 bytes respectively. Comprehend's retained CST counts fall from
+69/822 to zero; rejected cases retain the same small failure-result memory in
+both modes. These are warmed retained deltas, not OS RSS or allocator peaks.
+
+Disabling trees helped memory more than runtime in this local run. Successful
+value extraction remains approximately 7.3–9.3 times slower than Binding on these
+three workloads. Earlier sequential exploratory runs showed smaller timing
+changes, so these local figures are not confidence intervals or universal ratios.
 
 ## Diagnostics
 

@@ -7,6 +7,7 @@
 | Entry points | `matchPrefix(Source, int = 0, ?ParseLimits = null)`, `parseAll(Source, int = 0, ?ParseLimits = null)` |
 | Public entry points | Facade and frozen `parse/parseAll/matchPrefix(Source\|string, int = 0, ?ParseLimits = null)` |
 | Per-call spacing | Facade entry points accept a fourth `spacing: Comprehend\|Parser\|null` argument; local grammar policies take precedence |
+| Optional trees | Pass named `trees: false` to parse entry points to omit CST/AST; spans, diagnostics and values remain available; [requirements](tree-retention.md) |
 | Limits/profile | ParseLimits(maxDepth, maxWork), ParseLimitException, optional bounded ParseMetrics |
 | Bounded regex | `Regex::literalWindow(string)` for quoted literals; general Regex keeps full-subject semantics |
 | Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Integer, Start, End, Nothing |
