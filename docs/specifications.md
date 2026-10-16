@@ -80,7 +80,7 @@ nonzero byte offsets, parsing limits, explicit effects and MIME boundaries.
 - HTTP Working Group structured-field tests: 1598 inputs.
 - JSONPath compliance suite: 715 selectors, including standard-function typing.
 
-The fixture [provenance and licenses](../tests/Fixtures/Specifications/README.md)
+The fixture [provenance and licenses](https://github.com/vanderlee/Comprehend/blob/master/tests/Fixtures/Specifications/README.md)
 pin upstream revisions. These checks cover syntax acceptance and source round
 trips; they do not test value construction, serialization or query execution.
 Passing these finite corpora is not a claim of exhaustive specification conformance.

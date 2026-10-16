@@ -81,7 +81,7 @@ subset. Compilation has no ParseLimits; treat authoring text as trusted input.
 
 ## Checked RFC example
 
-The [IPv4 example](examples/abnf.php) translates the IPv4/dec-octet definitions
+The [IPv4 example](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/abnf.php) translates the IPv4/dec-octet definitions
 from [RFC 3986 section 3.2.2](https://www.rfc-editor.org/rfc/rfc3986.html#section-3.2.2)
 using explicit longest choice. It compares valid and invalid addresses with
 object/Ruleset forms and the bundled RFC grammar, including raw output and spans.

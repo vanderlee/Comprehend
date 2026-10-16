@@ -1,7 +1,7 @@
 # Tutorial
 
 Build a grammar, parse input, then extract the result. Start with the
-[README quick start](../README.md#quick-start), or run
+[quick start](index.md#quick-start), or run
 `php docs/examples/quick-start.php`.
 
 For a typed value, attach a pure mapping before parsing:

@@ -31,4 +31,4 @@ effects. A semantic rejection does not retry a syntactically selected choice;
 use a pure guard when rejection belongs to recognition.
 
 See [semantic values](semantic-values.md), [ParseResult](parse-results.md) and
-the [runnable examples](examples/execution.php).
+the [runnable examples](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/execution.php).

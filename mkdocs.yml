@@ -1,0 +1,65 @@
+site_name: Comprehend
+site_description: PHP parser combinators with ABNF authoring, immutable syntax trees and explicit effects
+site_url: https://vanderlee.github.io/Comprehend/
+repo_url: https://github.com/vanderlee/Comprehend
+edit_uri: blob/master/docs/
+
+theme:
+  name: mkdocs
+  color_mode: auto
+
+plugins:
+  - search
+
+markdown_extensions:
+  - tables
+  - fenced_code
+  - toc:
+      permalink: true
+
+strict: true
+validation:
+  nav:
+    omitted_files: warn
+  links:
+    not_found: warn
+    anchors: warn
+    unrecognized_links: warn
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Tutorial: tutorial.md
+      - Grammar authoring: grammar-authoring.md
+      - Facade: facade.md
+      - Builders and Rulesets: builder.md
+      - FAQ: faq.md
+  - Parsing:
+      - Execution: execution.md
+      - Consumption: consumption.md
+      - Sources: sources.md
+      - Source matching: source-matching.md
+      - File input and limits: file-input.md
+      - Spacing and trivia: trivia.md
+      - Diagnostics: diagnostics.md
+      - Separated lists: separated-lists.md
+      - Delimiters and value selection: value-selection.md
+  - Trees and semantics:
+      - Parse results: parse-results.md
+      - Concrete syntax trees: concrete-trees.md
+      - Abstract syntax trees: ast.md
+      - Semantic values: semantic-values.md
+      - Lifecycle and effects: lifecycle.md
+      - Serialization: serialization.md
+  - Reference:
+      - Supported API: reference.md
+      - ABNF: abnf.md
+      - RFC libraries: libraries.md
+      - Specifications: specifications.md
+      - URI syntax: uri.md
+      - Custom parser contract: source-and-extension-contract.md
+  - Project:
+      - Contributing: contribute.md
+      - Performance: performance.md
+      - Breaking release: breaking-release.md
+      - Canonical runtime: canonical-runtime.md

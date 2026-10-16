@@ -25,4 +25,4 @@ record has observed progress. [Diagnostics](diagnostics.md) preserve that distin
 
 See [source APIs](sources.md), [consumption](consumption.md),
 [custom extensions](source-and-extension-contract.md) and the runnable
-[execution examples](examples/execution.php).
+[execution examples](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/execution.php).

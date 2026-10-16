@@ -124,5 +124,5 @@ are investigation candidates, not valid memoization keys. No recognition-result
 cache is introduced. See [Performance measurements](performance.md) for the
 recorded memoization decision and retention tradeoffs.
 
-Run the checked [file example](examples/file-input.php) with
+Run the checked [file example](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/file-input.php) with
 `php docs/examples/file-input.php`.

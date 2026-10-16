@@ -52,6 +52,36 @@ uses the existing test workflow through workflow_call; publishing requires the
 reviewed 2.0.0 tag, a dated changelog and a passing required matrix. See
 [Breaking-release preparation](breaking-release.md).
 
+## Documentation website
+
+The GitHub Pages site builds the Markdown in `docs/` with MkDocs. Navigation and
+link validation are configured in `mkdocs.yml`; add new pages to its navigation.
+Use Python 3.12 and a separate environment for the documentation tools:
+
+```sh
+python -m venv .venv-docs
+```
+
+Activate it with `source .venv-docs/bin/activate` on Linux/macOS or
+`.\.venv-docs\Scripts\Activate.ps1` in PowerShell, then run:
+
+```sh
+python -m pip install -r requirements-docs.txt
+python -m mkdocs serve
+```
+
+Open the address printed by MkDocs to preview the site. Before submitting, run
+`python -m mkdocs build --strict`. Missing page targets and anchors fail the build;
+external URLs are not fetched. Generated files go into the ignored `site/` folder.
+Link PHP example source to GitHub so readers can view it without downloading it.
+
+The Documentation workflow validates pull requests and publishes pushes to
+`master`. To enable the first deployment, a repository maintainer must select
+**Settings > Pages > Build and deployment > Source > GitHub Actions**. The
+`github-pages` environment should allow deployments from `master` only. A manual
+workflow run on `master` can publish again without a new commit. No `gh-pages`
+branch is needed.
+
 ## Quality tools
 
 Install development tools with `make install` (or `composer install`). GNU Make

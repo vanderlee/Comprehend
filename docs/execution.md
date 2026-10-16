@@ -17,6 +17,6 @@ policy and leading/trailing trivia are explicit. Syntax selection is pure,
 semantic output is cached, and effects need explicit commit. There is no old
 string runtime or implicit automatic callback entry point.
 
-The [execution examples](examples/execution.php) exercise these rules, Unicode,
+The [execution examples](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/execution.php) exercise these rules, Unicode,
 octets, custom extensions, named grammars, AST/CST serialization and lifecycle.
 See [sources](sources.md), [consumption](consumption.md) and [lifecycle](lifecycle.md).

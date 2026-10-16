@@ -406,7 +406,7 @@ depth and work budgets; it does not add memoization or wall-clock deadlines.
 
 ## Checked authoring examples
 
-Run `php docs/examples/authoring.php`. The [complete example](examples/authoring.php)
+Run `php docs/examples/authoring.php`. The [complete example](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/authoring.php)
 implements integer arithmetic with multiplication precedence, addition,
 parentheses and whitespace in object, Ruleset and facade styles. It verifies
 accepted/rejected inputs, typed values, exact named AST shape, byte spans and raw

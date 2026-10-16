@@ -215,7 +215,7 @@ the character-node case exhausted the default 128 MiB limit.
 Coarser terminals are an explicit application grammar choice: they change CST
 children and diagnostic expectations. The runtime never merges existing nodes.
 Use them only when individual characters do not need names, guards, mappings or
-effects. [The runnable example](examples/chunked-text.php) checks short and partial
+effects. [The runnable example](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/chunked-text.php) checks short and partial
 final runs, malformed input, node counts and CST/AST source round trips:
 
 ```sh

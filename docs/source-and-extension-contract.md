@@ -88,7 +88,7 @@ and boundary checks directly. UTF-8 mode must guarantee validated complete code
 points and byte mode must preserve every octet. Spans must bind the same source
 object, including custom forwarding implementations. Mutable/file resource
 lifetime policies follow the [file-input contract](file-input.md) for built-in
-seekable snapshots. The runnable [execution examples](examples/execution.php) include a
+seekable snapshots. The runnable [execution examples](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/execution.php) include a
 custom parser implementing this contract.
 
 Custom recognizers with long loops should use session `readSourceUnit()` or

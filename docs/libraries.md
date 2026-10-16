@@ -66,6 +66,6 @@ $result->success; // true
 
 Run `php docs/examples/libraries.php` for checked IPv6 and SPF examples.
 
-The [ABNF IPv4 example](examples/abnf.php) compares the frontend's documented
+The [ABNF IPv4 example](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/abnf.php) compares the frontend's documented
 local-longest policy with equivalent object/Ruleset grammars and bundled RFC
 acceptance fixtures. It does not promise generalized ABNF ambiguity handling.

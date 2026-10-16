@@ -120,6 +120,10 @@ line indexing scans the source in chunks and retains line offsets.
 
 ## Documentation and verification
 
+Browse the [documentation homepage](docs/index.md) for installation, tutorials
+and the complete documentation navigation. See [website contribution instructions](docs/contribute.md#documentation-website)
+to preview and build the GitHub Pages site locally.
+
 The [2.0.0 breaking-release guide](docs/breaking-release.md) covers caller changes,
 supported PHP versions and the gated publication workflow.
 
