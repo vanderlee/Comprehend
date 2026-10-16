@@ -1,5 +1,8 @@
 # Performance measurements and retention guarantees
 
+For application-value extraction, see the [phase and allocation profile](extraction-profiling.md).
+It separates recognition/CST costs from first and cached value projection.
+
 Phase 4 records evidence rather than promising a universal performance win.
 The measurements below were collected locally on Windows, PHP 8.2.10 and PCRE
 10.40, with three iterations per case in fresh worker processes. JSON artifacts

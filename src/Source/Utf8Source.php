@@ -59,7 +59,7 @@ final class Utf8Source extends InMemorySource implements CodePointSource
 
     private function assertCodePointBoundary(int $byteOffset): void
     {
-        if (!$this->isCodePointBoundary($byteOffset)) {
+        if (!$this->isUnitBoundary($byteOffset)) {
             throw new InvalidArgumentException('Byte offset is inside a UTF-8 code point');
         }
     }
@@ -67,14 +67,18 @@ final class Utf8Source extends InMemorySource implements CodePointSource
     /** Invalid/out-of-range positions throw; an interior byte returns false. */
     public function isCodePointBoundary(int $byteOffset): bool
     {
-        $this->assertByteOffset($byteOffset);
-
-        return $byteOffset === $this->byteLength() || (ord($this->bytes[$byteOffset]) & 0xc0) !== 0x80;
+        return $this->isUnitBoundary($byteOffset);
     }
 
     public function isUnitBoundary(int $byteOffset): bool
     {
-        return $this->isCodePointBoundary($byteOffset);
+        // Keep repeated parser boundary checks local to the immutable buffer.
+        $length = strlen($this->bytes);
+        if ($byteOffset < 0 || $byteOffset > $length) {
+            throw new InvalidArgumentException('Byte offset is outside the source');
+        }
+
+        return $byteOffset === $length || (ord($this->bytes[$byteOffset]) & 0xc0) !== 0x80;
     }
 
     public function byteOffsetForCodePointPosition(int $position): int

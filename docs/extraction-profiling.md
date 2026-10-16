@@ -1,0 +1,89 @@
+# Extraction profiling
+
+The extraction profile separates recognition and CST construction from lazy
+application values, cached access, result release and cycle collection. It uses
+the existing [Binding comparison](binding-comparison.md) grammar and independent
+expected values. The profiler itself requires only the root development
+dependencies; installing Binding is unnecessary.
+
+## Reproduce
+
+```sh
+php tools/profile-extraction.php --case=nested --size=128 --iterations=15
+php tools/profile-extraction.php --case=record --iterations=15
+php tools/profile-extraction.php --case=nested --iterations=1 --trace
+```
+
+Use `--output=path.json` to save a report. `--source-dir=path/to/src` loads an
+alternate source snapshot in a fresh process, allowing the same profiler,
+grammar and oracle to measure a baseline. Only accepted comparison cases are
+supported. Each worker prepares the frozen grammar and warms it twice before
+measurement. Source construction is separate from recognition. Full consumption,
+expected domain values, cached identity, raw source reconstruction, CST size and
+serialized tree hashes are checked outside the timed phases.
+
+Parser-entry metrics run separately so their retained position map does not
+distort phase memory. Reports include PHP/PCRE versions and source/tool hashes.
+Memory deltas describe retained PHP usage above a warmed baseline, including the
+source and result; they are neither peak memory nor cumulative allocated bytes.
+Input fixtures and prepared grammars are already retained at that baseline.
+
+`--trace` uses the existing development dependency `nikic/php-parser` to wrap
+method bodies and `new` expressions in **copies** under ignored
+`build/profile-instrumented-PID/`. Production source and dependencies are unchanged.
+Recognition and first-value traces are separate. Generator methods are excluded
+from method timing. Counts cover source methods and their `new` expressions,
+including discarded speculative objects; they exclude PHP internal allocations
+and constructors outside that source tree. Probe overhead distorts traced times
+and memory, so use untraced workers for performance conclusions. Instrumented
+self-times help locate candidates but do not establish native CPU percentages.
+
+## Local result, 2026-10-16
+
+The [raw artifact](benchmarks/extraction-profile-2026-10-16.json) records PHP
+8.2.10 on Windows, five fresh workers per variant and case, with 15 observations
+per worker. Execution alternated baseline/current order. Values below are the
+median of the five worker medians, not confidence intervals.
+
+| Phase | Nested before | Nested after | Record before | Record after |
+| --- | ---: | ---: | ---: | ---: |
+| Source construction | 5.3 µs | 5.8 µs | 1.2 µs | 1.4 µs |
+| Recognition and CST | 12.887 ms | 12.504 ms | 1.161 ms | 1.233 ms |
+| First value | 195.9 µs | 193.5 µs | 23.6 µs | 25.2 µs |
+| Cached value | 1.1 µs | 1.1 µs | 1.0 µs | 1.0 µs |
+| Result release | 83.6 µs | 88.5 µs | 8.4 µs | 9.5 µs |
+| Cycle collection | 13.6 µs | 13.3 µs | 3.6 µs | 4.8 µs |
+
+The nested case retains 822 CST nodes and uses 596,952 bytes after recognition,
+600,792 after value projection. The record retains 69 nodes and uses 70,440 and
+71,912 bytes respectively. These counts, deltas and tree hashes were unchanged
+by the optimization. Recognition metrics were also unchanged: the nested case
+has 1,104 parser entries and eight repeated parser/position pairs.
+
+The nested recognition trace creates 2,207 spans, 828 successes, 828 concrete
+nodes, 550 execution states, 276 failures, 276 diagnostics, 272 trivia directives,
+143 semantic projections, one session and one result. First-value projection
+creates another 143 result wrappers, one execution state and one semantic
+projection. These are source allocation counts, not retained-object counts;
+application object construction is outside the instrumented source tree.
+
+## Applied optimization and next candidate
+
+Repeated UTF-8 boundary checks previously traversed several forwarding and
+validation methods. `Utf8Source::isUnitBoundary()` now checks the immutable buffer
+bounds and continuation byte directly; the code-point API delegates to it.
+Both APIs preserve byte offsets, interior-byte rejection, EOF and out-of-range
+exceptions, covered by multibyte and extreme-offset regression cases.
+
+This removes 7,966 net traced method calls from nested recognition (69,909 to
+61,943), with unchanged allocation counts. A separate 440,000-call boundary
+probe took 114.43 to 103.45 ms in the nested workers and 112.78 to 100.76 ms in
+the record workers: approximately 10–11% faster in isolation. The nested parse
+improved in this run while the record slowed; exploratory runs varied as well.
+No consistent end-to-end parsing speedup or memory reduction is established.
+
+Recognition/CST work remains much larger than domain projection. The next
+candidate is reducing intermediate span and execution-state allocation while
+preserving immutable trees, diagnostics, deferred values and explicit effects.
+That requires its own allocation/lifetime analysis and equivalence tests.
+The small repeated-position count does not justify enabling memoization.
