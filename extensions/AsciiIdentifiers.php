@@ -11,7 +11,13 @@ use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 /** Optional ASCII identifier factories composed entirely from the existing parser graph. */
 final class AsciiIdentifiers implements SyntaxExtension
 {
-    public function factories(): iterable
+    public function fluents(): iterable
+    {
+        yield 'asciiIdentifier' => static fn(C $item): C => $item->then(self::identifier());
+        yield 'asciiKeyword' => static fn(C $item, string $word): C => $item->then(self::keyword($word));
+    }
+
+    public function rules(): iterable
     {
         yield 'asciiIdentifier' => self::identifier(...);
         yield 'asciiKeyword' => self::keyword(...);

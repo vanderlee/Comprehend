@@ -23,7 +23,13 @@ use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 /** Optional precedence-table authoring; all recognition delegates to the existing combinator runtime. */
 final class Expressions implements SyntaxExtension
 {
-    public function factories(): iterable
+    public function fluents(): iterable
+    {
+        yield 'operatorExpression' => self::expression(...);
+        yield 'expressionChoice' => self::choice(...);
+    }
+
+    public function rules(): iterable
     {
         yield 'operatorExpression' => self::expression(...);
         yield 'expressionChoice' => self::choice(...);

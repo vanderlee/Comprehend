@@ -22,17 +22,20 @@ final class Syntax
     }
 
     /** Existing expressions retain their original catalog. */
-    public function define(string $name, callable $factory): self
+    public function defineRule(string $name, callable $factory): self
     {
         return new self($this->catalog->define($name, $factory));
     }
 
-    /** Install factories through define(); the original vocabulary survives installation errors. */
+    /** Install rule then fluent factories; the original vocabulary survives installation errors. */
     public function extend(SyntaxExtension $extension): self
     {
         $syntax = $this;
-        foreach ($extension->factories() as $name => $factory) {
-            $syntax = $syntax->define($name, $factory);
+        foreach ($extension->rules() as $name => $factory) {
+            $syntax = $syntax->defineRule($name, $factory);
+        }
+        foreach ($extension->fluents() as $name => $factory) {
+            $syntax = $syntax->defineFluent($name, $factory);
         }
 
         return $syntax;
@@ -66,9 +69,9 @@ final class Syntax
     }
 
     /** @internal Authoring dispatch only. */
-    public function factory(string $name): ?Closure
+    public function rule(string $name): ?Closure
     {
-        return $this->catalog->static($name);
+        return $this->catalog->rule($name);
     }
 
     /** @internal Authoring dispatch only. */

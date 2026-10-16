@@ -33,8 +33,8 @@ abstract class CatalogTest extends TestCase
     public static function reservedNames(): array
     {
         return [
-            ['text'], ['parse'], ['define'], ['plus'], ['invoke'], ['expression'],
-            ['syntaxExpression'], ['not-a-method'], [''],
+            ['text'], ['parse'], ['defineRule'], ['plus'], ['invoke'],
+            ['expression'], ['syntaxExpression'], ['not-a-method'], [''],
         ];
     }
 }
@@ -46,7 +46,7 @@ test('static repetition factories preserve bounds and named arguments', function
     string $input,
     bool $accepted,
 ): void {
-    $factory = Catalog::builtinStatic($name);
+    $factory = Catalog::builtinRule($name);
     $this->assertNotNull($factory);
 
     $expression = $factory(parser: 'a');
@@ -64,7 +64,7 @@ test('static repetition detaches raw parsers and retains expression vocabulary',
     $this->assertFalse($repeated->parse('a')->success);
     $this->assertFalse($repeated->parse('aaaa')->success);
 
-    $syntax = Comprehend::syntax()->define('suffix', static fn(): Text => new Text('!'));
+    $syntax = Comprehend::syntax()->defineRule('suffix', static fn(): Text => new Text('!'));
     $expression = Comprehend::repeat(parser: $syntax->text('a'), min: 2, max: 3)->suffix();
 
     $this->assertTrue($expression->parse('aaa!')->success);
@@ -98,8 +98,8 @@ test('custom factories are case insensitive and catalogs are immutable', functio
     $factory = static fn(): Text => new Text('a');
     $extended = $catalog->define('Letter', $factory);
 
-    $this->assertNull($catalog->static('letter'));
-    $this->assertSame($factory, $extended->static('LETTER'));
+    $this->assertNull($catalog->rule('letter'));
+    $this->assertSame($factory, $extended->rule('LETTER'));
     $this->assertNull($extended->fluent('letter'));
     $this->assertContains('letter', $extended->names());
     $this->assertSame('many', Catalog::canonicalName('KLEENE'));

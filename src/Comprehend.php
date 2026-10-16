@@ -140,7 +140,7 @@ final class Comprehend
     public static function callSyntax(string $name, array $arguments, ?Syntax $syntax = null): self
     {
         $name = strtolower($name);
-        $factory = $syntax === null ? Catalog::builtinStatic($name) : $syntax->factory($name);
+        $factory = $syntax === null ? Catalog::builtinRule($name) : $syntax->rule($name);
         if ($factory === null) {
             throw new BadMethodCallException('Unknown syntax: ' . $name);
         }

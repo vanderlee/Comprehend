@@ -11,5 +11,11 @@ interface SyntaxExtension
      * Iterated during installation; factories themselves run only during grammar authoring.
      * @return iterable<string, callable>
      */
-    public function factories(): iterable;
+    public function rules(): iterable;
+
+    /**
+     * Iterated after rules(); callbacks receive the current facade before user arguments.
+     * @return iterable<string, callable>
+     */
+    public function fluents(): iterable;
 }

@@ -13,7 +13,7 @@ uses(TestCase::class);
 
 test('definitions create independent vocabularies', function (): void {
     $original = Syntax::create();
-    $extended = $original->define('greeting', static fn(): Text => new Text('hello'));
+    $extended = $original->defineRule('greeting', static fn(): Text => new Text('hello'));
 
     $this->assertNotContains('greeting', $original->names());
     $this->assertContains('greeting', $extended->names());

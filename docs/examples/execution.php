@@ -83,7 +83,7 @@ verify($rules->parseAll(new ByteSource('xx'))->success, 'parameterized named gra
 verify(C::text('a')->then(C::text('b'))->freeze()->parseAll(new ByteSource('ab'))->success, 'Comprehend composition');
 verify(C::text('a')->set('01')->text('!')->parse('a1!')->success, 'terminal chaining');
 verify(C::some(C::range('0', '9'))->parse('123')->success, 'static repetition');
-$syntax = C::syntax()->define('identifier', static fn(): C => C::range('a', 'z')->some()->lexeme()->named('identifier'));
+$syntax = C::syntax()->defineRule('identifier', static fn(): C => C::range('a', 'z')->some()->lexeme()->named('identifier'));
 $declaration = $syntax->text('let ')->identifier()->text(';');
 verify($declaration->parse('let example;')->ast()->firstNamed('identifier')->rawText() === 'example', 'scoped custom syntax');
 $uri = new Rfc3986();

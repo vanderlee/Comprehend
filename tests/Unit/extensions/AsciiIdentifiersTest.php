@@ -13,6 +13,28 @@ use Vanderlee\Comprehend\Extensions\AsciiIdentifiers;
 
 uses(TestCase::class);
 
+test('ascii fluents append tokens while preserving spacing boundaries and the original expression', function (): void {
+    $syntax = C::syntax()->extend(new AsciiIdentifiers());
+    $prefix = $syntax->text('@');
+    $declaration = $prefix->asciiKeyword(word: 'let')->asciiIdentifier()
+        ->spacing(C::text(' ')->many());
+    $result = $declaration->parse('@let name');
+    $this->assertTrue($result->success);
+    $this->assertSame('@let name', $result->rawText());
+    $this->assertSame('@let name', $result->value());
+    $this->assertFalse($declaration->parse('@letname')->success);
+    $this->assertFalse($declaration->parse('@let na me')->success);
+    $this->assertTrue($prefix->parse('@')->success);
+    $this->assertFalse($prefix->parse('@let name')->success);
+    $this->assertSame('name', $syntax->asciiIdentifier()->parse('name')->value());
+    $this->assertTrue($declaration->parse(new ByteSource('@let name'))->success);
+});
+
+test('ascii keyword fluent rejects invalid words during authoring', function (): void {
+    $this->expectException(InvalidArgumentException::class);
+    C::syntax()->extend(new AsciiIdentifiers())->text('@')->asciiKeyword(word: 'bad-word');
+});
+
 test('ascii identifiers accept only their explicit alphabet', function (string $input, bool $accepted): void {
     $syntax = C::syntax()->extend(new AsciiIdentifiers());
     $result = $syntax->asciiIdentifier()->parse($input);

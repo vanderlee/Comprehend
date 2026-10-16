@@ -256,13 +256,13 @@ with `$syntax->extend($extension)`. See [Syntax extensions](syntax-extensions.md
 for generator-based authoring and the optional ASCII identifier/keyword vocabulary.
 
 ```php
-$syntax = Comprehend::syntax()->define('word',
+$syntax = Comprehend::syntax()->defineRule('word',
     static fn(): Comprehend => Comprehend::range('a', 'z')->some()->lexeme()->named('word'));
 $grammar = $syntax->text('let ')->word()->text(';');
 $grammar->parse('let name;')->success; // true
 ```
 
-`define(name, callable)` returns a new immutable Syntax vocabulary. Factories
+`defineRule(name, callable)` returns a new immutable Syntax vocabulary. Factories
 may return Comprehend, custom Parser or Definition; any other result throws.
 Factories run during authoring, and should only construct syntax. Named/default
 parameters and variadic arguments follow the factory's typed signature. There

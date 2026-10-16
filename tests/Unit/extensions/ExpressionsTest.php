@@ -14,6 +14,34 @@ use Vanderlee\Comprehend\Extensions\Expressions;
 
 uses(TestCase::class);
 
+test('fluent expressions use the current value as the primary and retain the vocabulary', function (): void {
+    $syntax = C::syntax()->extend(new Expressions());
+    $calls = 0;
+    $number = $syntax->regex('/[0-9]+/A')->mapText('intval');
+    $expression = $number->operatorExpression(
+        O::infixLeft('+', 10, static function (int $a, int $b) use (&$calls): int {
+            ++$calls;
+            return $a + $b;
+        }),
+        O::infixLeft('*', 20, static fn(int $a, int $b): int => $a * $b),
+    )->spacing(C::text(' ')->many());
+    $result = $expression->parse('2 + 3 * 4');
+    $this->assertTrue($result->success);
+    $this->assertSame('2 + 3 * 4', $result->rawText());
+    $this->assertSame(0, $calls);
+    $this->assertSame(14, $result->value());
+    $this->assertSame(14, $result->value());
+    $this->assertSame(1, $calls);
+    $this->assertSame(2, $number->parse('2')->value());
+    $this->assertFalse($number->parse('2+3')->success);
+    $this->assertSame(7, $number->operatorExpression()->parse('7')->value());
+    $choice = $number->expressionChoice(C::text('x')->mapText(static fn(): int => 99));
+    $this->assertSame(7, $choice->parse('7')->value());
+    $this->assertSame(99, $choice->parse('x')->value());
+    $this->assertSame(99, $choice->expressionChoice('y')->parse('x')->value());
+    $this->assertFalse($choice->parse('7x')->success);
+});
+
 test('expression tables respect precedence associativity and repeated unary operators', function (
     string $input,
     int $expected,

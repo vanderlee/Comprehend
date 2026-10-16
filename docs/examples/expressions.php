@@ -10,6 +10,12 @@ use Vanderlee\Comprehend\Extensions\Expression\Operator as O;
 use Vanderlee\Comprehend\Extensions\Expressions;
 
 $syntax = C::syntax()->extend(new Expressions());
+$fluent = $syntax->regex('/[0-9]+/A')->mapText('intval')->expressionChoice(
+    C::text('one')->mapText(static fn(): int => 1),
+)->operatorExpression(O::infixLeft('+', 10, static fn(int $a, int $b): int => $a + $b));
+if ($fluent->parse('one+2')->value() !== 3) {
+    throw new RuntimeException('Fluent expression composition failed');
+}
 $number = C::regex('/[0-9]+/A')->named('number')->mapText('intval');
 $rules = new Ruleset();
 $primary = $syntax->expressionChoice($number, $rules->rule('expr')->between('(', ')'));

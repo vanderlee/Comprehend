@@ -28,13 +28,13 @@ abstract class SyntaxDispatchTest extends TestCase
             [static fn() => C::text('a')->misspelled(), BadMethodCallException::class],
             [static fn() => C::text('a')->thenText('b'), BadMethodCallException::class],
             [static fn() => C::someOf('a'), BadMethodCallException::class],
-            [static fn() => C::syntax()->define('text', static fn() => C::text('a')), InvalidArgumentException::class],
-            [static fn() => C::syntax()->define('parse', static fn() => C::text('a')), InvalidArgumentException::class],
+            [static fn() => C::syntax()->defineRule('text', static fn() => C::text('a')), InvalidArgumentException::class],
+            [static fn() => C::syntax()->defineRule('parse', static fn() => C::text('a')), InvalidArgumentException::class],
             [
-                static fn() => C::syntax()->define('not-a-method', static fn() => C::text('a')),
+                static fn() => C::syntax()->defineRule('not-a-method', static fn() => C::text('a')),
                 InvalidArgumentException::class,
             ],
-            [static fn() => C::syntax()->define('bad', static fn() => 'text')->bad(), UnexpectedValueException::class],
+            [static fn() => C::syntax()->defineRule('bad', static fn() => 'text')->bad(), UnexpectedValueException::class],
         ];
     }
 }
@@ -73,14 +73,14 @@ test('static and fluent repetition signatures retain their meaning', function ()
 });
 
 test('scoped syntax can start and continue without affecting other scopes', function (): void {
-    $syntax = C::syntax()->define('word', static fn(): C => C::range('a', 'z')->some()->lexeme()->named('word'));
+    $syntax = C::syntax()->defineRule('word', static fn(): C => C::range('a', 'z')->some()->lexeme()->named('word'));
     $word = $syntax->word();
     $grammar = $syntax->text('let ')->word()->text(';');
     $this->assertTrue($grammar->parse('let name;')->success);
     $this->assertSame('name', $grammar->parse('let name;')->ast()->firstNamed('word')->rawText());
     $this->assertTrue($word->parse('hello')->success);
     $this->assertFalse($word->parse('hello;')->success);
-    $changed = $syntax->define('word', static fn(): C => C::text('different'));
+    $changed = $syntax->defineRule('word', static fn(): C => C::text('different'));
     $this->assertTrue($changed->word()->parse('different')->success);
     $this->assertTrue($grammar->parse('let name;')->success);
     $this->assertTrue($word->tag('token')->some()->text(':')->word()->parse('name:next')->success);
@@ -92,21 +92,21 @@ test('scoped syntax can start and continue without affecting other scopes', func
 
 test('custom factories forward named arguments and normalize typed results', function (): void {
     $syntax = C::syntax()
-        ->define(
+        ->defineRule(
             'literal',
             static fn(string $value, bool $upper = false): Text => new Text($upper ? strtoupper($value) : $value),
         )
-        ->define('defined', static fn(): Definition => new Definition(C::text('x')));
+        ->defineRule('defined', static fn(): Definition => new Definition(C::text('x')));
     $this->assertTrue($syntax->literal(upper: true, value: 'a')->literal(value: 'b')->parse('Ab')->success);
     $this->assertTrue($syntax->call('LITERAL', value: 'a')->defined()->parse('ax')->success);
 });
 
 test('factory results use the calling vocabulary while unscoped repetition retains their own', function (): void {
-    $original = C::syntax()->define('suffix', static fn(): C => C::text('!'));
+    $original = C::syntax()->defineRule('suffix', static fn(): C => C::text('!'));
     $returned = $original->text('a');
     $caller = C::syntax()
-        ->define('suffix', static fn(): C => C::text('?'))
-        ->define('borrowed', static fn(): C => $returned)
+        ->defineRule('suffix', static fn(): C => C::text('?'))
+        ->defineRule('borrowed', static fn(): C => $returned)
         ->defineFluent('borrow', static fn(C $item): C => $returned);
 
     $this->assertTrue($caller->borrowed()->suffix()->parse('a?')->success);
@@ -133,7 +133,7 @@ test('custom fluents can wrap the current expression', function (): void {
 
 test('factories run for every expression and never during parsing', function (): void {
     $calls = 0;
-    $syntax = C::syntax()->define('token', static function () use (&$calls): C {
+    $syntax = C::syntax()->defineRule('token', static function () use (&$calls): C {
         return C::text((string) ++$calls);
     });
     $first = $syntax->token();
@@ -147,7 +147,7 @@ test('factories run for every expression and never during parsing', function ():
 
 test('statics and fluents with the same name remain independent', function (): void {
     $syntax = C::syntax()
-        ->define('token', static fn(string $value): C => C::text($value))
+        ->defineRule('token', static fn(string $value): C => C::text($value))
         ->defineFluent('token', static fn(C $item, string $value): C => C::sequence('[', $item, $value, ']'));
     $original = $syntax->token('a');
     $this->assertTrue($original->token('b')->parse('[ab]')->success);
@@ -162,7 +162,7 @@ test('statics and fluents with the same name remain independent', function (): v
 });
 
 test('callback composition preserves no op identity and scoped directives', function (): void {
-    $syntax = C::syntax()->define('suffix', static fn(): C => C::text('!'));
+    $syntax = C::syntax()->defineRule('suffix', static fn(): C => C::text('!'));
     $base = $syntax->text('a')->caseSensitive(sensitivity: false)->named(leaf: false, name: 'letter');
     $this->assertSame($base, $base->then());
     $this->assertSame($base, $base->or());

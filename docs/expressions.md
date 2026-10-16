@@ -26,6 +26,22 @@ $result->rawText(); // '2 + 3 * 4'
 ```
 
 The original Syntax vocabulary and global Comprehend factories remain unchanged.
+Both factories also have fluent forms. `primary->operatorExpression(...operators)`
+uses the current expression as its primary, rather than appending another parser.
+`primary->expressionChoice(...alternatives)` includes the current expression as
+the first alternative and preserves the selected value lazily. Start the primary
+through the extended vocabulary to keep these operations available:
+
+```php
+$expression = $syntax->regex('/[0-9]+/A')->mapText('intval')->operatorExpression(
+    O::infixLeft('+', 10, static fn(int $a, int $b): int => $a + $b),
+);
+$expression->parse('2+3')->value(); // 5
+```
+
+These fluent forms replace the previous chained rule fallback, which appended a
+separately constructed expression or choice to the current expression.
+
 No operators are supplied implicitly. Operands and operator syntax accept facades,
 Parser objects or literal strings; operator definitions are explicit `Operator`
 objects. Definitions detach caller-owned parser builders when constructed.

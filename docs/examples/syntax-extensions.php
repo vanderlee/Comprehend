@@ -10,9 +10,14 @@ use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 
 $base = C::syntax();
 $syntax = $base->extend(new AsciiIdentifiers())->extend(new class implements SyntaxExtension {
-    public function factories(): iterable
+    public function rules(): iterable
     {
         yield 'semicolon' => static fn(): C => C::text(';');
+    }
+
+    public function fluents(): iterable
+    {
+        return [];
     }
 });
 $declaration = $syntax->asciiKeyword('let')->ignoreThen($syntax->asciiIdentifier()->named('name'))
@@ -26,5 +31,20 @@ if ($declaration->parse('letname;')->success || $declaration->parse('let na me;'
 }
 if (in_array('asciiidentifier', $base->names(), true) || in_array('semicolon', $base->names(), true)) {
     throw new RuntimeException('Extensions modified the original vocabulary');
+}
+$delimiters = $syntax->extend(new class implements SyntaxExtension {
+    public function rules(): iterable
+    {
+        return [];
+    }
+
+    public function fluents(): iterable
+    {
+        yield 'parenthesized' => static fn(C $item): C => $item->between('(', ')');
+    }
+});
+$wrapped = $delimiters->asciiIdentifier()->parenthesized()->parse('(name)');
+if (!$wrapped->success || $wrapped->value() !== 'name' || $wrapped->rawText() !== '(name)') {
+    throw new RuntimeException('Fluent extension transformation failed');
 }
 echo "Optional extensions, keyword boundaries and source round trips agree.\n";

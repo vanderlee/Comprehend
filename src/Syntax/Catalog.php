@@ -130,7 +130,7 @@ final class Catalog
         return self::ALIASES[$name] ?? $name;
     }
 
-    public static function builtinStatic(string $name): ?Closure
+    public static function builtinRule(string $name): ?Closure
     {
         return match (self::canonicalName($name)) {
             'recoverdelimited' => self::recoverDelimited(...),
@@ -563,9 +563,9 @@ final class Catalog
         return $name;
     }
 
-    public function static(string $name): ?Closure
+    public function rule(string $name): ?Closure
     {
-        $builtin = self::builtinStatic($name);
+        $builtin = self::builtinRule($name);
         if ($builtin !== null) {
             return $builtin;
         }
