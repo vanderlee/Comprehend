@@ -16,6 +16,8 @@ use Vanderlee\Comprehend\Directive\Space;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\All;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
+use Vanderlee\Comprehend\Parser\Structure\Collect;
+use Vanderlee\Comprehend\Parser\Structure\ValueChoice;
 use Vanderlee\Comprehend\Parser\Structure\Except;
 use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
@@ -60,6 +62,8 @@ final class Catalog
         'octet',
         'literalwindow',
         'sequence',
+        'collect',
+        'valuechoice',
         'choice',
         'first',
         'longest',
@@ -85,6 +89,9 @@ final class Catalog
         'named',
         'tag',
         'mapvalue',
+        'map',
+        'collect',
+        'valuechoice',
         'maptext',
         'guard',
         'validatesemantic',
@@ -166,6 +173,12 @@ final class Catalog
             ),
             'literalwindow' => static fn(string $literal): Parser => Regex::literalWindow($literal),
             'sequence' => static fn(Comprehend|Parser|string ...$parsers): Parser => self::sequence($parsers),
+            'collect' => static fn(Comprehend|Parser|string ...$parsers): Parser => new Collect(
+                ...array_values(array_map(self::parser(...), $parsers)),
+            ),
+            'valuechoice' => static fn(Comprehend|Parser|string ...$parsers): Parser => new ValueChoice(
+                ...array_values(array_map(self::parser(...), $parsers)),
+            ),
             'choice', 'or' => static fn(Comprehend|Parser|string ...$parsers): Parser => self::choice($parsers),
             'first' => static fn(Comprehend|Parser|string ...$parsers): Parser => self::choice($parsers)->preferFirst(),
             'longest' => static fn(Comprehend|Parser|string ...$parsers): Parser
@@ -216,6 +229,15 @@ final class Catalog
     public static function builtinFluent(string $name): ?Closure
     {
         return match (self::canonicalName($name)) {
+            'collect' => static fn(Comprehend $item, Comprehend|Parser|string ...$next): Parser => new Collect(
+                $item->parser(),
+                ...array_values(array_map(self::parser(...), $next)),
+            ),
+            'valuechoice' => static fn(Comprehend $item, Comprehend|Parser|string ...$next): Parser => new ValueChoice(
+                $item->parser(),
+                ...array_values(array_map(self::parser(...), $next)),
+            ),
+            'map' => static fn(Comprehend $item, callable $mapper): Parser => $item->parser()->map($mapper),
             'thenignore' => static fn(Comprehend $item, Comprehend|Parser|string $next): Parser => new ValueSequence(
                 0,
                 $item->parser(),

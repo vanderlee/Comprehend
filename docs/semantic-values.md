@@ -1,5 +1,55 @@
 # Cached semantic output
 
+## Composing application values
+
+`map(callable(mixed): mixed)` transforms the current semantic value. Unlike
+`mapText()` and `mapValue()`, consecutive `map()` calls compose in order. Every
+stage is lazy and caches its value or thrown error for that recognition. Calling
+`mapText()` or `mapValue()` replaces the projection and clears earlier transforms.
+Low-level Parser objects also expose `map()`.
+
+`Comprehend::collect(...$operands)` recognizes a sequence and returns an ordered
+list of its direct operand values. Automatic trivia is excluded; nested collects
+remain nested. At least one operand is required. `Comprehend::valueChoice(...$alternatives)`
+recognizes an ordinary choice but forwards the selected alternative's value,
+including null. First/longest/shortest policies and diagnostics remain unchanged;
+discarded alternatives' mappings are not evaluated to select a match.
+
+```php
+use Vanderlee\Comprehend\Comprehend as C;
+
+$amount = C::integer()->mapText('intval');
+$currency = C::valueChoice('USD', 'EUR');
+$money = C::collect($currency, $amount)
+    ->map(static fn(array $parts): object => (object) [
+        'currency' => $parts[0],
+        'amount' => $parts[1],
+    ])
+    ->spacing(C::text(' ')->many());
+
+$result = $money->parse('USD 12');
+$result->value()->amount; // 12 (int)
+$result->rawText();       // 'USD 12'
+```
+
+Both factories accept facades, Parser objects, or literal strings. Syntax
+vocabularies expose them too. Fluent `$a->collect($b)` and `$a->valueChoice($b)`
+include `$a` as the first operand and preserve nesting. Ordinary `sequence()`,
+`then()` and `choice()` retain their raw-text defaults.
+Low-level constructors are `new Collect(Parser ...$operands)` and
+`new ValueChoice(Parser ...$alternatives)` in `Parser\Structure`.
+
+These operations preserve the complete CST, source spans, named collections,
+semantic validators and explicit commit effects. Value inspection never commits.
+Mapping a collected sequence evaluates operand values in recognition order.
+An outer `mapText()` or `mapValue()` can replace collection/choice projection
+without evaluating its operand mappings. Run `php docs/examples/value-composition.php`.
+
+The names `map`, `collect` and `valueChoice` are reserved built-ins; custom Syntax
+registrations using those names must be renamed.
+
+## Mappings and named collections
+
 `mapValue(callable(ParseResult): mixed)` adds a lazy typed mapping. `value()`
 caches scalars, null, arrays, objects and thrown errors for that recognition.
 Without a mapping it returns raw text. Transparent runtime wrappers preserve

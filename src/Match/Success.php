@@ -182,6 +182,17 @@ class Success extends AbstractMatch
         $state->semanticProjection = $mapper === null ? null : new SemanticProjection($mapper);
     }
 
+    /** Capture the previous projection before installing the next cached stage. */
+    public function mapValue(callable $transform): void
+    {
+        $state = $this->executionState();
+        $child = $state->valueChild;
+        $projection = $state->semanticProjection ?? new SemanticProjection(null);
+        $this->setValueMapper(static fn(ParseResult $result): mixed => $transform(
+            $child !== null ? $child->getValue() : $projection->value($result),
+        ));
+    }
+
     public function getValue(): mixed
     {
         $state = $this->executionState();

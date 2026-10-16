@@ -140,6 +140,11 @@ supported PHP versions and the gated publication workflow.
 - [RFC libraries](docs/libraries.md), [contributing](docs/contribute.md)
 - [Phase 2A removal inventory](docs/canonical-runtime.md)
 
+For application values, `map()` transforms an existing value, `collect()` builds
+an ordered list of operand values, and `valueChoice()` forwards the selected
+alternative's value. These projections remain lazy and cached while retaining
+the original syntax. See the [value composition example](docs/examples/value-composition.php).
+
 Install with Composer, then run:
 
 ```sh

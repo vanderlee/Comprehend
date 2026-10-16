@@ -40,6 +40,8 @@ abstract class Parser implements SnapshotParticipant
      * @var callable|null
      */
     private $valueMapper = null;
+    /** @var list<callable> */
+    private array $valueTransforms = [];
     /**
      * @var list<callable>
      */
@@ -149,7 +151,8 @@ abstract class Parser implements SnapshotParticipant
     {
         return $this->nodeName !== null || $this->nodeTags !== [] || $this->nodeGroup !== null
             || $this->semanticLeaf || $this->ruleName !== null || $this->valueMapper !== null
-            || $this->guards !== [] || $this->semanticValidators !== [] || $this->effects !== []
+            || $this->valueTransforms !== [] || $this->guards !== []
+            || $this->semanticValidators !== [] || $this->effects !== []
             || $this->resultCallbacks !== [] || $this->assignCallbacks !== [];
     }
 
@@ -177,6 +180,15 @@ abstract class Parser implements SnapshotParticipant
     public function mapValue(callable $mapper): static
     {
         $this->valueMapper = $mapper;
+        $this->valueTransforms = [];
+
+        return $this;
+    }
+
+    /** Transform the current lazy value; mapValue() replaces this projection chain. */
+    public function map(callable $mapper): static
+    {
+        $this->valueTransforms[] = $mapper;
 
         return $this;
     }
@@ -381,6 +393,9 @@ abstract class Parser implements SnapshotParticipant
             $match->setValueMapper($this->valueMapper);
         }
         $match->addSemanticValidators($this->semanticValidators);
+        foreach ($this->valueTransforms as $transform) {
+            $match->mapValue($transform);
+        }
 
         foreach ($this->guards as $guard) {
             if (!$guard($match->node)) {
