@@ -87,3 +87,25 @@ candidate is reducing intermediate span and execution-state allocation while
 preserving immutable trees, diagnostics, deferred values and explicit effects.
 That requires its own allocation/lifetime analysis and equivalence tests.
 The small repeated-position count does not justify enabling memoization.
+
+## Span reuse experiment
+
+`Parser::success()` now reuses a single child's immutable span when source,
+start and end all match the parent interval. Parent and child still have separate
+execution records, concrete nodes, lazy values and effect lifecycles. Different
+intervals receive a new span; there is no pool or retained lookup table.
+
+The [span reuse artifact](benchmarks/span-reuse-2026-10-16.json) uses the same
+profiler, with five fresh workers per variant/case and 15 observations per worker,
+alternating execution order. Nested recognition creates 1,929 spans instead of
+2,207 (278 fewer, 12.6%). Retained memory after projection falls from 600,792 to
+574,392 bytes (4.4%); record memory falls from 71,912 to 69,416 bytes (3.5%).
+Tree hashes, parser-entry metrics and other source allocation counts agree.
+
+Median-of-worker-median recognition time was 11.976 ms before and 12.472 ms after
+for nested input; record time was 1.326 ms before and 1.315 ms after. These local
+measurements do not demonstrate a speed improvement. The change is retained for
+its lower allocation count and retained memory, with no claim that it closes
+the extraction throughput gap with Binding. Regression cases cover shared and
+different multibyte intervals, both single-child authoring forms, independent
+cached values and deferred, idempotent effects.

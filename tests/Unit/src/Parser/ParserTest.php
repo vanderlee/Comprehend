@@ -7,6 +7,7 @@ namespace Tests\Unit\src\Parser;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\FailureDiagnosticAtStart;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
@@ -34,6 +35,55 @@ abstract class ParserTest extends TestCase
 }
 
 uses(ParserTest::class);
+
+test('a wrapper shares only the child interval while retaining independent values and effects', function (
+    bool $arrayChild,
+    int $parentLength,
+): void {
+    $commits = [];
+    $child = (new Text("\u{e9}"))->mapValue(static fn(): string => 'child');
+    $child->onCommit(static function () use (&$commits): void {
+        $commits[] = 'child';
+    });
+    $parser = new class ($child, $arrayChild, $parentLength) extends Parser {
+        public ?AbstractMatch $childMatch = null;
+        private Parser $child;
+
+        public function __construct(Parser $child, private bool $arrayChild, private int $parentLength)
+        {
+            $this->child = $child;
+        }
+
+        protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
+        {
+            $child = $this->child->recognizeInSession($source, $byteOffset, $session);
+            assert($child instanceof Success);
+            $this->childMatch = $child;
+
+            return $this->success($source, $byteOffset, $this->parentLength, $this->arrayChild ? [$child] : $child);
+        }
+
+        public function __toString(): string
+        {
+            return 'wrapper';
+        }
+    };
+    $parser->mapValue(static fn(): string => 'parent');
+    $parser->onCommit(static function () use (&$commits): void {
+        $commits[] = 'parent';
+    });
+    $source = new Utf8Source("x\u{e9}!");
+    $result = $parser->matchPrefix($source, 1);
+    $this->assertTrue($result->success);
+    $this->assertSame($parentLength === 2 ? "\u{e9}" : "\u{e9}!", $result->rawText());
+    $this->assertSame($parentLength === 2, $result->span === $parser->childMatch->span);
+    $this->assertSame('parent', $result->value());
+    $this->assertSame('child', $parser->childMatch->getValue());
+    $this->assertSame([], $commits);
+    $result->commit();
+    $result->commit();
+    $this->assertSame(['child', 'parent'], $commits);
+})->with([false, true])->with([2, 3]);
 
 test('explicit diagnostic names take precedence after the class label has been used', function () {
     $parser = new Text('a');

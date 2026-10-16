@@ -329,7 +329,14 @@ abstract class Parser implements SnapshotParticipant
     protected function success(Source $source, int $offset, int $length = 0, array|Success $children = []): Success
     {
         $success = new Success($length, is_array($children) ? $children : [$children]);
-        $span = $source->span($offset, $offset + $length);
+        $childSpan = $children instanceof Success
+            ? $children->span
+            : (count($children) === 1 ? $children[0]->span : null);
+        // Wrappers can share an immutable interval without sharing execution state.
+        $span = $childSpan !== null && $childSpan->source === $source
+            && $childSpan->start === $offset && $childSpan->end === $offset + $length
+            ? $childSpan
+            : $source->span($offset, $offset + $length);
         $success->setSourceMetadata($span, null);
         $this->bindResultCallbacks($success, $span);
         $this->bindCommitEffects($success, $span);
