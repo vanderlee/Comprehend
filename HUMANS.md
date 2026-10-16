@@ -7,7 +7,6 @@ AI AGENTS MUST NOT USE THIS FILE!
   - labels
   - value pipelines and folds
   - structured validation
-- Apply some traits for common use cases
 - Comparative analysis
 - Move core to extension?
 

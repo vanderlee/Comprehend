@@ -94,15 +94,13 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
     {
         parent::copyDependencies($context);
         $this->parser = $context->copy($this->parser);
-        if ($this->spacer !== null) {
-            $this->spacer = $context->copy($this->spacer);
-        }
+        $this->copySpacer($context);
     }
 
     /** @return list<Parser> */
     public function children(): array
     {
-        return $this->spacer === null ? [$this->parser] : [$this->parser, $this->spacer];
+        return $this->childrenWithSpacer([$this->parser]);
     }
 
     public function __toString(): string

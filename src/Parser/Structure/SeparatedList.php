@@ -46,12 +46,7 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
     /** @return list<Parser> */
     public function children(): array
     {
-        $children = [$this->item, $this->separator];
-        if ($this->spacer !== null) {
-            $children[] = $this->spacer;
-        }
-
-        return $children;
+        return $this->childrenWithSpacer([$this->item, $this->separator]);
     }
 
     protected function copyDependencies(GraphSnapshot $context): void
@@ -59,9 +54,7 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
         parent::copyDependencies($context);
         $this->item = $context->copy($this->item);
         $this->separator = $context->copy($this->separator);
-        if ($this->spacer !== null) {
-            $this->spacer = $context->copy($this->spacer);
-        }
+        $this->copySpacer($context);
     }
 
     /** @return list<Parser> */

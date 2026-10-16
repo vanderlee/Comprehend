@@ -79,20 +79,13 @@ class Sequence extends IterableParser implements AnalyzableParser, ReusableSnaps
     protected function copyDependencies(GraphSnapshot $context): void
     {
         parent::copyDependencies($context);
-        if ($this->spacer !== null) {
-            $this->spacer = $context->copy($this->spacer);
-        }
+        $this->copySpacer($context);
     }
 
     /** @return list<Parser> */
     public function children(): array
     {
-        $children = parent::children();
-        if ($this->spacer !== null) {
-            $children[] = $this->spacer;
-        }
-
-        return $children;
+        return $this->childrenWithSpacer(parent::children());
     }
 
     public function __toString(): string

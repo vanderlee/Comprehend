@@ -13,12 +13,37 @@ use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Builder\SnapshotParticipant;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\SeparatedList;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\ByteSource;
 
 uses(TestCase::class);
+
+test('spacing dependencies preserve sharing and snapshot isolation', function (string $kind): void {
+    $spacer = (new Stub())->setParser(new Text(' '));
+    $parser = match ($kind) {
+        'sequence' => new Sequence(new Text('a'), new Text('a')),
+        'repeat' => Repeat::exact(new Text('a'), 2),
+        'separated' => new SeparatedList(new Text('a'), new Text(','), 2, 2),
+    };
+    $parser->spacing($spacer);
+    $context = new GraphSnapshot();
+    $copy = $context->copy($parser);
+    $children = $copy->children();
+    $copiedSpacer = $children[count($children) - 1];
+
+    $this->assertNotSame($spacer, $copiedSpacer);
+    $this->assertSame($context->copy($spacer), $copiedSpacer);
+    $spacer->setParser(new Text('_'));
+
+    $originalInput = $kind === 'separated' ? 'a , a' : 'a a';
+    $changedInput = $kind === 'separated' ? 'a_,_a' : 'a_a';
+    $this->assertTrue($copy->parseAll(new ByteSource($originalInput))->success);
+    $this->assertFalse($copy->parseAll(new ByteSource($changedInput))->success);
+    $this->assertTrue($parser->parseAll(new ByteSource($changedInput))->success);
+})->with(['sequence', 'repeat', 'separated']);
 
 test('custom participant preserves recursive sharing and isolation', function (): void {
     $parser = new class extends Stub implements SnapshotParticipant {

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 
 /**
- * Adds an explicit intervening-trivia policy to Sequence and Repeat. Pushes the configured
+ * Adds an explicit intervening-trivia policy to composite parsers. Pushes the configured
  * spacer into ParseSession; null disables spacing and an unset policy inherits its scope.
  */
 trait SpacingTrait
@@ -22,6 +23,26 @@ trait SpacingTrait
         $this->hasSpacingPolicy = true;
 
         return $this;
+    }
+
+    private function copySpacer(GraphSnapshot $context): void
+    {
+        if ($this->spacer !== null) {
+            $this->spacer = $context->copy($this->spacer);
+        }
+    }
+
+    /**
+     * @param list<Parser> $children
+     * @return list<Parser>
+     */
+    private function childrenWithSpacer(array $children): array
+    {
+        if ($this->spacer !== null) {
+            $children[] = $this->spacer;
+        }
+
+        return $children;
     }
 
     private function pushSpacer(ParseSession $context): void
