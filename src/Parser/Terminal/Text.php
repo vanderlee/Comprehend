@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
 use InvalidArgumentException;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
@@ -21,8 +23,9 @@ use Vanderlee\Comprehend\Source\Utf8Source;
  *
  * @author Martijn
  */
-class Text extends Parser implements AnalyzableParser
+class Text extends Parser implements AnalyzableParser, ReusableSnapshot
 {
+    use ExactClassSnapshotReuseTrait;
     use DefaultAnalysisTrait;
     use DiagnosticExpectationTrait;
     use CaseSensitiveTrait;

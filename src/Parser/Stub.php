@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Parser;
 
 use UnexpectedValueException;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
@@ -20,8 +22,9 @@ use LogicException;
  *
  * @author Martijn
  */
-class Stub extends Parser implements AnalyzableParser
+class Stub extends Parser implements AnalyzableParser, ReusableSnapshot
 {
+    use ExactClassSnapshotReuseTrait;
     use ForwardingAnalysisTrait;
 
     /**

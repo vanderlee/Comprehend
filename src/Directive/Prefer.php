@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Directive;
 
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
@@ -14,8 +16,10 @@ use Vanderlee\Comprehend\Source\Source;
  * Overrides first, longest or shortest choice selection within a subtree. Scopes the
  * ParseSession preference consumed by Choice and restores it after recognition.
  */
-class Prefer extends UnaryDirective
+class Prefer extends UnaryDirective implements ReusableSnapshot
 {
+    use ExactClassSnapshotReuseTrait;
+
     public function __construct(private readonly ChoicePolicy $preference, Parser $parser)
     {
         parent::__construct($parser);

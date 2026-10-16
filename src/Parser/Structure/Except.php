@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
@@ -22,8 +24,9 @@ use Vanderlee\Comprehend\Source\Source;
  *
  * @author Martijn
  */
-class Except extends Parser implements AnalyzableParser, FailureDiagnosticAtStart
+class Except extends Parser implements AnalyzableParser, FailureDiagnosticAtStart, ReusableSnapshot
 {
+    use ExactClassSnapshotReuseTrait;
     use DefaultAnalysisTrait;
 
     private Parser $parserMatch;

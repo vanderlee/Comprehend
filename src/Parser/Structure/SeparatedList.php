@@ -6,6 +6,8 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 
 use InvalidArgumentException;
 use LogicException;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
@@ -17,8 +19,9 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
 /** Recognizes separated, consuming items; keeps syntax while lazily projecting item values. */
-class SeparatedList extends Parser implements AnalyzableParser
+class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
 {
+    use ExactClassSnapshotReuseTrait;
     use DefaultAnalysisTrait;
     use SpacingTrait;
 

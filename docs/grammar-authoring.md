@@ -306,15 +306,17 @@ such as `assignTo()` for referenced assignments.
 
 ### Direct parsing and numeric factories
 
-`parse()` is a complete-input alias for `parseAll()`. A facade made entirely of
-owned built-in parser nodes prepares its snapshot once and reuses it for later
+`parse()` is a complete-input alias for `parseAll()`. A facade whose entire graph
+declares the `ReusableSnapshot` capability prepares its snapshot once and reuses it for later
 calls, including explicit `freeze()` calls. This cache belongs to that immutable
 expression; composition and metadata changes create a new expression. Recognition
 results, semantic caches and effects remain separate for every parse.
 
-Deferred rule references, Definition implementations and custom parser classes
+Deferred rule references, Definition implementations and custom parsers without that capability
 still freeze freshly on each call, so builder edits and factory state changes
-remain visible. Custom subclasses do not inherit built-in cache eligibility.
+remain visible. Custom subclasses do not inherit built-in cache eligibility merely
+by inheriting the interface; they must explicitly declare their own guarantee.
+See [preparation reuse](source-and-extension-contract.md#optional-preparation-reuse).
 Retain `freeze()` once when those graphs should use stable definitions. Per-call
 spacing composition creates a separate expression rather than a global cache.
 Strings always mean validated UTF-8, never automatic encoding detection;

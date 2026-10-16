@@ -6,6 +6,8 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 
 use InvalidArgumentException;
 use LogicException;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
@@ -20,8 +22,9 @@ use Vanderlee\Comprehend\Source\Source;
  * Greedily recognizes a child within repetition bounds, with optional intervening trivia.
  * Rejects non-progressing matches to prevent nullable children from causing unbounded loops.
  */
-class Repeat extends Parser implements AnalyzableParser
+class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
 {
+    use ExactClassSnapshotReuseTrait;
     use DefaultAnalysisTrait;
     use SpacingTrait;
 

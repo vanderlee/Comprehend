@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Directive;
 
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -14,8 +16,10 @@ use Vanderlee\Comprehend\Source\Source;
  * Configures or disables automatic intervening trivia for a parser subtree. Scopes the spacer
  * in ParseSession so enclosing grammars retain their own spacing policy.
  */
-class Space extends UnaryDirective
+class Space extends UnaryDirective implements ReusableSnapshot
 {
+    use ExactClassSnapshotReuseTrait;
+
     public function __construct(private ?Parser $spacer, Parser $parser)
     {
         parent::__construct($parser);

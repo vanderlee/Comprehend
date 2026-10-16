@@ -2,10 +2,9 @@
 AI AGENTS MUST NOT USE THIS FILE!
 
 ## To do
-- Benchmark and improve performance
+- MkDocs page
 - Implement some known languages as examples?
 - Implement usability features
-  - delimiters/value selection: between, keepFirst, keepSecond, delimited_by, then_ignore, ignore_then
   - keywords/identifiers
   - labels
   - expression builder
@@ -13,3 +12,8 @@ AI AGENTS MUST NOT USE THIS FILE!
   - structured validation
   - recovery
 - Fault tolerance?
+- Apply some traits for common use cases
+
+## Ongoing concerns
+- Benchmark and improve performance
+- Maintain Library

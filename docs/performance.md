@@ -39,7 +39,8 @@ and UTF-8 source results should only be compared under the same encoding mode.
 ### Small facades and URI grammar (2026-10-16)
 
 Owned built-in facade graphs now retain one prepared FrozenGrammar per immutable
-expression. Deferred rules, Definition implementations and custom classes still
+expression. Deferred rules, Definition implementations and custom classes without
+an explicit [reuse capability](source-and-extension-contract.md#optional-preparation-reuse)
 prepare freshly. No recognition results or semantic/effect state are shared by
 this cache. Session setup also reuses immutable default limits, recursion tracking
 uses integer parser/position keys, default diagnostic labels are cached, and plain

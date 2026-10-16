@@ -6,12 +6,16 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 
 use InvalidArgumentException;
 use LogicException;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /** Recognizes every operand while returning only the selected operand's lazy value. */
-class ValueSequence extends Sequence
+class ValueSequence extends Sequence implements ReusableSnapshot
 {
+    use ExactClassSnapshotReuseTrait;
+
     /** $valueIndex is a zero-based operand position, independent of concrete trivia children. */
     public function __construct(private readonly int $valueIndex, Parser ...$parsers)
     {

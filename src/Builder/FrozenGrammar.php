@@ -41,7 +41,7 @@ final class FrozenGrammar
         return new self($root, $warnings, $snapshot->isReusable());
     }
 
-    /** @internal A custom freeze override must not opt its mutable source into facade caching. */
+    /** @internal Check the original root too: freeze overrides must declare their own reuse guarantee. */
     public function canReuseFor(Parser $parser): bool
     {
         return $this->reusable && GraphSnapshot::isReusableParser($parser);

@@ -221,7 +221,7 @@ final class Comprehend
         return $grammar;
     }
 
-    /** Complete-input parsing; owned built-in graphs reuse preparation, deferred/custom graphs refresh. */
+    /** Complete-input parsing; reuse-capable graphs cache preparation, other graphs refresh. */
     public function parse(
         string|Source $source,
         int $byteOffset = 0,

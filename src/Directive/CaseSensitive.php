@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Directive;
 
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -13,8 +15,10 @@ use Vanderlee\Comprehend\Source\Source;
  * Overrides case sensitivity for a parser subtree. Pushes a ParseSession policy and restores it
  * even when recognition fails or throws.
  */
-class CaseSensitive extends UnaryDirective
+class CaseSensitive extends UnaryDirective implements ReusableSnapshot
 {
+    use ExactClassSnapshotReuseTrait;
+
     public function __construct(private readonly bool $sensitivity, Parser $parser)
     {
         parent::__construct($parser);

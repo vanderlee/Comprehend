@@ -273,6 +273,31 @@ Built-in participants retain their distinct rules: RuleReference owns parameteri
 identity and target binding; Implementation resets cached targets before fresh
 materialization; AbstractRuleset keeps only its freshly resolved root when freezing.
 
+## Optional preparation reuse
+
+Parsers may implement `Builder\ReusableSnapshot` and declare
+`supportsSnapshotReuse(): bool`. Returning true permits the immutable facade to
+cache a prepared FrozenGrammar, provided every copied participant qualifies.
+This is preparation caching only: recognition results, semantic caches and commit
+effects remain independent for each parse.
+
+The capability must be pure and stable for the owned authoring copy. Preparation
+must not depend on changing external state: this includes `snapshot()` factories,
+deferred rule lookup and custom `freeze()` overrides. Composite parsers must copy
+all owned dependencies through GraphSnapshot; each dependency, including spacing,
+is checked independently. The original facade root is checked too, even when its
+`freeze()` override returns a grammar composed entirely of capable built-ins.
+
+Built-ins use `Builder\ExactClassSnapshotReuseTrait`, which declares
+`return static::class === self::class;`. This deliberately excludes subclasses
+despite interface inheritance. A safe custom subclass can use the trait again
+to opt itself in without also opting in further subclasses. An explicit method
+with the same exact-class check works too. The trait supplies the method; the
+parser must still implement `ReusableSnapshot` (directly or through inheritance).
+Custom parsers with no capability, or returning
+false, continue to prepare freshly. No central registration is required. The
+interface is a promise by the extension author; it cannot prove dependency ownership.
+
 ## Directive operands
 
 `Directive\UnaryDirective` owns one parser operand and provides `getParser()`,

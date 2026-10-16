@@ -6,6 +6,8 @@ namespace Vanderlee\Comprehend\Parser\Terminal;
 
 use Exception;
 use InvalidArgumentException;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
@@ -22,8 +24,9 @@ use RuntimeException;
  *
  * @author Martijn
  */
-class Integer extends Parser implements AnalyzableParser
+class Integer extends Parser implements AnalyzableParser, ReusableSnapshot
 {
+    use ExactClassSnapshotReuseTrait;
     use DefaultAnalysisTrait;
     use DiagnosticExpectationTrait;
     use CaseSensitiveTrait;
