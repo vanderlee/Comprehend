@@ -25,6 +25,7 @@ mb_internal_encoding('UTF-8');
 
 $options = getopt('', [
     'worker:', 'verify-only', 'case:', 'samples:', 'iterations:', 'warmups:', 'size:', 'output:', 'scanners',
+    'reference-autoload:',
 ]);
 $samples = filter_var($options['samples'] ?? 3, FILTER_VALIDATE_INT, [
     'options' => ['min_range' => 1, 'max_range' => 50],
@@ -52,7 +53,10 @@ if (isset($options['case'])) {
     }
     $benchmarkCases = [$options['case']];
 }
-$extractionAutoload = __DIR__ . '/../build/extraction/vendor/autoload.php';
+$extractionAutoload = $options['reference-autoload'] ?? __DIR__ . '/../build/extraction/vendor/autoload.php';
+if (!is_string($extractionAutoload)) {
+    throw new InvalidArgumentException('Reference autoloader must be a file path');
+}
 if (!is_file($extractionAutoload)) {
     throw new RuntimeException(
         'Install the optional dependency: composer install --working-dir=tools/extraction --no-scripts',
@@ -60,8 +64,11 @@ if (!is_file($extractionAutoload)) {
 }
 if (!isset($options['worker']) || $options['worker'] === 'extraction') {
     require_once $extractionAutoload;
-    if (InstalledVersions::getPrettyVersion('parsica-php/parsica') !== '0.8.3') {
-        throw new RuntimeException('This comparison requires the pinned Extraction 0.8.3');
+    if (
+        InstalledVersions::getPrettyVersion('parsica-php/parsica') !== '0.8.3'
+        || InstalledVersions::getReference('parsica-php/parsica') !== 'e5b0a763e26e89de39a0790e949b8ff7f0909d73'
+    ) {
+        throw new RuntimeException('This comparison requires the pinned Binding 0.8.3');
     }
 }
 
@@ -137,6 +144,9 @@ if (isset($options['worker'])) {
 }
 
 $run = static function (array $arguments) use ($options): array {
+    if (isset($options['reference-autoload'])) {
+        $arguments[] = '--reference-autoload=' . $options['reference-autoload'];
+    }
     if (isset($options['scanners'])) {
         $arguments[] = '--scanners';
     }
@@ -202,9 +212,12 @@ $report = [
         . ' --warmups=' . $warmups . ' --size=' . $size
         . (isset($options['case']) ? ' --case=' . $options['case'] : '')
         . (isset($options['scanners']) ? ' --scanners' : '')
+        . (isset($options['reference-autoload']) ? ' --reference-autoload=' . $options['reference-autoload'] : '')
         . (isset($options['verify-only']) ? ' --verify-only' : ''),
     'samples' => $samples, 'iterations' => $iterations, 'warmups' => $warmups, 'size' => $size,
     'comprehend_includes_cst' => true,
+    'reference_label' => 'Binding',
+    'reference_autoload' => realpath($extractionAutoload),
     'variants' => $libraries,
     'worker_php_options' => ['memory_limit=512M', 'pcov.enabled=0'],
     'sample_order' => 'Rotate starting positions each sample; reverse alternate complete cycles',

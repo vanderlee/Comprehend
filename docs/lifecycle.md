@@ -29,6 +29,11 @@ explicit commit during running effects is rejected. A failed execution retains
 the original exception and never transitions back to pending.
 
 Grammar callbacks/validators/mappings/names are snapshotted per recognition.
+After CST construction, validation traversal retains children carrying validators,
+recoveries or descendant validation. Value-only concrete children do not require
+validation traversal. Their separate value, collection and commit dependencies
+remain intact, including commit status observable through a selected child result.
+Custom execution-record subclasses conservatively retain their validation path.
 Discarded alternative callbacks and speculative trivia produce no committed
 effects. A semantic rejection does not retry a syntactically selected choice;
 use a pure guard when rejection belongs to recognition.

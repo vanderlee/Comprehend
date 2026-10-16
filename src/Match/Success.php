@@ -33,6 +33,8 @@ class Success extends AbstractMatch
     private ?ExecutionState $state = null;
     /** @var (Closure(self): bool)|null */
     private static ?Closure $retainState = null;
+    /** @var (Closure(self): bool)|null */
+    private static ?Closure $retainValidation = null;
 
     /**
      * Create a new match.
@@ -294,6 +296,9 @@ class Success extends AbstractMatch
     private function localValidationErrors(): array
     {
         $state = $this->executionState();
+        if ($state->semanticValidators === []) {
+            return [];
+        }
         $errors = [];
         $result = new ParseResult($this);
         foreach ($state->semanticValidators as $validator) {
@@ -332,7 +337,22 @@ class Success extends AbstractMatch
             $state->successes = array_values(array_filter($state->successes, $retain));
         }
         if ($state->concreteMatches !== []) {
-            $state->concreteMatches = array_values(array_filter($state->concreteMatches, $retain));
+            $validate = self::$retainValidation ??= static function (self $match): bool {
+                // Custom execution records may implement validation outside the built-in state.
+                if ($match::class !== self::class) {
+                    return true;
+                }
+                $childState = $match->state;
+
+                return $childState !== null && (
+                    $childState->semanticValidators !== []
+                    || $childState->recoveries !== []
+                    || $childState->concreteMatches !== []
+                    || $childState->validation !== null
+                    || $childState->validationError !== null
+                );
+            };
+            $state->concreteMatches = array_values(array_filter($state->concreteMatches, $validate));
         }
         if ($state->precedingMatches !== []) {
             $state->precedingMatches = array_values(array_filter($state->precedingMatches, $retain));

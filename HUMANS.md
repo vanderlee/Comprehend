@@ -7,7 +7,6 @@ AI AGENTS MUST NOT USE THIS FILE!
   - value pipelines and folds
   - structured validation
 - Comparative analysis
-  - ! Add a record() method to the Binding extension
 - ! Organize the classes in the extensions subdirectories in (sub)namespaces.
 - Optimizer
   - ! Implement an optimizer that recognizes specific parser patterns and replaces them with faster alternatives that product the same result. Ensure things

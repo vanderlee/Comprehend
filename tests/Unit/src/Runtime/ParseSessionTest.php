@@ -19,6 +19,57 @@ use Vanderlee\Comprehend\Source\Utf8Source;
 
 uses(TestCase::class);
 
+test('unchanged diagnostic snapshots are shared without mutating retained failures', function (): void {
+    $session = new ParseSession(new ByteSource('abc'));
+    $session->recordFailure(1, 'first', [['rule']]);
+    $first = $session->diagnostic();
+    $this->assertSame($first, $session->diagnostic());
+    $session->recordFailure(0, 'nearer', [['ignored']]);
+    $this->assertSame($first, $session->diagnostic());
+    $session->recordFailure(1, 'second', [['other']]);
+    $second = $session->diagnostic();
+    $this->assertNotSame($first, $second);
+    $this->assertSame(['first'], $first->expected);
+    $this->assertSame([['rule']], $first->rulePaths);
+    $this->assertSame(['first', 'second'], $second->expected);
+    $this->assertSame($second, $session->diagnostic());
+});
+
+test('restored diagnostic revisions cannot reuse a different speculative failure', function (): void {
+    $session = new ParseSession(new ByteSource('abc'));
+    $session->recordFailure(0, 'base');
+    $checkpoint = $session->diagnosticState();
+    $session->recordFailure(2, 'abandoned', [['first branch']]);
+    $abandoned = $session->diagnostic();
+    $revision = $session->failureRevision();
+    $session->restoreDiagnostics($checkpoint);
+    $session->recordFailure(2, 'selected', [['second branch']]);
+    $selected = $session->diagnostic();
+    $this->assertSame($revision, $session->failureRevision());
+    $this->assertNotSame($abandoned, $selected);
+    $this->assertSame(['abandoned'], $abandoned->expected);
+    $this->assertSame(['selected'], $selected->expected);
+    $this->assertSame([['second branch']], $selected->rulePaths);
+});
+
+test('deferred list diagnostic merges are cached and isolated by rollback', function (): void {
+    $session = new ParseSession(new ByteSource('abc'));
+    $checkpoint = $session->diagnosticState();
+    $session->recordFailure(1, 'list', [['list']]);
+    $session->deferListDiagnostics($checkpoint);
+    $deferred = $session->diagnostic(true);
+    $this->assertNull($session->diagnostic());
+    $this->assertSame($deferred, $session->diagnostic(true));
+    $session->recordFailure(1, 'outer', [['outer']]);
+    $combined = $session->diagnostic(true);
+    $this->assertSame(['outer', 'list'], $combined->expected);
+    $this->assertSame([['outer'], ['list']], $combined->rulePaths);
+    $this->assertSame($combined, $session->diagnostic(true));
+    $this->assertSame(['list'], $deferred->expected);
+    $session->restoreDiagnostics($checkpoint);
+    $this->assertNull($session->diagnostic(true));
+});
+
 test('regex subject ownership is local to each session', function () {
     $first = new ParseSession(new ByteSource('first'));
     $second = new ParseSession(new ByteSource('second'));

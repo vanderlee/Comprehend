@@ -11,6 +11,13 @@ UTF-8 columns count code points; byte-source columns count bytes. `excerpt()`
 returns the original current line and `message()` formats expectations/location.
 Indexing may read the whole source. Raw byte excerpts may not be valid UTF-8.
 
+Within a parse session, unchanged failure details reuse the same Diagnostic
+snapshot. New expectations, paths or failure positions produce a new snapshot;
+retained results keep their original details. Speculative rollback invalidates
+the cache when those details change, independently of the restored revision
+counter. Ordinary and deferred-list diagnostics remain distinct until a failed
+enclosing parse needs their merged details.
+
 Negative-lookahead children, optional probes, successful exclusion probes and
 successful repetition termination do not pollute expectations. Required failures,
 guard rejection and relevant tied alternatives retain their details. Full-input

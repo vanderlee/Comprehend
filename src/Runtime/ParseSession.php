@@ -31,6 +31,10 @@ final class ParseSession
     private readonly Source $source;
     private ?int $farthestFailure = null;
     private ?Diagnostic $deferredListFailure = null;
+    private ?Diagnostic $diagnosticCache = null;
+    private ?Diagnostic $combinedDiagnosticCache = null;
+    private ?Diagnostic $combinedDiagnosticActive = null;
+    private ?Diagnostic $combinedDiagnosticDeferred = null;
     /**
      * @var list<string>
      */
@@ -200,6 +204,13 @@ final class ParseSession
      */
     public function restoreDiagnostics(array $state): void
     {
+        if (
+            $state[0] !== $this->farthestFailure
+            || $state[1] !== $this->expectations
+            || $state[2] !== $this->rulePaths
+        ) {
+            $this->diagnosticCache = null;
+        }
         [
             $this->farthestFailure, $this->expectations, $this->rulePaths,
             $this->failureRevision, $this->deferredListFailure,
@@ -219,11 +230,28 @@ final class ParseSession
 
     public function diagnostic(bool $includeDeferredLists = false): ?Diagnostic
     {
-        $diagnostic = $this->farthestFailure === null
-            ? null
-            : new Diagnostic($this->source, $this->farthestFailure, $this->expectations, $this->rulePaths);
+        $diagnostic = null;
+        if ($this->farthestFailure !== null) {
+            $diagnostic = $this->diagnosticCache ??= new Diagnostic(
+                $this->source,
+                $this->farthestFailure,
+                $this->expectations,
+                $this->rulePaths,
+            );
+        }
+        if (!$includeDeferredLists || $this->deferredListFailure === null) {
+            return $diagnostic;
+        }
+        if (
+            $this->combinedDiagnosticActive !== $diagnostic
+            || $this->combinedDiagnosticDeferred !== $this->deferredListFailure
+        ) {
+            $this->combinedDiagnosticActive = $diagnostic;
+            $this->combinedDiagnosticDeferred = $this->deferredListFailure;
+            $this->combinedDiagnosticCache = $this->mergeDiagnostics($diagnostic, $this->deferredListFailure);
+        }
 
-        return $includeDeferredLists ? $this->mergeDiagnostics($diagnostic, $this->deferredListFailure) : $diagnostic;
+        return $this->combinedDiagnosticCache;
     }
 
     private function mergeDiagnostics(?Diagnostic $left, ?Diagnostic $right): ?Diagnostic
@@ -235,12 +263,16 @@ final class ParseSession
             return $left;
         }
 
-        return new Diagnostic(
-            $this->source,
-            $left->byteOffset,
-            array_values(array_unique(array_merge($left->expected, $right->expected))),
-            array_values(array_unique(array_merge($left->rulePaths, $right->rulePaths), SORT_REGULAR)),
-        );
+        $expected = array_values(array_unique(array_merge($left->expected, $right->expected)));
+        $paths = array_values(array_unique(array_merge($left->rulePaths, $right->rulePaths), SORT_REGULAR));
+        if ($expected === $left->expected && $paths === $left->rulePaths) {
+            return $left;
+        }
+        if ($expected === $right->expected && $paths === $right->rulePaths) {
+            return $right;
+        }
+
+        return new Diagnostic($this->source, $left->byteOffset, $expected, $paths);
     }
 
     public function source(): Source
@@ -258,6 +290,7 @@ final class ParseSession
         ++$this->failureRevision;
 
         if ($this->farthestFailure === null || $byteOffset > $this->farthestFailure) {
+            $this->diagnosticCache = null;
             $this->farthestFailure = $byteOffset;
             $this->expectations = [];
             $this->rulePaths = [];
@@ -274,11 +307,13 @@ final class ParseSession
     private function mergeFailureDetails(?string $expected, ?array $paths): void
     {
         if ($expected !== null && !in_array($expected, $this->expectations, true)) {
+            $this->diagnosticCache = null;
             $this->expectations[] = $expected;
         }
 
         foreach ($paths ?? [$this->path] as $path) {
             if (!in_array($path, $this->rulePaths, true)) {
+                $this->diagnosticCache = null;
                 $this->rulePaths[] = $path;
             }
         }

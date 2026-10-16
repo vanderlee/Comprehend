@@ -1,5 +1,9 @@
 # Application-value comparison with Extraction
 
+The [diagnostic/lifecycle allocation comparison](benchmarks/diagnostic-lifecycle-2026-10-16.md)
+reruns these cases against Binding after diagnostic snapshot caching and
+validation-state pruning. It shows lower retained memory and mixed small timing changes.
+
 Comprehend's extraction grammar now explicitly installs its own
 [Extraction expansion](extraction.md). The comparison label “Extraction” below identifies
 the separately pinned comparison dependency, not that expansion. Recorded reports
