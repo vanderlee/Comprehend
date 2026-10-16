@@ -22,7 +22,8 @@
 | Frozen graphs | `freeze()` returning FrozenGrammar with syntax checks and analysisWarnings |
 | Immutable facade | Comprehend text/char/set/range/regex/ref, sequence/choice, then/or/repeat, naming and scoped policy |
 | Expandable syntax | `Comprehend::syntax()->define(name, factory)`; immutable scoped static/fluent factories, `call()`, `names()` |
-| Optional extensions | `Syntax::extend(SyntaxExtension)` consumes iterable named factories through `define()`; optional `Syntax\Extension\AsciiIdentifiers`; [extension authoring](syntax-extensions.md) |
+| Optional extensions | `Syntax::extend(SyntaxExtension)` consumes iterable named factories through `define()`; optional `Extensions\AsciiIdentifiers` in `extensions/`; [extension authoring](syntax-extensions.md) |
+| Expression tables | Optional `Extensions\Expressions`: `operatorExpression(primary, Operator...)`, `expressionChoice(alternatives...)`; [precedence and lifecycle](expressions.md) |
 | ABNF authoring | `Abnf\Compiler::compile(string, root, numericEncoding, choice)` returning FrozenGrammar |
 | Naming | `name(string|int, ?string = null, bool $leaf = false)` |
 | Meaning | `mapValue(callable)`, named set/concat/push collection operations |

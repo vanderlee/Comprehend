@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Syntax\Extension\AsciiIdentifiers;
+use Vanderlee\Comprehend\Extensions\AsciiIdentifiers;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 
 $base = C::syntax();

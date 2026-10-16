@@ -13,6 +13,7 @@
   <source>
     <include>
       <directory>src</directory>
+      <directory>extensions</directory>
     </include>
   </source>
 </phpunit>

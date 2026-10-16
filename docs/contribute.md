@@ -86,14 +86,14 @@ branch is needed.
 
 Install development tools with `make install` (or `composer install`). GNU Make
 and PHP must be on your PATH. Use `make test` for Pest and `make phpstan` for
-static analysis, configured at level 10 for `src` in `phpstan.neon`.
+static analysis, configured at level 10 for `src` and `extensions` in `phpstan.neon`.
 CI runs both on pull requests and pushes to `master`; the release workflow also
 reuses these checks.
 
 Use `make cs` for PHP_CodeSniffer's PSR-12 checks and `make cs-check` for a
 PHP-CS-Fixer dry run against PHP-FIG PER Coding Style. PSR-12 is a partial style
 check; the fixer uses its current `@PER-CS` preset. Both tools cover `src`,
-`tests`, `tools`, `docs/examples` and the fixer configuration, excluding vendor
+`extensions`, `tests`, `tools`, `docs/examples` and the fixer configuration, excluding vendor
 code. `make cs-fix` applies formatting; review
 its diff before committing. Existing style violations are left for a separate
 formatting cleanup, so style checks are local targets rather than CI gates.
@@ -108,7 +108,9 @@ recipes directly. Override the executables with
 Keep tests focused on a single class or trait in `tests/src/`. Put feature tests
 that cover interactions across classes, runtime contracts, or complete grammars
 in `tests/features/`. Shared test infrastructure stays in `tests/`. Pest
-discovers both directories recursively.
+discovers test directories recursively. Bundled optional syntax implementations
+live in `extensions/`, under `Vanderlee\Comprehend\Extensions`, with focused tests
+in `tests/extensions/`. Cross-class extension scenarios remain in `tests/features/`.
 
 Write tests with Pest's `test()` closures and attach parameterized cases with
 `with()`. Pest 2 preserves the library's PHP 8.1 development baseline. Existing
@@ -116,7 +118,7 @@ shared assertions and stateful fixtures use abstract PHPUnit base classes select
 with `uses()`; dataset providers are static and run before test setup. Run the
 suite through Pest, including when selecting a single file or using `--filter`.
 
-Every class under `Vanderlee\Comprehend` must have a focused unit test at the
+Every core class under `src/` must have a focused unit test at the
 matching path in `tests/src/` (for example, `src/Source/ByteSource.php` has
 `tests/src/Source/ByteSourceTest.php`). Test abstract classes through concrete
 test doubles and cover their shared contracts. Keep cross-class scenarios in

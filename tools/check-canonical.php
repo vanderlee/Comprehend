@@ -40,7 +40,7 @@ foreach ([Vanderlee\Comprehend\Builder\Ruleset::class, Vanderlee\Comprehend\Buil
         }
     }
 }
-foreach (['src', 'tests', 'docs/examples', 'tools'] as $directory) {
+foreach (['src', 'extensions', 'tests', 'docs/examples', 'tools'] as $directory) {
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root . '/' . $directory, FilesystemIterator::SKIP_DOTS)) as $file) {
         if ($file->getExtension() !== 'php') {
             continue;

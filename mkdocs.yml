@@ -51,6 +51,9 @@ nav:
       - Semantic values: semantic-values.md
       - Lifecycle and effects: lifecycle.md
       - Serialization: serialization.md
+  - Extensions:
+      - Syntax extensions: syntax-extensions.md
+      - Expressions: expressions.md
   - Reference:
       - Supported API: reference.md
       - ABNF: abnf.md

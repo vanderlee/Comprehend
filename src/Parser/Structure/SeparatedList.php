@@ -188,11 +188,21 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
         }
         $success = $this->success($source, $byteOffset, $end - $byteOffset, $selected);
         $success->setConcreteMatches($concrete);
+        $this->prepareListValue($success, $items, $selected);
+
+        return $success;
+    }
+
+    /**
+     * Specializations may project selected syntax without changing recognition or lifecycle.
+     * @param list<Success> $items
+     * @param list<Success> $selected Items and separators, excluding automatic trivia.
+     */
+    protected function prepareListValue(Success $success, array $items, array $selected): void
+    {
         $success->setValueMapper(
             static fn(): array => array_map(static fn(Success $item): mixed => $item->getValue(), $items),
         );
-
-        return $success;
     }
 
     /**

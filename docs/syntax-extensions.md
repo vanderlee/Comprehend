@@ -7,7 +7,7 @@ replacement behavior, typed arguments and factory return contracts are identical
 
 ```php
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Syntax\Extension\AsciiIdentifiers;
+use Vanderlee\Comprehend\Extensions\AsciiIdentifiers;
 
 $base = C::syntax();
 $syntax = $base->extend(new AsciiIdentifiers());
@@ -61,7 +61,10 @@ remains available separately for transformations of the current expression.
 
 ## Bundled ASCII vocabulary
 
-`AsciiIdentifiers` is optional and constructs only existing built-in parsers:
+`Extensions\AsciiIdentifiers` lives in the top-level `extensions/` directory,
+separate from the core `src/` tree. Composer autoloads the
+`Vanderlee\Comprehend\Extensions` namespace from that directory. It is optional
+and constructs only existing built-in parsers:
 
 - `asciiIdentifier()` recognizes `[A-Za-z_][A-Za-z0-9_]*` greedily and returns the
   original text. Reserved words are not automatically excluded.
@@ -88,3 +91,10 @@ does not promise bounded-window scans or eliminate full-subject materialization.
 Values remain lazy, trees preserve syntax, and effects require explicit commit.
 
 Run `php docs/examples/syntax-extensions.php` for checked examples.
+
+## Expression tables
+
+The optional [Expressions extension](expressions.md) installs `operatorExpression()`
+and value-preserving `expressionChoice()`. It supports explicit precedence,
+left/right/non-associative infix operators, and prefix/postfix operators, using
+the same parser graph and lazy lifecycle.

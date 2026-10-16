@@ -133,6 +133,7 @@ supported PHP versions and the gated publication workflow.
 - [Separated lists](docs/separated-lists.md): bounds, boundary separators and lazy item values
 - [Delimiters and value selection](docs/value-selection.md): `between()`, `thenIgnore()` and `ignoreThen()`
 - [Optional Syntax extensions](docs/syntax-extensions.md): iterable factories and ASCII identifiers/keywords
+- [Expression builder extension](docs/expressions.md): precedence, associativity and lazy reductions
 - [CST](docs/concrete-trees.md), [AST](docs/ast.md), [serialization](docs/serialization.md)
 - [Semantic values](docs/semantic-values.md) and [lifecycle](docs/lifecycle.md)
 - [RFC libraries](docs/libraries.md), [contributing](docs/contribute.md)

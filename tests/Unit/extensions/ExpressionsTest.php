@@ -1,0 +1,95 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Extensions;
+
+use BadMethodCallException;
+use InvalidArgumentException;
+use LogicException;
+use PHPUnit\Framework\TestCase;
+use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Expression\Operator as O;
+use Vanderlee\Comprehend\Extensions\Expressions;
+
+uses(TestCase::class);
+
+test('expression tables respect precedence associativity and repeated unary operators', function (
+    string $input,
+    int $expected,
+): void {
+    $syntax = C::syntax()->extend(new Expressions());
+    $number = C::regex('/[0-9]+/A')->mapText(static fn(string $text): int => (int) $text);
+    $parser = $syntax->operatorExpression(
+        $number,
+        O::infixLeft('+', 10, static fn(int $a, int $b): int => $a + $b),
+        O::infixLeft('-', 10, static fn(int $a, int $b): int => $a - $b),
+        O::infixLeft('*', 20, static fn(int $a, int $b): int => $a * $b),
+        O::prefix('-', 30, static fn(int $a): int => -$a),
+        O::prefix('~', 30, static fn(int $a): int => ~$a),
+        O::infixRight('^', 40, static fn(int $a, int $b): int => $a ** $b),
+        O::postfix('!', 50, static fn(int $a): int => $a + 1),
+    )->spacing(C::text(' ')->many());
+    $result = $parser->parse($input);
+    $this->assertTrue($result->success);
+    $this->assertSame($expected, $result->value());
+    $this->assertSame($input, $result->rawText());
+})->with([
+    ['42', 42], ['2+3*4', 14], ['10-3-2', 5], ['2^3^2', 512],
+    ['-2^2', -4], ['--2', 2], ['-~2', 3], ['~-2', 1],
+    ['2!!', 4], ['-2!', -3], ['2!*3', 9], ['2 + 3 * 4', 14],
+    ['- - 2', 2], ['2 ! !', 4], ['2 ^ 3 ^ 2', 512],
+]);
+
+test('non associative operators reject chains without changing prefix semantics', function (): void {
+    $syntax = C::syntax()->extend(new Expressions());
+    $number = C::integer()->mapText(static fn(string $text): int => (int) $text);
+    $parser = $syntax->operatorExpression($number, O::infixNone('<', 10, static fn(int $a, int $b): bool => $a < $b));
+    $this->assertTrue($parser->parse('1<2')->value());
+    $this->assertFalse($parser->parse('1<2<3')->success);
+    $this->assertSame('1<2', $parser->matchPrefix('1<2<3')->rawText());
+});
+
+test('expression lists do not silently trim boundary whitespace or accept missing operands', function (): void {
+    $syntax = C::syntax()->extend(new Expressions());
+    $number = C::integer()->mapText(static fn(string $text): int => (int) $text);
+    $parser = $syntax->operatorExpression(
+        $number,
+        O::prefix('-', 20, static fn(int $a): int => -$a),
+        O::infixLeft('+', 10, static fn(int $a, int $b): int => $a + $b),
+        O::postfix('!', 30, static fn(int $a): int => $a + 1),
+    )->spacing(C::text(' ')->many());
+    foreach (['', '1+', '-', '!', '+1', ' 1', '1 ', '- 1 ', '1 + '] as $input) {
+        $this->assertFalse($parser->parse($input)->success, $input);
+    }
+    $prefix = $parser->matchPrefix('1 + nope');
+    $this->assertSame('1', $prefix->rawText());
+    $this->assertNull($prefix->diagnostic);
+});
+
+test('one precedence level cannot mix binding kinds', function (): void {
+    $this->expectException(InvalidArgumentException::class);
+    C::syntax()->extend(new Expressions())->operatorExpression(
+        'a',
+        O::infixLeft('+', 10, static fn($a, $b) => $a),
+        O::infixRight('^', 10, static fn($a, $b) => $b),
+    );
+});
+
+test('nullable operator syntax is rejected even when adjacent operands consume', function (): void {
+    $this->expectException(LogicException::class);
+    C::syntax()->extend(new Expressions())->operatorExpression(
+        'a',
+        O::infixLeft(C::nothing(), 10, static fn($a, $b) => $a),
+    )->freeze();
+});
+
+test('expression extension remains optional and zero operator tables preserve primary values', function (): void {
+    $base = C::syntax();
+    $syntax = $base->extend(new Expressions());
+    $this->assertNotContains('operatorexpression', $base->names());
+    $this->assertSame(7, $syntax->operatorExpression(C::text('7')->mapText('intval'))->parse('7')->value());
+    $this->assertSame(7, $syntax->expressionChoice(C::text('7')->mapText('intval'), 'x')->parse('7')->value());
+    $this->expectException(BadMethodCallException::class);
+    C::operatorExpression('a');
+});

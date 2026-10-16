@@ -3,9 +3,9 @@
 namespace Tests\Fixtures;
 
 use Tests\ParserTestCase;
-use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Library\Rfc4408;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 abstract class Rfc4408TestCase extends ParserTestCase
 {

@@ -3,4 +3,5 @@ parameters:
     phpVersion: 80100
     paths:
         - src
+        - extensions
     tmpDir: build/phpstan
