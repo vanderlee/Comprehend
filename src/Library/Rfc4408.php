@@ -21,6 +21,7 @@ use Vanderlee\Comprehend\Parser\Parser;
  * productions for the shared combinator runtime so they can be composed into application
  * grammars.
  *
+ * @see Rfc7208 Supersedes this RFC.
  * @see https://www.rfc-editor.org/rfc/rfc4408
  * @link https://www.rfc-editor.org/rfc/rfc4408.txt
  */

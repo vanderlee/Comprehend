@@ -21,6 +21,7 @@ abstract class Rfc4408TestCase extends ParserTestCase
             ['v=spf1 -all', true],
             ['v=spf1 ip4:192.0.2.1 -all  ', true],
             ['v=spf1 a mx -all', true],
+            ['v=spf1 ip6:2001:db8::/32 -all', true],
             ['v=spf2 -all', false],
             ['v=spf1 invalid', false],
         ];

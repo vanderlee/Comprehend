@@ -20,6 +20,7 @@ use Vanderlee\Comprehend\Parser\Parser;
  * Provides reusable IPv6 address rules, including compressed and embedded IPv4 forms. Composes
  * named parser rules so address syntax can be embedded in larger grammars.
  *
+ * @see Rfc4291 Supersedes this RFC.
  * @see https://www.rfc-editor.org/rfc/rfc3513
  * @link https://www.rfc-editor.org/rfc/rfc3513.txt
  */
@@ -35,14 +36,26 @@ class Rfc3513 extends AbstractRuleset
      */
     public function __construct($overwrites = [])
     {
-        /*
-         * We'll use RFC3986 for the IPv6 definition for convenience' sake.
-         * This may not be 100% accurate, but RFC 3513's definition is sloppy at best.
-         */
         $rfc3986 = new Rfc3986();
-        /*
-         * Normal rules
-         */
+        $forms = [
+            $this->hexGroups(8),
+            C::sequence($this->hexGroups(6), C::text(':'), $this->rule('ipv4_address')),
+        ];
+        // Enumerate exact group counts around :: so greedy repeats cannot consume
+        // its first colon. Compression must replace at least one 16-bit group.
+        for ($left = 0; $left <= 7; $left++) {
+            for ($right = 0; $right <= 7 - $left; $right++) {
+                $forms[] = C::sequence($this->hexGroups($left), C::text('::'), $this->hexGroups($right));
+                if ($left + $right <= 5) {
+                    $forms[] = C::sequence(
+                        $this->hexGroups($left),
+                        C::text('::'),
+                        $right === 0 ? C::nothing() : C::sequence($this->hexGroups($right), C::text(':')),
+                        $this->rule('ipv4_address'),
+                    );
+                }
+            }
+        }
         $rules = [
             // 2.3 Text Representation of Address Prefixes
             'ipv6' => C::sequence(
@@ -50,10 +63,24 @@ class Rfc3513 extends AbstractRuleset
                 C::text('/'),
                 $this->rule('prefix_length'),
             ),
-            'ipv6_address' => $rfc3986->rule('IPv6address'),
+            'h16' => $rfc3986->rule('h16')->caseSensitive(false),
+            'ipv4_address' => $rfc3986->rule('IPv4address'),
+            'ipv6_address' => C::longest(...$forms),
             'prefix_length' => C::integer(0, 128),
             self::ROOT => $this->rule('ipv6'),
         ];
         parent::__construct(array_merge($rules, $overwrites));
+    }
+
+    private function hexGroups(int $count): C
+    {
+        if ($count === 0) {
+            return C::nothing();
+        }
+
+        return C::sequence(
+            $this->rule('h16'),
+            C::sequence(C::text(':'), $this->rule('h16'))->repeat($count - 1, $count - 1),
+        );
     }
 }
