@@ -144,6 +144,9 @@ For application values, `map()` transforms an existing value, `collect()` builds
 an ordered list of operand values, and `valueChoice()` forwards the selected
 alternative's value. These projections remain lazy and cached while retaining
 the original syntax. See the [value composition example](docs/examples/value-composition.php).
+Use `manyValues()`, `someValues()` or bounded `repeatValues()` for lists of item
+values, and `optionalValue(default: ...)` for optional fields. See the
+[repeated and optional values example](docs/examples/value-repetition.php).
 
 Install with Composer, then run:
 

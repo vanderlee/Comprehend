@@ -20,6 +20,8 @@ use Vanderlee\Comprehend\Parser\Structure\Collect;
 use Vanderlee\Comprehend\Parser\Structure\ValueChoice;
 use Vanderlee\Comprehend\Parser\Structure\Except;
 use Vanderlee\Comprehend\Parser\Structure\Not;
+use Vanderlee\Comprehend\Parser\Structure\OptionalValue;
+use Vanderlee\Comprehend\Parser\Structure\ValueRepeat;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\SeparatedList;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
@@ -74,6 +76,10 @@ final class Catalog
         'ref',
         'or',
         'repeat',
+        'repeatvalues',
+        'manyvalues',
+        'somevalues',
+        'optionalvalue',
         'separatedby',
         'some',
         'many',
@@ -204,6 +210,22 @@ final class Catalog
                 int $min = 0,
                 ?int $max = null,
             ): Comprehend => self::repeat($parser, $min, $max),
+            'repeatvalues' => static fn(
+                Comprehend|Parser|string $parser,
+                int $min = 0,
+                ?int $max = null,
+            ): Parser => new ValueRepeat(self::parser($parser), $min, $max),
+            'manyvalues' => static fn(Comprehend|Parser|string $parser): Parser => new ValueRepeat(
+                self::parser($parser),
+            ),
+            'somevalues' => static fn(Comprehend|Parser|string $parser): Parser => new ValueRepeat(
+                self::parser($parser),
+                1,
+            ),
+            'optionalvalue' => static fn(
+                Comprehend|Parser|string $parser,
+                mixed $default = null,
+            ): Parser => new OptionalValue(self::parser($parser), $default),
             'separatedby' => static fn(
                 Comprehend|Parser|string $item,
                 Comprehend|Parser|string $separator,
@@ -269,6 +291,17 @@ final class Catalog
                 $item->parser(),
                 $min,
                 $max,
+            ),
+            'repeatvalues' => static fn(Comprehend $item, int $min = 0, ?int $max = null): Parser => new ValueRepeat(
+                $item->parser(),
+                $min,
+                $max,
+            ),
+            'manyvalues' => static fn(Comprehend $item): Parser => new ValueRepeat($item->parser()),
+            'somevalues' => static fn(Comprehend $item): Parser => new ValueRepeat($item->parser(), 1),
+            'optionalvalue' => static fn(Comprehend $item, mixed $default = null): Parser => new OptionalValue(
+                $item->parser(),
+                $default,
             ),
             'separatedby' => static fn(
                 Comprehend $item,

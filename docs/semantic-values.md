@@ -48,6 +48,53 @@ without evaluating its operand mappings. Run `php docs/examples/value-compositio
 The names `map`, `collect` and `valueChoice` are reserved built-ins; custom Syntax
 registrations using those names must be renamed.
 
+## Repeated and optional values
+
+Use `$item->manyValues()` for zero or more item values, `$item->someValues()` for
+one or more, or `$item->repeatValues(min: 2, max: 4)` for explicit bounds. The
+default projection is an ordered list, including nulls and nested item values;
+automatic trivia is excluded. An empty accepted repetition yields `[]`.
+
+`$item->optionalValue(default: 'missing')` returns the accepted item's value when
+present, and the supplied default when absent. The default is null if omitted.
+Presence is determined by recognition: accepted null, false, zero and empty-string
+values do not trigger the default. Defaults are literal values, including callable
+and object values: callables are never invoked, and objects are not cloned or
+constructed afresh per parse. Use a pure `map()` if a fresh application object is needed.
+
+```php
+$digit = C::range('0', '9')->mapText('intval');
+$digit->manyValues()->parse('123')->value(); // [1, 2, 3]
+$digit->manyValues()->parse('')->value();    // []
+$digit->someValues()->parse('')->success;   // false
+$digit->optionalValue(default: 9)->parse('')->value(); // 9
+$digit->optionalValue(default: 9)->parse('0')->value(); // 0
+```
+
+Static and Syntax forms accept facades, Parser objects or literal strings:
+`C::manyValues($item)`, `C::someValues($item)`,
+`C::repeatValues($item, min: 2, max: 4)` and
+`C::optionalValue($item, default: 'missing')`. These four names are reserved
+built-ins; custom Syntax registrations with those names must be renamed.
+Existing `many()`, `some()`, `repeat()`, `maybe()` and `optional()` keep their
+raw-text defaults. Low-level constructors in `Parser\Structure` are
+`new ValueRepeat(Parser $item, int $min = 0, ?int $max = null)` and
+`new OptionalValue(Parser $item, mixed $default = null)`.
+
+All use the existing greedy repetition runtime: a failed extension rolls back its
+syntax, spacing, validators and effects. Prefix parsing may leave an incomplete
+item unconsumed; full-input parsing rejects leftover input. These operations do
+not recover malformed optional fields. Required failures retain ordinary repetition
+diagnostics; termination probes do not pollute expectations. Items must consume
+input, including optional items. Known nullable items are rejected during freezing,
+with runtime progress checks too; a zero maximum skips the item entirely.
+
+Values and mapping errors remain lazy and cached per recognition. `map()` composes
+with the default list/item projection; `mapText()` and `mapValue()` replace it.
+Accepted item validation, collections and explicit commit effects are preserved.
+CST nodes, trivia and byte spans remain intact. Run
+`php docs/examples/value-repetition.php` for a complete application object example.
+
 ## Mappings and named collections
 
 `mapValue(callable(ParseResult): mixed)` adds a lazy typed mapping. `value()`
