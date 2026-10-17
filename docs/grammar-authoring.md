@@ -291,11 +291,23 @@ affects `Comprehend::word()` or other vocabularies. Build through `$syntax` to
 select the scope explicitly, or use `$syntax->call(name, ...arguments)` when the
 method name is data. `names()` lists built-in and registered factory names.
 Freezing performs no syntax dispatch. Its optimizer replaces eligible recognition
-operations with specialized parsers. Repeating a plain inclusive `Set` uses
-`ReadWhileSet` with the same bounds and case policy, while retaining the Repeat
-boundary and per-character CST nodes. Names, tags, groups, guards, lazy values,
+operations with specialized parsers, retaining the Repeat boundary and each
+original per-unit CST node:
+
+| Repeated child | Scanner | Conditions |
+|---|---|---|
+| Inclusive `Set` | `ReadWhileSet` | Plain built-in child |
+| Inclusive `Range` | `ReadWhileRange` | ASCII or open bounds, ordered before and after case folding |
+| Inclusive `Char` | `ReadWhileSet` | ASCII character |
+| Excluded `Char` | `ReadUntil` | ASCII character; stops before the excluded unit |
+| `Text` | `ReadWhileSet` | One ASCII character |
+| `Any` | `ReadWhileRange` over all units | Ignores case policy, as the original child does |
+
+All rewrites preserve repetition bounds. Literal and range scanners inherit the
+child's local or enclosing case policy. Names, tags, groups, guards, lazy values,
 validators and commit effects on the repeat remain intact. Decorated children,
-excluded sets and custom subclasses retain their original recognition. Active
+excluded sets/ranges, non-ASCII literal/range bounds, multi-unit text and custom
+subclasses retain their original recognition. Maximum zero never scans. Active
 intervening spacing or work/depth limits use ordinary repetition so trivia,
 diagnostics and budget failures retain their contracts. Authoring copies do not
 run the optimizer; mutable builders remain unchanged.

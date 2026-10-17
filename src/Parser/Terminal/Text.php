@@ -56,6 +56,19 @@ class Text extends Parser implements AnalyzableParser, ReusableSnapshot
         return false;
     }
 
+    /** @internal A single ASCII text unit can use set scanning without changing repetition grouping. */
+    public function repetitionScanner(int $min, ?int $max): ?ReadWhileSet
+    {
+        if (
+            static::class !== self::class || $this->hasCompositionMetadata()
+            || $this->length !== 1 || ord($this->text) > 127
+        ) {
+            return null;
+        }
+
+        return (new ReadWhileSet($this->text, $min, $max))->setCaseSensitivity($this->caseSensitivity);
+    }
+
     public function __toString(): string
     {
         return '"' . $this->text . '"';

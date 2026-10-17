@@ -15,8 +15,13 @@ use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
-use Vanderlee\Comprehend\Parser\Terminal\ReadWhileSet;
+use Vanderlee\Comprehend\Parser\Terminal\Any;
+use Vanderlee\Comprehend\Parser\Terminal\Char;
+use Vanderlee\Comprehend\Parser\Terminal\Range;
+use Vanderlee\Comprehend\Parser\Terminal\ReadRun;
+use Vanderlee\Comprehend\Parser\Terminal\ReadWhileRange;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
@@ -30,15 +35,23 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
     use DefaultAnalysisTrait;
     use SpacingTrait;
 
-    private ?ReadWhileSet $scanner = null;
+    private ?ReadRun $scanner = null;
 
     /** @internal Keep the repeat boundary and its metadata while replacing its recognition plan. */
     public function withOptimizedRecognition(): self
     {
         $copy = clone $this;
-        $copy->scanner = $this->max !== 0 && $this->parser::class === Set::class
-            ? $this->parser->repetitionScanner($this->min, $this->max)
-            : null;
+        $copy->scanner = null;
+        if ($this->max !== 0) {
+            $copy->scanner = match ($this->parser::class) {
+                Set::class, Range::class, Char::class, Text::class
+                    => $this->parser->repetitionScanner($this->min, $this->max),
+                // Any ignores case policy, including Unicode folds that expand to multiple units.
+                Any::class => $this->parser->hasCompositionMetadata() ? null
+                    : (new ReadWhileRange("\0", null, $this->min, $this->max))->caseSensitive(),
+                default => null,
+            };
+        }
 
         return $copy;
     }
