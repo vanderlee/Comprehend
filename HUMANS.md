@@ -6,13 +6,13 @@ AI AGENTS MUST NOT USE THIS FILE!
   - labels
   - value pipelines and folds
   - structured validation
-- Freeze = Compile?
 - Move parts of core to extension?
   - Numbers?
   - Library/rulesets to extensions?
   - Optimization extension?
 - Extension discovery
 - Special PHPStan classes? Can we get rid of them?
+- IPv6/IPv4 parsers (Library?)
 
 ## Future directions
 - Implement some known languages as examples?

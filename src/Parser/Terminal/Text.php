@@ -56,6 +56,11 @@ class Text extends Parser implements AnalyzableParser, ReusableSnapshot
         return false;
     }
 
+    public function lexicalLookahead(): ?int
+    {
+        return preg_match('/[\x80-\xff]/', $this->text) === 0 ? $this->length : null;
+    }
+
     /** @internal A single ASCII text unit can use set scanning without changing repetition grouping. */
     public function repetitionScanner(int $min, ?int $max): ?ReadWhileSet
     {

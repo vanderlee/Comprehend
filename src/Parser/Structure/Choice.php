@@ -15,6 +15,8 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Runtime\LexicalTable;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
@@ -28,6 +30,39 @@ class Choice extends IterableParser implements AnalyzableParser, ReusableSnapsho
     use ExactClassSnapshotReuseTrait;
     use DefaultAnalysisTrait;
     use PreferTrait;
+
+    /** @var array<array-key, LexicalTable> */
+    private array $lexical = [];
+
+    /** @internal Preserve choice control flow while specializing bounded lexical operands. */
+    public function prepareLexicalRecognition(): void
+    {
+        $this->lexical = [];
+        foreach ($this->parsers as $index => $parser) {
+            $table = LexicalTable::prepare($parser);
+            if ($table !== null) {
+                $this->lexical[$index] = $table;
+            }
+        }
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        $this->lexical = [];
+    }
+
+    private function attemptAlternative(
+        int|string $index,
+        Parser $parser,
+        Source $source,
+        int $offset,
+        ParseSession $session,
+    ): AbstractMatch {
+        return isset($this->lexical[$index]) && !$session->hasRecognitionLimits() && !$session->hasActiveSpacing()
+            ? $this->lexical[$index]->attempt($source, $offset, $session)
+            : $parser->recognizeInSession($source, $offset, $session);
+    }
 
     public function __construct(Parser ...$arguments)
     {
@@ -121,8 +156,8 @@ class Choice extends IterableParser implements AnalyzableParser, ReusableSnapsho
         ChoicePolicy $preference,
     ): AbstractMatch {
         $selected = null;
-        foreach ($this->parsers as $parser) {
-            $attempt = $parser->recognizeInSession($source, $offset, $session);
+        foreach ($this->parsers as $index => $parser) {
+            $attempt = $this->attemptAlternative($index, $parser, $source, $offset, $session);
             if ($selected === null || self::outranks($attempt, $selected, $preference)) {
                 $selected = $attempt;
             }
@@ -149,8 +184,8 @@ class Choice extends IterableParser implements AnalyzableParser, ReusableSnapsho
     private function parseFirst(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
         $farthestProgress = 0;
-        foreach ($this->parsers as $parser) {
-            $match = $parser->recognizeInSession($source, $offset, $session);
+        foreach ($this->parsers as $index => $parser) {
+            $match = $this->attemptAlternative($index, $parser, $source, $offset, $session);
             if ($match instanceof Success) {
                 return $this->success($source, $offset, $match->length, $match);
             }

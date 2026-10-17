@@ -332,6 +332,26 @@ structural safety checks always run. Unknown flag bits raise
 separately for each flag set. Normal facade parsing continues to use `DEFAULT`;
 parse through an explicitly frozen grammar to disable optimization.
 
+After references are resolved and graph safety checks pass, optimization also
+prepares bounded lexical tables for Repeat operands, Choice alternatives and Not
+probes. These cover named character rules, character-class choices, fixed escapes
+such as URI `%HH`, finite group sequences and literal delimiter checks. First
+observations use the original recognition runtime; later observations reproduce
+fresh CST nodes and merge the same diagnostics under the current caller's rule
+path. Original branch ordering and first/longest/shortest policies remain intact.
+
+Tables retain at most 128 entries per operand, with at most 32 bytes of proven
+ASCII lookahead. They retain relative syntax recipes, not Sources, ParseResults
+or semantic state. Keys distinguish source mode, case policy and choice policy.
+Non-ASCII lookahead, executable metadata (including dynamic names), custom
+classes, recursive/unbounded patterns, local spacing inside a candidate and active spacing/budgets
+use ordinary recognition. A narrow regex subset is eligible: a single character
+class, optionally with a finite quantifier. There is no general regex conversion
+or parse-position memoization. `FreezeFlags::NONE` disables these tables too.
+
+See [Library optimizer measurements](performance.md#library-lexical-tables-2026-10-17)
+for performance and retained-memory tradeoffs.
+
 Built-in static calls such as `Comprehend::text()` resolve directly from a fixed
 catalog. That catalog coordinates typed static/fluent callbacks, aliases,
 name discovery and reserved names. Scoped Syntax vocabularies resolve callbacks

@@ -39,6 +39,9 @@ final class FrozenGrammar
         $snapshot = new GraphSnapshot(optimize: ($flags & FreezeFlags::OPTIMIZE) !== 0);
         $root = $snapshot->copy($parser);
         $warnings = (new GraphAnalysis())->validate($root);
+        if (($flags & FreezeFlags::OPTIMIZE) !== 0) {
+            (new GraphOptimizer())->prepare($root);
+        }
 
         return new self($root, $warnings, $snapshot->isReusable());
     }

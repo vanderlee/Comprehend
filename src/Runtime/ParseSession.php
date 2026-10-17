@@ -193,6 +193,15 @@ final class ParseSession
         array_pop($this->path);
     }
 
+    /**
+     * @internal Diagnostic templates retain relative paths, never their original caller's scope.
+     * @return list<string>
+     */
+    public function rulePath(): array
+    {
+        return $this->path;
+    }
+
     public function failureRevision(): int
     {
         return $this->failureRevision;

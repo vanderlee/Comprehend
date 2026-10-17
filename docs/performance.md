@@ -44,6 +44,63 @@ independent grammars against one output oracle and records extraction timings,
 memory retention, diagnostics and static-analysis observations. It includes
 Comprehend's mandatory CST cost and an isolated optional dependency.
 
+### Library lexical tables (2026-10-17)
+
+Freeze-time optimization now configures bounded lexical tables after references
+are resolved and graph safety checks pass. Repeat operands, Choice alternatives
+and Not probes can reuse source-free syntax/diagnostic recipes for known finite
+ASCII patterns. Named-rule nodes, selected branches and diagnostics remain intact.
+The first observation uses the original runtime; executable metadata and custom
+parsers always execute normally. Tables hold at most 128 entries per operand,
+with at most 32 bytes of proven lookahead. `FreezeFlags::NONE` disables them.
+
+Reproduce this comparison from the repository root:
+
+```sh
+php tools/benchmark-library-optimizer.php --iterations=30 --samples=7
+```
+
+The tool runs each case/flag pair in a fresh PHP worker. It records grammar
+preparation, first-parse time, warm min/median/max time, retained memory, allocated
+process peak and warmed parser visits. Before accepting results it checks complete
+consumption and identical CST/diagnostic fingerprints across flags and between
+the first and warmed parses. Recognition includes full CST construction; source
+construction and serialization used for verification are outside the timed loop.
+The default JSON output is `build/library-optimizer-benchmark.json`.
+
+Measured on Windows with PHP 8.2.10, validated in-memory UTF-8 sources, seven samples
+of 30 parses per prepared grammar:
+
+| Case | Bytes | NONE median ms | OPTIMIZE median ms | Speedup | Warm parser visits, NONE → OPTIMIZE |
+|---|---:|---:|---:|---:|---:|
+| Named URI port digits | 300 | 4.215 | 1.682 | 2.51× | 604 → 2 |
+| ABNF quoted text / range choice | 322 | 9.264 | 2.323 | 3.99× | 890 → 7 |
+| URI with repeated percent escapes | 468 | 19.289 | 5.751 | 3.35× | 2260 → 147 |
+| URI with varied hashed path segments | 343 | 13.412 | 8.054 | 1.67× | 1699 → 521 |
+| XML with a long CDATA section | 445 | 29.549 | 25.349 | 1.17× | 2764 → 1895 |
+| Mail address list | 322 | 26.208 | 26.508 | 0.99× | 3432 → 3432 |
+| JSON array | 121 | 5.243 | 5.165 | 1.02× | 623 → 623 |
+| IPv6 `2001:db8::1` | 11 | 5.441 | 2.636 | 2.06× | 741 → 270 |
+
+These are workload-specific warm results, not general speed guarantees. The mail
+and JSON list controls are effectively unchanged: variable-size items retain
+their original loops; no automatic SeparatedList substitution or separator-loop
+fusion was added. XML still runs its character guards; finite delimiter probes
+and ASCII regex alternatives account for its smaller improvement. IPv6 retains
+its original ordered/ranked forms, while their finite group patterns reuse recipes.
+
+Tables trade memory and initial classification work for repeated recognition.
+Relative post-warm retained memory increased by about 20 KB for the port case,
+49 KB for ABNF, 199 KB for escaped URIs, 339 KB for varied URIs, 45 KB for XML and
+163 KB for IPv6; process peaks were unchanged or up to 2 MiB higher. These process
+measurements include lazy class/runtime initialization as well as table storage.
+The cold IPv6 parse took 18.685 ms optimized versus 9.500 ms without optimization;
+its preparation also increased in this run. The JSON report retains these cold
+and preparation measurements. Prefer explicit frozen-grammar reuse for these
+warm gains, or disable optimization when a single parse and minimum retention
+matter more. Non-ASCII lookahead, active spacing and work/depth limits use the
+ordinary recognition path.
+
 ### Small facades and URI grammar (2026-10-16)
 
 Owned built-in facade graphs now retain one prepared FrozenGrammar per immutable

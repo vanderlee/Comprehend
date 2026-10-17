@@ -25,6 +25,12 @@ trait SpacingTrait
         return $this;
     }
 
+    /** @internal Compiled lexical patterns must not bypass a locally configured spacing scope. */
+    public function hasExplicitSpacing(): bool
+    {
+        return $this->hasSpacingPolicy;
+    }
+
     private function copySpacer(GraphSnapshot $context): void
     {
         if ($this->spacer !== null) {

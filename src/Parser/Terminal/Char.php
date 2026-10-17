@@ -49,6 +49,11 @@ class Char extends Parser implements AnalyzableParser, ReusableSnapshot
         return false;
     }
 
+    public function lexicalLookahead(): ?int
+    {
+        return strlen($this->character) === 1 && ord($this->character) < 128 ? 1 : null;
+    }
+
     /** @internal ASCII literals have identical unit validation in byte and UTF-8 sources. */
     public function repetitionScanner(int $min, ?int $max): ReadWhileSet|ReadUntil|null
     {

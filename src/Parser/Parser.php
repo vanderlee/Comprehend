@@ -157,6 +157,21 @@ abstract class Parser implements SnapshotParticipant
             || $this->resultCallbacks !== [] || $this->assignCallbacks !== [];
     }
 
+    /** @internal Static tree metadata is safe to reproduce; executable metadata must run normally. */
+    public function hasExecutableMetadata(): bool
+    {
+        return $this->nodeName instanceof Closure || $this->valueMapper !== null
+            || $this->valueTransforms !== [] || $this->guards !== []
+            || $this->semanticValidators !== [] || $this->effects !== []
+            || $this->resultCallbacks !== [] || $this->assignCallbacks !== [];
+    }
+
+    /** @internal Finite context-free lookahead on ASCII input, or null when not proven. */
+    public function lexicalLookahead(): ?int
+    {
+        return null;
+    }
+
     public function diagnosticRule(string $name): static
     {
         $this->ruleName = $name;

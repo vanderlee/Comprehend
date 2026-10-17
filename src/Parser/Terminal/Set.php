@@ -65,6 +65,11 @@ class Set extends Parser implements AnalyzableParser, ReusableSnapshot
         return false;
     }
 
+    public function lexicalLookahead(): ?int
+    {
+        return preg_match('/[\x80-\xff]/', $this->sourceSet) === 0 ? 1 : null;
+    }
+
     /** @internal Replace unobservable per-unit membership checks with a bounded scanner. */
     public function repetitionScanner(int $min, ?int $max): ?ReadWhileSet
     {

@@ -67,6 +67,19 @@ class Regex extends Parser implements AnalyzableParser, ReusableSnapshot
         return false;
     }
 
+    public function lexicalLookahead(): ?int
+    {
+        // Only a single character class with an optional finite quantifier is context-free here.
+        // Exclude assertions, captures, mode switches, Unicode/byte escapes and unbounded repeats.
+        $finiteClass = '~^/\[(?:\\\\[dDsSwWnrtfv/\\\\\-]|\\\\x[0-9a-fA-F]{2}|[^\\\\\]\x80-\xff])+\]'
+            . '(?:\{([0-9]+)(?:,([0-9]+))?\})?/[AiD]*$~D';
+        if (preg_match($finiteClass, $this->pattern, $bounds) !== 1) {
+            return null;
+        }
+
+        return isset($bounds[1]) ? (int) ($bounds[2] ?? $bounds[1]) : 1;
+    }
+
     public function __toString(): string
     {
         return (string) $this->pattern;

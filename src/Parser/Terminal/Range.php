@@ -51,6 +51,17 @@ class Range extends Parser implements AnalyzableParser, ReusableSnapshot
         return false;
     }
 
+    public function lexicalLookahead(): ?int
+    {
+        foreach ([$this->first, $this->last] as $bound) {
+            if ($bound !== null && (strlen($bound) !== 1 || ord($bound) > 127)) {
+                return null;
+            }
+        }
+
+        return 1;
+    }
+
     /** @internal Only bounds valid in both source modes and both case policies can share a scanner. */
     public function repetitionScanner(int $min, ?int $max): ?ReadWhileRange
     {

@@ -15,6 +15,7 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\FailureDiagnosticAtStart;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Runtime\LexicalTable;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
@@ -25,6 +26,14 @@ class Not extends Parser implements AnalyzableParser, FailureDiagnosticAtStart, 
 {
     use ExactClassSnapshotReuseTrait;
     use DefaultAnalysisTrait;
+
+    private ?LexicalTable $lexical = null;
+
+    /** @internal Negative lookahead still owns diagnostic rollback and zero-width behavior. */
+    public function prepareLexicalRecognition(): void
+    {
+        $this->lexical = LexicalTable::prepare($this->parser);
+    }
 
     public function __construct(private Parser $parser) {}
 
@@ -49,6 +58,7 @@ class Not extends Parser implements AnalyzableParser, FailureDiagnosticAtStart, 
     {
         parent::copyDependencies($context);
         $this->parser = $context->copy($this->parser);
+        $this->lexical = null;
     }
 
     /** @return list<Parser> */
@@ -66,7 +76,9 @@ class Not extends Parser implements AnalyzableParser, FailureDiagnosticAtStart, 
     {
         $diagnostics = $session->diagnosticState();
         try {
-            $match = $this->parser->recognizeInSession($source, $byteOffset, $session);
+            $match = $this->lexical !== null && !$session->hasRecognitionLimits() && !$session->hasActiveSpacing()
+                ? $this->lexical->attempt($source, $byteOffset, $session)
+                : $this->parser->recognizeInSession($source, $byteOffset, $session);
         } finally {
             $session->restoreDiagnostics($diagnostics);
         }

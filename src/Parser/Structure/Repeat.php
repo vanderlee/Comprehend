@@ -23,6 +23,7 @@ use Vanderlee\Comprehend\Parser\Terminal\ReadWhileRange;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Runtime\LexicalTable;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
@@ -36,6 +37,13 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
     use SpacingTrait;
 
     private ?ReadRun $scanner = null;
+    private ?LexicalTable $lexical = null;
+
+    /** @internal Called only on a detached, resolved and validated frozen graph. */
+    public function prepareLexicalRecognition(): void
+    {
+        $this->lexical = $this->scanner === null && $this->max !== 0 ? LexicalTable::prepare($this->parser) : null;
+    }
 
     /** @internal Keep the repeat boundary and its metadata while replacing its recognition plan. */
     public function withOptimizedRecognition(): self
@@ -123,6 +131,7 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
         parent::copyDependencies($context);
         $this->parser = $context->copy($this->parser);
         $this->copySpacer($context);
+        $this->lexical = null;
         if ($this->scanner !== null) {
             $this->scanner = clone $this->scanner;
         }
@@ -167,11 +176,12 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
                     : 0;
                 $match = null;
                 if ($skip !== false) {
-                    $match = $this->parser->recognizeInSession(
-                        $source,
-                        $byteOffset + $acceptedByteLength + $skip,
-                        $session,
-                    );
+                    $offset = $byteOffset + $acceptedByteLength + $skip;
+                    $useTable = $this->lexical !== null
+                        && !$session->hasRecognitionLimits() && !$session->hasActiveSpacing();
+                    $match = $useTable
+                        ? $this->lexical->attempt($source, $offset, $session)
+                        : $this->parser->recognizeInSession($source, $offset, $session);
                 }
                 if (!$match instanceof Success) {
                     // Once the minimum is met, a failed extension ends the repeat silently.
