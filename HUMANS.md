@@ -19,6 +19,7 @@ AI AGENTS MUST NOT USE THIS FILE!
 
 ## Future directions
 - Implement some known languages as examples?
+- Performance improvements overall.
 
 ## Ongoing concerns
 - Benchmark and improve performance

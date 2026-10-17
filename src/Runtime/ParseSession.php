@@ -12,6 +12,8 @@ use Vanderlee\Comprehend\Runtime\Scope\SpacingContextTrait;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Source\SourceMode;
+use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Source\Utf8Source;
 use InvalidArgumentException;
 use LogicException;
 
@@ -89,7 +91,9 @@ final class ParseSession
     public function regexSubject(): string
     {
         // A cached string must not make a closed file snapshot readable again.
-        $this->source->isUnitBoundary(0);
+        if (!$this->source instanceof ByteSource && !$this->source instanceof Utf8Source) {
+            $this->source->isUnitBoundary(0);
+        }
         if (
             $this->limits->maxRegexSubjectBytes === 0
             || $this->source->byteLength() > $this->limits->maxRegexSubjectBytes

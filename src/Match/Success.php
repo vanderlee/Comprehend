@@ -186,6 +186,23 @@ class Success extends AbstractMatch
         $state->valueChild = $child;
     }
 
+    /** @internal Select a narrower child value without another projection when its getter caches it. */
+    public function selectCachedValueFrom(self $child): bool
+    {
+        if (
+            $this::class !== self::class
+            || $child::class !== self::class
+            || $child->state?->valueChild !== null
+        ) {
+            return false;
+        }
+        $state = $this->executionState();
+        $state->semanticProjection = null;
+        $state->valueChild = $child;
+
+        return true;
+    }
+
     /** @internal Bind mapping and cache lifetime to this recognition, not the grammar. */
     public function setValueMapper(?callable $mapper): void
     {

@@ -14,6 +14,9 @@ use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteFileSource;
+use Vanderlee\Comprehend\Source\InMemorySource;
+use Vanderlee\Comprehend\Source\SourceMode;
+use Vanderlee\Comprehend\Source\Span;
 use WeakReference;
 
 uses(TestCase::class);
@@ -76,5 +79,44 @@ test('a cached regex subject never bypasses explicit source closure', function (
     $source->close();
     $this->expectException(LogicException::class);
     $this->expectExceptionMessage('File source is closed');
+    $session->regexSubject();
+});
+
+test('custom memory sources retain readability checks even with a cached subject', function (): void {
+    $source = new class ('abc') extends InMemorySource {
+        public bool $readable = true;
+        public int $probes = 0;
+
+        public function mode(): SourceMode
+        {
+            return SourceMode::BYTES;
+        }
+
+        public function readUnit(int $byteOffset): ?Span
+        {
+            $this->isUnitBoundary($byteOffset);
+
+            return $byteOffset === $this->byteLength() ? null : $this->span($byteOffset, $byteOffset + 1);
+        }
+
+        public function isUnitBoundary(int $byteOffset): bool
+        {
+            ++$this->probes;
+            if (!$this->readable) {
+                throw new LogicException('Custom source is closed');
+            }
+            $this->assertByteOffset($byteOffset);
+
+            return true;
+        }
+    };
+    $session = new ParseSession($source);
+    $this->assertSame('abc', $session->regexSubject());
+    $this->assertSame('abc', $session->regexSubject());
+    $this->assertSame(2, $source->probes);
+    $source->readable = false;
+    $this->expectException(LogicException::class);
+    $this->expectExceptionMessage('Custom source is closed');
+
     $session->regexSubject();
 });

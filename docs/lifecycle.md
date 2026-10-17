@@ -34,6 +34,12 @@ recoveries or descendant validation. Value-only concrete children do not require
 validation traversal. Their separate value, collection and commit dependencies
 remain intact, including commit status observable through a selected child result.
 Custom execution-record subclasses conservatively retain their validation path.
+Selected-value sequences can forward a built-in child's own cached value
+without allocating another semantic projection. The selected child's narrower
+span still determines its default text. Custom records and delegated values
+retain a separate cached projection, preserving custom getter and mapping
+registration behavior. Outer mapping overrides and explicit commit remain
+independent of this optimization.
 Discarded alternative callbacks and speculative trivia produce no committed
 effects. A semantic rejection does not retry a syntactically selected choice;
 use a pure guard when rejection belongs to recognition.

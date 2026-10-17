@@ -39,6 +39,8 @@ class ValueSequence extends Sequence implements ReusableSnapshot
             throw new LogicException('Selected value position is outside sequence operands');
         }
         // Always forward the child's value, including raw text from its narrower source span.
-        $success->setValueMapper(static fn(): mixed => $selected->getValue());
+        if (!$success->selectCachedValueFrom($selected)) {
+            $success->setValueMapper(static fn(): mixed => $selected->getValue());
+        }
     }
 }

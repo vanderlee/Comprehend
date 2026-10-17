@@ -235,7 +235,24 @@ abstract class Parser implements SnapshotParticipant
     private function recognizeChecked(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
         $this->assertRecognitionPosition($source, $offset, $session);
-        $match = $this->recognizeWithDiagnostics($source, $offset, $session);
+        $failureRevision = $session->failureRevision();
+        $session->pushRule($this->diagnosticName());
+        try {
+            $match = $this->recognize($source, $offset, $session);
+            if (
+                !$match->accepted
+                && $failureRevision === $session->failureRevision()
+            ) {
+                $session->recordFailure(
+                    $this instanceof FailureDiagnosticAtStart
+                        ? $offset
+                        : $offset + $match->length,
+                    $this->diagnosticExpectation(),
+                );
+            }
+        } finally {
+            $session->popRule();
+        }
         $this->assertReturnedMatch($source, $offset, $match);
         $match = $this->wrapReturnedChild($source, $offset, $match);
         $end = $match->accepted ? $offset + $match->length : $offset;
@@ -263,30 +280,6 @@ abstract class Parser implements SnapshotParticipant
         if (!$source->isUnitBoundary($offset)) {
             throw new InvalidArgumentException('Parser position is inside a UTF-8 code point');
         }
-    }
-
-    private function recognizeWithDiagnostics(Source $source, int $offset, ParseSession $session): AbstractMatch
-    {
-        $failureRevision = $session->failureRevision();
-        $session->pushRule($this->diagnosticName());
-        try {
-            $match = $this->recognize($source, $offset, $session);
-            if (
-                !$match->accepted
-                && $failureRevision === $session->failureRevision()
-            ) {
-                $session->recordFailure(
-                    $this instanceof FailureDiagnosticAtStart
-                        ? $offset
-                        : $offset + $match->length,
-                    $this->diagnosticExpectation(),
-                );
-            }
-        } finally {
-            $session->popRule();
-        }
-
-        return $match;
     }
 
     abstract protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch;
