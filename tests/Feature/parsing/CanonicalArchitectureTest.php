@@ -354,7 +354,7 @@ test('trivia uses session case policy and restores scopes after exceptions', fun
 test('invalid trivia validation is reported once', function (): void {
     $trivia = (new Text(' '))->validateSemantic(static fn() => 'invalid trivia');
     $result = (new Sequence(new Text('a'), new Text('b')))->spacing($trivia)->parseAll(new ByteSource('a b'));
-    $this->assertSame(['invalid trivia'], $result->validate()->errors);
+    $this->assertSame(['invalid trivia'], array_column($result->validate()->issues, 'message'));
     $this->assertFalse($result->commit());
 });
 

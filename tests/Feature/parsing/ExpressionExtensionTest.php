@@ -142,7 +142,7 @@ test('operator syntax values stay lazy while all selected syntax retains validat
         10,
         static fn($a, $b) => $a,
     ))->parse('a+a');
-    $this->assertSame(['bad operator'], $invalid->validate()->errors);
+    $this->assertSame(['bad operator'], array_column($invalid->validate()->issues, 'message'));
     $this->assertFalse($invalid->commit());
 });
 

@@ -3,7 +3,6 @@ AI AGENTS MUST NOT USE THIS FILE!
 
 ## To do
 - Implement usability features (From Binding)
-  - value pipelines and folds
   - structured validation
 - Move parts of core to extension?
   - Numbers?

@@ -86,7 +86,11 @@ test('custom execution records retain their validation behavior', function (): v
     $child = new class (1) extends Success {
         public function validateSemantic(): ValidationResult
         {
-            return new ValidationResult(false, ['custom validation']);
+            return new ValidationResult([new \Vanderlee\Comprehend\Result\ValidationIssue(
+                'custom.validation',
+                'custom validation',
+                $this->span ?? throw new \LogicException('Missing source span'),
+            )]);
         }
     };
     $child->setSourceMetadata($source->span(0, 1), null);
@@ -97,7 +101,22 @@ test('custom execution records retain their validation behavior', function (): v
     $parent->setSourceMetadata($source->span(0, 1), null);
     $parent->buildConcreteNode(new Text('x'));
     $parent->retainExecutionState();
-    $this->assertSame(['custom validation'], $parent->validateSemantic()->errors);
+    $this->assertSame(['custom validation'], array_column($parent->validateSemantic()->issues, 'message'));
+});
+
+test('shared descendants contribute cached issues once through multiple parents', function (): void {
+    $source = new ByteSource('x');
+    $child = (new Text('x'))->validateSemantic(static fn(): string => 'shared')
+        ->recognizeInSession($source, 0, new ParseSession($source));
+    $left = new Success(1, [$child]);
+    $right = new Success(1, [$child]);
+    $parent = new Success(1, [$left, $right]);
+    foreach ([$left, $right, $parent] as $match) {
+        $match->setSourceMetadata($source->span(0, 1), null);
+    }
+    $report = $parent->validateSemantic();
+    $this->assertCount(1, $report->issues);
+    $this->assertSame($child->validateSemantic()->issues[0], $report->issues[0]);
 });
 
 test('preceding syntax without deferred operations is not retained by the execution graph', function (): void {

@@ -21,7 +21,7 @@ test('empty execution state can be discarded but cached empty results and failur
     $state->validationError = new RuntimeException('retained');
     $this->assertFalse($state->isEmpty());
     $state->validationError = null;
-    $state->validation = new ValidationResult(true);
+    $state->validation = new ValidationResult();
     $this->assertFalse($state->isEmpty());
 });
 

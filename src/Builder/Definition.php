@@ -7,6 +7,7 @@ namespace Vanderlee\Comprehend\Builder;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Result\ValidationIssue;
 
 /**
  * Packages a grammar generator with semantic validators and collection processors.
@@ -16,7 +17,7 @@ final class Definition implements SnapshotParticipant
 {
     /** @var Comprehend|Parser|(callable(mixed...): (Comprehend|Parser)) */
     public $generator;
-    /** @var list<callable(ParseResult): (bool|string)> */
+    /** @var list<callable(ParseResult): (bool|string|ValidationIssue|list<ValidationIssue>)> */
     public array $validators = [];
     /** @var array<string, callable(array<array-key, mixed>): mixed> */
     public array $processors = [];

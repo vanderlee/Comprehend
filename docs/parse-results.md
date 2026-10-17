@@ -15,7 +15,7 @@
 | `ast()` | Cached named source projection, null on failure |
 | `value()` | Cached typed mapping; default raw text; null on failure |
 | `results()`, `result(name, default)` | Cached named collections/default collection |
-| `validate()` | Cached selected semantic validation report |
+| `validate()` | Cached [structured validation](validation.md) report (`valid`, `issues`) |
 | `commit()`, `isCommitted()` | Explicit selected effects and completed-commit state |
 
 A successful syntax result may fail semantic validation. Commit then returns

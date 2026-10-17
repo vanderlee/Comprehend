@@ -61,6 +61,9 @@ test('recovery preserves error regions and blocks validation callbacks and all c
     expect(array_map(fn(Recovery $r) => $r->span->rawText(), $result->recoveries()))->toBe(['bad;', 'wrong;']);
     expect(array_map(fn($d) => $d->byteOffset, $result->diagnostics()))->toBe([3, 7]);
     expect($result->validate()->valid)->toBeFalse();
+    expect(array_column($result->validate()->issues, 'code'))->toBe(['syntax.recovered', 'syntax.recovered']);
+    expect(array_map(fn($issue) => $issue->span->rawText(), $result->validate()->issues))
+        ->toBe(['bad;', 'wrong;']);
     expect($result->commit())->toBeFalse();
     expect($result->commit())->toBeFalse();
     expect($effects)->toBe(0);

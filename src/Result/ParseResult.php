@@ -28,6 +28,7 @@ final class ParseResult
     public readonly ?Diagnostic $diagnostic;
     public readonly ?ConcreteNode $node;
     private ?AstNode $ast = null;
+    private ?ValidationResult $syntaxValidation = null;
 
     public function __construct(private readonly AbstractMatch $match)
     {
@@ -117,7 +118,13 @@ final class ParseResult
     public function validate(): ValidationResult
     {
         if (!$this->match instanceof Success) {
-            return new ValidationResult(false, ['Syntax was not accepted']);
+            $offset = $this->diagnostic->byteOffset ?? $this->start;
+
+            return $this->syntaxValidation ??= new ValidationResult([new ValidationIssue(
+                'syntax.rejected',
+                'Syntax was not accepted',
+                $this->span->source->span($offset, $offset),
+            )]);
         }
 
         return $this->match->validateSemantic();

@@ -7,8 +7,9 @@
    lazily, with per-recognition caching. Failed/discarded attempts do not evaluate
    them automatically. Raw CST/AST text never depends on transforms.
 3. `validate()` runs selected semantic validators after syntactic acceptance.
-   Validators receive ParseResult and return true, false or an error string.
-   Child and accepted-trivia validation contribute errors once. Definition
+   Validators receive ParseResult and return true, false, a message string,
+   a ValidationIssue or a list of issues (empty means valid).
+   Child and accepted-trivia validation contribute issues once. Definition
    validators use this same contract, without speculative alternative selection.
 4. `commit()` validates and then executes selected `onCommit()` effects and
    assignments in recognition order. Effects receive ParseResult as their only
@@ -16,7 +17,7 @@
 
 Commit returns false for failed syntax or rejected semantic validation.
 An accepted result containing explicit [error recovery](recovery.md) also refuses
-commit. Its validation reports recovery errors without running semantic validators;
+commit. Its validation reports recovery issues without running semantic validators;
 no effects execute on valid siblings or enclosing parsers.
 Successful commits are idempotent. Mapping, validation and effect exceptions are
 cached and rethrown; a partially executed effect sequence is never retried or
@@ -44,5 +45,5 @@ Discarded alternative callbacks and speculative trivia produce no committed
 effects. A semantic rejection does not retry a syntactically selected choice;
 use a pure guard when rejection belongs to recognition.
 
-See [semantic values](semantic-values.md), [ParseResult](parse-results.md) and
+See [structured validation](validation.md), [semantic values](semantic-values.md), [ParseResult](parse-results.md) and
 the [runnable examples](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/execution.php).

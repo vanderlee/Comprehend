@@ -68,7 +68,7 @@ and policies. `children()` exposes graph edges; it does not assign copied edges
 back into parser fields. Custom collection storage must be copied explicitly too.
 
 Recognition must be pure. Attach `guard(callable(ConcreteNode): bool)` for
-speculative rejection, `validateSemantic(callable(ParseResult): bool|string)`
+speculative rejection, `validateSemantic(callable(ParseResult): bool|string|ValidationIssue|list<ValidationIssue>)`
 for selected validation, `mapValue(callable(ParseResult): mixed)` for lazy typed
 meaning and `onCommit(callable(ParseResult): void)` for effects. Restore every
 session scope in `finally`, including trivia, case, preference and lexeme scopes.

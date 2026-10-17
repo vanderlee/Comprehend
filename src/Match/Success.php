@@ -15,6 +15,7 @@ use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Result\Recovery;
 use Vanderlee\Comprehend\Result\SemanticProjection;
 use Vanderlee\Comprehend\Result\ValidationResult;
+use Vanderlee\Comprehend\Result\ValidationIssue;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 use Throwable;
 
@@ -266,12 +267,6 @@ class Success extends AbstractMatch
     public function validateSemantic(): ValidationResult
     {
         $state = $this->executionState();
-        if ($state->recoveries !== []) {
-            return $state->validation ??= new ValidationResult(false, array_map(
-                static fn(Recovery $recovery): string => $recovery->diagnostic->message(),
-                $state->recoveries,
-            ));
-        }
         if ($state->validationError !== null) {
             throw $state->validationError;
         }
@@ -286,11 +281,21 @@ class Success extends AbstractMatch
 
         $state->validating = true;
         try {
+            if ($state->recoveries !== []) {
+                return $state->validation = new ValidationResult(array_map(
+                    static fn(Recovery $recovery): ValidationIssue => new ValidationIssue(
+                        'syntax.recovered',
+                        $recovery->diagnostic->message(),
+                        $recovery->span,
+                    ),
+                    $state->recoveries,
+                ));
+            }
             // Retain child-before-parent order even when a child reports rejection.
-            $errors = $this->childValidationErrors();
-            $errors = array_merge($errors, $this->localValidationErrors());
+            $issues = $this->childValidationIssues();
+            $issues = array_merge($issues, $this->localValidationIssues());
 
-            return $state->validation = new ValidationResult($errors === [], $errors);
+            return $state->validation = new ValidationResult($issues);
         } catch (Throwable $error) {
             $state->validationError = $error;
             throw $error;
@@ -300,14 +305,15 @@ class Success extends AbstractMatch
     }
 
     /**
-     * A shared execution child contributes its validation errors only once.
-     * @return list<string>
+     * A shared execution child contributes each issue only once, including through multiple parents.
+     * @return list<ValidationIssue>
      */
-    private function childValidationErrors(): array
+    private function childValidationIssues(): array
     {
         $state = $this->executionState();
-        $errors = [];
+        $issues = [];
         $seen = [];
+        $seenIssues = [];
         foreach ($state->concreteMatches as $child) {
             $id = spl_object_id($child);
             if (isset($seen[$id])) {
@@ -315,37 +321,68 @@ class Success extends AbstractMatch
             }
 
             $seen[$id] = true;
-            foreach ($child->validateSemantic()->errors as $error) {
-                $errors[] = $error;
+            foreach ($child->validateSemantic()->issues as $issue) {
+                $issue = $this->checkValidationIssue($issue);
+                $id = spl_object_id($issue);
+                if (!isset($seenIssues[$id])) {
+                    $seenIssues[$id] = true;
+                    $issues[] = $issue;
+                }
             }
         }
 
-        return $errors;
+        return $issues;
     }
 
     /**
-     * @return list<string>
+     * @return list<ValidationIssue>
      */
-    private function localValidationErrors(): array
+    private function localValidationIssues(): array
     {
         $state = $this->executionState();
         if ($state->semanticValidators === []) {
             return [];
         }
-        $errors = [];
+        $issues = [];
         $result = new ParseResult($this);
         foreach ($state->semanticValidators as $validator) {
             $outcome = $validator($result);
-            if ($outcome === false) {
-                $errors[] = 'Semantic validation failed';
-            } elseif (is_string($outcome)) {
-                $errors[] = $outcome;
-            } elseif ($outcome !== true) {
-                throw new UnexpectedValueException('Semantic validators must return true, false or an error string');
+            if ($outcome === true) {
+                continue;
+            }
+            if ($outcome === false || is_string($outcome)) {
+                $outcome = new ValidationIssue(
+                    'validation.failed',
+                    $outcome === false ? 'Semantic validation failed' : $outcome,
+                    $result->span,
+                );
+            }
+            if ($outcome instanceof ValidationIssue) {
+                $outcome = [$outcome];
+            }
+            if (!is_array($outcome) || !array_is_list($outcome)) {
+                throw new UnexpectedValueException(
+                    'Semantic validators must return a boolean, string, issue or issue list',
+                );
+            }
+            foreach ($outcome as $issue) {
+                $issues[] = $this->checkValidationIssue($issue);
             }
         }
 
-        return $errors;
+        return $issues;
+    }
+
+    private function checkValidationIssue(mixed $issue): ValidationIssue
+    {
+        if (!$issue instanceof ValidationIssue) {
+            throw new UnexpectedValueException('Validation issue lists must contain only ValidationIssue objects');
+        }
+        if ($issue->span->source !== $this->span?->source) {
+            throw new UnexpectedValueException('Validation issues must belong to the recognized source');
+        }
+
+        return $issue;
     }
 
     public function isCommitted(): bool
