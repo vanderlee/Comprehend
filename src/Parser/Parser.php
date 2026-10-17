@@ -79,7 +79,7 @@ abstract class Parser implements SnapshotParticipant
 
     public function snapshot(GraphSnapshot $context): Parser
     {
-        $copy = clone $this;
+        $copy = $context->copyParser($this);
         $context->registerCopy($this, $copy);
         $copy->copyDependencies($context);
 

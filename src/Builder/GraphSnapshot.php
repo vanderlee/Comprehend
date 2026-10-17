@@ -28,10 +28,18 @@ final class GraphSnapshot
     /** @var SplObjectStorage<Parser|Definition, true> Participants whose snapshot() has not returned. */
     private SplObjectStorage $snapshotting;
 
-    public function __construct(private readonly bool $resolveReferences = true)
-    {
+    public function __construct(
+        private readonly bool $resolveReferences = true,
+        private readonly bool $optimize = false,
+    ) {
         $this->copies = new SplObjectStorage();
         $this->snapshotting = new SplObjectStorage();
+    }
+
+    /** @internal Only freezing enables recognition rewrites; authoring copies stay structural. */
+    public function copyParser(Parser $parser): Parser
+    {
+        return $this->optimize ? (new GraphOptimizer())->replace($parser) : clone $parser;
     }
 
     /** @internal Explicit capability; inherited interfaces alone do not guarantee reuse safety. */

@@ -15,6 +15,8 @@ use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Parser\Terminal\ReadWhileSet;
+use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
@@ -27,6 +29,19 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
     use ExactClassSnapshotReuseTrait;
     use DefaultAnalysisTrait;
     use SpacingTrait;
+
+    private ?ReadWhileSet $scanner = null;
+
+    /** @internal Keep the repeat boundary and its metadata while replacing its recognition plan. */
+    public function withOptimizedRecognition(): self
+    {
+        $copy = clone $this;
+        $copy->scanner = $this->max !== 0 && $this->parser::class === Set::class
+            ? $this->parser->repetitionScanner($this->min, $this->max)
+            : null;
+
+        return $copy;
+    }
 
     public function __construct(private Parser $parser, private int $min = 0, private ?int $max = null)
     {
@@ -95,6 +110,9 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
         parent::copyDependencies($context);
         $this->parser = $context->copy($this->parser);
         $this->copySpacer($context);
+        if ($this->scanner !== null) {
+            $this->scanner = clone $this->scanner;
+        }
     }
 
     /** @return list<Parser> */
@@ -118,6 +136,15 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
         $concreteMatches = null;
         $this->pushSpacer($session);
         try {
+            if ($this->scanner !== null && !$session->hasRecognitionLimits() && !$session->hasActiveSpacing()) {
+                $diagnostics = $session->diagnosticState();
+                $scan = $this->scanner->recognizeInSession($source, $byteOffset, $session);
+                $session->restoreDiagnostics($diagnostics);
+                if ($scan instanceof Success) {
+                    return $this->scannedSuccess($source, $byteOffset, $scan->length, $session);
+                }
+                // The original child owns minimum-failure expectations and rule paths.
+            }
             $acceptedByteLength = 0;
             while ($this->max === null || count($childMatches) < $this->max) {
                 $diagnostics = $session->diagnosticState();
@@ -169,5 +196,25 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
         }
 
         return $success;
+    }
+
+    private function scannedSuccess(Source $source, int $offset, int $length, ParseSession $session): Success
+    {
+        $children = [];
+        $diagnostic = $session->diagnostic();
+        $end = $offset + $length;
+        while ($offset < $end) {
+            $unit = $source->readUnit($offset);
+            if ($unit === null) {
+                throw new LogicException('Scanned source unit is missing');
+            }
+            $child = new Success($unit->byteLength());
+            $child->setSourceMetadata($unit, $diagnostic?->byteOffset, $diagnostic);
+            $child->buildConcreteNode($this->parser);
+            $children[] = $child;
+            $offset = $unit->end;
+        }
+
+        return $this->success($source, $end - $length, $length, $children);
     }
 }

@@ -33,6 +33,12 @@ trait SpacingContextTrait
         array_pop($this->spacers);
     }
 
+    /** @internal Whether repetition must recognize intervening trivia. */
+    public function hasActiveSpacing(): bool
+    {
+        return !$this->isLexeme() && end($this->spacers) instanceof Parser;
+    }
+
     /** Zero means no spacing was consumed; false means the active trivia parser rejected input. */
     public function skipSpacing(Source $source, int $offset, ?Success &$match = null): int|false
     {

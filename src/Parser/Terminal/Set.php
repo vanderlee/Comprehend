@@ -65,6 +65,16 @@ class Set extends Parser implements AnalyzableParser, ReusableSnapshot
         return false;
     }
 
+    /** @internal Replace unobservable per-unit membership checks with a bounded scanner. */
+    public function repetitionScanner(int $min, ?int $max): ?ReadWhileSet
+    {
+        if (static::class !== self::class || !$this->include || $this->hasCompositionMetadata()) {
+            return null;
+        }
+
+        return (new ReadWhileSet($this->sourceSet, $min, $max))->setCaseSensitivity($this->caseSensitivity);
+    }
+
     public function __toString(): string
     {
         return ($this->include ? '' : chr(0xac)) . '( \'' . implode('\' | \'', str_split($this->set)) . '\' )';

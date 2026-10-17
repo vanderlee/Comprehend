@@ -87,6 +87,12 @@ final class ParseSession
         return $this->limits->maxWork !== null;
     }
 
+    /** @internal Rewrites must preserve budget positions and parser paths when limits are active. */
+    public function hasRecognitionLimits(): bool
+    {
+        return $this->limits->maxWork !== null || $this->limits->maxDepth !== null;
+    }
+
     /** @internal A bounded, session-owned full subject; large subjects retain uncached access. */
     public function regexSubject(): string
     {

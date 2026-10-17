@@ -290,7 +290,15 @@ new vocabulary without changing existing expressions. No global registration
 affects `Comprehend::word()` or other vocabularies. Build through `$syntax` to
 select the scope explicitly, or use `$syntax->call(name, ...arguments)` when the
 method name is data. `names()` lists built-in and registered factory names.
-Freezing retains the constructed parser graph and performs no syntax dispatch.
+Freezing performs no syntax dispatch. Its optimizer replaces eligible recognition
+operations with specialized parsers. Repeating a plain inclusive `Set` uses
+`ReadWhileSet` with the same bounds and case policy, while retaining the Repeat
+boundary and per-character CST nodes. Names, tags, groups, guards, lazy values,
+validators and commit effects on the repeat remain intact. Decorated children,
+excluded sets and custom subclasses retain their original recognition. Active
+intervening spacing or work/depth limits use ordinary repetition so trivia,
+diagnostics and budget failures retain their contracts. Authoring copies do not
+run the optimizer; mutable builders remain unchanged.
 
 Built-in static calls such as `Comprehend::text()` resolve directly from a fixed
 catalog. That catalog coordinates typed static/fluent callbacks, aliases,

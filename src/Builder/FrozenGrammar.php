@@ -35,7 +35,7 @@ final class FrozenGrammar
         if ($parser instanceof Comprehend) {
             $parser = $parser->parser();
         }
-        $snapshot = new GraphSnapshot();
+        $snapshot = new GraphSnapshot(optimize: true);
         $root = $snapshot->copy($parser);
         $warnings = (new GraphAnalysis())->validate($root);
 
