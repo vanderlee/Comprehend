@@ -9,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use TypeError;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Directive\Trivia;
+use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
@@ -18,6 +20,75 @@ use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
 uses(TestCase::class);
+
+test('spacing reuses its wrapper but retains independent matches and effects', function (): void {
+    $source = new ByteSource('  ');
+    $trivia = new class (' ') extends Text {
+        public int $wrappers = 0;
+
+        public function trivia(): Trivia
+        {
+            ++$this->wrappers;
+
+            return parent::trivia();
+        }
+    };
+    $effects = [];
+    $trivia->onCommit(static function (ParseResult $result) use (&$effects): void {
+        $effects[] = $result->span->start;
+    });
+    $session = new ParseSession($source, $trivia);
+    $this->assertSame(1, $session->skipSpacing($source, 0, $first));
+    $session->pushSpacer(null);
+    $this->assertSame(0, $session->skipSpacing($source, 1));
+    $session->popSpacer();
+    $session->pushSpacer($trivia);
+    $this->assertSame(1, $session->skipSpacing($source, 1, $second));
+    $session->popSpacer();
+
+    $this->assertSame(1, $trivia->wrappers);
+    $this->assertNotSame($first, $second);
+    $this->assertTrue($first->node->isTrivia);
+    $this->assertTrue($second->node->isTrivia);
+    $this->assertSame([], $effects);
+    $second->commit();
+    $first->commit();
+    $second->commit();
+    $this->assertSame([1, 0], $effects);
+
+    $otherSession = new ParseSession($source, $trivia);
+    $this->assertSame(1, $otherSession->skipSpacing($source, 0));
+    $this->assertSame(2, $trivia->wrappers);
+});
+
+test('unused spacing under lexeme does not create wrappers', function (): void {
+    $source = new ByteSource(' ');
+    $trivia = new class (' ') extends Text {
+        public function trivia(): Trivia
+        {
+            throw new LogicException('Unused trivia must not be wrapped');
+        }
+    };
+    $session = new ParseSession($source, $trivia);
+    $session->pushLexeme();
+    $this->assertSame(0, $session->skipSpacing($source, 0));
+    $session->popLexeme();
+    $this->assertFalse($session->isLexeme());
+});
+
+test('nested spacing policies keep their own wrappers', function (): void {
+    $source = new ByteSource(' - ');
+    $session = new ParseSession($source, new Text(' '));
+    $this->assertSame(1, $session->skipSpacing($source, 0, $first));
+    $session->pushSpacer(new Text('-'));
+    $this->assertSame(1, $session->skipSpacing($source, 1, $middle));
+    $session->popSpacer();
+    $this->assertSame(1, $session->skipSpacing($source, 2, $last));
+
+    $this->assertSame(' ', $first->node->rawText());
+    $this->assertSame('-', $middle->node->rawText());
+    $this->assertSame(' ', $last->node->rawText());
+});
 
 test('unchanged diagnostic snapshots are shared without mutating retained failures', function (): void {
     $session = new ParseSession(new ByteSource('abc'));

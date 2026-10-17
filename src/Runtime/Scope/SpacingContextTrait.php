@@ -8,6 +8,8 @@ use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Directive\Trivia;
+use WeakMap;
 
 /**
  * Maintains ParseSession's nested automatic-trivia policies. Recognizes spacing with recursive
@@ -18,6 +20,8 @@ trait SpacingContextTrait
 {
     /** @var list<Parser|null> Intervening trivia only; boundaries are explicit parsers. */
     private array $spacers = [];
+    /** @var WeakMap<Parser, Trivia>|null Wrappers are grammar objects; matches remain per attempt. */
+    private ?WeakMap $triviaParsers = null;
 
     public function pushSpacer(?Parser $trivia = null): void
     {
@@ -53,7 +57,10 @@ trait SpacingContextTrait
         // but cannot recursively insert itself inside its own grammar.
         $this->pushLexeme();
         try {
-            return $trivia->trivia()->recognizeInSession($source, $byteOffset, $this);
+            $wrappers = $this->triviaParsers ??= new WeakMap();
+            $parser = $wrappers[$trivia] ??= $trivia->trivia();
+
+            return $parser->recognizeInSession($source, $byteOffset, $this);
         } finally {
             $this->popLexeme();
         }

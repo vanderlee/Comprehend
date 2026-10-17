@@ -27,3 +27,9 @@ local overrides. Literal whitespace still matches normally. Accepted trivia is
 marked in the immutable CST, omitted from named ASTs, and included in validation
 and explicit commit. Automatic trivia does not contribute named collections.
 Scope restoration is exception-safe. Source round trips always use exact spans.
+
+Automatic trivia wrappers are created lazily and reused by parser identity within
+one parse session, including across nested spacing scopes. Each attempt still
+creates an independent match with its own spans, lazy values, validation and
+commit state. No wrapper is created for spacing suppressed by `lexeme()`, and
+the cache is not shared between sessions or stored in the grammar graph.
