@@ -30,3 +30,13 @@ test('children from other sources are rejected', function (): void {
 
     new ConcreteNode('sequence', (new ByteSource('a'))->span(0, 1), [$child]);
 });
+
+test('leaf nodes still reject malformed tags', function (array $tags): void {
+    $this->expectException(InvalidArgumentException::class);
+
+    new ConcreteNode('text', (new ByteSource('x'))->span(0, 1), tags: $tags);
+})->with([
+    'empty tag' => [['']],
+    'non-string tag' => [[3]],
+    'associative tags' => [['label' => 'tag']],
+]);

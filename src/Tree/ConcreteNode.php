@@ -30,7 +30,10 @@ final class ConcreteNode implements JsonSerializable
         public readonly bool $semanticLeaf = false,
         public readonly array $tags = [],
     ) {
-        self::validateStructure($span, $children, $tags);
+        // Empty lists already satisfy the structural invariants of plain leaves.
+        if ($children !== [] || $tags !== []) {
+            self::validateStructure($span, $children, $tags);
+        }
     }
 
     /**
@@ -47,12 +50,6 @@ final class ConcreteNode implements JsonSerializable
                 throw new InvalidArgumentException('Node tags must be nonempty strings');
             }
         }
-        self::validateChildren($span, $children);
-    }
-
-    /** @param array<array-key, mixed> $children */
-    private static function validateChildren(Span $span, array $children): void
-    {
         if (!array_is_list($children)) {
             throw new InvalidArgumentException('Concrete children must be a list');
         }
