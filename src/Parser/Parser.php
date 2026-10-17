@@ -59,6 +59,7 @@ abstract class Parser implements SnapshotParticipant
     private ?string $nodeGroup = null;
     private bool $semanticLeaf = false;
     private ?string $ruleName = null;
+    private ?string $expectationLabel = null;
     private ?string $classLabel = null;
 
     protected static function parseCharacter(string $character): string
@@ -151,16 +152,17 @@ abstract class Parser implements SnapshotParticipant
     public function hasCompositionMetadata(): bool
     {
         return $this->nodeName !== null || $this->nodeTags !== [] || $this->nodeGroup !== null
-            || $this->semanticLeaf || $this->ruleName !== null || $this->valueMapper !== null
+            || $this->semanticLeaf || $this->ruleName !== null || $this->expectationLabel !== null
+            || $this->valueMapper !== null
             || $this->valueTransforms !== [] || $this->guards !== []
             || $this->semanticValidators !== [] || $this->effects !== []
             || $this->resultCallbacks !== [] || $this->assignCallbacks !== [];
     }
 
-    /** @internal Static tree metadata is safe to reproduce; executable metadata must run normally. */
+    /** @internal Static tree metadata is safe to reproduce; recognition-dependent metadata must run normally. */
     public function hasExecutableMetadata(): bool
     {
-        return $this->nodeName instanceof Closure || $this->valueMapper !== null
+        return $this->expectationLabel !== null || $this->nodeName instanceof Closure || $this->valueMapper !== null
             || $this->valueTransforms !== [] || $this->guards !== []
             || $this->semanticValidators !== [] || $this->effects !== []
             || $this->resultCallbacks !== [] || $this->assignCallbacks !== [];
@@ -175,6 +177,17 @@ abstract class Parser implements SnapshotParticipant
     public function diagnosticRule(string $name): static
     {
         $this->ruleName = $name;
+
+        return $this;
+    }
+
+    /** Replace entry-position expectations on failure, preserving deeper errors and preceding alternatives. */
+    public function label(string $label): static
+    {
+        if (trim($label) === '') {
+            throw new InvalidArgumentException('Expectation labels must not be blank');
+        }
+        $this->expectationLabel = $label;
 
         return $this;
     }
@@ -251,6 +264,8 @@ abstract class Parser implements SnapshotParticipant
     private function recognizeChecked(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
         $this->assertRecognitionPosition($source, $offset, $session);
+        $label = $this->expectationLabel;
+        $labelCheckpoint = $label === null ? null : $session->diagnosticState();
         $failureRevision = $session->failureRevision();
         $session->pushRule($this->diagnosticName());
         try {
@@ -280,9 +295,22 @@ abstract class Parser implements SnapshotParticipant
             $diagnostic,
         );
 
-        return $match instanceof Success
+        $match = $match instanceof Success
             ? $this->prepareSuccessfulMatch($source, $offset, $session, $match)
             : $match;
+        if ($label !== null && $labelCheckpoint !== null && !$match->accepted) {
+            $session->pushRule($this->diagnosticName());
+            try {
+                if ($session->relabelFailure($offset, $label, $labelCheckpoint)) {
+                    $diagnostic = $session->diagnostic(true);
+                    $match->setSourceMetadata($source->span($offset, $offset), $diagnostic?->byteOffset, $diagnostic);
+                }
+            } finally {
+                $session->popRule();
+            }
+        }
+
+        return $match;
     }
 
     private function assertRecognitionPosition(Source $source, int $offset, ParseSession $session): void

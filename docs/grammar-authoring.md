@@ -147,7 +147,8 @@ The bundled RFC grammars import the facade as `C` with
 | Extraction's `mapText(callable)` | Opt-in text mapping; activate the [Extraction expansion](extraction.md) first |
 | `guard()`, `validateSemantic()`, `onCommit()`, `assignTo()` | Pure recognition predicate, selected semantic validation, explicit committed effects and assignments |
 | `setResult()`, `concatResult()`, `pushResult()` | Cached named result collections, independent of source text |
-| `diagnosticRule(name)` | A readable rule label for failures |
+| `label(text)` | Replace entry-position expectations, preserving deeper failures; see [labels](diagnostics.md#expectation-labels) |
+| `diagnosticRule(name)` | A readable rule-path name, separate from expectation labels and tree names |
 | `caseSensitive(bool)`, `prefer(preference)` | Scoped case and choice policy; preference uses `Runtime\ChoicePolicy::FIRST`, `LONGEST`, or `SHORTEST` |
 | `spacing()`, `lexeme()`, `trivia()` | Existing scoped directives |
 | `parser()` | Detached object graph for low-level integration |

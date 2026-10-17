@@ -237,6 +237,24 @@ final class ParseSession
     }
 
     /**
+     * @internal Replace only this scope's entry failure; preceding alternatives remain intact.
+     * @param array{int|null, list<string>, list<list<string>>, int, Diagnostic|null} $checkpoint
+     */
+    public function relabelFailure(int $offset, string $label, array $checkpoint): bool
+    {
+        if (
+            ($this->farthestFailure !== null && $this->farthestFailure > $offset)
+            || ($this->deferredListFailure !== null && $this->deferredListFailure->byteOffset > $offset)
+        ) {
+            return false;
+        }
+        $this->restoreDiagnostics($checkpoint);
+        $this->recordFailure($offset, $label);
+
+        return true;
+    }
+
+    /**
      * Roll back list syntax probes while keeping their failure available to a failed enclosing parse.
      * @param array{int|null, list<string>, list<list<string>>, int, Diagnostic|null} $state
      */

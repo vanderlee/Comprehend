@@ -6,6 +6,49 @@ Tied alternative failures retain distinct expected labels and paths. Named rules
 add readable names. Text literal diagnostics use quoted literals; custom parsers
 can override protected `diagnosticName()` and `diagnosticExpectation()`.
 
+## Expectation labels
+
+Use `label(string $label)` to describe what a parser expects:
+
+```php
+$identifier = C::regex('/[A-Za-z][A-Za-z0-9_]*/A')->label('identifier');
+$result = $identifier->parse('?');
+// $result->diagnostic->expected === ['identifier']
+```
+
+Import `Vanderlee\Comprehend\Comprehend as C`. Labels are available on fluent
+expressions, Syntax-created expressions and low-level Parser objects. Like other
+low-level configuration, `Parser::label()` mutates that builder; fluent calls
+detach the expression. Blank labels are rejected.
+
+When a labelled parser fails at its entry byte position, its own low-level
+expectations are replaced by the label. Earlier alternatives' expectations at
+that position remain, and labels from tied alternatives accumulate. An outer
+label replaces nested labels when the entire labelled parser fails at that same
+boundary. The replacement's rule path ends at the labelled parser, retaining
+its diagnostic rule name; the label text is not inserted into the path.
+
+Failures farther into the input retain their detailed expectations and byte
+positions, including deferred malformed-list diagnostics. For example,
+`C::text('hello')->label('greeting')->parse('hel?')` still expects `"hello"` at
+byte 3. Lookahead and exclusion can fail at their entry position despite observing
+child progress; such entry failures can be labelled. Labels do not change source
+consumption or the selection of alternatives.
+
+Successful parsers do not replace observed failure details or add a new
+expectation. Optional/repetition/lookahead rollback discards labelled probes in
+the same way as ordinary probes. A later complete-input EOF failure is not
+relabeled. Guard rejection follows its diagnostic position; semantic validation
+is unchanged. Labelled patterns retain their normal recognition path when an
+optimization would otherwise bypass relabelling.
+
+`label()` is separate from `diagnosticRule()`, which names rule-path entries, and
+`named()`, which names CST/AST nodes. It creates no wrapper node and changes no
+tree names, semantic values or commit effects. See the runnable
+[labels example](examples/labels.php).
+
+## Locations and retained observations
+
 `location()` lazily indexes CRLF, lone CR and LF and returns one-based line/column.
 UTF-8 columns count code points; byte-source columns count bytes. `excerpt()`
 returns the original current line and `message()` formats expectations/location.

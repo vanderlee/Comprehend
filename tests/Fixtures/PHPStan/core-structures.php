@@ -24,7 +24,7 @@ function coreStructures(): void
     assertType('Vanderlee\Comprehend\Comprehend<mixed>', C::text('n=')->ignoreThen(next: $number));
     assertType('Vanderlee\Comprehend\Comprehend<int>', $number->thenIgnore(';')->between('(', ')'));
     assertType('Vanderlee\Comprehend\Comprehend<int>', $number->named('number')->tag('numeric')
-        ->diagnosticRule('number')->caseSensitive()->prefer(ChoicePolicy::FIRST)
+        ->diagnosticRule('number')->label('number')->caseSensitive()->prefer(ChoicePolicy::FIRST)
         ->guard(static fn(): bool => true)->validateSemantic(static fn(): bool => true)
         ->onCommit(static fn() => null)->setResult('number')->concatResult('text')->pushResult('items')
         ->spacing(null)->lexeme()->trivia());

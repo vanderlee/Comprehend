@@ -88,6 +88,7 @@ use BadMethodCallException;
  * @method self<T> concatResult(?string $key = null, mixed $value = null)
  * @method self<T> pushResult(?string $key = null, mixed $value = null)
  * @method self<T> diagnosticRule(string $name)
+ * @method self<T> label(string $label)
  * @method self<T> caseSensitive(bool $sensitivity = true)
  * @method self<T> prefer(ChoicePolicy $preference)
  * @method self<T> spacing(self|Parser|null $trivia)

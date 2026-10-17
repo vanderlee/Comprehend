@@ -104,6 +104,7 @@ final class Catalog
         'concatresult',
         'pushresult',
         'diagnosticrule',
+        'label',
         'casesensitive',
         'prefer',
         'spacing',
@@ -327,6 +328,7 @@ final class Catalog
             'diagnosticrule' => static fn(Comprehend $item, string $name): Parser => $item->parser()->diagnosticRule(
                 $name,
             ),
+            'label' => static fn(Comprehend $item, string $label): Parser => $item->parser()->label($label),
             'casesensitive' => static fn(Comprehend $item, bool $sensitivity = true): Parser => new CaseSensitive(
                 $sensitivity,
                 $item->parser(),
