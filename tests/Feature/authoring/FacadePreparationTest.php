@@ -8,6 +8,7 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
+use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Comprehend as C;
@@ -60,13 +61,14 @@ test('deferred rules refresh after redefinition removal and factory state change
 });
 
 test('custom freeze overrides cannot opt their caller owned state into facade reuse', function () {
-    $service = (object) ['text' => 'a'];
+    $service = (object) ['text' => 'a', 'flags' => []];
     $parser = new class ('unused') extends Text {
         public object $service;
 
-        public function freeze(): FrozenGrammar
+        public function freeze(int $flags = FreezeFlags::DEFAULT): FrozenGrammar
         {
-            return (new Text($this->service->text))->freeze();
+            $this->service->flags[] = $flags;
+            return (new Text($this->service->text))->freeze($flags);
         }
     };
     $parser->service = $service;
@@ -74,6 +76,8 @@ test('custom freeze overrides cannot opt their caller owned state into facade re
     $this->assertTrue($facade->parse('a')->success);
     $service->text = 'b';
     $this->assertTrue($facade->parse('b')->success);
+    $this->assertTrue($facade->freeze(FreezeFlags::NONE)->parse('b')->success);
+    $this->assertSame([FreezeFlags::DEFAULT, FreezeFlags::DEFAULT, FreezeFlags::NONE], $service->flags);
 });
 
 test('custom descendants keep fresh snapshots even below a built-in composite root', function () {

@@ -11,6 +11,7 @@ use UnexpectedValueException;
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
+use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Integer;
@@ -95,7 +96,8 @@ use BadMethodCallException;
  */
 final class Comprehend
 {
-    private ?FrozenGrammar $preparedGrammar = null;
+    /** @var array<int, FrozenGrammar> Reusable preparation is isolated by its complete flag set. */
+    private array $preparedGrammars = [];
     private function __construct(private readonly Parser $parser, private readonly ?Syntax $syntax = null) {}
 
     public static function syntax(): Syntax
@@ -222,14 +224,15 @@ final class Comprehend
     }
 
     /** @return FrozenGrammar<T> */
-    public function freeze(): FrozenGrammar
+    public function freeze(int $flags = FreezeFlags::DEFAULT): FrozenGrammar
     {
-        if ($this->preparedGrammar !== null) {
-            return $this->preparedGrammar;
+        FreezeFlags::validate($flags);
+        if (isset($this->preparedGrammars[$flags])) {
+            return $this->preparedGrammars[$flags];
         }
-        $grammar = $this->parser->freeze();
+        $grammar = $this->parser->freeze($flags);
         if ($grammar->canReuseFor($this->parser)) {
-            $this->preparedGrammar = $grammar;
+            $this->preparedGrammars[$flags] = $grammar;
         }
 
         return $grammar;

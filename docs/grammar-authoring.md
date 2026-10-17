@@ -312,6 +312,26 @@ intervening spacing or work/depth limits use ordinary repetition so trivia,
 diagnostics and budget failures retain their contracts. Authoring copies do not
 run the optimizer; mutable builders remain unchanged.
 
+Control optimization when preparing a grammar with `Builder\FreezeFlags`:
+
+```php
+use Vanderlee\Comprehend\Builder\FreezeFlags;
+use Vanderlee\Comprehend\Builder\FrozenGrammar;
+
+$optimized = $grammar->freeze(); // FreezeFlags::DEFAULT enables OPTIMIZE.
+$plain = $grammar->freeze(flags: FreezeFlags::NONE);
+$explicit = FrozenGrammar::from($grammar, FreezeFlags::OPTIMIZE);
+$result = $plain->parse('input');
+```
+
+Both Parser and facade `freeze(int $flags = FreezeFlags::DEFAULT)` accept flags.
+`NONE` disables only optimizer rewrites: graph isolation, reference resolution and
+structural safety checks always run. Unknown flag bits raise
+`InvalidArgumentException` before preparation. Flags support bitwise `|` composition;
+`OPTIMIZE` is currently the only option. Reusable facade snapshots are cached
+separately for each flag set. Normal facade parsing continues to use `DEFAULT`;
+parse through an explicitly frozen grammar to disable optimization.
+
 Built-in static calls such as `Comprehend::text()` resolve directly from a fixed
 catalog. That catalog coordinates typed static/fluent callbacks, aliases,
 name discovery and reserved names. Scoped Syntax vocabularies resolve callbacks
@@ -333,7 +353,7 @@ such as `assignTo()` for referenced assignments.
 ### Direct parsing and numeric factories
 
 `parse()` is a complete-input alias for `parseAll()`. A facade whose entire graph
-declares the `ReusableSnapshot` capability prepares its snapshot once and reuses it for later
+declares the `ReusableSnapshot` capability prepares its snapshot once per flag set and reuses it for later
 calls, including explicit `freeze()` calls. This cache belongs to that immutable
 expression; composition and metadata changes create a new expression. Recognition
 results, semantic caches and effects remain separate for every parse.

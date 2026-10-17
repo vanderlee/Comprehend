@@ -288,6 +288,13 @@ all owned dependencies through GraphSnapshot; each dependency, including spacing
 is checked independently. The original facade root is checked too, even when its
 `freeze()` override returns a grammar composed entirely of capable built-ins.
 
+Custom freeze overrides must accept
+`freeze(int $flags = FreezeFlags::DEFAULT): FrozenGrammar` (with `Builder\FreezeFlags`
+imported) and forward the flags when preparing the resulting grammar. Unknown
+bits must be rejected, as in `FrozenGrammar::from($parser, $flags)`. Facade caches
+are separate for each flag set; opting into reuse requires stable preparation
+for each supported set.
+
 Built-ins use `Builder\ExactClassSnapshotReuseTrait`, which declares
 `return static::class === self::class;`. This deliberately excludes subclasses
 despite interface inheritance. A safe custom subclass can use the trait again

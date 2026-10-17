@@ -30,12 +30,13 @@ final class FrozenGrammar
         $this->reusable = $reusable;
     }
 
-    public static function from(Comprehend|Parser $parser): self
+    public static function from(Comprehend|Parser $parser, int $flags = FreezeFlags::DEFAULT): self
     {
+        FreezeFlags::validate($flags);
         if ($parser instanceof Comprehend) {
             $parser = $parser->parser();
         }
-        $snapshot = new GraphSnapshot(optimize: true);
+        $snapshot = new GraphSnapshot(optimize: ($flags & FreezeFlags::OPTIMIZE) !== 0);
         $root = $snapshot->copy($parser);
         $warnings = (new GraphAnalysis())->validate($root);
 

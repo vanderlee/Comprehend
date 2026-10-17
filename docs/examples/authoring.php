@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
+use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Library\Rfc3986;
@@ -141,4 +142,17 @@ foreach (['https://example.com' => true, 'http://127.0.0.1' => true, '1bad://hos
         }
     }
 }
+$letters = C::set('ab')->many()->named('letters');
+$preparedLetters = [
+    $letters->freeze(),
+    $letters->freeze(flags: FreezeFlags::NONE),
+    FrozenGrammar::from($letters, FreezeFlags::OPTIMIZE),
+];
+foreach ($preparedLetters as $grammar) {
+    $result = $grammar->parse('abba');
+    if (!$result->success || $result->rawText() !== 'abba' || $result->node?->name !== 'letters') {
+        throw new RuntimeException('Freeze flags changed recognition or naming');
+    }
+}
+
 echo "Object, Ruleset and facade arithmetic/RFC acceptance, values, ASTs and spans agree.\n";

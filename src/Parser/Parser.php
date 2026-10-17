@@ -7,6 +7,7 @@ namespace Vanderlee\Comprehend\Parser;
 use InvalidArgumentException;
 use LogicException;
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
+use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\SnapshotParticipant;
 use Vanderlee\Comprehend\Directive\Lexeme;
@@ -72,9 +73,9 @@ abstract class Parser implements SnapshotParticipant
         return $character;
     }
 
-    public function freeze(): FrozenGrammar
+    public function freeze(int $flags = FreezeFlags::DEFAULT): FrozenGrammar
     {
-        return FrozenGrammar::from($this);
+        return FrozenGrammar::from($this, $flags);
     }
 
     public function snapshot(GraphSnapshot $context): Parser
