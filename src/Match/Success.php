@@ -31,6 +31,8 @@ class Success extends AbstractMatch
     use CallbackTrait;
 
     private ?ExecutionState $state = null;
+    /** @var list<Success> Children needed only until their immutable CST is built. */
+    private array $concreteOnlyMatches = [];
     /** @var (Closure(self): bool)|null */
     private static ?Closure $retainState = null;
     /** @var (Closure(self): bool)|null */
@@ -46,6 +48,16 @@ class Success extends AbstractMatch
     {
         parent::__construct($length);
         if ($successes !== []) {
+            // Plain terminal wrappers need the child tree, but no deferred execution state.
+            // Keep custom records on the general path because they may override lifecycle behavior.
+            if (count($successes) === 1) {
+                $child = reset($successes);
+                if ($child::class === self::class && $child->state === null) {
+                    $this->concreteOnlyMatches = [$child];
+
+                    return;
+                }
+            }
             $state = $this->executionState();
             $state->successes = array_values($successes);
             $state->concreteMatches = $state->successes;
@@ -59,6 +71,7 @@ class Success extends AbstractMatch
      */
     public function setConcreteMatches(array $matches): void
     {
+        $this->concreteOnlyMatches = [];
         $state = $this->executionState();
         $state->concreteMatches = $matches;
         $this->inheritRecoveries($matches);
@@ -150,7 +163,10 @@ class Success extends AbstractMatch
     private function concreteChildNodes(): array
     {
         $children = [];
-        foreach ($this->state->concreteMatches ?? [] as $match) {
+        $matches = $this->concreteOnlyMatches !== []
+            ? $this->concreteOnlyMatches
+            : ($this->state->concreteMatches ?? []);
+        foreach ($matches as $match) {
             if ($match->node === null) {
                 throw new LogicException('Concrete children require source-bound recognition');
             }
@@ -328,6 +344,7 @@ class Success extends AbstractMatch
     /** @internal After CST construction, retain only children with deferred execution state. */
     public function retainExecutionState(): void
     {
+        $this->concreteOnlyMatches = [];
         $state = $this->state;
         if ($state === null) {
             return;

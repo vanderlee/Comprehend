@@ -15,6 +15,35 @@ use WeakReference;
 
 uses(TestCase::class);
 
+test('a plain child keeps its concrete node when the wrapper gains semantic state', function (): void {
+    $source = new ByteSource('x');
+    $child = (new Text('x'))->recognizeInSession($source, 0, new ParseSession($source));
+    $this->assertInstanceOf(Success::class, $child);
+    $parent = new Success(1, [$child]);
+    $parent->setSourceMetadata($source->span(0, 1), null);
+    $parent->setValueMapper(static fn(): int => 7);
+    $parent->buildConcreteNode(new Text('x'));
+    $parent->retainExecutionState();
+
+    $this->assertSame($child->node, $parent->node->children[0]);
+    $this->assertSame(7, $parent->getValue());
+    $this->assertTrue($parent->validateSemantic()->valid);
+});
+
+test('explicit concrete children replace the plain constructor child', function (): void {
+    $source = new ByteSource('x');
+    $parser = new Text('x');
+    $first = $parser->recognizeInSession($source, 0, new ParseSession($source));
+    $second = $parser->recognizeInSession($source, 0, new ParseSession($source));
+    $parent = new Success(1, [$first]);
+    $parent->setSourceMetadata($source->span(0, 1), null);
+    $parent->setConcreteMatches([$second]);
+    $parent->buildConcreteNode($parser);
+    $parent->retainExecutionState();
+
+    $this->assertSame([$second->node], $parent->node->children);
+});
+
 test('concrete-only value projections are released after tree construction', function (): void {
     $source = new ByteSource('x');
     $child = new Success(1);
