@@ -1,7 +1,3 @@
-includes:
-    - ../../phpstan-extension.neon
-    - ../../extensions/Extraction/phpstan.neon
-
 parameters:
     level: 10
     phpVersion: 80100

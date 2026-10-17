@@ -22,8 +22,8 @@ attach the vocabulary to an existing facade, rule reference or object parser.
 Facade inputs retain their semantic value type; object-parser inputs remain
 conservatively mixed in static analysis.
 
-Parser implementations live in `Extraction\Parser`; analysis-only authoring signatures
-and type extensions live in `Extraction\PHPStan`.
+Parser implementations live in `Extraction\Parser`; static authoring signatures use
+ordinary PHPDoc in core `Syntax` and `Syntax\ValueMappings`.
 
 ## Operations
 
@@ -58,7 +58,7 @@ $record->parse('item 12')->value(); // ['name' => 'item', 'count' => 12]
 
 Fields may be literal strings, facades or Parser objects, including nested
 records. Projection does not run effects; selected effects require `commit()`.
-PHPStan infers keyed array shapes for statically known field maps. Calling
+Static analysis describes records as `array<array-key, mixed>` rather than keyed shapes. Calling
 `->record(fields)` on an existing expression follows ordinary terminal chaining:
 it appends the record and the enclosing sequence returns raw text. Use the
 vocabulary factory to obtain the record's value directly.
@@ -77,24 +77,18 @@ effects. Extraction adds explicit application-value extraction and transformatio
 Expression and recovery extensions reuse extraction classes where needed without
 activating Extraction syntax names.
 
-The extension was renamed from `Binding` to `Extraction`; update imports and the
-optional PHPStan configuration path. No compatibility aliases are provided.
+The extension was renamed from `Binding` to `Extraction`; update imports.
+No compatibility aliases are provided.
 
 ## Static analysis
 
-Enable core PHPStan support and Extraction's optional support together:
-
-```yaml
-includes:
-    - vendor/vanderlee/comprehend/phpstan-extension.neon
-    - vendor/vanderlee/comprehend/extensions/Extraction/phpstan.neon
-```
-
-This enables signatures and value inference for Extraction authoring. It does not
-register runtime syntax or prove that an arbitrary Syntax instance installed
-Extraction; applications must opt in explicitly. Core-only users need only the
-first configuration. Dynamic custom vocabularies keep their documented mixed
-fallback. PHPStan is a development tool, not a runtime dependency.
+No PHPStan extension or configuration include is required. Remove the former
+`phpstan-extension.neon` and `extensions/Extraction/phpstan.neon` includes.
+PHPDoc declares the bundled vocabulary for analysis, but cannot prove that a
+Syntax instance installed Extraction; applications must still opt in at runtime.
+Mappings retain generic value types; records, collections and overloaded factory
+operations have conservative types. See [static value types](semantic-values.md#static-value-types).
+PHPStan is a development tool, not a runtime dependency.
 
 See [the application tutorial](application-values.md),
 [value composition](semantic-values.md), [delimiter selection](value-selection.md)

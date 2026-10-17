@@ -196,8 +196,9 @@ are unchanged. See [structured diagnostics](diagnostics.md).
 
 ## Static analysis observations
 
-The optional type probe uses PHPStan 2.3.1 at level 10, with Comprehend's bundled
-extension. It records diagnostics without suppressions. Its wrapper exits zero
+The historical type probe used PHPStan 2.3.1 at level 10, with Comprehend's former bundled
+extension. Current PHPDoc-only inference has broader composition types; see
+[static value types](semantic-values.md#static-value-types). The probe recorded diagnostics without suppressions. Its wrapper exits zero
 when a complete report is captured; that does not mean both grammars pass static
 analysis. The underlying analyzer exits 1 because `dumpType()` deliberately
 produces diagnostics and other reported errors remain present.

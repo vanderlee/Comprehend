@@ -28,12 +28,11 @@ $messages = [];
 foreach ($report['files'] ?? [] as $file) {
     array_push($messages, ...$file['messages']);
 }
-if ($exit !== 1 || ($report['errors'] ?? []) !== [] || count($messages) !== 4) {
-    throw new RuntimeException('Expected four incompatible callback diagnostics: ' . $output . $errors);
+if ($exit !== 1 || ($report['errors'] ?? []) !== [] || count($messages) !== 6) {
+    throw new RuntimeException('Expected four callback and two unknown-factory diagnostics: ' . $output . $errors);
 }
-foreach ($messages as $message) {
-    if (($message['identifier'] ?? null) !== 'argument.type') {
-        throw new RuntimeException('Unexpected diagnostic: ' . $message['message']);
-    }
+$identifiers = array_count_values(array_column($messages, 'identifier'));
+if ($identifiers !== ['argument.type' => 4, 'method.notFound' => 2]) {
+    throw new RuntimeException('Unexpected diagnostics: ' . $output . $errors);
 }
-echo "Incompatible value callbacks rejected\n";
+echo "Incompatible value callbacks and unknown factories rejected\n";

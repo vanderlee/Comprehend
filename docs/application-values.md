@@ -157,7 +157,8 @@ object. Keep mappings pure. Value access does not run commit effects; use
 [semantic values](semantic-values.md) and [lifecycle](lifecycle.md) for details.
 
 For static analysis, the example's factory declares `@return C<Job>`. With the
-[PHPStan extension](semantic-values.md#static-value-types), its mapping callbacks
-and tuple fields are checked and `jobParser()->freeze()->parse($input)->value()`
+[PHPDoc signatures](semantic-values.md#static-value-types), its mapping callbacks
+are checked and `jobParser()->freeze()->parse($input)->value()`
 has type `Job|null`. The nullable result accounts for recognition failure; checking
-the boolean success property alone does not narrow that value type.
+the boolean success property alone does not narrow that value type. Collected tuple
+positions are conservatively `mixed` in static analysis.

@@ -90,7 +90,7 @@ jobs:
         run: php tools/release-notes.php 2.0.0
 
   phpstan:
-    name: PHPStan (level 1)
+    name: PHPStan (level 8)
     runs-on: ubuntu-latest
 
     steps:

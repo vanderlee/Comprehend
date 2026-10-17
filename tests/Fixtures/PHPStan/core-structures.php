@@ -13,10 +13,15 @@ use function PHPStan\Testing\assertType;
 function coreStructures(): void
 {
     $number = C::integer()->mapValue(static fn(ParseResult $result): int => (int) $result->rawText());
-    assertType('Vanderlee\Comprehend\Comprehend<list<int>>', $number->separatedBy(','));
-    assertType('Vanderlee\Comprehend\Comprehend<list<int>>', C::separatedBy(item: $number, separator: ','));
-    assertType('Vanderlee\Comprehend\Comprehend<list<int>>', C::syntax()->separatedBy($number, ','));
-    assertType('Vanderlee\Comprehend\Comprehend<int>', C::text('n=')->ignoreThen(next: $number));
+    assertType('Vanderlee\Comprehend\Comprehend<int>', C::of($number));
+    assertType('Vanderlee\Comprehend\Comprehend<int>', C::syntax()->of($number));
+    assertType('Vanderlee\Comprehend\Comprehend<string>', C::syntax()->text('x'));
+    // Alias factories and fluent-only names are checked without reflection extensions.
+    assertType('Vanderlee\Comprehend\Comprehend', C::syntax()->star('x'));
+    assertType('Vanderlee\Comprehend\Comprehend<list<mixed>>', $number->separatedBy(','));
+    assertType('Vanderlee\Comprehend\Comprehend<list<mixed>>', C::separatedBy(item: $number, separator: ','));
+    assertType('Vanderlee\Comprehend\Comprehend<list<mixed>>', C::syntax()->separatedBy($number, ','));
+    assertType('Vanderlee\Comprehend\Comprehend<mixed>', C::text('n=')->ignoreThen(next: $number));
     assertType('Vanderlee\Comprehend\Comprehend<int>', $number->thenIgnore(';')->between('(', ')'));
     assertType('Vanderlee\Comprehend\Comprehend<int>', $number->named('number')->tag('numeric')
         ->diagnosticRule('number')->caseSensitive()->prefer(ChoicePolicy::FIRST)
@@ -31,5 +36,5 @@ function coreStructures(): void
         '42!',
         spacing: C::text(' ')->many(),
     ));
-    assertType('Vanderlee\Comprehend\Comprehend<list<string>>', C::separatedBy('a', ','));
+    assertType('Vanderlee\Comprehend\Comprehend<list<mixed>>', C::separatedBy('a', ','));
 }

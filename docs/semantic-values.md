@@ -108,21 +108,12 @@ CST nodes, trivia and byte spans remain intact. Run
 
 The facade, frozen grammar and parse result carry a PHPDoc value type:
 `Comprehend<T>`, `FrozenGrammar<T>` and `ParseResult<T>`. Mapping signatures are
-provided through PHPDoc for core projections and Extraction's separate PHPStan
-reflection support for its vocabulary. PHPStan is not a runtime dependency.
-
-For PHPStan 2.1, include the bundled extension in your project's configuration:
-
-```yaml
-includes:
-    - vendor/vanderlee/comprehend/phpstan-extension.neon
-    - vendor/vanderlee/comprehend/extensions/Extraction/phpstan.neon
-```
-
-The repository's configuration includes both. Extraction support models magic
-factory and fluent calls, including list and optional-value projections. IDE
-support depends on its PHPDoc and PHPStan integration; enabling PHPStan support
-does not itself install an IDE plugin or activate Extraction at runtime.
+provided through ordinary PHPDoc, including generic mapping signatures and generated
+factory declarations. No executable PHPStan extensions or configuration includes
+are needed. Remove the former `phpstan-extension.neon` and
+`extensions/Extraction/phpstan.neon` includes from consumer configurations.
+PHPStan is not a runtime dependency. Bundled Extraction signatures are visible to
+analysis even on an unextended vocabulary; install Extraction explicitly at runtime.
 
 ```php
 use Vanderlee\Comprehend\Extensions\Extraction;
@@ -130,7 +121,7 @@ use Vanderlee\Comprehend\Extensions\Extraction;
 $number = Extraction::syntax()->integer()->mapText('intval'); // Comprehend<int>
 $doubled = $number->map(static fn(int $n): int => $n * 2);
 $list = $doubled->manyValues();           // Comprehend<list<int>>
-$optional = $number->optionalValue(default: false); // Comprehend<int|false>
+$optional = $number->optionalValue(default: false); // Comprehend<bool|int>
 $result = $list->freeze()->parse('123');  // ParseResult<list<int>>
 $values = $result->value();              // list<int>|null
 ```
@@ -138,13 +129,16 @@ $values = $result->value();              // list<int>|null
 `map()` checks its callback against the current value type and infers the new
 type. `mapText()` accepts string callbacks; `mapValue()` accepts ParseResult
 callbacks for source/result inspection, not access to an earlier value projection.
-`someValues()` infers a nonempty list; bounded repetition and separated lists
-conservatively infer lists even with positive minimums. Optional values include
-the supplied default's type, or null when it is omitted.
+Fluent `someValues()` infers a nonempty list; fluent `manyValues()` and
+`repeatValues()` preserve their item type. Fluent optional values include the
+default's inferred type (which may widen literals), or null when omitted.
 
-Explicit `collect()` operands infer tuple positions, and `valueChoice()` unions
-alternative value types. Names, spacing, delimiters and `thenIgnore()` preserve
-the selected value type. `ignoreThen()` forwards the right operand's type.
+`collect()` returns `list<mixed>`, `record()` returns `array<array-key, mixed>`,
+and `valueChoice()` returns mixed. Extraction repetition factories return
+`list<mixed>` and optional factories return mixed. Overloaded `separatedBy()`
+returns `list<mixed>` and `ignoreThen()` returns mixed. These conservative
+contracts replace the former argument-dependent tuple, shape and union inference.
+Names, spacing, delimiters and `thenIgnore()` preserve the selected value type.
 `freeze()`, complete and prefix parsing, `value()` and `output()` retain it.
 The application tutorial's `jobParser()` declares `Comprehend<Job>` and is checked
 alongside the inference fixtures.
@@ -152,10 +146,13 @@ alongside the inference fixtures.
 `value()` and `output()` include null for failure, even after inspecting the boolean
 `success` property. Narrow the value itself when needed; successful parsers may
 also produce null. Static types do not guarantee semantic validity or prevent
-mapping exceptions. Low-level parser inputs, dynamic custom vocabularies and
-unpacked operand lists conservatively fall back to mixed; arbitrary runtime
+mapping exceptions. Low-level parser inputs conservatively fall back to mixed; arbitrary runtime
 syntax registrations are not inferred. `FrozenGrammar::from()` remains mixed;
 use a facade's `freeze()` to retain its value type.
+
+The repository uses PHPStan level 8. Levels 9 and 10 reject passing the mixed
+collection positions directly to the tutorial's typed domain constructor; callers
+using those levels should validate their collected values at that boundary.
 
 Run `make phpstan` to check the implementation, positive type assertions and
 rejection of incompatible callbacks. Without Make, run the analysis command in

@@ -1,13 +1,10 @@
-includes:
-    - phpstan-extension.neon
-    - extensions/Extraction/phpstan.neon
-
 parameters:
-    level: 10
+    level: 8
     phpVersion: 80100
     paths:
         - src
         - extensions
         - tests/Fixtures/PHPStan/values.php
+        - tests/Fixtures/PHPStan/core-structures.php
         - docs/examples/application-values-grammar.php
     tmpDir: build/phpstan

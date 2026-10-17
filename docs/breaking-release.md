@@ -13,7 +13,8 @@ Replace static helpers such as `C::collect(...)` with
 references with `$syntax->of($parser)` before fluent extraction calls. Low-level
 extraction classes moved from `Parser\Structure` to `Extensions\Extraction\Parser`.
 Core `separatedBy()` projects item values; `thenIgnore()`, `ignoreThen()` and
-`between()` select operand values without installing an extension. Extraction's PHPStan configuration is separate from core support.
+`between()` select operand values without installing an extension. Static analysis uses
+PHPDoc without executable PHPStan extensions; remove the former PHPStan configuration includes.
 
 | Previous surface | Supported replacement |
 | --- | --- |

@@ -73,9 +73,9 @@ use BadMethodCallException;
  * @method static self kleene(mixed ...$arguments)
  * @method static self maybe(mixed ...$arguments)
  * @method static self optional(mixed ...$arguments)
- * @method static self separatedBy(mixed ...$arguments)
+ * @method static self<list<mixed>> separatedBy(mixed ...$arguments)
  * @method self<T> thenIgnore(self|Parser|string $next)
- * @method self ignoreThen(self|Parser|string $next)
+ * @method self<mixed> ignoreThen(self|Parser|string $next)
  * @method self<T> between(self|Parser|string $open, self|Parser|string $close)
  * @method self then(self|Parser|string ...$next)
  * @method self prepend(self|Parser|string ...$before)
@@ -199,6 +199,11 @@ final class Comprehend
         return new self($parser, $this->syntax);
     }
 
+    /**
+     * @template U
+     * @param self<U>|Parser|Definition $parser
+     * @return ($parser is self<U> ? self<U> : self<mixed>)
+     */
     public static function of(self|Parser|Definition $parser, ?Syntax $syntax = null): self
     {
         if ($parser instanceof self) {

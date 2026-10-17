@@ -86,8 +86,9 @@ branch is needed.
 
 Install development tools with `make install` (or `composer install`). GNU Make
 and PHP must be on your PATH. Use `make test` for Pest and `make phpstan` for
-static analysis, configured at level 10 for `src`, `extensions`, value-type fixtures
-and the application-value tutorial grammar in `phpstan.neon`. The target also runs
+static analysis, configured at level 8 for `src`, `extensions`, value-type fixtures
+and the application-value tutorial grammar in `phpstan.neon`. The target checks generated
+factory PHPDoc freshness with `php tools/generate-syntax-phpdoc.php --check` and also runs
 `php tools/check-value-types.php`, which verifies that incompatible mapping callbacks
 produce the expected PHPStan diagnostics. Intentionally invalid fixtures are checked
 separately; do not add them to the normal analysis paths or ignore their errors.
@@ -115,7 +116,9 @@ in `tests/features/`. Shared test infrastructure stays in `tests/`. Pest
 discovers test directories recursively. Bundled optional syntax implementations
 live in `extensions/`, under `Vanderlee\Comprehend\Extensions`, with focused tests
 in `tests/extensions/`. Group extension parser implementations in a `Parser`
-subnamespace and analysis-only helpers in a `PHPStan` subnamespace. Public
+subnamespace. Static authoring signatures use ordinary PHPDoc in `Syntax/ValueMappings.php`
+and generated factory declarations in `Syntax.php`; regenerate the latter with
+`php tools/generate-syntax-phpdoc.php` when factory signatures change. Public
 operator definitions and recovery contexts stay in their extension namespace.
 Cross-class extension scenarios remain in `tests/features/`.
 
