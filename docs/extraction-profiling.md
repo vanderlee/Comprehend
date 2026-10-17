@@ -22,6 +22,14 @@ measurement. Source construction is separate from recognition. Full consumption,
 expected domain values, cached identity, raw source reconstruction, CST size and
 serialized tree hashes are checked outside the timed phases.
 
+`--scan-spacing` selects `readWhileSet()` whitespace, matching the faster
+comparison variant. Without it, the original `set()->many()` policy is used.
+`--trace --failure-details` adds grouped recognition allocation origins for
+Failure and Diagnostic: method call stacks, diagnostic byte offsets, expectations
+and rule paths, and failure progress. It stores copied scalar/array details, not
+the execution records. This adds probe overhead and is for attribution only.
+See the [failure-path investigation](benchmarks/failure-paths-2026-10-17.md).
+
 Parser-entry metrics run separately so their retained position map does not
 distort phase memory. Reports include PHP/PCRE versions and source/tool hashes.
 Memory deltas describe retained PHP usage above a warmed baseline, including the

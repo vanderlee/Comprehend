@@ -19,7 +19,9 @@ use function ComprehendComparison\comprehendJob;
 use function ComprehendComparison\nodeCount;
 use function ComprehendComparison\verify;
 
-$options = getopt('', ['case:', 'size:', 'iterations:', 'trace', 'source-dir:', 'output:']);
+$options = getopt('', [
+    'case:', 'size:', 'iterations:', 'trace', 'failure-details', 'scan-spacing', 'source-dir:', 'output:',
+]);
 $size = filter_var($options['size'] ?? 128, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 $iterations = filter_var($options['iterations'] ?? 9, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 if ($size === false || $iterations === false) {
@@ -30,6 +32,11 @@ if ($sourceDirectory === false) {
     throw new InvalidArgumentException('Source directory does not exist');
 }
 $trace = isset($options['trace']);
+$failureDetails = isset($options['failure-details']);
+if ($failureDetails && !$trace) {
+    throw new InvalidArgumentException('Failure details require --trace');
+}
+$scanSpacing = isset($options['scan-spacing']);
 $loadDirectory = $sourceDirectory;
 $sourceHashes = [];
 if ($trace) {
@@ -82,8 +89,8 @@ if (!isset($corpus[$caseName]) || $corpus[$caseName]['expected'] === null) {
     throw new InvalidArgumentException('Choose an accepted extraction case');
 }
 $case = $corpus[$caseName];
-$grammar = comprehendJob()->freeze();
-$parser = comprehendJob()->parser();
+$grammar = comprehendJob(scanSpacing: $scanSpacing)->freeze();
+$parser = comprehendJob(scanSpacing: $scanSpacing)->parser();
 // Warm the prepared graph; preparation and correctness checks are not timed.
 for ($i = 0; $i < 2; ++$i) {
     $result = $grammar->parse($case['input']);
@@ -95,7 +102,7 @@ for ($iteration = 0; $iteration < $iterations; ++$iteration) {
     gc_collect_cycles();
     $baseline = memory_get_usage(false);
     if ($trace) {
-        MethodTrace::start();
+        MethodTrace::start($failureDetails);
     }
     $start = hrtime(true);
     $source = new Utf8Source($case['input']);
@@ -106,7 +113,7 @@ for ($iteration = 0; $iteration < $iterations; ++$iteration) {
     $recognizedBytes = memory_get_usage(false) - $baseline;
     $recognitionTrace = $trace ? MethodTrace::stop() : null;
     if ($trace) {
-        MethodTrace::start();
+        MethodTrace::start($failureDetails);
     }
     $start = hrtime(true);
     $value = $result->value();
@@ -136,6 +143,7 @@ for ($iteration = 0; $iteration < $iterations; ++$iteration) {
         'cst_nodes' => $nodes, 'tree_sha256' => $treeHash,
         'methods' => $recognitionTrace['methods'] ?? null,
         'source_allocations' => $recognitionTrace['allocations'] ?? null,
+        'failure_allocations' => $recognitionTrace['failure_allocations'] ?? null,
         'value_methods' => $valueTrace['methods'] ?? null,
         'value_source_allocations' => $valueTrace['allocations'] ?? null,
     ];
@@ -169,6 +177,7 @@ $report = [
     'generated_utc' => gmdate('c'), 'profiler_sha256' => hash_file('sha256', __FILE__),
     'instrumenter_sha256' => hash_file('sha256', __DIR__ . '/profiling/InstrumentMethods.php'),
     'case' => $caseName, 'size' => $size, 'input_bytes' => strlen($case['input']), 'trace' => $trace,
+    'failure_details' => $failureDetails, 'scan_spacing' => $scanSpacing,
     'source_sha256' => hash('sha256', json_encode($sourceHashes, JSON_THROW_ON_ERROR)),
     'metrics' => $metrics->snapshot(), 'work_units' => $session->workUsed(),
     'boundary_probe' => [

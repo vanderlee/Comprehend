@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace ComprehendProfiling;
 
+use Vanderlee\Comprehend\Match\Failure;
+use Vanderlee\Comprehend\Result\Diagnostic;
+
 /** Development-only instrumentation; never participates in the production parser graph. */
 final class MethodTrace
 {
@@ -11,12 +14,16 @@ final class MethodTrace
     private static array $stack = [];
     private static array $totals = [];
     private static array $allocations = [];
+    private static bool $failureDetails = false;
+    private static array $failureAllocations = [];
 
-    public static function start(): void
+    public static function start(bool $failureDetails = false): void
     {
         self::$stack = [];
         self::$totals = [];
         self::$allocations = [];
+        self::$failureDetails = $failureDetails;
+        self::$failureAllocations = [];
         self::$enabled = true;
     }
 
@@ -48,6 +55,22 @@ final class MethodTrace
     {
         if (self::$enabled) {
             self::$allocations[$object::class] = (self::$allocations[$object::class] ?? 0) + 1;
+            if (self::$failureDetails && ($object instanceof Failure || $object instanceof Diagnostic)) {
+                $details = [
+                    'class' => $object::class,
+                    'callers' => array_column(self::$stack, 0),
+                ];
+                if ($object instanceof Diagnostic) {
+                    $details['byte_offset'] = $object->byteOffset;
+                    $details['expected'] = $object->expected;
+                    $details['rule_paths'] = $object->rulePaths;
+                } else {
+                    $details['progress_bytes'] = $object->length;
+                }
+                $key = json_encode($details, JSON_THROW_ON_ERROR);
+                self::$failureAllocations[$key] ??= $details + ['count' => 0];
+                ++self::$failureAllocations[$key]['count'];
+            }
         }
 
         return $object;
@@ -61,6 +84,9 @@ final class MethodTrace
 
         arsort(self::$allocations);
 
-        return ['methods' => $rows, 'allocations' => self::$allocations];
+        return [
+            'methods' => $rows, 'allocations' => self::$allocations,
+            'failure_allocations' => array_values(self::$failureAllocations),
+        ];
     }
 }
