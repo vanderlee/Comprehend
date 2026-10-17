@@ -35,6 +35,17 @@ test('cover rejects equal text from different sources', function (): void {
     $span->cover((new ByteSource('a'))->span(0, 1));
 });
 
+test('cover reuses a containing immutable interval', function (): void {
+    $source = new ByteSource('abcde');
+    $outer = $source->span(0, 5);
+    $inner = $source->span(1, 3);
+
+    $this->assertSame($outer, $outer->cover($inner));
+    $this->assertSame($outer, $inner->cover($outer));
+    $this->assertSame($outer, $outer->cover($source->span(0, 5)));
+    $this->assertSame($outer, $outer->cover($source->span(5, 5)));
+});
+
 test('invalid ranges are rejected', function (int $start, int $end): void {
     $this->expectException(InvalidArgumentException::class);
 

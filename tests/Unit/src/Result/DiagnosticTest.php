@@ -25,3 +25,18 @@ test('offsets outside the source are rejected', function (): void {
 
     new Diagnostic(new ByteSource('a'), 2, [], []);
 });
+
+test('diagnostic byte positions may be inside code points or at EOF', function (): void {
+    $source = new Utf8Source("\u{e9}");
+    $inside = new Diagnostic($source, 1, [], []);
+    $end = new Diagnostic($source, 2, [], []);
+
+    $this->assertSame(1, $inside->byteOffset);
+    $this->assertSame(2, $end->byteOffset);
+});
+
+test('negative diagnostic offsets remain invalid', function (): void {
+    $this->expectException(InvalidArgumentException::class);
+
+    new Diagnostic(new ByteSource('a'), -1, [], []);
+});

@@ -285,7 +285,7 @@ final class ParseSession
      */
     public function recordFailure(int $byteOffset, ?string $expected = null, ?array $paths = null): void
     {
-        $this->source->span($byteOffset, $byteOffset);
+        Span::assertByteOffset($this->source, $byteOffset);
         // Even a nearer failure counts as an observation for Parser's fallback diagnostic.
         ++$this->failureRevision;
 

@@ -45,8 +45,15 @@ abstract class AbstractMatch
         if (!$this->accepted && $span->byteLength() !== 0) {
             throw new InvalidArgumentException('Failed matches must have zero-width spans');
         }
-        if ($farthestFailure !== null) {
-            $span->source->span($farthestFailure, $farthestFailure);
+        // A diagnostic has already checked this exact source position at construction.
+        if (
+            $farthestFailure !== null && (
+                $diagnostic === null
+                || $diagnostic->source !== $span->source
+                || $diagnostic->byteOffset !== $farthestFailure
+            )
+        ) {
+            Span::assertByteOffset($span->source, $farthestFailure);
         }
         $this->span = $span;
         $this->farthestFailure = $farthestFailure;

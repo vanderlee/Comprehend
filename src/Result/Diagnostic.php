@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend\Result;
 
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\SourceMode;
+use Vanderlee\Comprehend\Source\Span;
 
 /**
  * Describes a recognition failure with expectations, rule paths and a byte offset. Lazily
@@ -29,7 +30,7 @@ final class Diagnostic
         public readonly array $expected,
         public readonly array $rulePaths,
     ) {
-        $source->span($byteOffset, $byteOffset);
+        Span::assertByteOffset($source, $byteOffset);
     }
 
     /** Raw current line; byte sources may contain arbitrary bytes. */

@@ -34,6 +34,14 @@ Utf8Source also exposes `readCodePoint()`, `isCodePointBoundary()` and explicit
 position conversions. ByteSource exposes `readByte()`. Raw byte slicing/spans
 allow interior UTF-8 bytes; recognition positions and consumed endpoints do not.
 `Span::cover()` includes gaps and rejects spans from different source objects.
+When either span already covers the other, it returns that existing immutable
+span. Callers should use coordinates and source identity rather than expecting a
+new object for every cover operation.
+
+Diagnostic byte-offset checks do not construct temporary spans or require a
+code-point boundary. Match metadata can reuse a diagnostic's already validated
+position when its source and offset both match. Recognition still checks source
+unit boundaries independently.
 
 Sources may be in memory or seekable disk snapshots. UTF-8 validation/counting scans the input;
 position conversions scan prefixes. Regex matching and diagnostic indexing may
