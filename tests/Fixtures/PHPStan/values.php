@@ -44,6 +44,22 @@ function inferredValues(): void
     assertType('string|null', C::readUntil(';')->matchPrefix('abc;')->value());
     $number = Extraction::syntax()->integer()->mapText('intval');
     assertType('Vanderlee\Comprehend\Comprehend<int>', $number);
+    assertType('Vanderlee\Comprehend\Comprehend<int>', $number->mapWith(
+        next: $number,
+        combine: static fn(int $a, int $b): int => $a + $b,
+    ));
+    assertType('Vanderlee\Comprehend\Comprehend<DateTimeImmutable>', $number->mapWith(
+        $number,
+        static fn(int $a, int $b): DateTimeImmutable => new DateTimeImmutable('now'),
+    ));
+    assertType('Vanderlee\Comprehend\Comprehend<int>', $number->foldLeft(
+        step: $number,
+        combine: static fn(int $a, int $b): int => $a - $b,
+        min: 1,
+        max: 3,
+    ));
+    assertType('int|null', $number->foldLeft($number, static fn(int $a, int $b): int => $a + $b)
+        ->parse('12')->value());
     assertType('Vanderlee\Comprehend\Comprehend<int>', $number->map(fn($n) => $n + 1));
     assertType('Vanderlee\Comprehend\Comprehend<lowercase-string&numeric-string>', $number->map(
         fn(int $n): string => sprintf('%d', $n),

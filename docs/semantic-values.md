@@ -14,6 +14,13 @@ stage is lazy and caches its value or thrown error for that recognition. Calling
 `mapText()` or `mapValue()` replaces the projection and clears earlier transforms.
 Low-level Parser objects also expose `map()`.
 
+Extraction also offers `mapWith(next, combine)` for binary value pipelines and
+`foldLeft(step, combine, min: 0, max: null)` for left-associative accumulation.
+They compose the existing sequence/repetition runtime with lazy cached values,
+without evaluating callbacks to select syntax. See
+[pipelines and folds](extraction.md#operations) and the runnable
+[example](examples/value-pipelines.php).
+
 `$syntax->collect(...$operands)` recognizes a sequence and returns an ordered
 list of its direct operand values. Automatic trivia is excluded; nested collects
 remain nested. At least one operand is required. `$syntax->valueChoice(...$alternatives)`

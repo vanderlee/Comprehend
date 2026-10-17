@@ -13,6 +13,11 @@ $number->map(static fn(DateTimeImmutable $value): string => $value->format('Y'))
 Extraction::syntax()->text('x')->mapText(static fn(int $value): int => $value + 1);
 $number->mapValue(static fn(string $value): int => strlen($value));
 $number->manyValues()->map(static fn(string $value): int => strlen($value));
+$number->mapWith($number, static fn(DateTimeImmutable $left, int $right): int => $right);
+$number->mapWith($number, static fn(int $left, DateTimeImmutable $right): int => $left);
+$number->foldLeft($number, static fn(DateTimeImmutable $left, int $right): int => $right);
+$number->foldLeft($number, static fn(int $left, DateTimeImmutable $right): int => $left);
+$number->foldLeft($number, static fn(int $left, int $right): string => 'wrong accumulator type');
 
 // Generated factory declarations must not invent custom rules or expose fluent-only factories.
 Extraction::syntax()->customVocabularyRule();

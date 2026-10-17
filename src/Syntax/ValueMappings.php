@@ -31,6 +31,28 @@ abstract class ValueMappings
      */
     abstract public function mapText(callable $mapper): Comprehend;
 
+    /**
+     * @template U
+     * @template V
+     * @param Comprehend<U>|Parser|string $next
+     * @param callable(T, U): V $combine
+     * @return Comprehend<V>
+     */
+    abstract public function mapWith(Comprehend|Parser|string $next, callable $combine): Comprehend;
+
+    /**
+     * @template U
+     * @param Comprehend<U>|Parser|string $step
+     * @param callable(T, U): T $combine
+     * @return Comprehend<T>
+     */
+    abstract public function foldLeft(
+        Comprehend|Parser|string $step,
+        callable $combine,
+        int $min = 0,
+        ?int $max = null,
+    ): Comprehend;
+
     /** @return Comprehend<list<T>> */
     abstract public function manyValues(): Comprehend;
 

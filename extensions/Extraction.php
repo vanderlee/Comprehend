@@ -15,6 +15,8 @@ use Vanderlee\Comprehend\Extensions\Extraction\Parser\Record;
 use Vanderlee\Comprehend\Extensions\Extraction\Parser\ValueChoice;
 use Vanderlee\Comprehend\Extensions\Extraction\Parser\ValueRepeat;
 use Vanderlee\Comprehend\Extensions\Extraction\Parser\OptionalValue;
+use Vanderlee\Comprehend\Extensions\Extraction\Parser\MapWith;
+use Vanderlee\Comprehend\Extensions\Extraction\Parser\FoldLeft;
 
 /** Optional application-value authoring over the shared recognition and projection runtime. */
 final class Extraction implements SyntaxExtension
@@ -65,6 +67,18 @@ final class Extraction implements SyntaxExtension
             ...array_values(array_map(Catalog::parser(...), $next)),
         );
         yield 'map' => static fn(Comprehend $item, callable $mapper): Parser => $item->parser()->map($mapper);
+        yield 'mapwith' => static fn(
+            Comprehend $item,
+            Comprehend|Parser|string $next,
+            callable $combine,
+        ): Parser => new MapWith($item->parser(), Catalog::parser($next), $combine);
+        yield 'foldleft' => static fn(
+            Comprehend $item,
+            Comprehend|Parser|string $step,
+            callable $combine,
+            int $min = 0,
+            ?int $max = null,
+        ): Parser => new FoldLeft($item->parser(), Catalog::parser($step), $combine, $min, $max);
         yield 'repeatvalues' => static fn(Comprehend $item, int $min = 0, ?int $max = null): Parser => new ValueRepeat(
             $item->parser(),
             $min,

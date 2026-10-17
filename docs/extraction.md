@@ -31,6 +31,8 @@ ordinary PHPDoc in core `Syntax` and `Syntax\ValueMappings`.
 | --- | --- |
 | `map(callable)` | Transform the current value, composing lazily |
 | `mapText(callable)` | Replace projection using original matched text |
+| `mapWith(next, combine)` | Combine the current and next parser's values |
+| `foldLeft(step, combine, min: 0, max: null)` | Reduce a head and repeated steps from left to right |
 | `collect(...)` | Tuple of direct operand values |
 | `record(fields)` | Array of direct field values under the supplied keys |
 | `valueChoice(...)` | Selected alternative's value |
@@ -38,8 +40,39 @@ ordinary PHPDoc in core `Syntax` and `Syntax\ValueMappings`.
 | `optionalValue(default: null)` | Accepted value or literal default |
 
 Collection, choice, repetition and optional operations have both vocabulary factories
-and fluent forms. Mapping operations are fluent. Factories accept literal strings,
+and fluent forms. Mapping and fold operations are fluent. Factories accept literal strings,
 facades and Parser objects; low-level constructors accept Parser objects explicitly.
+
+`mapWith()` evaluates the left value, the right value, and the combiner in that
+order, lazily on the first value read. `foldLeft()` evaluates its head first,
+then each accepted step followed by its combiner. Zero steps return the head
+unchanged, including null or an object. Bounds count steps, excluding the head;
+the combiner returns the next accumulator of the head's value type. No intermediate
+step-value array is built, and a throwing combiner prevents later step values
+from being evaluated. Results and exceptions are cached per recognition.
+
+```php
+$number = Extraction::syntax()->integer()->mapText('intval');
+$minus = Extraction::syntax()->text('-')->ignoreThen($number);
+$subtraction = $number->foldLeft($minus, static fn(int $a, int $b): int => $a - $b);
+$subtraction->parse('10-3-2')->value(); // 5: (10 - 3) - 2
+```
+
+These operations reuse Sequence and Repeat recognition: all source syntax and
+selected effects remain in the tree and lifecycle graph. A failed optional step
+rolls back its input, diagnostics, trivia and effects; prefix parsing can leave an
+incomplete operator unconsumed, while full-input parsing rejects that leftover
+input. Required-step failures retain their diagnostics. Steps must consume input
+unless `max: 0` disables repetition. Ordinary sequence spacing applies between
+the head and tail as well, including an empty tail; use zero-or-more trivia when
+spacing is optional. Callbacks never choose syntax or run during recognition.
+
+MapWith and FoldLeft are also available as low-level constructors:
+`new MapWith(Parser $left, Parser $right, callable $combine)` and
+`new FoldLeft(Parser $head, Parser $step, callable $combine, int $min = 0, ?int $max = null)`.
+They live in `Extensions\Extraction\Parser`; FoldSteps is an internal repetition
+implementation. Neither fluent name is installed globally or exposed as a
+Syntax factory. Run [the pipeline and fold example](examples/value-pipelines.php).
 
 `record()` is a vocabulary factory accepting an ordered array of field parsers.
 Fields recognize in insertion order, and their lazy, cached values retain the
@@ -64,8 +97,8 @@ it appends the record and the enclosing sequence returns raw text. Use the
 vocabulary factory to obtain the record's value directly.
 Run `php docs/examples/record.php` for a checked example.
 
-Concrete extraction classes are `Collect`, `Record`, `ValueChoice`, `ValueRepeat`
-and `OptionalValue` under `Vanderlee\Comprehend\Extensions\Extraction\Parser`. They can
+Concrete extraction classes are `Collect`, `Record`, `ValueChoice`, `ValueRepeat`,
+`OptionalValue`, `MapWith` and `FoldLeft` under `Vanderlee\Comprehend\Extensions\Extraction\Parser`. They can
 be constructed directly without installing a vocabulary.
 
 Core provides `separatedBy()`, `thenIgnore()`, `ignoreThen()` and `between()` with
@@ -86,7 +119,8 @@ No PHPStan extension or configuration include is required. Remove the former
 `phpstan-extension.neon` and `extensions/Extraction/phpstan.neon` includes.
 PHPDoc declares the bundled vocabulary for analysis, but cannot prove that a
 Syntax instance installed Extraction; applications must still opt in at runtime.
-Mappings retain generic value types; records, collections and overloaded factory
+Mappings and pipelines infer callback return types; folds preserve the head's
+accumulator type and check compatible callback arguments/returns. Records, collections and overloaded factory
 operations have conservative types. See [static value types](semantic-values.md#static-value-types).
 PHPStan is a development tool, not a runtime dependency.
 

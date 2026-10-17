@@ -3,7 +3,6 @@ AI AGENTS MUST NOT USE THIS FILE!
 
 ## To do
 - Implement usability features (From Binding)
-  - labels
   - value pipelines and folds
   - structured validation
 - Move parts of core to extension?
@@ -12,10 +11,12 @@ AI AGENTS MUST NOT USE THIS FILE!
   - Optimization extension?
 - Extension discovery
 - IPv6/IPv4 parsers (Library?)
+- Deploy milestone target 1?
 
 ## Future directions
 - Implement some known languages as examples?
 - Performance improvements overall.
+- Compare to other libraries (Spirit, Chomsky?)
 
 ## Ongoing concerns
 - Benchmark and improve performance
