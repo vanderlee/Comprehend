@@ -1,0 +1,68 @@
+/* Logo palette: blue lettering, cyan and violet ribbons, amber center. */
+:root {
+    --comprehend-blue: #0757ed;
+    --comprehend-cyan: #00d5e6;
+    --comprehend-violet: #7636ed;
+    --comprehend-amber: #ffbf00;
+    --bs-primary: var(--comprehend-blue);
+    --bs-primary-rgb: 7, 87, 237;
+    --bs-link-color: #0750d6;
+    --bs-link-color-rgb: 7, 80, 214;
+    --bs-link-hover-color: #5830b8;
+    --bs-link-hover-color-rgb: 88, 48, 184;
+}
+
+[data-bs-theme="dark"] {
+    --bs-link-color: #80b5ff;
+    --bs-link-color-rgb: 128, 181, 255;
+    --bs-link-hover-color: #69e5ef;
+    --bs-link-hover-color-rgb: 105, 229, 239;
+}
+
+.navbar.bg-primary {
+    background-color: var(--comprehend-blue) !important;
+    background-image: linear-gradient(110deg, #0645bb, #0757ed 60%, #6530c9);
+    border-bottom: 3px solid var(--comprehend-cyan);
+}
+
+.navbar[data-bs-theme="light"],
+.navbar[data-bs-theme="dark"] {
+    --bs-navbar-color: #ffffff;
+    --bs-navbar-hover-color: #ffffff;
+    --bs-navbar-active-color: #ffffff;
+    --bs-navbar-brand-color: #ffffff;
+    --bs-navbar-brand-hover-color: #ffffff;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus-visible {
+    text-decoration: underline;
+    text-decoration-color: var(--comprehend-amber);
+    text-underline-offset: 0.3em;
+}
+
+h1,
+h2,
+h3 {
+    color: var(--bs-link-color);
+}
+
+h1 {
+    border-bottom: 3px solid var(--comprehend-cyan);
+    padding-bottom: 0.35em;
+}
+
+blockquote {
+    border-left: 4px solid var(--comprehend-violet);
+    padding-left: 1em;
+}
+
+:focus-visible {
+    outline: 3px solid var(--comprehend-violet);
+    outline-offset: 3px;
+}
+
+[data-bs-theme="dark"] :focus-visible,
+.navbar :focus-visible {
+    outline-color: var(--comprehend-amber);
+}

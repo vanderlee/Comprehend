@@ -9,6 +9,9 @@ theme:
   color_mode: auto
   favicon: assets/images/icon.webp
 
+extra_css:
+  - assets/stylesheets/comprehend.css
+
 plugins:
   - search
 
