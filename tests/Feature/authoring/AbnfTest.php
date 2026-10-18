@@ -6,8 +6,8 @@ namespace Tests\Feature\authoring;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Abnf\Compiler;
-use Vanderlee\Comprehend\Abnf\SyntaxException;
+use Vanderlee\Comprehend\Extensions\Abnf\Compiler;
+use Vanderlee\Comprehend\Extensions\Abnf\SyntaxException;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\SourceMode;

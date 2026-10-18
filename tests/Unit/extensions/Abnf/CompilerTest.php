@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Src\Abnf;
+namespace Tests\Extensions\Abnf;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Abnf\Compiler;
+use Vanderlee\Comprehend\Extensions\Abnf\Compiler;
 
 uses(TestCase::class);
 

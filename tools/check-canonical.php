@@ -14,10 +14,13 @@ foreach (
     [
         'Vanderlee\\Comprehend\\Builder\\GraphOptimizer',
         'Vanderlee\\Comprehend\\Runtime\\LexicalTable',
+        'Vanderlee\\Comprehend\\Abnf\\Compiler',
+        'Vanderlee\\Comprehend\\Abnf\\Reader',
+        'Vanderlee\\Comprehend\\Abnf\\SyntaxException',
     ] as $removedClass
 ) {
     if (class_exists($removedClass)) {
-        $errors[] = 'Removed core optimizer class is present: ' . $removedClass;
+        $errors[] = 'Removed core class is present: ' . $removedClass;
     }
 }
 foreach (['Repeat', 'Choice', 'Not'] as $combinator) {

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Src\Abnf;
+namespace Tests\Extensions\Abnf;
 
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Abnf\Reader;
-use Vanderlee\Comprehend\Abnf\SyntaxException;
+use Vanderlee\Comprehend\Extensions\Abnf\Reader;
+use Vanderlee\Comprehend\Extensions\Abnf\SyntaxException;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\SourceMode;

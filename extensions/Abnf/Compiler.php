@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Abnf;
+namespace Vanderlee\Comprehend\Extensions\Abnf;
 
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Builder\FrozenGrammar;

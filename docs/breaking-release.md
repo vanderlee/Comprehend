@@ -7,6 +7,12 @@ The changelog remains marked Unreleased until publication is ready.
 
 ## Caller changes
 
+ABNF compilation moved from `Abnf` to `Extensions\Abnf`, including `Compiler`,
+`Reader`, and `SyntaxException`. Update direct imports and exception catches;
+there are no aliases. The static `Compiler::compile()` arguments and its returned
+`FrozenGrammar` are unchanged. The bundled extension autoloads directly without
+registration. See [ABNF authoring](abnf.md).
+
 The optimizer moved from `Builder\GraphOptimizer` to
 `Extensions\Optimizer\GraphOptimizer`, and `Runtime\LexicalTable` moved to
 `Extensions\Optimizer\LexicalTable`. No compatibility aliases remain. The bundled

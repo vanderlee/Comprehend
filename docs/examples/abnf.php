@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Abnf\Compiler;
+use Vanderlee\Comprehend\Extensions\Abnf\Compiler;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Library\Rfc3986;

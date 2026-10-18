@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Abnf;
+namespace Vanderlee\Comprehend\Extensions\Abnf;
 
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Parser\Parser;

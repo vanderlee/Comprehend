@@ -1,13 +1,14 @@
 # ABNF authoring subset
 
-`Abnf\Compiler::compile($text, $root, $numericEncoding, $choice)` translates
+The bundled ABNF extension exposes
+`Extensions\Abnf\Compiler::compile($text, $root, $numericEncoding, $choice)`. It translates
 authoring text into the existing Ruleset/combinator graph and returns a
 FrozenGrammar. Syntax reading is a compile-time operation; generated parsers use
 the same source, diagnostics, CST/AST, semantic and effect runtime as object
 grammars. There is no generated PHP or separate input-recognition engine.
 
 ```php
-use Vanderlee\Comprehend\Abnf\Compiler;
+use Vanderlee\Comprehend\Extensions\Abnf\Compiler;
 use Vanderlee\Comprehend\Source\ByteSource;
 
 $grammar = Compiler::compile('word = 1*DIGIT', 'word');
@@ -16,6 +17,11 @@ $result->success; // true
 $result->rawText(); // '42'
 $result->ast()->children[0]->name; // 'word'
 ```
+
+`Compiler`, `Reader`, and `SyntaxException` live in `Extensions\Abnf` and are
+autoloaded directly; no registration is needed. The extension preserves the static
+compilation API and does not advertise syntax factories or capability providers.
+Update former `Vanderlee\Comprehend\Abnf` imports; no compatibility aliases remain.
 
 ## Supported initial syntax
 

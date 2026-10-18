@@ -27,7 +27,7 @@
 | Expandable syntax | `Comprehend::syntax()->defineRule(name, factory)`; immutable scoped static/fluent factories, `call()`, `names()` |
 | Extensions | Bundled and Composer-advertised providers load on first use; `Syntax::extend(SyntaxExtension)` provides explicit local installation; [discovery and extension authoring](syntax-extensions.md) |
 | Expression tables | Optional `Extensions\Expressions`: `operatorExpression(primary, Operator...)`, `expressionChoice(alternatives...)`; [precedence and lifecycle](expressions.md) |
-| ABNF authoring | `Abnf\Compiler::compile(string, root, numericEncoding, choice)` returning FrozenGrammar |
+| ABNF authoring | Bundled `Extensions\Abnf\Compiler::compile(string, root, numericEncoding, choice)` returning FrozenGrammar; [ABNF extension](abnf.md) |
 | Naming | `name(string|int, ?string = null, bool $leaf = false)` |
 | Meaning | Core `mapValue(callable)`, named set/concat/push collection operations |
 | Extraction expansion | Automatically loaded `Extensions\Extraction`: `map`, `mapText`, `collect`, `valueChoice`, `manyValues`, `someValues`, `repeatValues`, `optionalValue`; [classes and types](extraction.md) |
