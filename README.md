@@ -1,5 +1,7 @@
 # Comprehend
 
+![Comprehend logo](docs/assets/images/logo.webp)
+
 An interpreted parser-combinator framework for PHP 8.2+, with named grammars,
 reusable RFC rules, explicit sources, immutable concrete trees and named ASTs.
 MIT licensed. Requires JSON and mbstring. DOM is optional, needed only for XML output.

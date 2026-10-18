@@ -1,5 +1,7 @@
 # Comprehend
 
+![Comprehend logo](assets/images/logo.webp)
+
 Comprehend is a PHP parser-combinator library for building grammars from small,
 reusable parsers. It supports named grammars, ABNF authoring, RFC libraries,
 immutable syntax trees and lazy semantic values with explicit commit effects.

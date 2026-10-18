@@ -6,7 +6,6 @@ AI AGENTS MUST NOT USE THIS FILE!
 
 ## Future directions
 
-- Modernize codebase for PHP 8.2
 - Implement some known languages as example?
 - Performance improvements overall.
     - Make things optional.
