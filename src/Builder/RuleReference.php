@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Builder;
 
+use LogicException;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
-use LogicException;
 
 /**
  * Represents a deferred named rule lookup within an AbstractRuleset. Supports forward and
@@ -37,12 +37,12 @@ final class RuleReference extends Parser implements AnalyzableParser
     }
 
     /**
-     * @internal Parameter identities avoid serializing user objects.
      * @return array{object, string, array<array-key, mixed>}
+     * @internal Bound targets identify their snapshot revision; parameters retain object identity.
      */
     public function graphKey(): array
     {
-        return [$this->scopeIdentity, $this->rule, $this->arguments];
+        return [$this->target ?? $this->scopeIdentity, $this->rule, $this->arguments];
     }
 
     public function bindSnapshotTarget(Parser $target): void

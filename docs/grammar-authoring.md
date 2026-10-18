@@ -75,6 +75,10 @@ or factory output. Each freeze bypasses the builder's lazy implementation cache;
 implementations in the frozen graph live for that snapshot's lifetime. Matching
 it creates a new ParseSession and fresh semantic/effect caches each time.
 
+When resolved parser snapshots are copied or composed again, references retain
+their resolved productions. Snapshots of different revisions of the same builder
+remain independent, even when their rule names and factory arguments match.
+
 Parameterized references use rule-scope identity, name and argument identity.
 Equal scalar/array arguments reuse one implementation within a freeze; objects
 and resources use identity, without serializing user objects. Recursive factories
