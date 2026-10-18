@@ -62,29 +62,7 @@ class Range extends Parser implements AnalyzableParser, ReusableSnapshot
         return 1;
     }
 
-    /** @internal Only bounds valid in both source modes and both case policies can share a scanner. */
-    public function repetitionScanner(int $min, ?int $max): ?ReadWhileRange
-    {
-        if (static::class !== self::class || !$this->in || $this->hasCompositionMetadata()) {
-            return null;
-        }
-        foreach ([$this->first, $this->last] as $bound) {
-            if ($bound !== null && (strlen($bound) !== 1 || ord($bound) > 127)) {
-                return null;
-            }
-        }
-        if (
-            $this->first !== null && $this->last !== null
-            && (ord($this->first) > ord($this->last)
-                || ord(strtolower($this->first)) > ord(strtolower($this->last)))
-        ) {
-            // Range treats reversed bounds as empty; ReadWhileRange rejects them.
-            return null;
-        }
 
-        return (new ReadWhileRange($this->first, $this->last, $min, $max))
-            ->setCaseSensitivity($this->caseSensitivity);
-    }
 
     public function __toString(): string
     {
@@ -140,5 +118,20 @@ class Range extends Parser implements AnalyzableParser, ReusableSnapshot
         }
 
         return $textMode ? mb_ord($value, 'UTF-8') : ord($value);
+    }
+
+    public function getFirst(): ?string
+    {
+        return $this->first;
+    }
+
+    public function getLast(): ?string
+    {
+        return $this->last;
+    }
+
+    public function includesRange(): bool
+    {
+        return $this->in;
     }
 }

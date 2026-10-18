@@ -61,6 +61,33 @@ abstract class Parser implements SnapshotParticipant
     private ?string $ruleName = null;
     private ?string $expectationLabel = null;
     private ?string $classLabel = null;
+    private ?string $concreteKind = null;
+
+    /** @internal Preserve concrete identity when a preparation provider changes implementation. */
+    public function concreteKind(): string
+    {
+        return $this->concreteKind ?? static::class;
+    }
+
+    /** Copy authoring configuration without executing callbacks or copying owned dependencies. */
+    protected function copyConfigurationTo(Parser $copy): void
+    {
+        $copy->effects = $this->effects;
+        $copy->valueMapper = $this->valueMapper;
+        $copy->valueTransforms = $this->valueTransforms;
+        $copy->guards = $this->guards;
+        $copy->semanticValidators = $this->semanticValidators;
+        $copy->nodeName = $this->nodeName;
+        $copy->nodeTags = $this->nodeTags;
+        $copy->nodeGroup = $this->nodeGroup;
+        $copy->semanticLeaf = $this->semanticLeaf;
+        $copy->ruleName = $this->ruleName;
+        $copy->expectationLabel = $this->expectationLabel;
+        $copy->classLabel = $this->diagnosticName();
+        $copy->concreteKind = $this->concreteKind();
+        $copy->resultCallbacks = $this->resultCallbacks;
+        $copy->assignCallbacks = $this->assignCallbacks;
+    }
 
     protected static function parseCharacter(string $character): string
     {

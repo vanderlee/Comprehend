@@ -45,8 +45,8 @@ also loads automatically.
 ## Composer discovery
 
 Bundled extensions, installed Composer packages, and the root application can
-advertise providers in `extensions/*.extension.json`. Each file declares one
-provider; its filename does not need to match the provider class. For example,
+advertise providers in `extensions/*.extension.json`. Each file can declare a syntax
+factory class and several capability providers; its filename is independent of their classes. For example,
 `extensions/Identifiers.extension.json`:
 
 ```json
@@ -81,7 +81,7 @@ Existing declarations in `composer.json` remain supported:
 }
 ```
 
-Each provider implements `SyntaxExtension`, is autoloadable, and has a public
+Each factory provider implements `SyntaxExtension`, is autoloadable, and has a public
 constructor requiring no arguments. Supply both name lists, using `[]` when empty.
 Providers must be stateless; use explicit `extend()` for application configuration.
 Their returned rule and fluent names must exactly match the advertised names,
@@ -115,8 +115,69 @@ Deferred provider-loading errors also identify the declaring manifest files.
 Both registration iterables must succeed before any factories are cached; failures
 publish no partial registrations. Recursive loading of a provider is rejected.
 Successful registrations are cached, while factories run for every authoring call.
-Loading never installs dependencies or performs network requests, and parsing never
-triggers discovery, construction, or factory calls.
+Loading never installs dependencies or performs network requests. Discovery and
+provider construction happen during authoring or grammar preparation, before recognition.
+
+### Capability providers
+
+Use `providers` to map autoloadable classes to the PHP interfaces they advertise.
+Several classes may provide the same interface. Capability-only manifests can omit
+`class`, `rules`, and `fluents`:
+
+```json
+{
+  "providers": {
+    "Acme\\Parsing\\FirstPass": ["Acme\\Parsing\\AnalysisPass"],
+    "Acme\\Parsing\\SecondPass": ["Acme\\Parsing\\AnalysisPass"]
+  }
+}
+```
+
+Consumers request contracts through `Syntax\ExtensionLoader`:
+
+```php
+use Vanderlee\Comprehend\Syntax\ExtensionLoader;
+
+$passes = ExtensionLoader::defaults()->all(\Acme\Parsing\AnalysisPass::class);
+```
+
+`all(interface)` returns providers in declaration/discovery order, or an empty list.
+`requireOne(interface)` requires exactly one advertised provider and reports missing
+or ambiguous capabilities. Both methods have generic return types for static analysis.
+Consumers decide how and when to invoke providers; discovery never runs their operations.
+
+Contracts must be interfaces. Names are case-insensitive, accept a leading backslash,
+and are deduplicated and sorted for declaration comparison. Discovery validates metadata
+without loading provider classes or interfaces. Interface existence and implementation
+are checked when a provider is needed; every interface it advertises must validate.
+Only advertised interfaces resolve: implemented parent interfaces are not inferred.
+
+Provider classes require a public constructor with no required arguments and must
+remain stateless. The loader shares one instance per package/class across all its
+contracts and factory registrations. Each provider loads atomically: interface checks,
+construction, and declared syntax registrations must all succeed before anything is
+cached. Failed loads can be retried. Recursive loads fail with manifest context.
+
+The existing `class`/`rules`/`fluents` fields declare the syntax factory provider and
+implicitly advertise `SyntaxExtension`. When that class also appears in `providers`,
+its capabilities are combined and use the same instance. Explicit `SyntaxExtension`
+declarations must belong to that syntax class and have both name lists. Existing
+factory-only manifests need no changes; additional factory classes can use separate manifests.
+
+The bundled Optimizer advertises `Builder\GraphOptimization` in its `providers` map.
+Grammar preparation uses `requireOne(GraphOptimization::class)` when optimization is
+enabled; `FreezeFlags::NONE` bypasses that lookup. Multiple optimizer providers remain
+an error for freezing, even though `all()` supports multiple providers for other consumers.
+The old `optimizer` flag and top-level `provides` list are rejected; use the map.
+See [Grammar authoring](grammar-authoring.md) for optimizer eligibility rules.
+
+The bundled Optimizer also implements `SyntaxExtension`. Its manifest advertises
+`readWhile`, `readUntil`, `readWhileSet`, `readWhileRange`, `readRest`, `skipWhile`,
+`skipUntil`, and `skipRest` as rules, with an empty fluent list. These factories
+append scanners when chained, just like other terminal factories. Their parsers
+live in `Extensions\Optimizer\Parser`, and explicitly authored scanners work with
+`FreezeFlags::NONE`. Factory loading and optimizer resolution share the same provider
+instance. See [Reading and skipping runs](read-scanning.md).
 
 ## Writing an extension
 

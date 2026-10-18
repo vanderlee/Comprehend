@@ -8,8 +8,32 @@ use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Syntax\DiscoveredWords;
 use Tests\Fixtures\Syntax\DiscoveryProject;
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Syntax\ExtensionLoader;
 
 uses(TestCase::class);
+
+test('a discovered manifest can provide several classes for one contract', function (): void {
+    $project = new DiscoveryProject();
+    try {
+        $project->write('extensions/Capabilities.extension.json', ['providers' => [
+            \ArrayObject::class => [\Countable::class],
+            \SplObjectStorage::class => [\Countable::class],
+        ]]);
+        $result = $project->run(
+            '$providers = ' . ExtensionLoader::class . '::defaults()->all(Countable::class);'
+            . 'if (count($providers) !== 2 || !$providers[0] instanceof ArrayObject'
+            . ' || !$providers[1] instanceof SplObjectStorage) { exit(2); }'
+            . 'try { ' . ExtensionLoader::class . '::defaults()->requireOne(Countable::class); exit(3); }'
+            . 'catch (RuntimeException $error) { echo $error->getMessage(); }',
+        );
+        $this->assertSame(0, $result['status'], $result['output']);
+        foreach (['ArrayObject', 'SplObjectStorage', 'Countable', 'Capabilities.extension.json'] as $text) {
+            $this->assertStringContainsString(strtolower($text), strtolower($result['output']));
+        }
+    } finally {
+        $project->clean();
+    }
+});
 
 test('file providers load from packages without composer manifests', function (string $prefix): void {
     $project = new DiscoveryProject();

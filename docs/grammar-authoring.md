@@ -315,6 +315,11 @@ run the optimizer; mutable builders remain unchanged.
 
 Control optimization when preparing a grammar with `Builder\FreezeFlags`:
 
+The bundled `Extensions\Optimizer\GraphOptimizer` is discovered through
+`extensions/Optimizer.extension.json`. Core combinators retain ordinary recognition;
+the extension supplies internal parser implementations for optimized execution.
+Their concrete syntax trees retain the original parser kinds.
+
 ```php
 use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
@@ -332,6 +337,14 @@ structural safety checks always run. Unknown flag bits raise
 `OPTIMIZE` is currently the only option. Reusable facade snapshots are cached
 separately for each flag set. Normal facade parsing continues to use `DEFAULT`;
 parse through an explicitly frozen grammar to disable optimization.
+
+`NONE` does not resolve an optimizer provider. With `OPTIMIZE`, preparation requires
+exactly one discovered optimizer; missing or competing providers raise an error.
+Optimizer providers implement `Builder\GraphOptimization`: `replace()` creates
+snapshot parsers, and `prepare()` initializes the isolated, validated graph.
+Manifests advertise this interface in the class-to-interfaces `providers` map;
+preparation resolves it through `ExtensionLoader::requireOne(GraphOptimization::class)`.
+See [Extension capabilities](syntax-extensions.md#capability-providers) for generic discovery.
 
 After references are resolved and graph safety checks pass, optimization also
 prepares bounded lexical tables for Repeat operands, Choice alternatives and Not

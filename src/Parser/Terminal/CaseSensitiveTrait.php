@@ -14,6 +14,11 @@ trait CaseSensitiveTrait
 {
     private ?bool $caseSensitivity = null;
 
+    public function getCaseSensitivity(): ?bool
+    {
+        return $this->caseSensitivity;
+    }
+
     /**
      * @param bool|null $preference
      *

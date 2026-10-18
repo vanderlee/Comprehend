@@ -7,6 +7,26 @@ The changelog remains marked Unreleased until publication is ready.
 
 ## Caller changes
 
+The optimizer moved from `Builder\GraphOptimizer` to
+`Extensions\Optimizer\GraphOptimizer`, and `Runtime\LexicalTable` moved to
+`Extensions\Optimizer\LexicalTable`. No compatibility aliases remain. The bundled
+optimizer loads through its extension manifest; default freezing stays optimized.
+`FreezeFlags::NONE` bypasses optimizer discovery. Custom preparation providers
+implement `Builder\GraphOptimization`; multiple discovered optimizers are an error.
+Replace the former `"optimizer": true` declaration with a `providers` map from
+provider classes to interface lists. `ExtensionLoader::optimizer()` is removed;
+use `requireOne(GraphOptimization::class)`. Generic `all(interface)` lookup supports
+multiple providers, including several classes in a single manifest. Instances are
+shared with syntax factory loading. See [Extension capabilities](syntax-extensions.md#capability-providers).
+
+The scanner classes `ReadRun`, `ReadWhile`, `ReadUntil`, `ReadWhileSet`,
+`ReadWhileRange`, and `ReadRest` also moved from `Parser\Terminal` into
+`Extensions\Optimizer\Parser`, without aliases. Update direct imports and any
+scanner CST kind comparisons. All eight read/skip factories load automatically
+from the Optimizer manifest and retain their signatures, including when graph
+optimization is disabled. Their names are now discoverable and allow local
+Syntax overrides. See [Reading and skipping runs](read-scanning.md).
+
 The Integer parser moved from `Parser\Terminal\Integer` to
 `Extensions\Numbers\Parser\IntegerNumber`, with no compatibility alias. Update direct
 imports. The `integer()`, `binary()`, `octal()`, `hexadecimal()` and `octet()`

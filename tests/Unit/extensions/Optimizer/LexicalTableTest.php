@@ -6,7 +6,7 @@ use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Regex;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
-use Vanderlee\Comprehend\Runtime\LexicalTable;
+use Vanderlee\Comprehend\Extensions\Optimizer\LexicalTable;
 use Vanderlee\Comprehend\Runtime\ParseMetrics;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;

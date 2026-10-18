@@ -25,7 +25,7 @@ trait SpacingTrait
         return $this;
     }
 
-    /** @internal Compiled lexical patterns must not bypass a locally configured spacing scope. */
+    /** Whether this parser establishes a local spacing scope, including an explicit null policy. */
     public function hasExplicitSpacing(): bool
     {
         return $this->hasSpacingPolicy;

@@ -125,7 +125,7 @@ class Success extends AbstractMatch
             throw new LogicException('Concrete nodes require source-bound recognition');
         }
 
-        $kind = $parser::class;
+        $kind = $parser->concreteKind();
         $isTrivia = $parser instanceof Trivia;
         $children = $this->concreteChildNodes();
         if ($name instanceof Closure) {

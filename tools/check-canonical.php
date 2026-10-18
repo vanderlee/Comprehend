@@ -7,6 +7,44 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 $root = dirname(__DIR__);
 $errors = [];
+if (method_exists(Vanderlee\Comprehend\Syntax\ExtensionLoader::class, 'optimizer')) {
+    $errors[] = 'Removed optimizer-specific extension lookup is present';
+}
+foreach (
+    [
+        'Vanderlee\\Comprehend\\Builder\\GraphOptimizer',
+        'Vanderlee\\Comprehend\\Runtime\\LexicalTable',
+    ] as $removedClass
+) {
+    if (class_exists($removedClass)) {
+        $errors[] = 'Removed core optimizer class is present: ' . $removedClass;
+    }
+}
+foreach (['Repeat', 'Choice', 'Not'] as $combinator) {
+    $path = $root . '/src/Parser/Structure/' . $combinator . '.php';
+    $source = file_get_contents($path);
+    if (preg_match('/Optimizer|LexicalTable|ReadRun|prepareLexicalRecognition|withOptimizedRecognition/', $source)) {
+        $errors[] = 'Core combinator contains optimizer dependencies: ' . $combinator;
+    }
+}
+foreach (['ReadRun', 'ReadWhile', 'ReadUntil', 'ReadWhileSet', 'ReadWhileRange', 'ReadRest'] as $scanner) {
+    if (class_exists('Vanderlee\\Comprehend\\Parser\\Terminal\\' . $scanner)) {
+        $errors[] = 'Removed core scanner class is present: ' . $scanner;
+    }
+}
+foreach (
+    [
+        'readWhile', 'readUntil', 'readWhileSet', 'readWhileRange',
+        'readRest', 'skipWhile', 'skipUntil', 'skipRest',
+    ] as $factory
+) {
+    if (
+        Vanderlee\Comprehend\Syntax\Catalog::builtinRule($factory) !== null
+        || in_array(strtolower($factory), Vanderlee\Comprehend\Syntax\Catalog::builtinNames(), true)
+    ) {
+        $errors[] = 'Removed core scanner factory is present: ' . $factory;
+    }
+}
 if (class_exists('Vanderlee\\Comprehend\\Parser\\Terminal\\Integer')) {
     $errors[] = 'Removed core Integer parser is present';
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Parser\Terminal;
+namespace Vanderlee\Comprehend\Extensions\Optimizer\Parser;
 
 use InvalidArgumentException;
 use Vanderlee\Comprehend\Runtime\ParseSession;

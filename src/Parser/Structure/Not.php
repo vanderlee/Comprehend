@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser\Structure;
 
+use InvalidArgumentException;
 use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
@@ -15,7 +16,6 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\FailureDiagnosticAtStart;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
-use Vanderlee\Comprehend\Runtime\LexicalTable;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
@@ -27,15 +27,16 @@ class Not extends Parser implements AnalyzableParser, FailureDiagnosticAtStart, 
     use ExactClassSnapshotReuseTrait;
     use DefaultAnalysisTrait;
 
-    private ?LexicalTable $lexical = null;
-
-    /** @internal Negative lookahead still owns diagnostic rollback and zero-width behavior. */
-    public function prepareLexicalRecognition(): void
-    {
-        $this->lexical = LexicalTable::prepare($this->parser);
-    }
-
     public function __construct(private Parser $parser) {}
+
+    protected function copyConfigurationTo(Parser $copy): void
+    {
+        if (!$copy instanceof self) {
+            throw new InvalidArgumentException('Not configuration requires a Not destination');
+        }
+        parent::copyConfigurationTo($copy);
+        $copy->parser = $this->parser;
+    }
 
     /** @internal Structural operand for graph analysis. */
     public function getParser(): Parser
@@ -58,7 +59,6 @@ class Not extends Parser implements AnalyzableParser, FailureDiagnosticAtStart, 
     {
         parent::copyDependencies($context);
         $this->parser = $context->copy($this->parser);
-        $this->lexical = null;
     }
 
     /** @return list<Parser> */
@@ -76,9 +76,7 @@ class Not extends Parser implements AnalyzableParser, FailureDiagnosticAtStart, 
     {
         $diagnostics = $session->diagnosticState();
         try {
-            $match = $this->lexical !== null && !$session->hasRecognitionLimits() && !$session->hasActiveSpacing()
-                ? $this->lexical->attempt($source, $byteOffset, $session)
-                : $this->parser->recognizeInSession($source, $byteOffset, $session);
+            $match = $this->attemptChild($source, $byteOffset, $session);
         } finally {
             $session->restoreDiagnostics($diagnostics);
         }
@@ -88,5 +86,10 @@ class Not extends Parser implements AnalyzableParser, FailureDiagnosticAtStart, 
         }
 
         return $this->success($source, $byteOffset);
+    }
+
+    protected function attemptChild(Source $source, int $offset, ParseSession $session): AbstractMatch
+    {
+        return $this->parser->recognizeInSession($source, $offset, $session);
     }
 }

@@ -10,6 +10,7 @@ use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Syntax\ExtensionLoader;
 
 /**
  * Provides reusable parsing over a detached, resolved grammar snapshot. GraphSnapshot isolates
@@ -36,12 +37,12 @@ final class FrozenGrammar
         if ($parser instanceof Comprehend) {
             $parser = $parser->parser();
         }
-        $snapshot = new GraphSnapshot(optimize: ($flags & FreezeFlags::OPTIMIZE) !== 0);
+        $optimizer = ($flags & FreezeFlags::OPTIMIZE) !== 0
+            ? ExtensionLoader::defaults()->requireOne(GraphOptimization::class) : null;
+        $snapshot = new GraphSnapshot(optimize: $optimizer !== null, optimizer: $optimizer);
         $root = $snapshot->copy($parser);
         $warnings = (new GraphAnalysis())->validate($root);
-        if (($flags & FreezeFlags::OPTIMIZE) !== 0) {
-            (new GraphOptimizer())->prepare($root);
-        }
+        $optimizer?->prepare($root);
 
         return new self($root, $warnings, $snapshot->isReusable());
     }

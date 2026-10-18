@@ -8,6 +8,7 @@ use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Syntax\Catalog;
 use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Extensions\Numbers;
+use Vanderlee\Comprehend\Extensions\Optimizer\GraphOptimizer;
 
 // Mirror factory names and signatures without loading PHPStan or running its extensions.
 $root = dirname(__DIR__);
@@ -22,13 +23,16 @@ foreach ($matches as $match) {
     );
 }
 $lines = [];
-$numberFactories = iterator_to_array((new Numbers())->rules());
+$extensionFactories = [
+    ...iterator_to_array((new Numbers())->rules()),
+    ...iterator_to_array((new GraphOptimizer())->rules()),
+];
 $factoryNames = array_values(array_unique([
     ...Catalog::builtinNames(),
-    ...array_keys($numberFactories),
+    ...array_keys($extensionFactories),
 ]));
 foreach ($factoryNames as $name) {
-    if (Catalog::builtinRule($name) !== null || isset($numberFactories[$name])) {
+    if (Catalog::builtinRule($name) !== null || isset($extensionFactories[$name])) {
         $method = $methods[strtolower($name)] ?? null;
         if ($method === null) {
             throw new RuntimeException('Add a Comprehend factory signature for ' . $name);

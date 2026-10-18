@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Parser\Terminal\ReadUntil;
-use Vanderlee\Comprehend\Parser\Terminal\ReadWhileRange;
-use Vanderlee\Comprehend\Parser\Terminal\ReadWhileSet;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadUntil;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileRange;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileSet;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;

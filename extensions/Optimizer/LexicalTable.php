@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Runtime;
+namespace Vanderlee\Comprehend\Extensions\Optimizer;
 
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Choice as OptimizedChoice;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Not as OptimizedNot;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Repeat as OptimizedRepeat;
 use Vanderlee\Comprehend\Builder\RuleReference;
 use Vanderlee\Comprehend\Directive\CaseSensitive;
 use Vanderlee\Comprehend\Match\AbstractMatch;
@@ -55,7 +59,12 @@ final class LexicalTable
         if (isset($active[spl_object_id($parser)]) || count($active) > 16) {
             return null;
         }
-        $class = $parser::class;
+        $class = match ($parser::class) {
+            OptimizedRepeat::class => Repeat::class,
+            OptimizedChoice::class => Choice::class,
+            OptimizedNot::class => Not::class,
+            default => $parser::class,
+        };
         $supported = [Set::class, Char::class, Range::class, Text::class, Regex::class, Any::class,
             RuleReference::class, CaseSensitive::class, Sequence::class, Choice::class, Not::class, Repeat::class];
         if (!in_array($class, $supported, true) || $parser->hasExecutableMetadata()) {

@@ -54,22 +54,7 @@ class Char extends Parser implements AnalyzableParser, ReusableSnapshot
         return strlen($this->character) === 1 && ord($this->character) < 128 ? 1 : null;
     }
 
-    /** @internal ASCII literals have identical unit validation in byte and UTF-8 sources. */
-    public function repetitionScanner(int $min, ?int $max): ReadWhileSet|ReadUntil|null
-    {
-        if (
-            static::class !== self::class || $this->hasCompositionMetadata()
-            || strlen($this->character) !== 1 || ord($this->character) > 127
-        ) {
-            return null;
-        }
 
-        $scanner = $this->include
-            ? new ReadWhileSet($this->character, $min, $max)
-            : new ReadUntil($this->character, $min, $max);
-
-        return $scanner->setCaseSensitivity($this->caseSensitivity);
-    }
 
     public function __toString(): string
     {
@@ -98,5 +83,15 @@ class Char extends Parser implements AnalyzableParser, ReusableSnapshot
         } finally {
             $this->popCaseSensitivityFromContext($session);
         }
+    }
+
+    public function getCharacter(): string
+    {
+        return $this->character;
+    }
+
+    public function includesCharacter(): bool
+    {
+        return $this->include;
     }
 }

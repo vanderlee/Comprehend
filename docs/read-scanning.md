@@ -1,8 +1,18 @@
 # Reading and skipping runs
 
 Read scanners consume a contiguous run in one terminal invocation and return its
-original text. They use the same checked runtime as other terminals; there is no
-automatic replacement of existing parser constructs.
+original text. The bundled Optimizer extension supplies all read/skip factories
+and loads automatically on first use. They use the same checked runtime as other
+terminals and remain available with `FreezeFlags::NONE`; that flag disables graph
+optimization, not explicitly authored scanners.
+
+Direct parser classes live in `Extensions\Optimizer\Parser`: `ReadRun` (the
+abstract base), `ReadWhile`, `ReadUntil`, `ReadWhileSet`, `ReadWhileRange`, and
+`ReadRest`. Their former `Parser\Terminal` names have no compatibility aliases.
+Scanner CST kinds use the extension class names. Factory signatures and static,
+scoped Syntax, and fluent calls retain their behavior. These factory names are
+discoverable rather than reserved core names and can be overridden in a local
+Syntax vocabulary.
 
 ```php
 use Vanderlee\Comprehend\Comprehend as C;

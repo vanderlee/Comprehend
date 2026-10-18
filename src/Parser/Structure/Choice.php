@@ -15,8 +15,6 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseSession;
-use Vanderlee\Comprehend\Runtime\LexicalTable;
-use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Source\Source;
 
 /**
@@ -31,37 +29,14 @@ class Choice extends IterableParser implements AnalyzableParser, ReusableSnapsho
     use DefaultAnalysisTrait;
     use PreferTrait;
 
-    /** @var array<array-key, LexicalTable> */
-    private array $lexical = [];
-
-    /** @internal Preserve choice control flow while specializing bounded lexical operands. */
-    public function prepareLexicalRecognition(): void
-    {
-        $this->lexical = [];
-        foreach ($this->parsers as $index => $parser) {
-            $table = LexicalTable::prepare($parser);
-            if ($table !== null) {
-                $this->lexical[$index] = $table;
-            }
-        }
-    }
-
-    protected function copyDependencies(GraphSnapshot $context): void
-    {
-        parent::copyDependencies($context);
-        $this->lexical = [];
-    }
-
-    private function attemptAlternative(
+    protected function attemptAlternative(
         int|string $index,
         Parser $parser,
         Source $source,
         int $offset,
         ParseSession $session,
     ): AbstractMatch {
-        return isset($this->lexical[$index]) && !$session->hasRecognitionLimits() && !$session->hasActiveSpacing()
-            ? $this->lexical[$index]->attempt($source, $offset, $session)
-            : $parser->recognizeInSession($source, $offset, $session);
+        return $parser->recognizeInSession($source, $offset, $session);
     }
 
     public function __construct(Parser ...$arguments)
@@ -70,6 +45,16 @@ class Choice extends IterableParser implements AnalyzableParser, ReusableSnapsho
             throw new InvalidArgumentException('No arguments');
         }
         $this->parsers = $arguments;
+    }
+
+    protected function copyConfigurationTo(Parser $copy): void
+    {
+        if (!$copy instanceof self) {
+            throw new InvalidArgumentException('Choice configuration requires a Choice destination');
+        }
+        parent::copyConfigurationTo($copy);
+        $copy->parsers = $this->parsers;
+        $copy->preference = $this->preference;
     }
 
     public static function first(Parser ...$arguments): self

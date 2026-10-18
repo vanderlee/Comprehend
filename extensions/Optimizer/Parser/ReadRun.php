@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Vanderlee\Comprehend\Parser\Terminal;
+namespace Vanderlee\Comprehend\Extensions\Optimizer\Parser;
 
 use InvalidArgumentException;
+use Vanderlee\Comprehend\Parser\Terminal\CaseSensitiveTrait;
+use Vanderlee\Comprehend\Parser\Terminal\DiagnosticExpectationTrait;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;

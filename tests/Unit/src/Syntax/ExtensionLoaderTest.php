@@ -91,7 +91,7 @@ test('invalid providers fail lazily with package context', function (
     }
 })->with([
     ['MissingExtensionProvider', ['word'], [], 'does not exist'],
-    [\stdClass::class, ['word'], [], 'implement SyntaxExtension'],
+    [\stdClass::class, ['word'], [], 'implement ' . SyntaxExtension::class],
     [ConfiguredDiscovery::class, ['word'], [], 'Too few arguments'],
     [DiscoveredWords::class, ['differentName'], ['discoveredWord'], 'do not match'],
     [DiscoveredWords::class, ['discoveredWord'], [], 'do not match'],

@@ -70,15 +70,7 @@ class Set extends Parser implements AnalyzableParser, ReusableSnapshot
         return preg_match('/[\x80-\xff]/', $this->sourceSet) === 0 ? 1 : null;
     }
 
-    /** @internal Replace unobservable per-unit membership checks with a bounded scanner. */
-    public function repetitionScanner(int $min, ?int $max): ?ReadWhileSet
-    {
-        if (static::class !== self::class || !$this->include || $this->hasCompositionMetadata()) {
-            return null;
-        }
 
-        return (new ReadWhileSet($this->sourceSet, $min, $max))->setCaseSensitivity($this->caseSensitivity);
-    }
 
     public function __toString(): string
     {
@@ -113,5 +105,15 @@ class Set extends Parser implements AnalyzableParser, ReusableSnapshot
         } finally {
             $this->popCaseSensitivityFromContext($session);
         }
+    }
+
+    public function getCharacters(): string
+    {
+        return $this->sourceSet;
+    }
+
+    public function includesCharacters(): bool
+    {
+        return $this->include;
     }
 }

@@ -7,6 +7,7 @@ namespace Vanderlee\Comprehend\Builder;
 use SplObjectStorage;
 use Vanderlee\Comprehend\Parser\Parser;
 use LogicException;
+use Vanderlee\Comprehend\Syntax\ExtensionLoader;
 
 /**
  * Copies parser graphs to isolate fluent expressions and frozen grammars from mutable builders.
@@ -31,6 +32,7 @@ final class GraphSnapshot
     public function __construct(
         private readonly bool $resolveReferences = true,
         private readonly bool $optimize = false,
+        private ?GraphOptimization $optimizer = null,
     ) {
         $this->copies = new SplObjectStorage();
         $this->snapshotting = new SplObjectStorage();
@@ -39,7 +41,18 @@ final class GraphSnapshot
     /** @internal Only freezing enables recognition rewrites; authoring copies stay structural. */
     public function copyParser(Parser $parser): Parser
     {
-        return $this->optimize ? (new GraphOptimizer())->replace($parser) : clone $parser;
+        if (!$this->optimize) {
+            return clone $parser;
+        }
+        $this->optimizer ??= ExtensionLoader::defaults()->requireOne(GraphOptimization::class);
+
+        return $this->optimizer->replace($parser);
+    }
+
+    /** @internal Derived preparation state must be cleared in ordinary authoring copies. */
+    public function optimizationEnabled(): bool
+    {
+        return $this->optimize;
     }
 
     /** @internal Explicit capability; inherited interfaces alone do not guarantee reuse safety. */

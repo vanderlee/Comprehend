@@ -5,7 +5,18 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Builder\GraphOptimization;
+use Vanderlee\Comprehend\Syntax\ExtensionLoader;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
+
+$loader = ExtensionLoader::defaults();
+$optimizer = $loader->requireOne(GraphOptimization::class);
+if (
+    $loader->all(GraphOptimization::class) !== [$optimizer]
+    || !in_array($optimizer, $loader->all(SyntaxExtension::class), true)
+) {
+    throw new RuntimeException('Capability and syntax lookup did not share a provider instance');
+}
 
 $base = C::syntax();
 $syntax = $base->extend(new class implements SyntaxExtension {

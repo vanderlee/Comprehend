@@ -9,7 +9,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
-use Vanderlee\Comprehend\Parser\Terminal\ReadWhileSet;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileSet;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
