@@ -17,6 +17,51 @@ use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 
 uses(TestCase::class);
 
+test('invalid provider entries identify their package and manifest', function (mixed $entry, string $reason): void {
+    $manifest = [
+        '_comprehend_manifest_path' => '/fixtures/invalid.extension.json',
+        'extra' => ['comprehend' => ['extensions' => [$entry]]],
+    ];
+    try {
+        new ExtensionLoader(['acme/invalid' => $manifest]);
+        $this->fail('Expected invalid provider metadata to be rejected');
+    } catch (RuntimeException $error) {
+        $this->assertStringContainsString('acme/invalid', $error->getMessage());
+        $this->assertStringContainsString('/fixtures/invalid.extension.json', $error->getMessage());
+        $this->assertStringContainsString($reason, $error->getMessage());
+    }
+})->with([
+    ['invalid', 'Invalid extension declaration'],
+    [['providers' => ['' => [\Countable::class]]], 'Invalid provider class'],
+    [['providers' => [\ArrayObject::class => [\Countable::class],
+        'arrayobject' => [\Countable::class]]], 'Duplicate provider class'],
+    [['providers' => [\ArrayObject::class => 'Countable']], 'Invalid provides list'],
+    [['class' => DiscoveredWords::class, 'rules' => 'word', 'fluents' => []], 'Invalid extension names'],
+]);
+
+test('conflicting declarations identify both manifests before constructing providers', function (): void {
+    DiscoveredWords::$constructions = 0;
+    $first = DiscoveredWords::manifest();
+    $first['_comprehend_manifest_path'] = '/fixtures/first.extension.json';
+    $second = DiscoveredWords::manifest(DiscoveredWords::class, ['differentWord'], []);
+    $second['_comprehend_manifest_path'] = '/fixtures/second.extension.json';
+    $manifests = static function () use ($first, $second): iterable {
+        yield 'acme/words' => $first;
+        yield 'acme/words' => $second;
+    };
+    try {
+        new ExtensionLoader($manifests());
+        $this->fail('Expected conflicting declarations to fail');
+    } catch (RuntimeException $error) {
+        $expected = ['Conflicting extension declarations', 'acme/words',
+            'first.extension.json', 'second.extension.json'];
+        foreach ($expected as $text) {
+            $this->assertStringContainsString($text, $error->getMessage());
+        }
+    }
+    $this->assertSame(0, DiscoveredWords::$constructions);
+});
+
 test('discovery lists names without constructing providers and caches only registrations', function (): void {
     DiscoveredWords::$constructions = DiscoveredWords::$calls = 0;
     $loader = new ExtensionLoader(['acme/words' => DiscoveredWords::manifest()]);

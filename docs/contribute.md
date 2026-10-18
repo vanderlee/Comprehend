@@ -84,6 +84,12 @@ branch is needed.
 
 ## Quality tools
 
+The line-coverage CI job uploads a Clover report for `src/` and `extensions/`
+without a percentage gate. PCOV must instrument both directories; its default
+directory can otherwise limit collection to `src/`. Subprocess discovery tests
+are not included in the parent process's coverage figures. Use coverage to find
+unexercised paths, and regression assertions to verify observable contracts.
+
 Install development tools with `make install` (or `composer install`). GNU Make
 and PHP must be on your PATH. Use `make test` for Pest and `make phpstan` for
 static analysis, configured at level 8 for `src`, `extensions`, value-type fixtures
