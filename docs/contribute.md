@@ -1,6 +1,6 @@
 # Contributing
 
-Use PHP 8.1+ with JSON and mbstring. DOM is optional at runtime, but required for
+Use PHP 8.2+ with JSON and mbstring. DOM is optional at runtime, but required for
 the Pest suite and XML serialization tests. Install development dependencies with
 Composer. Run platform checks, Pest, the canonical API/syntax gate and examples:
 
@@ -24,14 +24,16 @@ standalone check does not need PHPUnit. Windows PHP builds may compile DOM in;
 on those builds, `-n` cannot remove it and the check intentionally refuses to run.
 
 The PHPUnit configuration covers `src`; a coverage driver optionally writes
-Clover output under `build/logs`. CI runs the checks on PHP 8.1–8.5, with an
+Clover output under `build/logs`. CI runs the checks on PHP 8.2–8.5, with an
 experimental nonblocking PHP 8.6 job. Composer.lock is locally generated/ignored.
 
-Composer resolves dependencies against PHP 8.1.0 via `config.platform.php`, even
-when run on a newer interpreter. PHPStan also targets 8.1. `check-platform-reqs`
+Composer resolves dependencies against PHP 8.2.0 via `config.platform.php`, even
+when run on a newer interpreter. PHPStan also targets 8.2. `check-platform-reqs`
 checks the actual interpreter and extensions. After changing the minimum version,
 refresh a locally generated lock file with `composer update` before testing that
-version; an older lock/vendor directory may still contain PHP 8.2-only packages.
+version; an older lock/vendor directory may still contain packages requiring a
+newer PHP version. Pest 2.36.1 or newer is required to use patched PHPUnit
+dependencies; keep Composer's security blocking enabled.
 
 Custom parsers implement the [typed recognition contract](source-and-extension-contract.md).
 Keep recognition/guards pure, spans in bytes, scope restoration exception-safe,
@@ -153,7 +155,7 @@ operator definitions and recovery contexts stay in their extension namespace.
 Cross-class extension scenarios remain in `tests/features/`.
 
 Write tests with Pest's `test()` closures and attach parameterized cases with
-`with()`. Pest 2 preserves the library's PHP 8.1 development baseline. Existing
+`with()`. Pest 2 supports the library's PHP 8.2 development baseline. Existing
 shared assertions and stateful fixtures use abstract PHPUnit base classes selected
 with `uses()`; dataset providers are static and run before test setup. Run the
 suite through Pest, including when selecting a single file or using `--filter`.

@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- PHP 8.1 or newer is required, with JSON and mbstring. DOM is optional, required only for XML serialization.
+- PHP 8.2 or newer is required, with JSON and mbstring. DOM is optional, required only for XML serialization.
 - Parse offsets and lengths use bytes. Prefix and complete-input parsing are explicit.
 - Callbacks and assignments run through explicit, idempotent commit after semantic validation.
 - Syntax trees serialize directly to the documented array, JSON, and XML schemas.

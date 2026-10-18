@@ -75,7 +75,7 @@ but automatic trivia does not add named collections or AST nodes.
 
 The suite, examples, canonical gate and PHPStan have been verified locally on
 PHP 8.1.34 with freshly resolved dependencies in an isolated build copy, as well
-as PHP 8.2.10 in the working tree. CI targets PHP 8.1–8.5, with an experimental
+as PHP 8.2.10 in the working tree. CI now targets PHP 8.2–8.5, with an experimental
 PHP 8.6 job. No remote CI run is claimed by this document.
 
 Phase 3 still owns graph-wide reference resolution/freezing, the new named graph

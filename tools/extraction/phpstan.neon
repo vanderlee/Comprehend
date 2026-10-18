@@ -1,6 +1,6 @@
 parameters:
     level: 10
-    phpVersion: 80100
+    phpVersion: 80200
     paths:
         - grammars.php
         - types.php

@@ -52,8 +52,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php: '8.1'
-            composer: 'v2'
           - php: '8.2'
             composer: 'v2'
           - php: '8.3'
@@ -132,7 +130,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.2'
           extensions: dom, json, mbstring
           tools: composer:v2
           coverage: none

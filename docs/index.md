@@ -6,7 +6,7 @@ immutable syntax trees and lazy semantic values with explicit commit effects.
 
 ## Installation
 
-Requires PHP 8.1+, JSON and mbstring. DOM is optional for XML serialization.
+Requires PHP 8.2+, JSON and mbstring. DOM is optional for XML serialization.
 Comprehend is MIT licensed.
 
 ```sh
