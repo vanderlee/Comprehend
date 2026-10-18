@@ -10,7 +10,7 @@ use InvalidArgumentException;
  * Retains a source-bound half-open byte interval for exact text access. Trees and results use
  * spans to preserve original input independently of semantic transformations.
  */
-final class Span
+final readonly class Span
 {
     /** @internal Check a byte position without allocating a discarded zero-width span. */
     public static function assertByteOffset(Source $source, int $offset): void
@@ -20,7 +20,7 @@ final class Span
         }
     }
 
-    public function __construct(public readonly Source $source, public readonly int $start, public readonly int $end)
+    public function __construct(public Source $source, public int $start, public int $end)
     {
         if (
             $start < 0

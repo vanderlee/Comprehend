@@ -10,15 +10,15 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 
 /** Immutable operator syntax, precedence and lazy semantic reduction. Higher precedence binds tighter. */
-final class Operator
+final readonly class Operator
 {
-    private readonly C $syntax;
-    public readonly Closure $reduce;
+    private C $syntax;
+    public Closure $reduce;
 
     private function __construct(
         C|Parser|string $syntax,
-        public readonly int $precedence,
-        public readonly OperatorKind $kind,
+        public int $precedence,
+        public OperatorKind $kind,
         callable $reduce,
     ) {
         $this->syntax = C::of(is_string($syntax) ? new Text($syntax) : $syntax);

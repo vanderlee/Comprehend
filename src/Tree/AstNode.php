@@ -12,7 +12,7 @@ use Vanderlee\Comprehend\Source\Span;
  * Represents named syntax projected from ConcreteNode with source spans and surrounding gaps.
  * Offers structural navigation and raw text independently of semantic values.
  */
-final class AstNode implements JsonSerializable
+final readonly class AstNode implements JsonSerializable
 {
     use Serialization;
 
@@ -23,13 +23,13 @@ final class AstNode implements JsonSerializable
      * @param list<Span> $postamble
      */
     public function __construct(
-        public readonly string|int|null $name,
-        public readonly ?string $group,
-        public readonly Span $span,
-        public readonly array $children = [],
-        public readonly array $tags = [],
-        public readonly array $preamble = [],
-        public readonly array $postamble = [],
+        public string|int|null $name,
+        public ?string $group,
+        public Span $span,
+        public array $children = [],
+        public array $tags = [],
+        public array $preamble = [],
+        public array $postamble = [],
     ) {
         self::validateStructure($span, $children, $tags, $preamble, $postamble);
     }

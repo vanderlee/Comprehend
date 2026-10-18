@@ -13,6 +13,10 @@ use RuntimeException;
  */
 final class EncodedFileSource implements CodePointSource
 {
+    private const NON_CHARACTER_ENCODINGS = [
+        'base64', 'uuencode', 'html-entities', 'html', 'quoted-printable', 'qprint', '7bit', '8bit', 'binary',
+    ];
+
     private readonly Utf8FileSource $source;
     public readonly string $inputEncoding;
     public readonly int $originalByteLength;
@@ -55,21 +59,18 @@ final class EncodedFileSource implements CodePointSource
 
     private static function normalizeEncoding(string $requested): string
     {
+        if (in_array(strtolower($requested), self::NON_CHARACTER_ENCODINGS, true)) {
+            throw new InvalidArgumentException('A character encoding is required');
+        }
         foreach (mb_list_encodings() as $encoding) {
+            // PHP 8.2 deprecates even alias lookup for transfer encodings.
+            if (in_array(strtolower($encoding), self::NON_CHARACTER_ENCODINGS, true)) {
+                continue;
+            }
             foreach ([$encoding, ...mb_encoding_aliases($encoding)] as $alias) {
                 if (strcasecmp($requested, $alias) !== 0) {
                     continue;
                 }
-                if (
-                    in_array(
-                        $encoding,
-                        ['BASE64', 'UUENCODE', 'HTML-ENTITIES', 'Quoted-Printable', '7bit', '8bit'],
-                        true,
-                    )
-                ) {
-                    throw new InvalidArgumentException('A character encoding is required');
-                }
-
                 return $encoding;
             }
         }

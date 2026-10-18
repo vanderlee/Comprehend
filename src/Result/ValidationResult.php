@@ -11,11 +11,11 @@ use JsonSerializable;
  * Carries semantic acceptance and immutable validation issues. Allows ParseResult to report
  * validation separately from syntactic success and recognition diagnostics.
  */
-final class ValidationResult implements JsonSerializable
+final readonly class ValidationResult implements JsonSerializable
 {
-    public readonly bool $valid;
+    public bool $valid;
     /** @var list<ValidationIssue> */
-    public readonly array $issues;
+    public array $issues;
 
     /** @param list<ValidationIssue> $issues */
     public function __construct(array $issues = [])

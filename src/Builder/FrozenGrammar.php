@@ -17,15 +17,15 @@ use Vanderlee\Comprehend\Syntax\ExtensionLoader;
  * builder state and GraphAnalysis checks structural hazards before execution.
  * @template-covariant T = mixed
  */
-final class FrozenGrammar
+final readonly class FrozenGrammar
 {
-    private readonly bool $reusable;
+    private bool $reusable;
     /**
      * @param list<string> $analysisWarnings
      */
     private function __construct(
-        private readonly Parser $root,
-        public readonly array $analysisWarnings,
+        private Parser $root,
+        public array $analysisWarnings,
         bool $reusable,
     ) {
         $this->reusable = $reusable;

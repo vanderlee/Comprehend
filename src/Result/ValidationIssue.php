@@ -10,16 +10,16 @@ use JsonSerializable;
 use Vanderlee\Comprehend\Source\Span;
 
 /** Immutable validation details with source-bound byte coordinates and JSON-shaped context. */
-final class ValidationIssue implements JsonSerializable
+final readonly class ValidationIssue implements JsonSerializable
 {
     /** @var array<array-key, mixed> */
-    public readonly array $context;
+    public array $context;
 
     /** @param array<array-key, mixed> $context */
     public function __construct(
-        public readonly string $code,
-        public readonly string $message,
-        public readonly Span $span,
+        public string $code,
+        public string $message,
+        public Span $span,
         array $context = [],
     ) {
         if (trim($code) === '') {

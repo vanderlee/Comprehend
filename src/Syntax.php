@@ -169,9 +169,9 @@ use Vanderlee\Comprehend\Syntax\SyntaxExtension;
  * @method Comprehend<mixed> optionalValue(Comprehend|Parser|string $parser, mixed $default = null)
  * END GENERATED FACTORIES
  */
-final class Syntax
+final readonly class Syntax
 {
-    private function __construct(private readonly Catalog $catalog) {}
+    private function __construct(private Catalog $catalog) {}
 
     public static function create(): self
     {

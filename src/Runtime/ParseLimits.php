@@ -11,12 +11,12 @@ use InvalidArgumentException;
  * accounts for parser entries, source-unit reads and regex subject bytes. The regex cache cap
  * bounds retained subject bytes rather than recognition work; zero disables subject caching.
  */
-final class ParseLimits
+final readonly class ParseLimits
 {
     public function __construct(
-        public readonly ?int $maxDepth = null,
-        public readonly ?int $maxWork = null,
-        public readonly int $maxRegexSubjectBytes = 8388608,
+        public ?int $maxDepth = null,
+        public ?int $maxWork = null,
+        public int $maxRegexSubjectBytes = 8388608,
     ) {
         if (($maxDepth !== null && $maxDepth < 1) || ($maxWork !== null && $maxWork < 1)) {
             throw new InvalidArgumentException('Parse limits must be positive or null');

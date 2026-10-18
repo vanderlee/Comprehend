@@ -8,10 +8,10 @@ use LogicException;
 use Vanderlee\Comprehend\Parser\Parser;
 
 /** Read-only estimates for one iteration of graph analysis. */
-final class NullabilityLookup
+final readonly class NullabilityLookup
 {
     /** @var array<int, bool|null> */
-    private readonly array $values;
+    private array $values;
 
     /** @param array<int, bool|null> $values */
     public function __construct(array $values)

@@ -12,7 +12,7 @@ use JsonSerializable;
  * Retains recognized syntax, selected children, trivia and source spans. Provides the concrete
  * structure used by ParseResult, AstNode projection and shared tree serialization.
  */
-final class ConcreteNode implements JsonSerializable
+final readonly class ConcreteNode implements JsonSerializable
 {
     use Serialization;
 
@@ -21,14 +21,14 @@ final class ConcreteNode implements JsonSerializable
      * @param list<string> $tags
      */
     public function __construct(
-        public readonly string $kind,
-        public readonly Span $span,
-        public readonly array $children = [],
-        public readonly bool $isTrivia = false,
-        public readonly string|int|null $name = null,
-        public readonly ?string $group = null,
-        public readonly bool $semanticLeaf = false,
-        public readonly array $tags = [],
+        public string $kind,
+        public Span $span,
+        public array $children = [],
+        public bool $isTrivia = false,
+        public string|int|null $name = null,
+        public ?string $group = null,
+        public bool $semanticLeaf = false,
+        public array $tags = [],
     ) {
         // Empty lists already satisfy the structural invariants of plain leaves.
         if ($children !== [] || $tags !== []) {

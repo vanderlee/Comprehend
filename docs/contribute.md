@@ -123,6 +123,13 @@ recipes directly. Override the executables with
 
 ## Lifecycle implementation notes
 
+Use PHP 8.2 `readonly` classes for objects whose properties are all initialized
+once, including spans, syntax trees, validation details, parse limits and frozen
+grammar or syntax definitions. These objects reject dynamic properties; keep
+application annotations separately. Readonly properties do not freeze referenced
+objects. Results, diagnostics and execution state retain mutable caches where
+required by the lifecycle contract.
+
 The public [lifecycle contract](lifecycle.md) describes recognition, cached
 semantics, validation and explicit commit. Preserve that behavior when changing
 the following internal optimizations.

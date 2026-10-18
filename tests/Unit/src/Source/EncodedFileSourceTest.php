@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\src\Source;
 
+use ErrorException;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -77,7 +78,25 @@ test('unknown encoding is rejected', function (): void {
     new EncodedFileSource('unused', 'made-up-encoding');
 });
 
-test('transfer encodings are not character encodings', function (): void {
+test('transfer encodings are not character encodings', function (string $encoding): void {
     $this->expectException(InvalidArgumentException::class);
-    new EncodedFileSource('unused', 'base64');
+    $this->expectExceptionMessage('A character encoding is required');
+    new EncodedFileSource('unused', $encoding);
+})->with(['base64', 'UUENCODE', 'HTML-ENTITIES', 'HTML', 'Quoted-Printable', 'qprint', '7bit', '8bit', 'binary']);
+
+test('character encoding aliases resolve without PHP deprecations', function (): void {
+    $stream = tmpfile();
+    fwrite($stream, 'text');
+    set_error_handler(static function (int $severity, string $message): never {
+        throw new ErrorException($message, 0, $severity);
+    });
+    try {
+        $source = new EncodedFileSource($stream, 'utf8');
+        $this->assertSame('UTF-8', $source->inputEncoding);
+        $this->assertSame('text', $source->sliceBytes(0, 4));
+        $source->close();
+    } finally {
+        restore_error_handler();
+        fclose($stream);
+    }
 });

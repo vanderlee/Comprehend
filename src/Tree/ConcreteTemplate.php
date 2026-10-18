@@ -7,22 +7,22 @@ namespace Vanderlee\Comprehend\Tree;
 use Vanderlee\Comprehend\Source\Source;
 
 /** Source-free immutable syntax recipe for a successful, callback-free lexical pattern. */
-final class ConcreteTemplate
+final readonly class ConcreteTemplate
 {
     /**
      * @param list<self> $children
      * @param list<string> $tags
      */
     private function __construct(
-        private readonly string $kind,
-        private readonly int $start,
-        private readonly int $end,
-        private readonly array $children,
-        private readonly bool $trivia,
-        private readonly string|int|null $name,
-        private readonly ?string $group,
-        private readonly bool $leaf,
-        private readonly array $tags,
+        private string $kind,
+        private int $start,
+        private int $end,
+        private array $children,
+        private bool $trivia,
+        private string|int|null $name,
+        private ?string $group,
+        private bool $leaf,
+        private array $tags,
     ) {
         // Retain only relative coordinates and immutable metadata, never a Source.
     }

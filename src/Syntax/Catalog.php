@@ -39,7 +39,7 @@ use Vanderlee\Comprehend\Syntax;
  * Supports immutable Syntax vocabularies and Comprehend dispatch without adding a recognition
  * runtime.
  */
-final class Catalog
+final readonly class Catalog
 {
     private const RULES = [
         'text',
@@ -104,7 +104,7 @@ final class Catalog
      * @param array<string, Closure> $rules
      * @param array<string, Closure> $fluents
      */
-    public function __construct(private readonly array $rules = [], private readonly array $fluents = []) {}
+    public function __construct(private array $rules = [], private array $fluents = []) {}
 
     public static function canonicalName(string $name): string
     {
