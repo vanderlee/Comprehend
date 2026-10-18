@@ -83,7 +83,13 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
 
-      - name: Check platform requirements
+      - name: Check runtime platform requirements
+        run: composer check-platform-reqs --no-dev
+
+      # Pest 2's ParaTest dependency declares PHP support only through 8.4.
+      # The serial suite below still exercises newer PHP versions in full.
+      - name: Check development platform requirements
+        if: matrix.php != '8.5' && matrix.php != '8.6'
         run: composer check-platform-reqs
 
       - name: Run tests

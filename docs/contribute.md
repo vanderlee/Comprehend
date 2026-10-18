@@ -35,6 +35,11 @@ version; an older lock/vendor directory may still contain packages requiring a
 newer PHP version. Pest 2.36.1 or newer is required to use patched PHPUnit
 dependencies; keep Composer's security blocking enabled.
 
+CI checks runtime platform requirements on every PHP version and all development
+requirements on PHP 8.2–8.4. Pest 2 installs ParaTest 7.4.9, whose declared PHP
+support ends at 8.4. The suite runs serially, including on PHP 8.5 and the
+experimental PHP 8.6 job; parallel execution on those versions is not verified.
+
 Custom parsers implement the [typed recognition contract](source-and-extension-contract.md).
 Keep recognition/guards pure, spans in bytes, scope restoration exception-safe,
 semantic projections cached and effects explicit. All authoring styles share the
