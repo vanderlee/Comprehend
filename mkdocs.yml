@@ -55,6 +55,7 @@ nav:
       - Lifecycle and effects: lifecycle.md
       - Serialization: serialization.md
   - Extensions:
+      - Numbers: numbers.md
       - Extraction: extraction.md
       - Syntax extensions: syntax-extensions.md
       - Expressions: expressions.md

@@ -163,7 +163,7 @@ distinct; semantic errors, cached values and commit transitions are still local
 to each recognition. Grammars with operations on every node still need per-node
 state, so savings depend on the grammar.
 
-General Regex and Integer share a session-owned full subject for sources up to
+General Regex and IntegerNumber share a session-owned full subject for sources up to
 `ParseLimits::maxRegexSubjectBytes`, 8 MiB by default. A zero cap disables caching;
 larger sources retain uncached reads. Literal windows do not materialize this
 subject. Each full-subject attempt still charges its original logical work,

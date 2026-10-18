@@ -8,7 +8,8 @@ use Closure;
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Parser\Parser;
-use Vanderlee\Comprehend\Parser\Terminal\Integer;
+use Vanderlee\Comprehend\Extensions\Numbers\Parser\IntegerNumber;
+use Vanderlee\Comprehend\Extensions\Numbers\SignPolicy;
 use Vanderlee\Comprehend\Syntax\Catalog;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 
@@ -33,11 +34,6 @@ use Vanderlee\Comprehend\Syntax\SyntaxExtension;
  * @method Comprehend<string> nothing()
  * @method Comprehend<string> start()
  * @method Comprehend<string> end()
- * @method Comprehend<string> integer(?int $minimum = 0, ?int $maximum = null, int $base = 10, bool $allowLeadingZeros = false, string $digits = Integer::DIGITS)
- * @method Comprehend<string> binary(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
- * @method Comprehend<string> octal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
- * @method Comprehend<string> hexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
- * @method Comprehend<string> octet(bool $allowLeadingZeros = false)
  * @method Comprehend<string> literalWindow(string $literal)
  * @method Comprehend<list<mixed>> separatedBy(mixed ...$arguments)
  * @method Comprehend<string> sequence(Comprehend|Parser|string ...$parsers)
@@ -58,6 +54,18 @@ use Vanderlee\Comprehend\Syntax\SyntaxExtension;
  * @method Comprehend star(mixed ...$arguments)
  * @method Comprehend kleene(mixed ...$arguments)
  * @method Comprehend optional(mixed ...$arguments)
+ * @method Comprehend<string> integer(?int $minimum = 0, ?int $maximum = null, int $base = 10, bool $allowLeadingZeros = false, string $digits = IntegerNumber::DIGITS, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method Comprehend<string> binary(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method Comprehend<string> octal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method Comprehend<string> hexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method Comprehend<string> octet(bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method Comprehend<string> float(?float $minimum = 0.0, ?float $maximum = null, bool $allowLeadingZeros = false, bool $allowExponent = true, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $allowWholeNumbers = true, bool $strict = false)
+ * @method Comprehend<int> integerValue(?int $minimum = 0, ?int $maximum = null, int $base = 10, bool $allowLeadingZeros = false, string $digits = IntegerNumber::DIGITS, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method Comprehend<int> binaryValue(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method Comprehend<int> octalValue(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method Comprehend<int> hexadecimalValue(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method Comprehend<int> octetValue(bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method Comprehend<float> floatValue(?float $minimum = 0.0, ?float $maximum = null, bool $allowLeadingZeros = false, bool $allowExponent = true, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $allowWholeNumbers = true, bool $strict = false)
  * @method Comprehend<array<array-key, mixed>> record(array<array-key, Comprehend|Parser|string> $fields)
  * @method Comprehend<list<mixed>> collect(Comprehend|Parser|string ...$parsers)
  * @method Comprehend<mixed> valueChoice(Comprehend|Parser|string ...$parsers)

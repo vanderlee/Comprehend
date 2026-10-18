@@ -14,7 +14,8 @@ use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Parser\Parser;
-use Vanderlee\Comprehend\Parser\Terminal\Integer;
+use Vanderlee\Comprehend\Extensions\Numbers\Parser\IntegerNumber;
+use Vanderlee\Comprehend\Extensions\Numbers\SignPolicy;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
@@ -47,11 +48,18 @@ use BadMethodCallException;
  * @method static self<string> nothing()
  * @method static self<string> start()
  * @method static self<string> end()
- * @method static self<string> integer(?int $minimum = 0, ?int $maximum = null, int $base = 10, bool $allowLeadingZeros = false, string $digits = Integer::DIGITS)
- * @method static self<string> binary(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
- * @method static self<string> octal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
- * @method static self<string> hexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false)
- * @method static self<string> octet(bool $allowLeadingZeros = false)
+ * @method static self<string> integer(?int $minimum = 0, ?int $maximum = null, int $base = 10, bool $allowLeadingZeros = false, string $digits = IntegerNumber::DIGITS, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method static self<string> binary(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method static self<string> octal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method static self<string> hexadecimal(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method static self<string> octet(bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method static self<string> float(?float $minimum = 0.0, ?float $maximum = null, bool $allowLeadingZeros = false, bool $allowExponent = true, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $allowWholeNumbers = true, bool $strict = false)
+ * @method static self<int> integerValue(?int $minimum = 0, ?int $maximum = null, int $base = 10, bool $allowLeadingZeros = false, string $digits = IntegerNumber::DIGITS, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method static self<int> binaryValue(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method static self<int> octalValue(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method static self<int> hexadecimalValue(?int $minimum = 0, ?int $maximum = null, bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method static self<int> octetValue(bool $allowLeadingZeros = false, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $strict = false)
+ * @method static self<float> floatValue(?float $minimum = 0.0, ?float $maximum = null, bool $allowLeadingZeros = false, bool $allowExponent = true, SignPolicy $sign = SignPolicy::MINUS_ONLY, bool $allowWholeNumbers = true, bool $strict = false)
  * @method static self<string> sequence(self|Parser|string ...$parsers)
  * @method static self<string> choice(self|Parser|string ...$parsers)
  * @method static self<string> first(self|Parser|string ...$parsers)

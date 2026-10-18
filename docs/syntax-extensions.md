@@ -18,6 +18,13 @@ $syntax = C::syntax(); // also includes discoverable factories
 
 `extend()` remains useful for configured providers and explicit overrides.
 
+`Extensions\Numbers` supplies `integer()`, `binary()`, `octal()`,
+`hexadecimal()`, `octet()` and `float()` through `Numbers.extension.json`. These factories
+also append numeric parsers when chained, preserving ordinary sequence values.
+Their parsers are `Extensions\Numbers\Parser\IntegerNumber` and `FloatNumber`.
+See [Numbers](numbers.md) for float syntax, exponent options, native precision
+and the shared `SignPolicy` enum. IntegerNumber defaults retain their existing behavior.
+
 ```php
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Extensions\AsciiIdentifiers;

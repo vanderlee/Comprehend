@@ -7,6 +7,18 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 $root = dirname(__DIR__);
 $errors = [];
+if (class_exists('Vanderlee\\Comprehend\\Parser\\Terminal\\Integer')) {
+    $errors[] = 'Removed core Integer parser is present';
+}
+foreach ([
+    'Vanderlee\\Comprehend\\Extensions\\Integers',
+    'Vanderlee\\Comprehend\\Extensions\\Integers\\Parser\\Integer',
+    'Vanderlee\\Comprehend\\Extensions\\Numbers\\Parser\\Integer',
+] as $removedClass) {
+    if (class_exists($removedClass)) {
+        $errors[] = 'Removed numeric class is present: ' . $removedClass;
+    }
+}
 if (is_file($root . '/src/Library/functions.php')) {
     $errors[] = 'Removed Library helper file is present';
 }

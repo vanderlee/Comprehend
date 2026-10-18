@@ -22,7 +22,7 @@ use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
 use Vanderlee\Comprehend\Parser\Terminal\End;
-use Vanderlee\Comprehend\Parser\Terminal\Integer;
+use Vanderlee\Comprehend\Extensions\Numbers\Parser\IntegerNumber;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
 use Vanderlee\Comprehend\Parser\Terminal\Regex;
@@ -60,7 +60,7 @@ abstract class SourceMatchingTest extends ParserTestCase
             [new Regex('/a*/'), 'b', 0, false, 0],
             [new Regex('/\\\\C/'), '\C', 0, true, 2],
             [new Regex('/\Q\C\E/'), '\C', 0, true, 2],
-            [new Integer(), "é123", 2, true, 3],
+            [new IntegerNumber(), "é123", 2, true, 3],
             [new Start(), "é", 0, true, 0],
             [new Start(), "é", 2, false, 0],
             [new End(), "é", 2, true, 0],

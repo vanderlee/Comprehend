@@ -25,7 +25,6 @@ use Vanderlee\Comprehend\Parser\Structure\ValueSequence;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
 use Vanderlee\Comprehend\Parser\Terminal\End;
-use Vanderlee\Comprehend\Parser\Terminal\Integer;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
 use Vanderlee\Comprehend\Parser\Terminal\ReadRest;
@@ -65,11 +64,6 @@ final class Catalog
         'nothing',
         'start',
         'end',
-        'integer',
-        'binary',
-        'octal',
-        'hexadecimal',
-        'octet',
         'literalwindow',
         'separatedby',
         'sequence',
@@ -162,34 +156,6 @@ final class Catalog
             'nothing' => static fn(): Parser => new Nothing(),
             'start' => static fn(): Parser => new Start(),
             'end' => static fn(): Parser => new End(),
-            'integer' => static fn(
-                ?int $minimum = 0,
-                ?int $maximum = null,
-                int $base = 10,
-                bool $allowLeadingZeros = false,
-                string $digits = Integer::DIGITS,
-            ): Parser => new Integer($minimum, $maximum, $base, $allowLeadingZeros, $digits),
-            'binary' => static fn(
-                ?int $minimum = 0,
-                ?int $maximum = null,
-                bool $allowLeadingZeros = false,
-            ): Parser => new Integer($minimum, $maximum, 2, $allowLeadingZeros),
-            'octal' => static fn(
-                ?int $minimum = 0,
-                ?int $maximum = null,
-                bool $allowLeadingZeros = false,
-            ): Parser => new Integer($minimum, $maximum, 8, $allowLeadingZeros),
-            'hexadecimal' => static fn(
-                ?int $minimum = 0,
-                ?int $maximum = null,
-                bool $allowLeadingZeros = false,
-            ): Parser => new Integer($minimum, $maximum, 16, $allowLeadingZeros),
-            'octet' => static fn(bool $allowLeadingZeros = false): Parser => new Integer(
-                0,
-                255,
-                10,
-                $allowLeadingZeros,
-            ),
             'literalwindow' => static fn(string $literal): Parser => Regex::literalWindow($literal),
             'separatedby' => static fn(
                 Comprehend|Parser|string $item,

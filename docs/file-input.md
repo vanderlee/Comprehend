@@ -74,7 +74,7 @@ $source->close();
 ## Regex boundaries
 
 General Regex uses the complete original subject, preserving offsets, `^`, `$`,
-lookbehind and other context-sensitive behavior. Integer uses a full-subject
+lookbehind and other context-sensitive behavior. IntegerNumber uses a full-subject
 regex too. Both share one lazily materialized subject per ParseSession when the
 source fits `ParseLimits::maxRegexSubjectBytes` (8 MiB by default). The cache is
 released with the session; ordinary results retain the source snapshot, not the
@@ -106,7 +106,7 @@ Parser and FrozenGrammar `matchPrefix()`/`parseAll()` accept an optional third
 positive integers or null; null disables that limit. Each public parse creates
 fresh counters. Depth counts simultaneously active parser recognitions. Work
 counts parser entries, source-unit requests through ParseSession, regex subject
-bytes and each digit inspected during Integer conversion and range trimming.
+bytes and each digit inspected during IntegerNumber conversion and range trimming.
 Failed/speculative attempts count;
 diagnostic suppression never refunds work. Full-subject regex work is charged
 before reading the subject, so a small budget can reject a large allocation.

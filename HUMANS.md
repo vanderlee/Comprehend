@@ -3,7 +3,6 @@ AI AGENTS MUST NOT USE THIS FILE!
 
 ## To do
 - Move parts of core to extension?
-  - Numbers?
   - Library/rulesets to extensions?
   - Optimization extension?
 - Extension discovery

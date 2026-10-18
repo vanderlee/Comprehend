@@ -7,6 +7,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Syntax\Catalog;
 use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Numbers;
 
 // Mirror factory names and signatures without loading PHPStan or running its extensions.
 $root = dirname(__DIR__);
@@ -21,12 +22,18 @@ foreach ($matches as $match) {
     );
 }
 $lines = [];
-foreach (Catalog::builtinNames() as $name) {
-    if (Catalog::builtinRule($name) !== null) {
-        if (!isset($methods[$name])) {
+$numberFactories = iterator_to_array((new Numbers())->rules());
+$factoryNames = array_values(array_unique([
+    ...Catalog::builtinNames(),
+    ...array_keys($numberFactories),
+]));
+foreach ($factoryNames as $name) {
+    if (Catalog::builtinRule($name) !== null || isset($numberFactories[$name])) {
+        $method = $methods[strtolower($name)] ?? null;
+        if ($method === null) {
             throw new RuntimeException('Add a Comprehend factory signature for ' . $name);
         }
-        $lines[] = ' * @method ' . $methods[$name];
+        $lines[] = ' * @method ' . $method;
     }
 }
 foreach ((new Extraction())->rules() as $name => $factory) {

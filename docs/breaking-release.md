@@ -7,6 +7,18 @@ The changelog remains marked Unreleased until publication is ready.
 
 ## Caller changes
 
+The Integer parser moved from `Parser\Terminal\Integer` to
+`Extensions\Numbers\Parser\IntegerNumber`, with no compatibility alias. Update direct
+imports. The `integer()`, `binary()`, `octal()`, `hexadecimal()` and `octet()`
+factories retain their previous arguments and add a trailing optional sign policy. They load the bundled Numbers extension
+automatically. Their names are discoverable rather than reserved core names;
+explicit Syntax registrations can override them locally.
+
+The intermediate `Extensions\Integers` name is now `Extensions\Numbers`, including
+its parser namespace. Update direct imports and extension class references; no
+aliases remain. The new `float()` factory recognizes decimal/exponent text.
+See [Numbers](numbers.md) for sign policies and numeric bounds.
+
 Application extraction helpers live in the automatically loaded
 [Extraction expansion](extraction.md). Static helpers such as `C::collect(...)`
 and fluent mappings need no registration. Low-level

@@ -223,7 +223,12 @@ test('Composer discovery reads dependency and root manifests through normal disp
             . '.$directory.str_replace("\\\\", "/", $relative).".php";'
             . 'if (is_file($file)) { require $file; }});'
             . '$parser = ' . C::class . '::collect(' . C::class . '::asciiIdentifier()->map("strtoupper"));'
-            . 'if (!$parser instanceof ' . C::class . ') { exit(5); }';
+            . 'if (!$parser instanceof ' . C::class . ') { exit(5); }'
+            . 'foreach (["integer" => "12", "binary" => "101", "octal" => "17",'
+            . '"hexadecimal" => "ff", "octet" => "255", "float" => "1.25"] as $name => $text) {'
+            . 'if (' . C::class . '::$name()->parse($text)->value() !== $text) { exit(8); }}'
+            . 'if (' . C::class . '::integerValue(base: 16)->parse("ff")->value() !== 255) { exit(9); }'
+            . 'if (' . C::class . '::floatValue()->parse("1.5")->value() !== 1.5) { exit(10); }';
         file_put_contents($directory . '/check.php', $script);
         exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($directory . '/check.php') . ' 2>&1', $output, $status);
         $this->assertSame(0, $status, implode("\n", $output));

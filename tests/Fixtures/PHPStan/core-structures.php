@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\PHPStan;
 
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Numbers\SignPolicy;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 
@@ -12,6 +13,16 @@ use function PHPStan\Testing\assertType;
 
 function coreStructures(): void
 {
+    assertType('Vanderlee\Comprehend\Comprehend<int>', C::integerValue(strict: true));
+    assertType('Vanderlee\Comprehend\Comprehend<int>', C::binaryValue());
+    assertType('Vanderlee\Comprehend\Comprehend<int>', C::octalValue());
+    assertType('Vanderlee\Comprehend\Comprehend<int>', C::hexadecimalValue());
+    assertType('Vanderlee\Comprehend\Comprehend<int>', C::octetValue());
+    assertType('Vanderlee\Comprehend\Comprehend<float>', C::syntax()->floatValue(strict: true));
+    assertType('Vanderlee\Comprehend\Comprehend<string>', C::float(sign: SignPolicy::OPTIONAL));
+    assertType('Vanderlee\Comprehend\Comprehend<string>', C::syntax()->float(allowExponent: false));
+    assertType('Vanderlee\Comprehend\Comprehend<string>', C::float(allowWholeNumbers: false));
+    assertType('Vanderlee\Comprehend\Comprehend<string>', C::integer(sign: SignPolicy::FORBIDDEN));
     $number = C::integer()->mapValue(static fn(ParseResult $result): int => (int) $result->rawText());
     assertType('Vanderlee\Comprehend\Comprehend<int>', C::of($number));
     assertType('Vanderlee\Comprehend\Comprehend<int>', C::syntax()->of($number));

@@ -398,6 +398,7 @@ material. For repeated parsing, configure `spacing()` before `freeze()`; frozen
 entry points retain their existing signatures.
 
 ```php
+// The bundled Numbers extension loads automatically; no registration is needed.
 $hex = Comprehend::hexadecimal(0, 255, allowLeadingZeros: true)->caseSensitive(false);
 $hex->parse('00FF')->success; // true
 $hex->parse('100')->success;  // false: outside the range

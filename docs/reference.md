@@ -10,12 +10,14 @@
 | Limits/profile | ParseLimits(maxDepth, maxWork), ParseLimitException, optional bounded ParseMetrics |
 | Bounded regex | `Regex::literalWindow(string)` for quoted literals; general Regex keeps full-subject semantics |
 | Run scanners | `readWhile(predicate, min: 0, max: null)`, `readUntil(literalOrPredicate, min: 0, max: null)`, `readWhileSet(characters, min: 0, max: null)`, `readWhileRange(first, last, min: 0, max: null)`, `readRest()`; skipWhile/skipUntil/skipRest return null; [contracts and examples](read-scanning.md) |
-| Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Integer, Start, End, Nothing |
+| Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Start, End, Nothing |
+| Numbers extension | Automatically loaded `Extensions\Numbers`: `integer`, `binary`, `octal`, `hexadecimal`, `octet`, `float`; parsers `Numbers\Parser\IntegerNumber` and `FloatNumber`; [sign policies and syntax](numbers.md) |
+| Typed numbers | `integerValue`, `binaryValue`, `octalValue`, `hexadecimalValue`, `octetValue`, `floatValue`; lazy native values with preserved source text; all numeric factories accept optional `strict: true` |
 | Structures | Sequence(Parser...), Choice(Parser...), All(Parser...), Except(Parser, Parser), Not(Parser), Repeat(Parser, int = 0, ?int = null) |
 | Repetition | `Comprehend::of(Parser)->repeat(min, max)`; object factories `Repeat::plus/star/optional/exact` |
 | Separated lists | Core `separatedBy(...)` and `Parser\Structure\SeparatedList` project item values; [behavior and values](separated-lists.md) |
 | Shared repetition names | Static `some/many/maybe(item)`, `repeat(item, min, max)`; fluent `some/many/maybe()`, `repeat(min, max)` |
-| Terminal chaining | `->text/char/set/range/regex/literalWindow/any/nothing/start/end/integer/binary/octal/hexadecimal/octet(...)` |
+| Terminal chaining | `->text/char/set/range/regex/literalWindow/any/nothing/start/end/integer/binary/octal/hexadecimal/octet/float(...)` |
 | Choice policy | `first/longest/shortest(Parser...)`, scoped Prefer |
 | Scoped policy | CaseSensitive(bool, Parser), Space(?Parser, Parser), `spacing(?Parser)`, `lexeme()`, `trivia()` |
 | Grammar | Ruleset, Definition, Implementation, RuleReference, explicit Stub setter |
@@ -52,9 +54,9 @@ immutable composition, safety limits and checked arithmetic/RFC examples.
 
 See [ABNF](abnf.md) for the supported text subset and [breaking release](breaking-release.md)
 for caller changes, supported runtimes and publication gates.
-Integer recognizes bounded integers; its bounds must be integers/null. The default
+IntegerNumber recognizes bounded integers; its bounds must be integers/null. The default
 alphabet supports bases 2–36. Custom UTF-8 alphabets and opt-in leading zeros are
-supported by Integer and the facade's `integer()`; `binary()`, `octal()`,
+supported by IntegerNumber and the facade's `integer()`; `binary()`, `octal()`,
 `hexadecimal()` and `octet()` provide common factories. Overflow is rejected or
 trimmed to an in-range prefix, never saturated. See [Grammar authoring](grammar-authoring.md).
 Use explicit `chr()` for octet literals, not integer-to-character coercion.

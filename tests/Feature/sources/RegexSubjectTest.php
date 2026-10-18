@@ -7,7 +7,7 @@ namespace Tests\Feature\sources;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
-use Vanderlee\Comprehend\Parser\Terminal\Integer;
+use Vanderlee\Comprehend\Extensions\Numbers\Parser\IntegerNumber;
 use Vanderlee\Comprehend\Parser\Terminal\Regex;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
@@ -42,7 +42,7 @@ test('regexes share one session subject below the cap without changing context o
         };
         fclose($stream);
         try {
-            $parser = new Sequence(new Regex('/ab/A'), $integer ? new Integer() : new Regex('/(?<=b)cd/A'));
+            $parser = new Sequence(new Regex('/ab/A'), $integer ? new IntegerNumber() : new Regex('/(?<=b)cd/A'));
             $work = $integer ? 13 : 11;
             $session = new ParseSession($source, limits: new ParseLimits(maxWork: $work, maxRegexSubjectBytes: $cap));
             $match = $parser->recognizeInSession($source, 0, $session);

@@ -20,6 +20,9 @@ typed objects / Ruleset factories / RFC imports
 
 | Removed surface | Supported replacement | Verification |
 |---|---|---|
+| `Parser\Terminal\Integer` | Automatically loaded Numbers extension and `Extensions\Numbers\Parser\IntegerNumber` | Integer parser tests, extension discovery tests and canonical API gate |
+| `Extensions\Integers` and its parser namespace | `Extensions\Numbers` and `Extensions\Numbers\Parser` | Numbers tests and canonical API gate |
+| `Extensions\Numbers\Parser\Integer` | `Extensions\Numbers\Parser\IntegerNumber` | Numeric parser tests and canonical API gate |
 | String/context runtime and protected `parse(&$input, ...)` | Typed `recognize(Source, int, ParseSession)` and one checked delegation path | Terminal/combinator fixtures, Unicode and custom extension tests |
 | `match()`, `matchSource()`, `parseSource()`, unresolved/ASCII matching bridges and Parser invocation | `matchPrefix()` and `parseAll()` returning ParseResult | Consumption tests and canonical API gate |
 | `supportsSource()` allowlist/opt-in, ASCII fallback, compatibility mode flags | Every subclass implements the same source contract | Custom parser and Source-interface tests |

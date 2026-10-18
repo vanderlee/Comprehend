@@ -1,0 +1,18 @@
+{
+  "class": "Vanderlee\\Comprehend\\Extensions\\Numbers",
+  "rules": [
+    "integer",
+    "binary",
+    "octal",
+    "hexadecimal",
+    "octet",
+    "float",
+    "integerValue",
+    "binaryValue",
+    "octalValue",
+    "hexadecimalValue",
+    "octetValue",
+    "floatValue"
+  ],
+  "fluents": []
+}
