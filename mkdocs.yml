@@ -35,46 +35,51 @@ nav:
   - Getting started:
       - Tutorial: tutorial.md
       - Parse application values: application-values.md
-      - Grammar authoring: grammar-authoring.md
-      - Facade: facade.md
-      - Builders and Rulesets: builder.md
       - FAQ: faq.md
-  - Parsing:
-      - Execution: execution.md
-      - Consumption: consumption.md
-      - Reading and skipping runs: read-scanning.md
-      - Sources: sources.md
-      - Source matching: source-matching.md
-      - File input and limits: file-input.md
+  - Grammar authoring:
+      - Grammar authoring: grammar-authoring.md
+      - Immutable facade: facade.md
+      - Builders and Rulesets: builder.md
+      - ABNF authoring: abnf.md
       - Spacing and trivia: trivia.md
-      - Diagnostics: diagnostics.md
-      - Error recovery: recovery.md
       - Separated lists: separated-lists.md
       - Delimiters and value selection: value-selection.md
-  - Trees and semantics:
+  - Parsing:
+      - Execution semantics: execution.md
+      - Full-input and prefix parsing: consumption.md
+      - Sources and spans: sources.md
+      - Source-based recognition: source-matching.md
+      - Reading and skipping runs: read-scanning.md
+      - File input and limits: file-input.md
+      - Diagnostics: diagnostics.md
+      - Error recovery: recovery.md
+  - Results and semantics:
       - Parse results: parse-results.md
-      - Concrete syntax trees: concrete-trees.md
-      - Abstract syntax trees: ast.md
       - Semantic values: semantic-values.md
       - Structured validation: validation.md
+      - Concrete syntax trees: concrete-trees.md
+      - Abstract syntax trees: ast.md
       - Lifecycle and effects: lifecycle.md
       - Serialization: serialization.md
-  - Extensions:
-      - Specification grammars: libraries.md
+  - Bundled extensions:
+      - Overview and loading: extensions.md
       - Numbers: numbers.md
       - Extraction: extraction.md
-      - Syntax extensions: syntax-extensions.md
       - Expressions: expressions.md
+      - ASCII identifiers and keywords: ascii-identifiers.md
+      - Specification grammars: libraries.md
+      - Specification catalog: specifications.md
+      - URI grammar: uri.md
+  - Extending Comprehend:
+      - Writing syntax extensions: syntax-extensions.md
+      - Discovery and capability providers: extension-discovery.md
+      - Custom parser contract: source-and-extension-contract.md
   - Reference:
       - Supported API: reference.md
-      - ABNF: abnf.md
-      - Specifications: specifications.md
-      - URI syntax: uri.md
-      - Custom parser contract: source-and-extension-contract.md
   - Project:
       - Contributing: contribute.md
       - Performance: performance.md
       - Extraction profiling: extraction-profiling.md
       - Extraction comparison: extraction-comparison.md
-      - Breaking release: breaking-release.md
+      - Migrating to 2.0: breaking-release.md
       - Canonical runtime: canonical-runtime.md

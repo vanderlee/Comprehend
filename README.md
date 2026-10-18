@@ -154,7 +154,10 @@ supported PHP versions and the gated publication workflow.
 - [Recovery extension](docs/recovery.md): optional synchronization, preserved invalid regions and multiple diagnostics
 - [Separated lists](docs/separated-lists.md): bounds, boundary separators and lazy item values
 - [Delimiters and value selection](docs/value-selection.md): `between()`, `thenIgnore()` and `ignoreThen()`
-- [Optional Syntax extensions](docs/syntax-extensions.md): iterable factories and ASCII identifiers/keywords
+- [Bundled extensions](docs/extensions.md): loading and available vocabularies
+- [ASCII identifiers and keywords](docs/ascii-identifiers.md): token syntax and keyword boundaries
+- [Writing syntax extensions](docs/syntax-extensions.md): custom factories and fluent operations
+- [Discovery and capability providers](docs/extension-discovery.md): manifests and provider contracts
 - [Expression builder extension](docs/expressions.md): precedence, associativity and lazy reductions
 - [CST](docs/concrete-trees.md), [AST](docs/ast.md), [serialization](docs/serialization.md)
 - [Semantic values](docs/semantic-values.md) and [lifecycle](docs/lifecycle.md)

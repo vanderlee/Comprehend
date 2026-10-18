@@ -41,7 +41,7 @@ Replace the former `"optimizer": true` declaration with a `providers` map from
 provider classes to interface lists. `ExtensionLoader::optimizer()` is removed;
 use `requireOne(GraphOptimization::class)`. Generic `all(interface)` lookup supports
 multiple providers, including several classes in a single manifest. Instances are
-shared with syntax factory loading. See [Extension capabilities](syntax-extensions.md#capability-providers).
+shared with syntax factory loading. See [Extension capabilities](extension-discovery.md#capability-providers).
 
 The scanner classes `ReadRun`, `ReadWhile`, `ReadUntil`, `ReadWhileSet`,
 `ReadWhileRange`, and `ReadRest` also moved from `Parser\Terminal` into

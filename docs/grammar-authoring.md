@@ -352,7 +352,7 @@ Optimizer providers implement `Builder\GraphOptimization`: `replace()` creates
 snapshot parsers, and `prepare()` initializes the isolated, validated graph.
 Manifests advertise this interface in the class-to-interfaces `providers` map;
 preparation resolves it through `ExtensionLoader::requireOne(GraphOptimization::class)`.
-See [Extension capabilities](syntax-extensions.md#capability-providers) for generic discovery.
+See [Extension capabilities](extension-discovery.md#capability-providers) for generic discovery.
 
 After references are resolved and graph safety checks pass, optimization also
 prepares bounded lexical tables for Repeat operands, Choice alternatives and Not

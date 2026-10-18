@@ -25,7 +25,7 @@
 | Frozen graphs | `freeze()` returning FrozenGrammar with syntax checks and analysisWarnings |
 | Immutable facade | Comprehend text/char/set/range/regex/ref, sequence/choice, then/or/repeat, naming and scoped policy |
 | Expandable syntax | `Comprehend::syntax()->defineRule(name, factory)`; immutable scoped static/fluent factories, `call()`, `names()` |
-| Extensions | Bundled and Composer-advertised providers load on first use; `Syntax::extend(SyntaxExtension)` provides explicit local installation; [discovery and extension authoring](syntax-extensions.md) |
+| Extensions | Bundled and Composer-advertised providers load on first use; `Syntax::extend(SyntaxExtension)` provides explicit local installation; [loading](extensions.md), [discovery](extension-discovery.md) and [extension authoring](syntax-extensions.md) |
 | Expression tables | Optional `Extensions\Expressions\Expressions`: `operatorExpression(primary, Operator...)`, `expressionChoice(alternatives...)`; [precedence and lifecycle](expressions.md) |
 | ABNF authoring | Bundled `Extensions\Abnf\Compiler::compile(string, root, numericEncoding, choice)` returning FrozenGrammar; [ABNF extension](abnf.md) |
 | Specification grammars | Discoverable subject factories such as `uri`, `emailAddress`, `dateTime`, `uuid`, `semver`, `languageTag`, `json`, `yaml`; explicit `rfcNNNN(rule: 'ROOT')`; direct classes in each extension's `Grammar` namespace; [complete catalog](libraries.md) |

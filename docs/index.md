@@ -65,7 +65,11 @@ Side effects run only through explicit `commit()`.
 - Build domain objects with [Parse application values](application-values.md).
 - Learn about [sources](sources.md), [spacing](trivia.md) and [diagnostics](diagnostics.md).
 - Extract [semantic values](semantic-values.md) and navigate [syntax trees](ast.md).
-- Consult the [API reference](reference.md), [ABNF subset](abnf.md) and [RFC libraries](libraries.md).
+- Author grammars with the [immutable facade](facade.md), [Rulesets](builder.md) or [ABNF](abnf.md).
+- Browse [bundled extensions](extensions.md) and the [specification catalog](specifications.md).
+- Extend Comprehend with [syntax factories](syntax-extensions.md),
+  [discoverable providers](extension-discovery.md) or [custom parsers](source-and-extension-contract.md).
+- Consult the [API reference](reference.md) for supported contracts.
 - Browse the [runnable PHP examples](https://github.com/vanderlee/Comprehend/tree/master/docs/examples).
 
 Examples run locally with PHP; this website serves static documentation.
