@@ -7,33 +7,51 @@ Build a grammar, parse input, then extract the result. Start with the
 For a complete value-first walkthrough, follow [Parse application values](application-values.md):
 construct a domain object with an optional field, value alternatives and nested lists.
 
-For a typed value, attach a pure mapping before parsing:
+Build a dice grammar by combining typed numbers, a literal delimiter and an
+optional signed modifier. The Numbers and Extraction extensions load automatically:
 
 ~~~php
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Numbers\SignPolicy;
 
-$age = C::integer(0, 150)
-    ->named('age')
-    ->mapText(static fn(string $text): int => (int) $text);
+$modifier = C::integerValue(-100, 100, allowLeadingZeros: true, sign: SignPolicy::REQUIRED)
+    ->optionalValue(default: 0);
+$roll = C::collect(
+    C::integerValue(1, 100)->thenIgnore('d'),
+    C::integerValue(2, 1000)->named('sides'),
+    $modifier,
+)->map(static fn(array $parts): array => [
+    'dice' => $parts[0],
+    'sides' => $parts[1],
+    'modifier' => $parts[2],
+]);
 
-$result = $age->parse('42');
+$result = $roll->parse('2d6+3');
 if ($result->ok) {
-    $value = $result->output(); // 42, cached
-    $text = $result->rawText(); // '42', unchanged source
+    $value = $result->output(); // ['dice' => 2, 'sides' => 6, 'modifier' => 3]
+    $text = $result->rawText(); // '2d6+3', unchanged source
 }
 ~~~
+
+`integerValue()` returns an integer within its bounds. `thenIgnore('d')`
+recognizes the literal delimiter and keeps the count's value. `collect()` gathers
+the three values in order; the pure `map()` callback gives them descriptive keys.
+`optionalValue(default: 0)` handles an absent modifier: `1d20` has modifier zero,
+while `2d6-3` has modifier -3. This parses a roll description without rolling dice.
+Counts range from 1–100, sides from 2–1000, and modifiers from -100 to 100.
+`allowLeadingZeros: true` permits signed zero and leading zeros in the modifier.
+The count and lowercase `d` are required.
 
 `ok` and `output()` are short forms of `success` and `value()`. Output is original
 text unless a mapping is configured, and null on failure. Successful mappings may
 also return null, so check `ok` rather than using output as a success flag.
 
-Combine parsers to recognize larger syntax. Strings in composition are literals:
+Allow spacing between grammar items for one call and inspect a named syntax node:
 
 ~~~php
-$declaration = C::sequence('age', ':', $age);
-$result = $declaration->parse('age : 42', spacing: C::text(' ')->many());
+$result = $roll->parse('2d6 +3', spacing: C::text(' ')->many());
 if ($result->success) {
-    $ageText = $result->ast()->firstNamed('age')->rawText(); // '42'
+    $sidesText = $result->ast()->firstNamed('sides')->rawText(); // '6'
 }
 ~~~
 
@@ -43,6 +61,7 @@ for arbitrary bytes. Check `success` before extracting values; inspect
 `diagnostic` on failure.
 
 Per-call spacing supplies a default between items without changing the grammar.
+The modifier's sign and digits remain contiguous, as in `+3`.
 It does not trim input, and local `spacing()` or `lexeme()`
 directives take precedence. For repeated parsing, configure spacing before calling
 `freeze()` once, then reuse that frozen grammar.

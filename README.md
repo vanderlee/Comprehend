@@ -6,26 +6,41 @@ MIT licensed. Requires JSON and mbstring. DOM is optional, needed only for XML o
 
 ## Quick start
 
-This value-extraction example uses the optional [Extraction expansion](docs/extraction.md).
-It is bundled with the library and loads automatically on first use.
+Parse dice notation such as `2d6+3`: two six-sided dice with a +3 modifier.
+This builds a roll description; it does not roll the dice. The bundled Numbers
+and [Extraction](docs/extraction.md) extensions load automatically on first use.
 
 ```php
 require 'vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
+use Vanderlee\Comprehend\Extensions\Numbers\SignPolicy;
 
-// Build a parser and describe the value to extract.
-$age = C::integer(0, 150)
-    ->named('age')
-    ->mapText(static fn(string $text): int => (int) $text);
+$modifier = C::integerValue(-100, 100, allowLeadingZeros: true, sign: SignPolicy::REQUIRED)
+    ->optionalValue(default: 0);
+$roll = C::collect(
+    C::integerValue(1, 100)->thenIgnore('d'),
+    C::integerValue(2, 1000)->named('sides'),
+    $modifier,
+)->map(static fn(array $parts): array => [
+    'dice' => $parts[0],
+    'sides' => $parts[1],
+    'modifier' => $parts[2],
+]);
 
-// Parse complete input, then extract the typed value.
-$result = $age->parse('42');
+$result = $roll->parse('2d6+3');
 if ($result->ok) {
-    echo $result->output();  // 42 (int)
-    echo $result->rawText(); // '42' (original text)
+    $value = $result->output(); // ['dice' => 2, 'sides' => 6, 'modifier' => 3]
+    echo $result->rawText();    // '2d6+3' (original text)
 }
 ```
+
+`thenIgnore('d')` recognizes the delimiter while keeping the dice count's value.
+`collect()` gathers the three values and `map()` gives them descriptive keys.
+`1d20` defaults the modifier to zero; `2d6-3` produces a modifier of -3.
+Counts range from 1–100, sides from 2–1000, and modifiers from -100 to 100.
+`allowLeadingZeros: true` permits signed zero and leading zeros in the modifier.
+The count and lowercase `d` are required; malformed input and trailing text fail.
 
 `ok` is a short alias for `success`; `output()` returns `value()` (original text
 unless mapped). Failed results yield null output. Value access stays lazy and
@@ -34,14 +49,14 @@ does not validate or commit effects. Use `rawText()` whenever you need the sourc
 For spaced syntax, pass an optional outer spacing policy for one facade call:
 
 ```php
-$declaration = C::text('age')->text(':')->then($age);
-$result = $declaration->parse('age : 42', spacing: C::text(' ')->many());
+$result = $roll->parse('2d6 +3', spacing: C::text(' ')->many());
 if ($result->success) {
-    echo $result->ast()->firstNamed('age')->rawText(); // '42'
+    echo $result->ast()->firstNamed('sides')->rawText(); // '6'
 }
 ```
 
 Per-call spacing applies between items; it does not trim leading/trailing text.
+The modifier's sign and digits remain contiguous, as in `+3`.
 Local `spacing()` and `lexeme()` directives take precedence. The grammar remains
 unchanged. Run `php docs/examples/quick-start.php` for checked examples.
 
