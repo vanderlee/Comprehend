@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $amount = Extraction::syntax()->integer()->mapText('intval')->map(static fn(int $n): int => $n * 100);
 $money = Extraction::syntax()->collect(Extraction::syntax()->valueChoice('USD', 'EUR'), $amount)

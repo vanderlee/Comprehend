@@ -1,0 +1,5 @@
+{
+  "class": "Vanderlee\\Comprehend\\Extensions\\Recovery\\Recovery",
+  "rules": ["recoverUntil", "recoverDelimited", "recoverItem", "recoverWith"],
+  "fluents": ["recoverUntil", "recoverDelimited", "recoverItem", "recoverWith"]
+}

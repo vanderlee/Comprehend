@@ -52,7 +52,7 @@ retries. Application values do not require naming AST nodes or traversing syntax
 ## Recognize text and convert numbers
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $name = Extraction::syntax()->regex('/[A-Za-z][A-Za-z0-9_]*/A');
 $number = Extraction::syntax()->integer(0, 999)->mapText('intval');
@@ -66,7 +66,7 @@ digits and underscores and must begin with a letter.
 ## Preserve values from alternatives
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $retryValue = Extraction::syntax()->valueChoice(
     Extraction::syntax()->integer(0, 9)->mapText('intval'),
@@ -105,7 +105,7 @@ item values too; ordinary `many()` and `some()` retain raw-text defaults.
 ## Collect fields and construct the object
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $job = Extraction::syntax()->collect($name, $retries, $batches)
     ->map(static fn(array $parts): Job => new Job($parts[0], $parts[1], $parts[2]))

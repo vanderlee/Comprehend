@@ -23,7 +23,7 @@ The following example activates the optional [Extraction expansion](extraction.m
 ```php
 require 'vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 $age = Extraction::syntax()->integer(0, 150)
     ->named('age')
     ->mapText(static fn(string $text): int => (int) $text);

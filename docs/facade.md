@@ -20,5 +20,5 @@ remains explicit. See [Grammar authoring](grammar-authoring.md#scoped-expandable
 See [Grammar authoring](grammar-authoring.md) for signatures, cache/ownership
 contracts and complete object/Ruleset/facade examples. Use `Comprehend::text()`,
 `char()`, `set()`, `range()`, `regex()`, `sequence()` and `choice()` for authoring.
-The former free functions in `Vanderlee\Comprehend\Extensions\Library` have been removed;
+The former free functions in `Vanderlee\Comprehend\Library` have been removed;
 use fluent `repeat()` for their repetition operations.

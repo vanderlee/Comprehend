@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Library\Rfc4291;
-use Vanderlee\Comprehend\Extensions\Library\Rfc7208;
+use Vanderlee\Comprehend\Extensions\Network\Grammar\Rfc4291;
+use Vanderlee\Comprehend\Extensions\Mail\Grammar\Rfc7208;
 
 $ipv6 = new Rfc4291();
 $address = $ipv6->rule('ipv6_address')->freeze()->parse('2001:db8::cd30');

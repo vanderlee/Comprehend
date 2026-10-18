@@ -1,0 +1,12 @@
+{
+  "class": "Vanderlee\\Comprehend\\Extensions\\DateTime\\DateTime",
+  "rules": [
+    "dateTime",
+    "annotatedDateTime",
+    "dateTimeDate",
+    "dateTimeTime",
+    "rfc3339",
+    "rfc9557"
+  ],
+  "fluents": []
+}

@@ -5,9 +5,9 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Builder\Ruleset;
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 use Vanderlee\Comprehend\Extensions\Expression\Operator as O;
-use Vanderlee\Comprehend\Extensions\Expressions;
+use Vanderlee\Comprehend\Extensions\Expressions\Expressions;
 
 $syntax = Extraction::syntax()->extend(new Expressions());
 $fluent = $syntax->regex('/[0-9]+/A')->mapText('intval')->expressionChoice(

@@ -2,12 +2,15 @@
 AI AGENTS MUST NOT USE THIS FILE!
 
 ## To do
-- Move base and json files of extensions into extension subdirectories
+- Final review
 
 ## Future directions
 - Implement some known languages as examples?
 - Performance improvements overall.
-- Compare to other libraries (Spirit, Chomsky?)
+  - Make things optional.
+  - Look at inner loops.
+  - Move some parsers to regex.
+- Comparisons.
 
 ## Ongoing concerns
 - Benchmark and improve performance

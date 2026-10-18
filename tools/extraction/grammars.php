@@ -7,7 +7,7 @@ namespace ComprehendComparison;
 use Examples\ApplicationValues\Job;
 use Parsica\Parsica\Parser as ExtractionParser;
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 use function Parsica\Parsica\between;
 use function Parsica\Parsica\collect;

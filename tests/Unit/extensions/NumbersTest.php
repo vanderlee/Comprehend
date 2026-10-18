@@ -6,7 +6,7 @@ namespace Tests\Extensions;
 
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Numbers;
+use Vanderlee\Comprehend\Extensions\Numbers\Numbers;
 use Vanderlee\Comprehend\Extensions\Numbers\Parser\FloatNumber;
 use Vanderlee\Comprehend\Extensions\Numbers\Parser\IntegerNumber;
 

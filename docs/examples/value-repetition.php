@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 // A record with an optional label and a list of single-digit application values.
 $label = Extraction::syntax()->regex('/[A-Za-z]+/A')->thenIgnore(':')->optionalValue(default: 'untitled');

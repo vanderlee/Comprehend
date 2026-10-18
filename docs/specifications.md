@@ -1,6 +1,7 @@
 # Specification grammar catalog
 
-Classes live in `Vanderlee\Comprehend\Extensions\Library`. Instantiate a class and call
+Classes live in their owning extension's `Grammar` namespace, for example
+`Vanderlee\Comprehend\Extensions\Json\Grammar\Rfc8259`. Instantiate a class and call
 `freeze()->parse($input)` for its default root. Use `rule('name')` to import a
 component or `ref('name')` when a low-level Parser is required. Names use
 underscores; constructors accept named override maps. These grammars use the

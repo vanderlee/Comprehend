@@ -6,7 +6,7 @@ namespace Tests\Extensions;
 
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Recovery;
+use Vanderlee\Comprehend\Extensions\Recovery\Recovery;
 use Vanderlee\Comprehend\Extensions\Recovery\RecoveryContext;
 use Vanderlee\Comprehend\Source\Span;
 

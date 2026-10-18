@@ -237,9 +237,15 @@ final class ExtensionLoader
             if (is_file($composerFile)) {
                 yield $package => self::readManifest($composerFile, $package);
             }
-            $files = glob($path . '/extensions/*.extension.json');
-            if ($files === false) {
-                throw new RuntimeException('Cannot discover extension manifests in ' . $package . ' (' . $path . ')');
+            $files = [];
+            foreach (['/extensions/*.extension.json', '/extensions/*/*.extension.json'] as $pattern) {
+                $matches = glob($path . $pattern);
+                if ($matches === false) {
+                    throw new RuntimeException(
+                        'Cannot discover extension manifests in ' . $package . ' (' . $path . ')',
+                    );
+                }
+                $files = array_merge($files, $matches);
             }
             sort($files, SORT_STRING);
             foreach ($files as $file) {

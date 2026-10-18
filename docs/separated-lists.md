@@ -11,7 +11,7 @@ the same operation. Low-level object grammars use
 `new Parser\Structure\SeparatedList(Parser $item, Parser $separator, ...)`.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 
 $numbers = Extraction::syntax()->integer()->mapText(static fn(string $text): int => (int) $text)

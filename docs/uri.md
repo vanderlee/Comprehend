@@ -20,7 +20,7 @@ IPv6 zone identifiers are outside this RFC's syntax.
 `unreserved` uses one character set, and `scheme`, `h16` and `dec_octet` use lexical
 Regex terminals instead of character-level combinators. Their original combinator
 definitions remain in comments beside the executable rules in
-[Rfc3986.php](https://github.com/vanderlee/Comprehend/blob/master/src/Library/Rfc3986.php). The original IPv6, host, IPvFuture and
+[Rfc3986.php](https://github.com/vanderlee/Comprehend/blob/master/extensions/Network/Grammar/Rfc3986.php). The original IPv6, host, IPvFuture and
 standalone path rules are also preserved there to document the corrected choices.
 The comments are historical implementations, not an alternative runtime grammar.
 

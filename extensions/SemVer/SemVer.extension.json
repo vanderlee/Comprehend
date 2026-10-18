@@ -1,0 +1,7 @@
+{
+  "class": "Vanderlee\\Comprehend\\Extensions\\SemVer\\SemVer",
+  "rules": [
+    "semver"
+  ],
+  "fluents": []
+}

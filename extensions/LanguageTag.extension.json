@@ -1,8 +1,0 @@
-{
-  "class": "Vanderlee\\Comprehend\\Extensions\\LanguageTag",
-  "rules": [
-    "languageTag",
-    "rfc5646"
-  ],
-  "fluents": []
-}

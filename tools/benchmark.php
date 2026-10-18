@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Library\Rfc3986;
+use Vanderlee\Comprehend\Extensions\Network\Grammar\Rfc3986;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;

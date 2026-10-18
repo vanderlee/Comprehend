@@ -3,7 +3,7 @@
 namespace Tests\Fixtures;
 
 use Tests\ParserTestCase;
-use Vanderlee\Comprehend\Extensions\Library\Rfc3513;
+use Vanderlee\Comprehend\Extensions\Network\Grammar\Rfc3513;
 
 abstract class Rfc3513TestCase extends ParserTestCase
 {

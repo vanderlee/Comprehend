@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Vanderlee\Comprehend\Extensions\Extraction;
-use Vanderlee\Comprehend\Extensions\Recovery as RecoveryExtension;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
+use Vanderlee\Comprehend\Extensions\Recovery\Recovery as RecoveryExtension;
 use Vanderlee\Comprehend\Extensions\Recovery\Parser\RecoverDelimited;
 use Vanderlee\Comprehend\Extensions\Recovery\Parser\RecoverItem;
 use Vanderlee\Comprehend\Extensions\Recovery\Parser\RecoverWith;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $numbers = Extraction::syntax()->integer()->mapText(static fn(string $text): int => (int) $text)
     ->named('number')->separatedBy(',', min: 1, allowTrailing: true)

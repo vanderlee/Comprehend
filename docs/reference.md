@@ -11,7 +11,7 @@
 | Bounded regex | `Regex::literalWindow(string)` for quoted literals; general Regex keeps full-subject semantics |
 | Run scanners | `readWhile(predicate, min: 0, max: null)`, `readUntil(literalOrPredicate, min: 0, max: null)`, `readWhileSet(characters, min: 0, max: null)`, `readWhileRange(first, last, min: 0, max: null)`, `readRest()`; skipWhile/skipUntil/skipRest return null; [contracts and examples](read-scanning.md) |
 | Terminals | Text(string), Char(string, bool = true), Any, Set(string, bool = true), Range(?string, ?string, bool = true), Regex(string), Start, End, Nothing |
-| Numbers extension | Automatically loaded `Extensions\Numbers`: `integer`, `binary`, `octal`, `hexadecimal`, `octet`, `float`; parsers `Numbers\Parser\IntegerNumber` and `FloatNumber`; [sign policies and syntax](numbers.md) |
+| Numbers extension | Automatically loaded `Extensions\Numbers\Numbers`: `integer`, `binary`, `octal`, `hexadecimal`, `octet`, `float`; parsers `Numbers\Parser\IntegerNumber` and `FloatNumber`; [sign policies and syntax](numbers.md) |
 | Typed numbers | `integerValue`, `binaryValue`, `octalValue`, `hexadecimalValue`, `octetValue`, `floatValue`; lazy native values with preserved source text; all numeric factories accept optional `strict: true` |
 | Structures | Sequence(Parser...), Choice(Parser...), All(Parser...), Except(Parser, Parser), Not(Parser), Repeat(Parser, int = 0, ?int = null) |
 | Repetition | `Comprehend::of(Parser)->repeat(min, max)`; object factories `Repeat::plus/star/optional/exact` |
@@ -26,17 +26,17 @@
 | Immutable facade | Comprehend text/char/set/range/regex/ref, sequence/choice, then/or/repeat, naming and scoped policy |
 | Expandable syntax | `Comprehend::syntax()->defineRule(name, factory)`; immutable scoped static/fluent factories, `call()`, `names()` |
 | Extensions | Bundled and Composer-advertised providers load on first use; `Syntax::extend(SyntaxExtension)` provides explicit local installation; [discovery and extension authoring](syntax-extensions.md) |
-| Expression tables | Optional `Extensions\Expressions`: `operatorExpression(primary, Operator...)`, `expressionChoice(alternatives...)`; [precedence and lifecycle](expressions.md) |
+| Expression tables | Optional `Extensions\Expressions\Expressions`: `operatorExpression(primary, Operator...)`, `expressionChoice(alternatives...)`; [precedence and lifecycle](expressions.md) |
 | ABNF authoring | Bundled `Extensions\Abnf\Compiler::compile(string, root, numericEncoding, choice)` returning FrozenGrammar; [ABNF extension](abnf.md) |
-| Specification grammars | Discoverable subject factories such as `uri`, `emailAddress`, `dateTime`, `uuid`, `semver`, `languageTag`, `json`, `yaml`; explicit `rfcNNNN(rule: 'ROOT')`; direct classes in `Extensions\Library`; [complete catalog](libraries.md) |
+| Specification grammars | Discoverable subject factories such as `uri`, `emailAddress`, `dateTime`, `uuid`, `semver`, `languageTag`, `json`, `yaml`; explicit `rfcNNNN(rule: 'ROOT')`; direct classes in each extension's `Grammar` namespace; [complete catalog](libraries.md) |
 | Naming | `name(string|int, ?string = null, bool $leaf = false)` |
 | Meaning | Core `mapValue(callable)`, named set/concat/push collection operations |
-| Extraction expansion | Automatically loaded `Extensions\Extraction`: `map`, `mapText`, `collect`, `valueChoice`, `manyValues`, `someValues`, `repeatValues`, `optionalValue`; [classes and types](extraction.md) |
+| Extraction expansion | Automatically loaded `Extensions\Extraction\Extraction`: `map`, `mapText`, `collect`, `valueChoice`, `manyValues`, `someValues`, `repeatValues`, `optionalValue`; [classes and types](extraction.md) |
 | Prepending | Facade `prepend(Comprehend\|Parser\|string ...items)` returns an immutable sequence of the supplied items followed by the current expression |
 | Value selection | Core fluent `thenIgnore(next)`, `ignoreThen(next)`, `between(open, close)`; object `Parser\Structure\ValueSequence(int, Parser...)`; [delimiters and lifecycle](value-selection.md) |
 | Lifecycle | `guard(callable)`, `validateSemantic(callable)`, `onCommit(callable)`, assignments |
 | Results | ParseResult, Diagnostic, ValidationResult, immutable ConcreteNode and AstNode |
-| Error recovery | Optional `Extensions\Recovery`: `RecoverUntil`, `RecoverDelimited`, `RecoverItem`, `RecoverWith` under `Extensions\Recovery`; rule/fluent factories, shared recovery records and diagnostics; [recovery contracts](recovery.md) |
+| Error recovery | Optional `Extensions\Recovery\Recovery`: `RecoverUntil`, `RecoverDelimited`, `RecoverItem`, `RecoverWith` under `Extensions\Recovery\Parser`; rule/fluent factories, shared recovery records and diagnostics; [recovery contracts](recovery.md) |
 | Simple result access | Readonly `ok` aliases `success`; `output()` aliases lazy typed `value()`, returning null on syntax failure without committing effects |
 | AST navigation | `child()`, `firstChild()`, `lastChild()`, `firstNamed()`, `allNamed()`, `firstInGroup()`, `allInGroup()`, `descendants()` |
 | Tree metadata | `tag()`, fixed or callable `named()`, `hasTag()`, `firstTagged()`, `allTagged()`, AST preamble/postamble spans and text helpers |
@@ -48,7 +48,7 @@ and detach their parser graphs at registration. `parser()` exports a detached
 Parser only for low-level integration. Factories can return facade values;
 Definition accepts facades and `build()` returns a facade. Wrap a custom Parser
 with `Comprehend::of()` to use the public authoring API.
-The former free functions in `Vanderlee\Comprehend\Extensions\Library` have been removed.
+The former free functions in `Vanderlee\Comprehend\Library` have been removed.
 
 See [Grammar authoring](grammar-authoring.md) for frozen factory lifetimes,
 immutable composition, safety limits and checked arithmetic/RFC examples.

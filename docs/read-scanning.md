@@ -41,7 +41,7 @@ finite maximum need not be inspected. These bounds count content, not delimiter
 units. To require and consume the delimiter while retaining only the content:
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $content = Extraction::syntax()->readUntil(';')->thenIgnore(';');
 $content->parse('hello;')->value(); // 'hello'

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\src\Syntax;
 
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 use Vanderlee\Comprehend\Result\ParseResult;
 
 uses(TestCase::class);

@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Source\ByteSource;
-use Vanderlee\Comprehend\Extensions\AsciiIdentifiers;
+use Vanderlee\Comprehend\Extensions\AsciiIdentifiers\AsciiIdentifiers;
 
 uses(TestCase::class);
 

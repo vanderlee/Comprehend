@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Comprehend;
-use Vanderlee\Comprehend\Extensions\Library\Rfc3986;
+use Vanderlee\Comprehend\Extensions\Network\Grammar\Rfc3986;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;

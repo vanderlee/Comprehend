@@ -29,7 +29,7 @@ including null. First/longest/shortest policies and diagnostics remain unchanged
 discarded alternatives' mappings are not evaluated to select a match.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 
 $amount = Extraction::syntax()->integer()->mapText('intval');
@@ -51,7 +51,7 @@ vocabularies expose them too. Fluent `$a->collect($b)` and `$a->valueChoice($b)`
 include `$a` as the first operand and preserve nesting. Ordinary `sequence()`,
 `then()` and `choice()` retain their raw-text defaults.
 Low-level constructors are `new Collect(Parser ...$operands)` and
-`new ValueChoice(Parser ...$alternatives)` in `Extensions\Extraction`.
+`new ValueChoice(Parser ...$alternatives)` in `Extensions\Extraction\Parser`.
 
 These operations preserve the complete CST, source spans, named collections,
 semantic validators and explicit commit effects. Value inspection never commits.
@@ -77,7 +77,7 @@ and object values: callables are never invoked, and objects are not cloned or
 constructed afresh per parse. Use a pure `map()` if a fresh application object is needed.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $digit = Extraction::syntax()->range('0', '9')->mapText('intval');
 $digit->manyValues()->parse('123')->value(); // [1, 2, 3]
@@ -93,7 +93,7 @@ Static and Syntax forms accept facades, Parser objects or literal strings:
 `C::optionalValue($item, default: 'missing')`. These four names are reserved
 built-ins; custom Syntax registrations with those names must be renamed.
 Existing `many()`, `some()`, `repeat()`, `maybe()` and `optional()` keep their
-raw-text defaults. Low-level constructors in `Extensions\Extraction` are
+raw-text defaults. Low-level constructors in `Extensions\Extraction\Parser` are
 `new ValueRepeat(Parser $item, int $min = 0, ?int $max = null)` and
 `new OptionalValue(Parser $item, mixed $default = null)`.
 
@@ -123,7 +123,7 @@ PHPStan is not a runtime dependency. Bundled Extraction signatures are visible t
 analysis even on an unextended vocabulary; install Extraction explicitly at runtime.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $number = Extraction::syntax()->integer()->mapText('intval'); // Comprehend<int>
 $doubled = $number->map(static fn(int $n): int => $n * 2);

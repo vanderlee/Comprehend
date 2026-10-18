@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Extraction;
-use Vanderlee\Comprehend\Extensions\Recovery as RecoveryExtension;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
+use Vanderlee\Comprehend\Extensions\Recovery\Recovery as RecoveryExtension;
 use Vanderlee\Comprehend\Result\Recovery;
 use Vanderlee\Comprehend\Extensions\Recovery\RecoveryContext;
 use Vanderlee\Comprehend\Source\Span;

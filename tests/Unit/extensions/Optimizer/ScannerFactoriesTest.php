@@ -51,7 +51,7 @@ test('scanner factories discover and append with optimization disabled', functio
 
 test('scanner declarations match factories and allow local overrides', function (): void {
     $manifest = json_decode(
-        file_get_contents(dirname(__DIR__, 4) . '/extensions/Optimizer.extension.json'),
+        file_get_contents(dirname(__DIR__, 4) . '/extensions/Optimizer/Optimizer.extension.json'),
         true,
     );
     $loader = new ExtensionLoader([

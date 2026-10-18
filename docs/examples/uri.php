@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Library\Rfc3986;
+use Vanderlee\Comprehend\Extensions\Network\Grammar\Rfc3986;
 
 $rules = new Rfc3986();
 $grammar = $rules->rule('URI')->freeze();

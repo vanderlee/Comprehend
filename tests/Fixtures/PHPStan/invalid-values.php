@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\PHPStan;
 
 use DateTimeImmutable;
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 // Intentionally invalid callbacks: checked by tools/check-value-types.php, never executed.
 $number = Extraction::syntax()->integer()->mapText('intval');

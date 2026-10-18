@@ -5,7 +5,7 @@ declare(strict_types=1);
 require __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $syntax = Extraction::syntax();
 $number = $syntax->integer()->mapText('intval');

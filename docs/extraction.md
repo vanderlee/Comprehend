@@ -1,12 +1,12 @@
 # Extraction expansion
 
-`Extensions\Extraction` is the automatically loaded application-value vocabulary. It is
+`Extensions\Extraction\Extraction` is the automatically loaded application-value vocabulary. It is
 bundled with Comprehend and uses the shared parser graph, recognition, immutable
 syntax trees, cached projections and explicit commit effects.
 
 ```php
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $syntax = C::syntax();
 $number = $syntax->integer()->mapText('intval');

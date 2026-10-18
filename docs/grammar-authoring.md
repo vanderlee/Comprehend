@@ -79,7 +79,7 @@ during freezing and must not perform application effects. Factory output and RFC
 imports are detached just like ordinary object grammar children:
 
 ```php
-use Vanderlee\Comprehend\Extensions\Library\Rfc3986;
+use Vanderlee\Comprehend\Extensions\Network\Grammar\Rfc3986;
 
 $rfc = new Rfc3986();
 $rules = new Ruleset();
@@ -198,7 +198,7 @@ policies and callbacks on the current expression stay attached to that subtree.
 The returned expression retains its custom syntax scope.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $word = Extraction::syntax()->text('hello')->mapText('strtoupper');
 $word->parse('hello')->output(); // 'HELLO'; rawText() remains 'hello'
@@ -316,7 +316,7 @@ run the optimizer; mutable builders remain unchanged.
 Control optimization when preparing a grammar with `Builder\FreezeFlags`:
 
 The bundled `Extensions\Optimizer\GraphOptimizer` is discovered through
-`extensions/Optimizer.extension.json`. Core combinators retain ordinary recognition;
+`extensions/Optimizer/Optimizer.extension.json`. Core combinators retain ordinary recognition;
 the extension supplies internal parser implementations for optimized execution.
 Their concrete syntax trees retain the original parser kinds.
 
@@ -431,7 +431,7 @@ Base factories recognize digits without prefixes such as `0x` or `0b`.
 
 ### Replacing the Library functions
 
-The free functions in `Vanderlee\Comprehend\Extensions\Library` have been removed. Import
+The free functions in `Vanderlee\Comprehend\Library` have been removed. Import
 `Vanderlee\Comprehend\Comprehend` and compose facade values instead:
 
 | Former call | Comprehend replacement |

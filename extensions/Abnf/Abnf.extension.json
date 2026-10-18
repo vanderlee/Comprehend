@@ -1,0 +1,10 @@
+{
+  "class": "Vanderlee\\Comprehend\\Extensions\\Abnf\\Abnf",
+  "rules": [
+    "rfc2234",
+    "rfc4234",
+    "rfc5234",
+    "rfc7405"
+  ],
+  "fluents": []
+}

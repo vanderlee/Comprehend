@@ -1,6 +1,6 @@
 # Expression builder extension
 
-`Extensions\Expressions` provides an automatically loaded precedence-table builder. It composes
+`Extensions\Expressions\Expressions` provides an automatically loaded precedence-table builder. It composes
 the existing parser graph and recognition runtime, with lazy cached reductions and
 explicit commit effects. It does not enable left recursion or introduce a separate
 Pratt/LR recognition engine.
@@ -9,7 +9,7 @@ Pratt/LR recognition engine.
 implementations live in `Extensions\Expression\Parser`.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Extensions\Expression\Operator as O;
 
@@ -86,7 +86,7 @@ numeric types; overflow, division and arithmetic exceptions follow normal PHP ru
 Use explicit recursive Ruleset references for grouping:
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 use Vanderlee\Comprehend\Builder\Ruleset;
 
 $rules = new Ruleset();

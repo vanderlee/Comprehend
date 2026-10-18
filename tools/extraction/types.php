@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ComprehendComparison;
 
 use Parsica\Parsica\StringStream;
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 use function Parsica\Parsica\many;
 use function Parsica\Parsica\digitChar;

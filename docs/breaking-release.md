@@ -7,6 +7,24 @@ The changelog remains marked Unreleased until publication is ready.
 
 ## Caller changes
 
+Bundled extension entry classes now share a directory with their manifests:
+`Extensions\Numbers\Numbers`, `Extensions\Extraction\Extraction`, and the same
+`Extensions\Name\Name` pattern for other entry classes. Update direct imports;
+factory names and supporting parser namespaces are unchanged. Optimizer continues
+to use `Extensions\Optimizer\GraphOptimizer`.
+
+RFC, SemVer, XML, and YAML grammar classes moved from the former Library namespaces
+into each owning extension's `Grammar` namespace. For example, use
+`Vanderlee\Comprehend\Extensions\Encodings\Grammar\Rfc4648` and
+`Vanderlee\Comprehend\Extensions\Xml\Grammar\Xml`. The shared bases live in
+core as `Builder\AbstractSpecification` and `Syntax\SpecificationExtension`;
+Unicode helpers live in `Extensions\Shared\Internal`, and
+YAML helpers live in `Extensions\Yaml\Internal`. Update direct imports; no aliases
+remain. Custom grammar parser CST kinds now use their owning extension namespaces.
+Independent subject providers expose convenience and explicit versioned factories,
+including historical RFCs. They preserve textual values and existing grammar
+coverage. See [the complete factory catalog](libraries.md).
+
 ABNF compilation moved from `Abnf` to `Extensions\Abnf`, including `Compiler`,
 `Reader`, and `SyntaxException`. Update direct imports and exception catches;
 there are no aliases. The static `Compiler::compile()` arguments and its returned

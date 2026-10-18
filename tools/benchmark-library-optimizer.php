@@ -6,12 +6,12 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
-use Vanderlee\Comprehend\Extensions\Library\Rfc2234;
-use Vanderlee\Comprehend\Extensions\Library\Rfc3986;
-use Vanderlee\Comprehend\Extensions\Library\Rfc4291;
-use Vanderlee\Comprehend\Extensions\Library\Rfc5322;
-use Vanderlee\Comprehend\Extensions\Library\Rfc8259;
-use Vanderlee\Comprehend\Extensions\Library\Xml;
+use Vanderlee\Comprehend\Extensions\Abnf\Grammar\Rfc2234;
+use Vanderlee\Comprehend\Extensions\Network\Grammar\Rfc3986;
+use Vanderlee\Comprehend\Extensions\Network\Grammar\Rfc4291;
+use Vanderlee\Comprehend\Extensions\Mail\Grammar\Rfc5322;
+use Vanderlee\Comprehend\Extensions\Json\Grammar\Rfc8259;
+use Vanderlee\Comprehend\Extensions\Xml\Grammar\Xml;
 use Vanderlee\Comprehend\Runtime\ParseMetrics;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Utf8Source;

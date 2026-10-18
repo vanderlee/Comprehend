@@ -2,11 +2,19 @@
 
 ## Discoverable subject extensions
 
-The shared grammar classes live in `Vanderlee\Comprehend\Extensions\Library`.
+Grammar classes live in their owning extension's `Grammar` namespace, such as
+`Vanderlee\Comprehend\Extensions\Network\Grammar\Rfc3986` and
+`Vanderlee\Comprehend\Extensions\Encodings\Grammar\Rfc4648`.
 Each subject below has its own bundled extension manifest. Factories load on first
 static, scoped Syntax, or fluent use and construct a fresh specification graph.
 They return the original text; they do not decode formats, resolve names, evaluate
 policies, validate mail delivery, or construct application values.
+
+Each grammar has one owner. Cross-subject imports remain explicit: Network uses
+Abnf grammars, while Mail uses Abnf, Network, and Xml grammars. Shared base classes
+live in core as `Builder\AbstractSpecification` and `Syntax\SpecificationExtension`,
+with reusable Unicode helpers in `Extensions\Shared\Internal`. YAML-specific helpers live in
+`Extensions\Yaml\Internal`. The former Library namespaces have no aliases.
 
 ```php
 use Vanderlee\Comprehend\Comprehend as C;
@@ -76,13 +84,13 @@ a versioned entry point is not a claim to implement all document requirements.
 Direct classes still support custom rule overrides:
 
 ```php
-use Vanderlee\Comprehend\Extensions\Library\Rfc3986;
-use Vanderlee\Comprehend\Extensions\Library\SemVer;
-use Vanderlee\Comprehend\Extensions\Library\Xml;
-use Vanderlee\Comprehend\Extensions\Library\Yaml;
+use Vanderlee\Comprehend\Extensions\Network\Grammar\Rfc3986;
+use Vanderlee\Comprehend\Extensions\SemVer\Grammar\SemVer;
+use Vanderlee\Comprehend\Extensions\Xml\Grammar\Xml;
+use Vanderlee\Comprehend\Extensions\Yaml\Grammar\Yaml;
 
 $host = (new Rfc3986())->rule('host');
-$major = (new SemVer())->rule('major');
+$prerelease = (new SemVer())->rule('prerelease');
 $element = (new Xml())->rule('element');
 $stream = (new Yaml())->rule('stream');
 ```
@@ -107,7 +115,7 @@ They use the public facade with explicit Ruleset references and the same
 source runtime as application parsers.
 
 ```php
-$rfc = new \Vanderlee\Comprehend\Extensions\Library\Rfc3986();
+$rfc = new \Vanderlee\Comprehend\Extensions\Network\Grammar\Rfc3986();
 $result = $rfc->rule('IPv4address')->parse('192.0.2.1');
 $result->ast()->firstNamed('dec_octet')->rawText(); // 192
 ```
@@ -155,7 +163,7 @@ including lowercase hexadecimal digits. `Rfc4408` also benefits from that IPv6
 fix; its SPF-specific rules keep their existing behavior.
 
 ```php
-$spf = new \Vanderlee\Comprehend\Extensions\Library\Rfc7208();
+$spf = new \Vanderlee\Comprehend\Extensions\Mail\Grammar\Rfc7208();
 $result = $spf->freeze()->parse('v=spf1 ip6:2001:db8::/32 -all');
 $result->success; // true
 ```

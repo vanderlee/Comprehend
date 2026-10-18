@@ -1,6 +1,6 @@
 # Numbers extension
 
-`Extensions\Numbers` loads automatically through `Numbers.extension.json` and
+`Extensions\Numbers\Numbers` loads automatically through `Numbers.extension.json` and
 provides `integer()`, `binary()`, `octal()`, `hexadecimal()`, `octet()` and `float()`.
 Static and scoped calls start expressions; chained calls append numeric parsers.
 These factories return matched text, preserving its exact spelling and byte spans.

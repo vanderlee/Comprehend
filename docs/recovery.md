@@ -27,7 +27,7 @@ foreach ($result->diagnostics() as $diagnostic) {
 
 ## Authoring
 
-`Extensions\Recovery` loads automatically when authoring recovery. It provides
+`Extensions\Recovery\Recovery` loads automatically when authoring recovery. It provides
 `recoverUntil`, `recoverDelimited`, `recoverItem` and `recoverWith` as both rules
 and fluents, including global `C::recover*()` and unscoped expressions.
 Use `$syntax->recoverUntil($parser, ...)` to wrap an existing expression.

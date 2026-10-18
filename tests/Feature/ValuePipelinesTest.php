@@ -5,7 +5,7 @@ declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 use Vanderlee\Comprehend\Extensions\Extraction\Parser\FoldLeft;
 use Vanderlee\Comprehend\Extensions\Extraction\Parser\MapWith;
 use Vanderlee\Comprehend\Parser\Terminal\Text;

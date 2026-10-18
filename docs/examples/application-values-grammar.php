@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Examples\ApplicationValues;
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 final class Job
 {

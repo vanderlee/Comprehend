@@ -9,7 +9,7 @@ if (extension_loaded('dom') || class_exists('DOMDocument', false)) {
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 $manifest = json_decode(file_get_contents(__DIR__ . '/../composer.json'), true, flags: JSON_THROW_ON_ERROR);
 if (isset($manifest['require']['ext-dom'])) {

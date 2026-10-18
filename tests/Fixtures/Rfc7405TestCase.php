@@ -2,7 +2,7 @@
 
 namespace Tests\Fixtures;
 
-use Vanderlee\Comprehend\Extensions\Library\Rfc7405;
+use Vanderlee\Comprehend\Extensions\Abnf\Grammar\Rfc7405;
 
 abstract class Rfc7405TestCase extends Rfc5234TestCase
 {

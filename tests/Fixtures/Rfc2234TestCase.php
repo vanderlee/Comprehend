@@ -3,7 +3,7 @@
 namespace Tests\Fixtures;
 
 use Tests\ParserTestCase;
-use Vanderlee\Comprehend\Extensions\Library\Rfc2234;
+use Vanderlee\Comprehend\Extensions\Abnf\Grammar\Rfc2234;
 
 abstract class Rfc2234TestCase extends ParserTestCase
 {

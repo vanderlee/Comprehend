@@ -55,6 +55,7 @@ nav:
       - Lifecycle and effects: lifecycle.md
       - Serialization: serialization.md
   - Extensions:
+      - Specification grammars: libraries.md
       - Numbers: numbers.md
       - Extraction: extraction.md
       - Syntax extensions: syntax-extensions.md
@@ -62,7 +63,6 @@ nav:
   - Reference:
       - Supported API: reference.md
       - ABNF: abnf.md
-      - RFC libraries: libraries.md
       - Specifications: specifications.md
       - URI syntax: uri.md
       - Custom parser contract: source-and-extension-contract.md

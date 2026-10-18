@@ -7,9 +7,9 @@ namespace Tests\Extensions;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 use Vanderlee\Comprehend\Extensions\Expression\Operator as O;
-use Vanderlee\Comprehend\Extensions\Expressions;
+use Vanderlee\Comprehend\Extensions\Expressions\Expressions;
 
 uses(TestCase::class);
 

@@ -18,7 +18,13 @@ $syntax = C::syntax(); // also includes discoverable factories
 
 `extend()` remains useful for configured providers and explicit overrides.
 
-`Extensions\Numbers` supplies `integer()`, `binary()`, `octal()`,
+The bundled Network, Mail, DateTime, Uuid, SemVer, LanguageTag, Encodings, Json,
+HttpStructuredFields, Xml, Yaml, and Abnf providers expose
+[specification factories and explicit RFC versions](libraries.md). Their grammars
+live in each subject's `Extensions\Name\Grammar` namespace. Each subject has its
+own manifest and can be overridden independently in a local vocabulary.
+
+`Extensions\Numbers\Numbers` supplies `integer()`, `binary()`, `octal()`,
 `hexadecimal()`, `octet()` and `float()` through `Numbers.extension.json`. These factories
 also append numeric parsers when chained, preserving ordinary sequence values.
 Their parsers are `Extensions\Numbers\Parser\IntegerNumber` and `FloatNumber`.
@@ -27,7 +33,7 @@ and the shared `SignPolicy` enum. IntegerNumber defaults retain their existing b
 
 ```php
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\AsciiIdentifiers;
+use Vanderlee\Comprehend\Extensions\AsciiIdentifiers\AsciiIdentifiers;
 
 $base = C::syntax();
 $syntax = $base->extend(new AsciiIdentifiers());
@@ -45,9 +51,9 @@ also loads automatically.
 ## Composer discovery
 
 Bundled extensions, installed Composer packages, and the root application can
-advertise providers in `extensions/*.extension.json`. Each file can declare a syntax
+advertise providers in `extensions/*.extension.json` or `extensions/*/*.extension.json`. Each file can declare a syntax
 factory class and several capability providers; its filename is independent of their classes. For example,
-`extensions/Identifiers.extension.json`:
+`extensions/Identifiers/Identifiers.extension.json`:
 
 ```json
 {
@@ -57,8 +63,8 @@ factory class and several capability providers; its filename is independent of t
 }
 ```
 
-Only files directly in the package's `extensions/` directory are discovered.
-Nested directories and other JSON files are ignored. Filenames are processed in
+Files directly in the package's `extensions/` directory or one directory below it
+are discovered. Deeper directories and other JSON files are ignored. Filenames are processed in
 sorted order, and each resolved package directory is visited once. A package
 without matching files needs no configuration. File discovery also works when an
 installed package has no `composer.json`.
@@ -229,7 +235,7 @@ the current Comprehend expression before user arguments and runs only during
 grammar authoring. Fluent-only extensions return an empty iterable from `rules()`.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 
 final class Delimiters implements SyntaxExtension
@@ -258,7 +264,7 @@ remains available for registering individual transformations.
 
 ## Bundled ASCII vocabulary
 
-`Extensions\AsciiIdentifiers` lives in the top-level `extensions/` directory,
+`Extensions\AsciiIdentifiers\AsciiIdentifiers` lives in `extensions/AsciiIdentifiers/`,
 separate from the core `src/` tree. Composer autoloads the
 `Vanderlee\Comprehend\Extensions` namespace from that directory. It is optional
 and constructs only existing built-in parsers:

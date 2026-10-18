@@ -7,6 +7,14 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 $root = dirname(__DIR__);
 $errors = [];
+foreach ([
+    'Vanderlee\\Comprehend\\Extensions\\Shared\\AbstractSpecification',
+    'Vanderlee\\Comprehend\\Extensions\\Shared\\SpecificationExtension',
+] as $removedClass) {
+    if (class_exists($removedClass)) {
+        $errors[] = 'Removed shared authoring class is present: ' . $removedClass;
+    }
+}
 if (method_exists(Vanderlee\Comprehend\Syntax\ExtensionLoader::class, 'optimizer')) {
     $errors[] = 'Removed optimizer-specific extension lookup is present';
 }
@@ -62,6 +70,63 @@ foreach ([
 }
 if (is_file($root . '/src/Library/functions.php')) {
     $errors[] = 'Removed Library helper file is present';
+}
+$removedLibraryClasses = [
+    'AbstractSpecification',
+    'Internal\\UnicodeEscapes',
+    'Internal\\Utf8NonAscii',
+    'Internal\\YamlBlock',
+    'Internal\\YamlCharacters',
+    'Rfc1034',
+    'Rfc1035',
+    'Rfc1123',
+    'Rfc2045',
+    'Rfc2046',
+    'Rfc2234',
+    'Rfc3339',
+    'Rfc3513',
+    'Rfc3986',
+    'Rfc3987',
+    'Rfc4234',
+    'Rfc4291',
+    'Rfc4408',
+    'Rfc4648',
+    'Rfc5234',
+    'Rfc5321',
+    'Rfc5322',
+    'Rfc5646',
+    'Rfc6376',
+    'Rfc6531',
+    'Rfc6532',
+    'Rfc6570',
+    'Rfc6854',
+    'Rfc6901',
+    'Rfc7208',
+    'Rfc7405',
+    'Rfc8141',
+    'Rfc8259',
+    'Rfc9535',
+    'Rfc9557',
+    'Rfc9562',
+    'Rfc9651',
+    'Rfc9989',
+    'Rfc9990',
+    'Rfc9991',
+    'SemVer',
+    'SpecificationExtension',
+    'Xml',
+    'Yaml',
+];
+foreach ($removedLibraryClasses as $relative) {
+    foreach (['Vanderlee\\Comprehend\\Library\\', 'Vanderlee\\Comprehend\\Extensions\\Library\\'] as $namespace) {
+        if (class_exists($namespace . $relative)) {
+            $errors[] = 'Removed Library class is present: ' . $namespace . $relative;
+        }
+    }
+}
+$composer = json_decode(file_get_contents($root . '/composer.json'), true, flags: JSON_THROW_ON_ERROR);
+if (isset($composer['autoload']['psr-4']['Vanderlee\\Comprehend\\Library\\'])) {
+    $errors[] = 'Removed Library namespace mapping is present';
 }
 foreach (['s', 'c', 'star', 'plus', 'opt', 'repeat', 'text', 'char', 'set', 'range', 'regex'] as $function) {
     if (function_exists('Vanderlee\\Comprehend\\Library\\' . $function)) {

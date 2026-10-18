@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\LibraryFactoryCases;
 use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Network;
+use Vanderlee\Comprehend\Extensions\Network\Network;
 use Vanderlee\Comprehend\Syntax\ExtensionLoader;
 
 uses(TestCase::class);
@@ -48,10 +48,10 @@ test('versioned factories select explicit rules without replacing historical gra
 
 test('subject manifests match registrations and cover every implemented RFC exactly once', function (): void {
     $versions = [];
-    foreach (glob(dirname(__DIR__, 3) . '/extensions/*.extension.json') as $path) {
+    foreach (glob(dirname(__DIR__, 3) . '/extensions/*/*.extension.json') as $path) {
         $entry = json_decode(file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
         $class = $entry['class'] ?? '';
-        if (!is_subclass_of($class, \Vanderlee\Comprehend\Extensions\Library\SpecificationExtension::class)) {
+        if (!is_subclass_of($class, \Vanderlee\Comprehend\Syntax\SpecificationExtension::class)) {
             continue;
         }
         $loader = new ExtensionLoader(['fixture/subject' => ['extra' => ['comprehend' => ['extensions' => [$entry]]]]]);
@@ -65,7 +65,7 @@ test('subject manifests match registrations and cover every implemented RFC exac
     }
     $implemented = array_map(
         static fn(string $file): string => substr(basename($file, '.php'), 3),
-        glob(dirname(__DIR__, 3) . '/extensions/Library/Rfc*.php'),
+        glob(dirname(__DIR__, 3) . '/extensions/*/Grammar/Rfc*.php'),
     );
     sort($versions);
     sort($implemented);

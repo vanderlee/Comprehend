@@ -6,16 +6,21 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Syntax\Catalog;
-use Vanderlee\Comprehend\Extensions\Extraction;
-use Vanderlee\Comprehend\Extensions\Numbers;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
+use Vanderlee\Comprehend\Extensions\Numbers\Numbers;
 use Vanderlee\Comprehend\Extensions\Optimizer\GraphOptimizer;
-use Vanderlee\Comprehend\Extensions\Library\SpecificationExtension;
+use Vanderlee\Comprehend\Syntax\SpecificationExtension;
 
 // Mirror factory names and signatures without loading PHPStan or running its extensions.
 $root = dirname(__DIR__);
 $specificationFactories = [];
 $specificationMethods = [];
-foreach (glob($root . '/extensions/*.extension.json') as $manifestPath) {
+$manifestPaths = array_merge(
+    glob($root . '/extensions/*.extension.json'),
+    glob($root . '/extensions/*/*.extension.json'),
+);
+sort($manifestPaths, SORT_STRING);
+foreach ($manifestPaths as $manifestPath) {
     $manifest = json_decode(file_get_contents($manifestPath), true, flags: JSON_THROW_ON_ERROR);
     $class = $manifest['class'] ?? null;
     if (!is_string($class) || !is_subclass_of($class, SpecificationExtension::class)) {
@@ -33,7 +38,11 @@ foreach (glob($root . '/extensions/*.extension.json') as $manifestPath) {
 }
 $facadePath = $root . '/src/Comprehend.php';
 $facadeOriginal = str_replace("\r\n", "\n", file_get_contents($facadePath));
-$facade = preg_replace('/ \* BEGIN GENERATED SPECIFICATIONS.*? \* END GENERATED SPECIFICATIONS\n/s', '', $facadeOriginal);
+$facade = preg_replace(
+    '/ \* BEGIN GENERATED SPECIFICATIONS.*? \* END GENERATED SPECIFICATIONS\n/s',
+    '',
+    $facadeOriginal,
+);
 $facade = str_replace(
     ' * @method static self<string> text(string $text)',
     " * BEGIN GENERATED SPECIFICATIONS (tools/generate-syntax-phpdoc.php)\n"

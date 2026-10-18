@@ -12,6 +12,26 @@ use Vanderlee\Comprehend\Syntax\ExtensionLoader;
 
 uses(TestCase::class);
 
+test('flat and nested manifests share sorted provider order', function (): void {
+    $project = new DiscoveryProject();
+    try {
+        $project->write('extensions/Z.extension.json', ['providers' => [
+            \SplObjectStorage::class => [\Countable::class],
+        ]]);
+        $project->write('extensions/A/A.extension.json', ['providers' => [
+            \ArrayObject::class => [\Countable::class],
+        ]]);
+        $result = $project->run(
+            '$providers = ' . ExtensionLoader::class . '::defaults()->all(Countable::class);'
+            . 'if (count($providers) !== 2 || !$providers[0] instanceof ArrayObject'
+            . ' || !$providers[1] instanceof SplObjectStorage) { exit(2); }',
+        );
+        $this->assertSame(0, $result['status'], $result['output']);
+    } finally {
+        $project->clean();
+    }
+});
+
 test('a discovered manifest can provide several classes for one contract', function (): void {
     $project = new DiscoveryProject();
     try {
@@ -35,13 +55,16 @@ test('a discovered manifest can provide several classes for one contract', funct
     }
 });
 
-test('file providers load from packages without composer manifests', function (string $prefix): void {
+test('file providers load from packages without composer manifests', function (
+    string $prefix,
+    string $directory,
+): void {
     $project = new DiscoveryProject();
     try {
         $entry = DiscoveredWords::manifest()['extra']['comprehend']['extensions'][0];
-        $project->write($prefix . 'extensions/Words.extension.json', $entry);
+        $project->write($prefix . 'extensions/' . $directory . 'Words.extension.json', $entry);
         $project->write($prefix . 'extensions/ignored.json', '{');
-        $project->write($prefix . 'extensions/nested/ignored.extension.json', '{');
+        $project->write($prefix . 'extensions/nested/deeper/ignored.extension.json', '{');
         $result = $project->run(
             'if (' . DiscoveredWords::class . '::$constructions !== 0) { exit(2); }'
             . '$syntax = ' . C::class . '::syntax();'
@@ -55,7 +78,7 @@ test('file providers load from packages without composer manifests', function (s
     } finally {
         $project->clean();
     }
-})->with(['', 'dependency/']);
+})->with(['', 'dependency/'])->with(['', 'Words/']);
 
 test('inline and file declarations merge without loading a provider twice', function (): void {
     $project = new DiscoveryProject();
@@ -64,7 +87,7 @@ test('inline and file declarations merge without loading a provider twice', func
         $entry = $manifest['extra']['comprehend']['extensions'][0];
         $project->write('composer.json', $manifest);
         $project->write('extensions/Words.extension.json', $entry);
-        $project->write('extensions/Duplicate.extension.json', $entry);
+        $project->write('extensions/Words/Duplicate.extension.json', $entry);
         $result = $project->run(
             '$first = ' . C::class . '::discoveredWord();'
             . '$second = ' . C::class . '::discoveredWord();'
@@ -77,10 +100,14 @@ test('inline and file declarations merge without loading a provider twice', func
     }
 });
 
-test('file errors identify package and manifest path', function (string $contents, string $operation): void {
+test('file errors identify package and manifest path', function (
+    string $contents,
+    string $operation,
+    string $directory,
+): void {
     $project = new DiscoveryProject();
     try {
-        $file = 'dependency/extensions/Bad.extension.json';
+        $file = 'dependency/extensions/' . $directory . 'Bad.extension.json';
         $project->write($file, $contents);
         $result = $project->run(
             'try { ' . $operation . '; exit(2); }'
@@ -99,7 +126,7 @@ test('file errors identify package and manifest path', function (string $content
     ['{}', C::class . '::syntax()->names()'],
     ['{"class":"MissingProvider","rules":["bad-name"],"fluents":[]}', C::class . '::syntax()->names()'],
     ['{"class":"MissingProvider","rules":["word"],"fluents":[]}', C::class . '::word()'],
-]);
+])->with(['', 'Bad/']);
 
 test('inconsistent inline and file declarations identify both sources', function (): void {
     $project = new DiscoveryProject();

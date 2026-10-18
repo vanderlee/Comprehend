@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Vanderlee\Comprehend\Extensions\Library\Rfc3339;
-use Vanderlee\Comprehend\Extensions\Library\Rfc5322;
-use Vanderlee\Comprehend\Extensions\Library\Rfc8259;
-use Vanderlee\Comprehend\Extensions\Library\Rfc9535;
-use Vanderlee\Comprehend\Extensions\Library\Rfc9651;
-use Vanderlee\Comprehend\Extensions\Library\SemVer;
-use Vanderlee\Comprehend\Extensions\Library\Xml;
-use Vanderlee\Comprehend\Extensions\Library\Yaml;
+use Vanderlee\Comprehend\Extensions\DateTime\Grammar\Rfc3339;
+use Vanderlee\Comprehend\Extensions\Mail\Grammar\Rfc5322;
+use Vanderlee\Comprehend\Extensions\Json\Grammar\Rfc8259;
+use Vanderlee\Comprehend\Extensions\Json\Grammar\Rfc9535;
+use Vanderlee\Comprehend\Extensions\HttpStructuredFields\Grammar\Rfc9651;
+use Vanderlee\Comprehend\Extensions\SemVer\Grammar\SemVer;
+use Vanderlee\Comprehend\Extensions\Xml\Grammar\Xml;
+use Vanderlee\Comprehend\Extensions\Yaml\Grammar\Yaml;
 
 $examples = [
     [new Rfc5322(), 'Alice <alice@example.org>'],

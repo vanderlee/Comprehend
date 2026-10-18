@@ -1,9 +1,0 @@
-{
-  "class": "Vanderlee\\Comprehend\\Extensions\\Uuid",
-  "rules": [
-    "uuid",
-    "uuidUrn",
-    "rfc9562"
-  ],
-  "fluents": []
-}

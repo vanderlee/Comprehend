@@ -17,7 +17,7 @@ sequence behavior; it does not select a child value.
 These names are reserved core built-ins.
 
 ```php
-use Vanderlee\Comprehend\Extensions\Extraction;
+use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 
 
 $number = Extraction::syntax()->integer()->mapText(static fn(string $text): int => (int) $text);
