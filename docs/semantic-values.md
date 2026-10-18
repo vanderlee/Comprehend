@@ -59,8 +59,8 @@ Mapping a collected sequence evaluates operand values in recognition order.
 An outer `mapText()` or `mapValue()` can replace collection/choice projection
 without evaluating its operand mappings. Run `php docs/examples/value-composition.php`.
 
-These names are local expansion registrations, not reserved core built-ins.
-Installing Extraction follows the ordinary Syntax replacement and isolation rules.
+These names are automatically discovered, not reserved core built-ins.
+Explicitly installing Extraction follows the ordinary Syntax replacement and isolation rules.
 
 ## Repeated and optional values
 

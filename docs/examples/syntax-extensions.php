@@ -5,15 +5,13 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Extraction;
-use Vanderlee\Comprehend\Extensions\AsciiIdentifiers;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 
-$base = Extraction::syntax();
-$syntax = $base->extend(new AsciiIdentifiers())->extend(new class implements SyntaxExtension {
+$base = C::syntax();
+$syntax = $base->extend(new class implements SyntaxExtension {
     public function rules(): iterable
     {
-        yield 'semicolon' => static fn(): C => Extraction::syntax()->text(';');
+        yield 'semicolon' => static fn(): C => C::text(';');
     }
 
     public function fluents(): iterable
@@ -22,7 +20,7 @@ $syntax = $base->extend(new AsciiIdentifiers())->extend(new class implements Syn
     }
 });
 $declaration = $syntax->asciiKeyword('let')->ignoreThen($syntax->asciiIdentifier()->named('name'))
-    ->thenIgnore($syntax->semicolon())->spacing(Extraction::syntax()->text(' ')->many());
+    ->thenIgnore($syntax->semicolon())->spacing(C::text(' ')->many());
 $result = $declaration->parse('let name;');
 if (!$result->success || $result->value() !== 'name' || $result->rawText() !== 'let name;') {
     throw new RuntimeException('Extension declaration values or source round trip failed');
@@ -30,7 +28,7 @@ if (!$result->success || $result->value() !== 'name' || $result->rawText() !== '
 if ($declaration->parse('letname;')->success || $declaration->parse('let na me;')->success) {
     throw new RuntimeException('Keyword boundary or identifier spacing changed');
 }
-if (in_array('asciiidentifier', $base->names(), true) || in_array('semicolon', $base->names(), true)) {
+if (!in_array('asciiidentifier', $base->names(), true) || in_array('semicolon', $base->names(), true)) {
     throw new RuntimeException('Extensions modified the original vocabulary');
 }
 $delimiters = $syntax->extend(new class implements SyntaxExtension {

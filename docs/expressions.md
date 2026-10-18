@@ -1,6 +1,6 @@
 # Expression builder extension
 
-`Extensions\Expressions` installs an optional precedence-table builder. It composes
+`Extensions\Expressions` provides an automatically loaded precedence-table builder. It composes
 the existing parser graph and recognition runtime, with lazy cached reductions and
 explicit commit effects. It does not enable left recursion or introduce a separate
 Pratt/LR recognition engine.
@@ -12,9 +12,8 @@ implementations live in `Extensions\Expression\Parser`.
 use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Extensions\Expression\Operator as O;
-use Vanderlee\Comprehend\Extensions\Expressions;
 
-$syntax = Extraction::syntax()->extend(new Expressions());
+$syntax = C::syntax();
 $number = Extraction::syntax()->regex('/[0-9]+/A')->mapText('intval');
 $expression = $syntax->operatorExpression(
     $number,
@@ -29,12 +28,12 @@ $result->value();   // 14, lazy and cached
 $result->rawText(); // '2 + 3 * 4'
 ```
 
-The original Syntax vocabulary and global Comprehend factories remain unchanged.
+Explicit overrides remain local to their Syntax vocabulary.
 Both factories also have fluent forms. `primary->operatorExpression(...operators)`
 uses the current expression as its primary, rather than appending another parser.
 `primary->expressionChoice(...alternatives)` includes the current expression as
-the first alternative and preserves the selected value lazily. Start the primary
-through the extended vocabulary to keep these operations available:
+the first alternative and preserves the selected value lazily. These operations
+also load automatically on unscoped expressions:
 
 ```php
 $expression = $syntax->regex('/[0-9]+/A')->mapText('intval')->operatorExpression(

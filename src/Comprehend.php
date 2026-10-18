@@ -20,6 +20,7 @@ use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Syntax\Catalog;
+use Vanderlee\Comprehend\Syntax\ExtensionLoader;
 use BadMethodCallException;
 
 /**
@@ -130,7 +131,7 @@ final class Comprehend
     {
         $name = strtolower($name);
         $fluent = $this->syntax === null
-            ? Catalog::builtinFluent($name)
+            ? (Catalog::builtinFluent($name) ?? ExtensionLoader::defaults()->fluent($name))
             : $this->syntax->fluent($name);
         if ($fluent !== null) {
             $result = self::invoke($fluent, [$this, ...$arguments]);
@@ -151,7 +152,9 @@ final class Comprehend
     public static function callSyntax(string $name, array $arguments, ?Syntax $syntax = null): self
     {
         $name = strtolower($name);
-        $factory = $syntax === null ? Catalog::builtinRule($name) : $syntax->rule($name);
+        $factory = $syntax === null
+            ? (Catalog::builtinRule($name) ?? ExtensionLoader::defaults()->rule($name))
+            : $syntax->rule($name);
         if ($factory === null) {
             throw new BadMethodCallException('Unknown syntax: ' . $name);
         }

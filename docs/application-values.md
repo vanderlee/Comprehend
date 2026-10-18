@@ -1,7 +1,8 @@
 # Parse application values
 
-This tutorial uses the opt-in [Extraction expansion](extraction.md). Start expressions
-with `Extraction::syntax()` or install `new Extraction()` on an existing Syntax vocabulary.
+This tutorial uses the automatically loaded [Extraction expansion](extraction.md).
+`C::syntax()` and global calls work without registration; `Extraction::syntax()`
+remains supported in the examples below.
 
 Build a parser that returns a domain object directly. This tutorial uses a small
 job format with an optional retry setting and nested lists of batch IDs:

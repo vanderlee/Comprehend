@@ -23,12 +23,12 @@
 | Frozen graphs | `freeze()` returning FrozenGrammar with syntax checks and analysisWarnings |
 | Immutable facade | Comprehend text/char/set/range/regex/ref, sequence/choice, then/or/repeat, naming and scoped policy |
 | Expandable syntax | `Comprehend::syntax()->defineRule(name, factory)`; immutable scoped static/fluent factories, `call()`, `names()` |
-| Optional extensions | `Syntax::extend(SyntaxExtension)` installs `rules()` through `defineRule()` and `fluents()` through `defineFluent()`; optional `Extensions\AsciiIdentifiers` in `extensions/`; [extension authoring](syntax-extensions.md) |
+| Extensions | Bundled and Composer-advertised providers load on first use; `Syntax::extend(SyntaxExtension)` provides explicit local installation; [discovery and extension authoring](syntax-extensions.md) |
 | Expression tables | Optional `Extensions\Expressions`: `operatorExpression(primary, Operator...)`, `expressionChoice(alternatives...)`; [precedence and lifecycle](expressions.md) |
 | ABNF authoring | `Abnf\Compiler::compile(string, root, numericEncoding, choice)` returning FrozenGrammar |
 | Naming | `name(string|int, ?string = null, bool $leaf = false)` |
 | Meaning | Core `mapValue(callable)`, named set/concat/push collection operations |
-| Extraction expansion | Opt-in `Extensions\Extraction`: `map`, `mapText`, `collect`, `valueChoice`, `manyValues`, `someValues`, `repeatValues`, `optionalValue`; [installation, classes and types](extraction.md) |
+| Extraction expansion | Automatically loaded `Extensions\Extraction`: `map`, `mapText`, `collect`, `valueChoice`, `manyValues`, `someValues`, `repeatValues`, `optionalValue`; [classes and types](extraction.md) |
 | Prepending | Facade `prepend(Comprehend\|Parser\|string ...items)` returns an immutable sequence of the supplied items followed by the current expression |
 | Value selection | Core fluent `thenIgnore(next)`, `ignoreThen(next)`, `between(open, close)`; object `Parser\Structure\ValueSequence(int, Parser...)`; [delimiters and lifecycle](value-selection.md) |
 | Lifecycle | `guard(callable)`, `validateSemantic(callable)`, `onCommit(callable)`, assignments |

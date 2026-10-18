@@ -9,9 +9,7 @@ context remains `Extensions\Recovery\RecoveryContext`.
 
 ```php
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Recovery;
-
-$syntax = C::syntax()->extend(new Recovery());
+$syntax = C::syntax();
 
 $statement = $syntax->text('ok;')->recoverUntil(';', consumeBoundary: true);
 $result = $statement->some()->parse('ok;bad;wrong;ok;');
@@ -29,18 +27,16 @@ foreach ($result->diagnostics() as $diagnostic) {
 
 ## Authoring
 
-Install `Extensions\Recovery` with `Syntax::extend()` before authoring recovery.
-The extension registers `recoverUntil`, `recoverDelimited`, `recoverItem` and
-`recoverWith` as both rules and fluents. Fluent calls require an expression
-constructed through the extended vocabulary. Use `$syntax->recoverUntil($parser, ...)`
-to wrap an existing expression from another vocabulary.
+`Extensions\Recovery` loads automatically when authoring recovery. It provides
+`recoverUntil`, `recoverDelimited`, `recoverItem` and `recoverWith` as both rules
+and fluents, including global `C::recover*()` and unscoped expressions.
+Use `$syntax->recoverUntil($parser, ...)` to wrap an existing expression.
 
 The parser classes, `RecoveryContext` and internal `BoundedItem` now live under
 `Vanderlee\Comprehend\Extensions\Recovery` in `extensions/Recovery/`. The former
-core class names and global `C::recover*()` factories are removed. Update imports
-and install the extension when migrating. `Result\Recovery`, selected diagnostics,
+core class names are removed; update imports when migrating. `Result\Recovery`, selected diagnostics,
 and validation/commit protection remain shared core result contracts; the core
-does not depend on the extension or register it automatically.
+recognition runtime remains independent of authoring-time extension loading.
 
 Both static and fluent factories construct the same typed parser:
 

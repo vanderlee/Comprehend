@@ -7,15 +7,15 @@ MIT licensed. Requires JSON and mbstring. DOM is optional, needed only for XML o
 ## Quick start
 
 This value-extraction example uses the optional [Extraction expansion](docs/extraction.md).
-It is bundled with the library and activated explicitly with `Extraction::syntax()`.
+It is bundled with the library and loads automatically on first use.
 
 ```php
 require 'vendor/autoload.php';
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Extensions\Extraction;
+
 // Build a parser and describe the value to extract.
-$age = Extraction::syntax()->integer(0, 150)
+$age = C::integer(0, 150)
     ->named('age')
     ->mapText(static fn(string $text): int => (int) $text);
 

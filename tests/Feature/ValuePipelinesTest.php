@@ -224,10 +224,9 @@ test('foldLeft stops evaluating step values when its combiner throws', function 
     $this->assertSame(['head', 'step:1', 'combine:1'], $calls);
 });
 
-test('new operations require the Extraction vocabulary', function (string $method): void {
-    $this->expectException(BadMethodCallException::class);
-
-    C::text('x')->$method('y', static fn(string $a, string $b): string => $a . $b);
+test('value operations load without an Extraction vocabulary', function (string $method): void {
+    $parser = C::text('x')->$method('y', static fn(string $a, string $b): string => $a . $b);
+    $this->assertSame('xy', $parser->parse('xy')->value());
 })->with(['mapWith', 'foldLeft']);
 
 test('low-level folds use the same recognition runtime', function (): void {

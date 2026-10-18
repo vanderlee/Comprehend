@@ -17,7 +17,7 @@ use Vanderlee\Comprehend\Result\ParseResult;
 abstract class ValueMappings
 {
     /**
-     * Extraction must be installed on the runtime vocabulary before using these operations.
+     * Extraction loads automatically when these authoring operations are invoked.
      * @template U
      * @param callable(T): U $mapper
      * @return Comprehend<U>

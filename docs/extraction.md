@@ -1,6 +1,6 @@
 # Extraction expansion
 
-`Extensions\Extraction` is the opt-in application-value authoring vocabulary. It is
+`Extensions\Extraction` is the automatically loaded application-value vocabulary. It is
 bundled with Comprehend and uses the shared parser graph, recognition, immutable
 syntax trees, cached projections and explicit commit effects.
 
@@ -8,16 +8,15 @@ syntax trees, cached projections and explicit commit effects.
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Extensions\Extraction;
 
-$syntax = C::syntax()->extend(new Extraction());
-// Equivalent shortcut: $syntax = Extraction::syntax();
+$syntax = C::syntax();
 $number = $syntax->integer()->mapText('intval');
 $list = $number->separatedBy(',')->between('[', ']');
 $list->parse('[1,2]')->value(); // [1, 2]
 ```
 
-Registration is local and immutable. Global `C::collect()` and unextended
-expressions' `map()` or `mapText()` calls are unavailable. Existing vocabularies
-and expressions remain unchanged. Use `$syntax->of($expressionOrParser)` to
+Global `C::collect()` and expressions' `map()` or `mapText()` calls load the
+extension automatically. Explicit registration remains local and immutable;
+`Extraction::syntax()` is still supported. Use `$syntax->of($expressionOrParser)` to
 attach the vocabulary to an existing facade, rule reference or object parser.
 Facade inputs retain their semantic value type; object-parser inputs remain
 conservatively mixed in static analysis.
@@ -71,8 +70,8 @@ MapWith and FoldLeft are also available as low-level constructors:
 `new MapWith(Parser $left, Parser $right, callable $combine)` and
 `new FoldLeft(Parser $head, Parser $step, callable $combine, int $min = 0, ?int $max = null)`.
 They live in `Extensions\Extraction\Parser`; FoldSteps is an internal repetition
-implementation. Neither fluent name is installed globally or exposed as a
-Syntax factory. Run [the pipeline and fold example](examples/value-pipelines.php).
+implementation. Both fluent names load automatically but are not exposed as
+Syntax factories. Run [the pipeline and fold example](examples/value-pipelines.php).
 
 `record()` is a vocabulary factory accepting an ordered array of field parsers.
 Fields recognize in insertion order, and their lazy, cached values retain the
@@ -117,8 +116,8 @@ No compatibility aliases are provided.
 
 No PHPStan extension or configuration include is required. Remove the former
 `phpstan-extension.neon` and `extensions/Extraction/phpstan.neon` includes.
-PHPDoc declares the bundled vocabulary for analysis, but cannot prove that a
-Syntax instance installed Extraction; applications must still opt in at runtime.
+PHPDoc declares the bundled vocabulary for analysis; runtime dispatch discovers
+it automatically. Custom vocabulary overrides retain their own runtime contracts.
 Mappings and pipelines infer callback return types; folds preserve the head's
 accumulator type and check compatible callback arguments/returns. Records, collections and overloaded factory
 operations have conservative types. See [static value types](semantic-values.md#static-value-types).

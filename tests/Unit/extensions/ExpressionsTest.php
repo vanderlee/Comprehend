@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Extensions;
 
-use BadMethodCallException;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -112,10 +111,10 @@ test('nullable operator syntax is rejected even when adjacent operands consume',
     )->freeze();
 });
 
-test('expression extension remains optional and zero operator tables preserve primary values', function (): void {
+test('expression extension loads automatically and zero operator tables preserve primary values', function (): void {
     $base = Extraction::syntax();
     $syntax = $base->extend(new Expressions());
-    $this->assertNotContains('operatorexpression', $base->names());
+    $this->assertContains('operatorexpression', $base->names());
     $this->assertSame(7, $syntax->operatorExpression(
         Extraction::syntax()->text('7')->mapText('intval'),
     )->parse('7')->value());
@@ -123,6 +122,5 @@ test('expression extension remains optional and zero operator tables preserve pr
         Extraction::syntax()->text('7')->mapText('intval'),
         'x',
     )->parse('7')->value());
-    $this->expectException(BadMethodCallException::class);
-    Extraction::syntax()->operatorExpression('a');
+    $this->assertSame('a', $base->operatorExpression('a')->parse('a')->value());
 });

@@ -11,20 +11,18 @@ use Vanderlee\Comprehend\Source\ByteSource;
 
 uses(TestCase::class);
 
-test('extraction authoring is opt in and does not reserve extraction names in core', function (string $name): void {
+test('discovered extraction names remain available for explicit overrides', function (string $name): void {
     $this->assertNotContains(strtolower($name), C::syntaxNames());
     $syntax = C::syntax()->defineRule($name, static fn(): C => C::text('custom'));
     $this->assertSame('custom', $syntax->call($name)->parse('custom')->value());
-    $this->expectException(BadMethodCallException::class);
-    C::syntax()->call($name);
+    $this->assertContains(strtolower($name), C::syntax()->names());
 })->with([
     'collect', 'record', 'valueChoice', 'manyValues', 'someValues', 'repeatValues', 'optionalValue',
     'map', 'mapText',
 ]);
 
-test('unscoped expressions do not acquire extraction fluent operations', function (string $method): void {
-    $this->expectException(BadMethodCallException::class);
-    C::text('a')->$method();
+test('unscoped expressions load extraction fluent operations', function (string $method): void {
+    $this->assertSame('A', C::text('a')->$method('strtoupper')->parse('a')->value());
 })->with(['map', 'mapText']);
 
 test('extraction attaches explicitly and leaves original vocabularies and expressions unchanged', function (): void {
@@ -34,7 +32,7 @@ test('extraction attaches explicitly and leaves original vocabularies and expres
     $bound = $syntax->of($plain)->mapText('intval');
     $this->assertSame(1, $bound->parse('1')->value());
     $this->assertSame('1', $plain->parse('1')->value());
-    $this->assertNotContains('collect', $base->names());
+    $this->assertContains('collect', $base->names());
     $this->assertSame([1, 1], $syntax->collect($bound, $bound)->parse('11')->value());
     $this->assertSame([1], $syntax->manyValues($bound)->parse('1')->value());
 });

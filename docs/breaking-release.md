@@ -7,10 +7,9 @@ The changelog remains marked Unreleased until publication is ready.
 
 ## Caller changes
 
-Application extraction helpers now require the opt-in [Extraction expansion](extraction.md).
-Replace static helpers such as `C::collect(...)` with
-`Extraction::syntax()->collect(...)`, and attach existing expressions or rule
-references with `$syntax->of($parser)` before fluent extraction calls. Low-level
+Application extraction helpers live in the automatically loaded
+[Extraction expansion](extraction.md). Static helpers such as `C::collect(...)`
+and fluent mappings need no registration. Low-level
 extraction classes moved from `Parser\Structure` to `Extensions\Extraction\Parser`.
 Core `separatedBy()` projects item values; `thenIgnore()`, `ignoreThen()` and
 `between()` select operand values without installing an extension. Static analysis uses

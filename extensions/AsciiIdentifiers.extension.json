@@ -1,0 +1,5 @@
+{
+  "class": "Vanderlee\\Comprehend\\Extensions\\AsciiIdentifiers",
+  "rules": ["asciiIdentifier", "asciiKeyword"],
+  "fluents": ["asciiIdentifier", "asciiKeyword"]
+}

@@ -144,7 +144,7 @@ The bundled RFC grammars import the facade as `C` with
 | `some()` / `plus()`, `many()` / `star()` / `kleene()`, `maybe()` / `optional()` | One or more, zero or more, zero or one |
 | `some(item)`, `many(item)`, `maybe(item)`, `repeat(item, min, max)` | Static repetition factories accepting a facade, Parser or literal string |
 | `named(string\|int\|callable)`, `tag(...tags)`, `mapValue()` | Fixed or pure dynamic names, tags and semantic mappings on a detached graph |
-| Extraction's `mapText(callable)` | Opt-in text mapping; activate the [Extraction expansion](extraction.md) first |
+| Extraction's `mapText(callable)` | Text mapping through the automatically loaded [Extraction expansion](extraction.md) |
 | `guard()`, `validateSemantic()`, `onCommit()`, `assignTo()` | Pure recognition predicate, selected semantic validation, explicit committed effects and assignments |
 | `setResult()`, `concatResult()`, `pushResult()` | Cached named result collections, independent of source text |
 | `label(text)` | Replace entry-position expectations, preserving deeper failures; see [labels](diagnostics.md#expectation-labels) |

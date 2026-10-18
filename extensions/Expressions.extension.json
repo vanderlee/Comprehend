@@ -1,0 +1,5 @@
+{
+  "class": "Vanderlee\\Comprehend\\Extensions\\Expressions",
+  "rules": ["operatorExpression", "expressionChoice"],
+  "fluents": ["operatorExpression", "expressionChoice"]
+}

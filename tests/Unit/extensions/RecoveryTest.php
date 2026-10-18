@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Extensions;
 
-use BadMethodCallException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Extensions\Recovery;
@@ -13,15 +12,15 @@ use Vanderlee\Comprehend\Source\Span;
 
 uses(TestCase::class);
 
-test('recovery factories require explicit vocabulary installation', function (string $name): void {
+test('recovery factories are discovered before explicit vocabulary installation', function (string $name): void {
     $base = C::syntax();
     $syntax = $base->extend(new Recovery());
-    $this->assertNotContains(strtolower($name), $base->names());
+    $this->assertContains(strtolower($name), $base->names());
     $this->assertContains(strtolower($name), $syntax->names());
     $this->assertNotNull($syntax->rule($name));
     $this->assertNotNull($syntax->fluent($name));
-    $this->expectException(BadMethodCallException::class);
-    C::$name('ok', ';');
+    $this->assertNotNull($base->rule($name));
+    $this->assertNotNull($base->fluent($name));
 })->with(['recoverUntil', 'recoverDelimited', 'recoverItem', 'recoverWith']);
 
 test('recovery rules wrap unscoped expressions and retain the installed fluent vocabulary', function (): void {
@@ -35,8 +34,7 @@ test('recovery rules wrap unscoped expressions and retain the installed fluent v
     $this->assertSame('bad;', $result->rawText());
     $this->assertTrue($wrapped->recoverDelimited('(', ')')->parse('(bad;)')->hasRecovery());
     $this->assertFalse($plain->parse('bad;')->success);
-    $this->expectException(BadMethodCallException::class);
-    $plain->recoverUntil(';');
+    $this->assertTrue($plain->recoverUntil(';')->matchPrefix('bad;')->hasRecovery());
 });
 
 test('custom recovery rules and fluents share named probe conversion and byte spans', function (): void {

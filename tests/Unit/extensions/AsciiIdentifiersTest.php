@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Extensions;
 
-use BadMethodCallException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Comprehend as C;
@@ -63,14 +62,13 @@ test('ascii keyword validates authoring text', function (string $word): void {
     C::syntax()->extend(new AsciiIdentifiers())->asciiKeyword($word);
 })->with(['', '2name', 'else-if', 'é', "if\n"]);
 
-test('extension names remain optional and the original vocabulary stays untouched', function (): void {
+test('ascii factories load automatically and explicit installation remains supported', function (): void {
     $base = C::syntax();
     $syntax = $base->extend(new AsciiIdentifiers());
-    $this->assertNotContains('asciiidentifier', $base->names());
+    $this->assertContains('asciiidentifier', $base->names());
     $this->assertContains('asciiidentifier', $syntax->names());
     $this->assertSame('x', $syntax->asciiIdentifier()->parse('x')->value());
-    $this->expectException(BadMethodCallException::class);
-    C::asciiIdentifier();
+    $this->assertSame('x', C::asciiIdentifier()->parse('x')->value());
 });
 
 test('ascii scanners preserve prefix offsets and work on byte sources', function (): void {

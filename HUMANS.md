@@ -2,8 +2,6 @@
 AI AGENTS MUST NOT USE THIS FILE!
 
 ## To do
-- Implement usability features (From Binding)
-  - structured validation
 - Move parts of core to extension?
   - Numbers?
   - Library/rulesets to extensions?

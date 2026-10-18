@@ -492,7 +492,7 @@ final class Catalog
             return $builtin;
         }
 
-        return $this->rules[self::canonicalName($name)] ?? null;
+        return $this->rules[self::canonicalName($name)] ?? ExtensionLoader::defaults()->rule($name);
     }
 
     public function fluent(string $name): ?Closure
@@ -502,7 +502,7 @@ final class Catalog
             return $builtin;
         }
 
-        return $this->fluents[self::canonicalName($name)] ?? null;
+        return $this->fluents[self::canonicalName($name)] ?? ExtensionLoader::defaults()->fluent($name);
     }
 
     /**
@@ -514,6 +514,7 @@ final class Catalog
             ...self::builtinNames(),
             ...array_keys($this->rules),
             ...array_keys($this->fluents),
+            ...ExtensionLoader::defaults()->names(),
         ]));
     }
 }
