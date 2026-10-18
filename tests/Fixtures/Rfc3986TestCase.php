@@ -3,7 +3,7 @@
 namespace Tests\Fixtures;
 
 use Tests\ParserTestCase;
-use Vanderlee\Comprehend\Library\Rfc3986;
+use Vanderlee\Comprehend\Extensions\Library\Rfc3986;
 
 abstract class Rfc3986TestCase extends ParserTestCase
 {

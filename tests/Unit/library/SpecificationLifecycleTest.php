@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Src\Library;
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Library\Rfc2046;
-use Vanderlee\Comprehend\Library\Rfc8259;
-use Vanderlee\Comprehend\Library\Xml;
-use Vanderlee\Comprehend\Library\Yaml;
+use Vanderlee\Comprehend\Extensions\Library\Rfc2046;
+use Vanderlee\Comprehend\Extensions\Library\Rfc8259;
+use Vanderlee\Comprehend\Extensions\Library\Xml;
+use Vanderlee\Comprehend\Extensions\Library\Yaml;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Source\ByteSource;

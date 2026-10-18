@@ -28,6 +28,7 @@
 | Extensions | Bundled and Composer-advertised providers load on first use; `Syntax::extend(SyntaxExtension)` provides explicit local installation; [discovery and extension authoring](syntax-extensions.md) |
 | Expression tables | Optional `Extensions\Expressions`: `operatorExpression(primary, Operator...)`, `expressionChoice(alternatives...)`; [precedence and lifecycle](expressions.md) |
 | ABNF authoring | Bundled `Extensions\Abnf\Compiler::compile(string, root, numericEncoding, choice)` returning FrozenGrammar; [ABNF extension](abnf.md) |
+| Specification grammars | Discoverable subject factories such as `uri`, `emailAddress`, `dateTime`, `uuid`, `semver`, `languageTag`, `json`, `yaml`; explicit `rfcNNNN(rule: 'ROOT')`; direct classes in `Extensions\Library`; [complete catalog](libraries.md) |
 | Naming | `name(string|int, ?string = null, bool $leaf = false)` |
 | Meaning | Core `mapValue(callable)`, named set/concat/push collection operations |
 | Extraction expansion | Automatically loaded `Extensions\Extraction`: `map`, `mapText`, `collect`, `valueChoice`, `manyValues`, `someValues`, `repeatValues`, `optionalValue`; [classes and types](extraction.md) |
@@ -47,7 +48,7 @@ and detach their parser graphs at registration. `parser()` exports a detached
 Parser only for low-level integration. Factories can return facade values;
 Definition accepts facades and `build()` returns a facade. Wrap a custom Parser
 with `Comprehend::of()` to use the public authoring API.
-The former free functions in `Vanderlee\Comprehend\Library` have been removed.
+The former free functions in `Vanderlee\Comprehend\Extensions\Library` have been removed.
 
 See [Grammar authoring](grammar-authoring.md) for frozen factory lifetimes,
 immutable composition, safety limits and checked arithmetic/RFC examples.

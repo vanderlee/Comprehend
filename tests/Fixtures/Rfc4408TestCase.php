@@ -3,7 +3,7 @@
 namespace Tests\Fixtures;
 
 use Tests\ParserTestCase;
-use Vanderlee\Comprehend\Library\Rfc4408;
+use Vanderlee\Comprehend\Extensions\Library\Rfc4408;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 

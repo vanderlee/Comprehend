@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Directive\Prefer;
-use Vanderlee\Comprehend\Library\Rfc5234;
+use Vanderlee\Comprehend\Extensions\Library\Rfc5234;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Source\SourceMode;
 

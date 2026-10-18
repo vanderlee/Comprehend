@@ -9,10 +9,38 @@ use Vanderlee\Comprehend\Syntax\Catalog;
 use Vanderlee\Comprehend\Extensions\Extraction;
 use Vanderlee\Comprehend\Extensions\Numbers;
 use Vanderlee\Comprehend\Extensions\Optimizer\GraphOptimizer;
+use Vanderlee\Comprehend\Extensions\Library\SpecificationExtension;
 
 // Mirror factory names and signatures without loading PHPStan or running its extensions.
 $root = dirname(__DIR__);
-$facade = (new ReflectionClass(Comprehend::class))->getDocComment();
+$specificationFactories = [];
+$specificationMethods = [];
+foreach (glob($root . '/extensions/*.extension.json') as $manifestPath) {
+    $manifest = json_decode(file_get_contents($manifestPath), true, flags: JSON_THROW_ON_ERROR);
+    $class = $manifest['class'] ?? null;
+    if (!is_string($class) || !is_subclass_of($class, SpecificationExtension::class)) {
+        continue;
+    }
+    foreach ((new $class())->rules() as $name => $factory) {
+        $specificationFactories[$name] = $factory;
+        $parameters = [];
+        foreach ((new ReflectionFunction($factory))->getParameters() as $parameter) {
+            $parameters[] = $parameter->getType() . ' $' . $parameter->getName()
+                . ' = ' . var_export($parameter->getDefaultValue(), true);
+        }
+        $specificationMethods[] = ' * @method static self<string> ' . $name . '(' . implode(', ', $parameters) . ')';
+    }
+}
+$facadePath = $root . '/src/Comprehend.php';
+$facadeOriginal = str_replace("\r\n", "\n", file_get_contents($facadePath));
+$facade = preg_replace('/ \* BEGIN GENERATED SPECIFICATIONS.*? \* END GENERATED SPECIFICATIONS\n/s', '', $facadeOriginal);
+$facade = str_replace(
+    ' * @method static self<string> text(string $text)',
+    " * BEGIN GENERATED SPECIFICATIONS (tools/generate-syntax-phpdoc.php)\n"
+    . implode("\n", $specificationMethods) . "\n * END GENERATED SPECIFICATIONS\n"
+    . ' * @method static self<string> text(string $text)',
+    $facade,
+);
 $methods = [];
 preg_match_all('/@method static (.+) (\w+)\((.*)\)/', $facade, $matches, PREG_SET_ORDER);
 foreach ($matches as $match) {
@@ -26,6 +54,7 @@ $lines = [];
 $extensionFactories = [
     ...iterator_to_array((new Numbers())->rules()),
     ...iterator_to_array((new GraphOptimizer())->rules()),
+    ...$specificationFactories,
 ];
 $factoryNames = array_values(array_unique([
     ...Catalog::builtinNames(),
@@ -85,10 +114,11 @@ $source = str_replace(
     $source,
 );
 if (in_array('--check', $argv, true)) {
-    if (str_replace("\r\n", "\n", file_get_contents($path)) !== $source) {
-        fwrite(STDERR, "Syntax PHPDoc is stale; run php tools/generate-syntax-phpdoc.php\n");
+    if (str_replace("\r\n", "\n", file_get_contents($path)) !== $source || $facadeOriginal !== $facade) {
+        fwrite(STDERR, "Factory PHPDoc is stale; run php tools/generate-syntax-phpdoc.php\n");
         exit(1);
     }
 } else {
+    file_put_contents($facadePath, $facade);
     file_put_contents($path, $source);
 }

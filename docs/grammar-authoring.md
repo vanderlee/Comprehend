@@ -79,7 +79,7 @@ during freezing and must not perform application effects. Factory output and RFC
 imports are detached just like ordinary object grammar children:
 
 ```php
-use Vanderlee\Comprehend\Library\Rfc3986;
+use Vanderlee\Comprehend\Extensions\Library\Rfc3986;
 
 $rfc = new Rfc3986();
 $rules = new Ruleset();
@@ -431,7 +431,7 @@ Base factories recognize digits without prefixes such as `0x` or `0b`.
 
 ### Replacing the Library functions
 
-The free functions in `Vanderlee\Comprehend\Library` have been removed. Import
+The free functions in `Vanderlee\Comprehend\Extensions\Library` have been removed. Import
 `Vanderlee\Comprehend\Comprehend` and compose facade values instead:
 
 | Former call | Comprehend replacement |

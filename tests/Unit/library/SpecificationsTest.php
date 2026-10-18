@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Src\Library;
 
-use Vanderlee\Comprehend\Library\AbstractSpecification;
-use Vanderlee\Comprehend\Library\Rfc3987;
+use Vanderlee\Comprehend\Extensions\Library\AbstractSpecification;
+use Vanderlee\Comprehend\Extensions\Library\Rfc3987;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
 
@@ -15,7 +15,7 @@ test('specification rules recognize complete source spans', function (
     string $input,
     bool $accepted,
 ): void {
-    $name = 'Vanderlee\\Comprehend\\Library\\' . $class;
+    $name = 'Vanderlee\\Comprehend\\Extensions\\Library\\' . $class;
     $specification = new $name();
     expect($specification)->toBeInstanceOf(AbstractSpecification::class);
     $grammar = $rule === 'ROOT' ? $specification->freeze() : $specification->rule($rule)->freeze();
@@ -192,7 +192,7 @@ test('Unicode specification roots reject malformed UTF-8 in byte sources', funct
         'Rfc6532' => "\xff" . '@example.org',
     ];
     foreach ($inputs as $class => $input) {
-        $name = 'Vanderlee\\Comprehend\\Library\\' . $class;
+        $name = 'Vanderlee\\Comprehend\\Extensions\\Library\\' . $class;
         expect((new $name())->freeze()->parse(new ByteSource($input))->success)->toBeFalse();
     }
 })->group('library', 'specifications');

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Src\Library;
 
 use Vanderlee\Comprehend\Comprehend as C;
-use Vanderlee\Comprehend\Library\Rfc4408;
-use Vanderlee\Comprehend\Library\Rfc7208;
+use Vanderlee\Comprehend\Extensions\Library\Rfc4408;
+use Vanderlee\Comprehend\Extensions\Library\Rfc7208;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
 

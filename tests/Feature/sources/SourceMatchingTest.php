@@ -11,7 +11,7 @@ use Vanderlee\Comprehend\Builder\Definition;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Directive\Prefer;
 use Vanderlee\Comprehend\Directive\Space;
-use Vanderlee\Comprehend\Library\Rfc2234;
+use Vanderlee\Comprehend\Extensions\Library\Rfc2234;
 use Vanderlee\Comprehend\Parser\Structure\All;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Except;

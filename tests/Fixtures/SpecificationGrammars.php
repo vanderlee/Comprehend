@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures;
 
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
-use Vanderlee\Comprehend\Library\AbstractSpecification;
+use Vanderlee\Comprehend\Extensions\Library\AbstractSpecification;
 
 /** Reuses immutable grammar snapshots across the upstream acceptance cases. */
 final class SpecificationGrammars

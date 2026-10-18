@@ -1,0 +1,7 @@
+{
+  "class": "Vanderlee\\Comprehend\\Extensions\\Yaml",
+  "rules": [
+    "yaml"
+  ],
+  "fluents": []
+}

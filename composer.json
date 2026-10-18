@@ -31,7 +31,6 @@
   "autoload": {
     "psr-4": {
       "Vanderlee\\Comprehend\\Extensions\\": "extensions/",
-      "Vanderlee\\Comprehend\\Library\\": "library/",
       "Vanderlee\\Comprehend\\": "src"
     }
   },

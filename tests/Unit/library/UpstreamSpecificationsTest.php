@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Src\Library;
 
 use Tests\Fixtures\SpecificationGrammars;
-use Vanderlee\Comprehend\Library\Rfc9535;
-use Vanderlee\Comprehend\Library\Rfc9651;
-use Vanderlee\Comprehend\Library\Yaml;
+use Vanderlee\Comprehend\Extensions\Library\Rfc9535;
+use Vanderlee\Comprehend\Extensions\Library\Rfc9651;
+use Vanderlee\Comprehend\Extensions\Library\Yaml;
 use Vanderlee\Comprehend\Source\ByteSource;
 
 test('upstream specification syntax acceptance', function (

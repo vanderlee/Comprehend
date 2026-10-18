@@ -1,0 +1,7 @@
+{
+  "class": "Vanderlee\\Comprehend\\Extensions\\Xml",
+  "rules": [
+    "xmlDocument"
+  ],
+  "fluents": []
+}

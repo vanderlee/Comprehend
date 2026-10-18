@@ -2,10 +2,7 @@
 AI AGENTS MUST NOT USE THIS FILE!
 
 ## To do
-- Move parts of core to extension?
-  - Library/rulesets to extensions?
-- IPv6/IPv4 parsers (Library?)
-- Deploy milestone target 1?
+- Move base and json files of extensions into extension subdirectories
 
 ## Future directions
 - Implement some known languages as examples?
