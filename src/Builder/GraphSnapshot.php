@@ -26,6 +26,8 @@ final class GraphSnapshot
      * @var array<string, Parser>
      */
     private array $identities = [];
+    /** @var array<string, Parser> Original rule targets retained before descending into recursive productions. */
+    private array $ruleTargets = [];
     /** @var SplObjectStorage<Parser|Definition, true> Participants whose snapshot() has not returned. */
     private SplObjectStorage $snapshotting;
 
@@ -75,6 +77,15 @@ final class GraphSnapshot
     public function copyDefinition(Definition $definition): Definition
     {
         return $this->copyObject($definition);
+    }
+
+    /** @internal Resolve each production once while preserving independently configured references. */
+    public function copyRuleTarget(RuleReference $reference): Parser
+    {
+        $key = $this->identityKey($reference->graphKey());
+        $this->ruleTargets[$key] ??= $reference->graphTarget(true);
+
+        return $this->copy($this->ruleTargets[$key]);
     }
 
     /** Whether deferred grammar targets should be freshly resolved in this snapshot. */

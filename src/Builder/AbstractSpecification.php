@@ -18,11 +18,15 @@ abstract class AbstractSpecification extends AbstractRuleset
     {
         $separator = strrpos(static::class, '\\');
         $name = $separator === false ? static::class : substr(static::class, $separator + 1);
-        parent::__construct(array_replace(
+        parent::__construct([], $name);
+        $definitions = array_replace(
             $this->definitions(),
             [self::ROOT => $this->rule(static::ROOT_RULE)],
             $overwrites,
-        ), $name);
+        );
+        foreach ($definitions as $rule => $definition) {
+            $this->define($rule, $definition);
+        }
     }
 
     /** @return array<string, C|Parser|Definition|callable> */

@@ -16,6 +16,18 @@ test('specifications select their declared root and retain named rules', functio
     expect($specification->rule('alternate')->parse('b')->success)->toBeTrue();
 });
 
+test('specification roots and nested references retain their group in every entry path', function (): void {
+    $specification = new ExampleSpecification();
+    foreach ([$specification->freeze()->parse('a!'), $specification->rule('entry')->parse('a!')] as $result) {
+        $ast = $result->ast();
+        $entry = $ast->name === 'entry' ? $ast : $ast->firstNamed('entry', 'ExampleSpecification');
+
+        expect($entry)->not->toBeNull();
+        expect($entry->group)->toBe('ExampleSpecification');
+        expect($entry->firstNamed('item', 'ExampleSpecification')->rawText())->toBe('a');
+    }
+});
+
 test('constructor overrides reach root references without changing other instances', function (): void {
     $specification = new ExampleSpecification(['item' => static fn(): C => C::text('x')]);
 

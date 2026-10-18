@@ -1,6 +1,8 @@
 # Application-value comparison with Extraction
 
-The [diagnostic/lifecycle allocation comparison](benchmarks/diagnostic-lifecycle-2026-10-16.md)
+> Historical benchmark artifacts referenced on this page are no longer included in the documentation.
+
+The diagnostic/lifecycle allocation comparison
 reruns these cases against Binding after diagnostic snapshot caching and
 validation-state pruning. It shows lower retained memory and mixed small timing changes.
 
@@ -113,7 +115,7 @@ bytes (822 CST nodes) and 3,464 bytes. These deltas were stable across the three
 workers. Both libraries reported 4 MiB allocated process peaks in all measured
 cases; allocator granularity obscures the difference visible in retained used bytes.
 
-The [raw runtime report](benchmarks/extraction-2026-10-16.json) contains all oracle
+The raw runtime report contains all oracle
 inputs, diagnostics, measurements, dependency reference, source hashes and the
 reproduction command. These data demonstrate an extraction-cost gap on these
 workloads; they do not establish a universal speed ratio or attribute the gap
@@ -165,7 +167,7 @@ For the record, retained used bytes were 56848 (existing), 54808 (scanner spacin
 were 398144, 397328, 729784, and 3464 respectively. Whitespace scanners reduce
 recognition overhead substantially while most retained syntax remains present.
 
-The [raw scanner report](benchmarks/extraction-scanners-2026-10-16.json) records
+The raw scanner report records
 all timings, correctness observations, source hashes and the command. Current
 regression tests also cover six additional lexical cases, including whitespace
 inside names/numbers, invalid name prefixes and leading zeros. Diagnostic output
@@ -216,7 +218,7 @@ does not imply it is safe on failure: the runtime wrapper checks success first.
 The eight remaining argument-type diagnostics in the Extraction grammar involve
 mixed combinator inputs, field construction and callback purity under this
 analyzer. Comprehend's factory passes the same probe. See the
-[raw type observations](benchmarks/extraction-types-2026-10-16.json). Extraction's native
+raw type observations. Extraction's native
 analyzer workflow was not run, so this is not a comparison with its usual tooling.
 
 ## Implications

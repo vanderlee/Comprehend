@@ -1,5 +1,7 @@
 # Performance measurements and retention guarantees
 
+> Historical benchmark artifacts referenced on this page are no longer included in the documentation.
+
 For application-value extraction, see the [phase and allocation profile](extraction-profiling.md).
 It separates recognition/CST costs from first and cached value projection.
 
@@ -148,7 +150,7 @@ not demonstrate transparent caching of mutable references: those remain fresh.
 The before URI grammar rejected the intended-valid IPv6 fixture; that input is
 reported as an acceptance mismatch, not included as successful validation.
 
-[Raw alternating-worker reports](benchmarks/small-facades-uri-2026-10-16.json)
+Raw alternating-worker reports
 include the fixture driver, source-copy manifest, ranges and reproduction steps.
 Run `php docs/examples/uri.php` for a quick acceptance/source-round-trip check.
 
@@ -193,7 +195,7 @@ run; the subject cache is a benefit for arbitrary full-subject matching, not a
 replacement for bounded literal windows. Before/after runs are separate local
 samples, not isolated attribution or latency guarantees.
 
-[Raw reports](benchmarks/sparse-subjects-2026-10-16.json) include ranges and the
+Raw reports include ranges and the
 retention probe source. Reproduce the standard fixture with:
 
 ```sh
@@ -238,7 +240,7 @@ unique Unicode members. Cold preparation and source setup are outside timing.
 Literal/repeat timings include result release; Set timings exclude it. No file
 or non-ASCII folding speedup is inferred from this table.
 
-[Raw before/after data](benchmarks/inner-loops-2026-10-16.json) records ranges,
+Raw before/after data records ranges,
 runtime, timings and commands. Run the maintained sweep with:
 
 ```sh
@@ -294,7 +296,7 @@ The acceptance language matches nonempty repeated `Text('a')`, but the CST shape
 and mismatch expectations deliberately differ. Root-only AST and byte-length
 semantic projections in the harness are inexpensive and do not model rich outputs.
 
-[Raw before/after reports](benchmarks/literal-callback-2026-10-15.json) retain
+Raw before/after reports retain
 commands, ranges, peaks and source setup times. Samples share a worker process,
 have no explicit warmup and include allocator retention and fixture storage.
 These results are workload-specific baselines, not latency guarantees.
@@ -319,20 +321,20 @@ is an explicit facility rather than a blanket replacement. Source setup for the
 1 MiB file was 128.80 ms versus 5.74 ms in memory, excluded from parse time.
 Budget bookkeeping and I/O have costs; no overall speedup is claimed.
 
-Artifacts: [pre-change baseline](benchmarks/phase4-baseline.json),
-[UTF-8 memory](benchmarks/phase4-memory.json),
-[byte memory](benchmarks/phase4-memory-byte.json),
-[byte file](benchmarks/phase4-byte-file.json),
-[UTF-8 file](benchmarks/phase4-utf8-file.json),
-[large text file](benchmarks/phase4-large-file.json),
-[large general regex](benchmarks/phase4-large-regex.json),
-[large literal window](benchmarks/phase4-large-window.json),
-[megabyte file](benchmarks/phase4-megabyte-window.json),
-[megabyte memory](benchmarks/phase4-megabyte-memory.json).
+Artifacts: pre-change baseline,
+UTF-8 memory,
+byte memory,
+byte file,
+UTF-8 file,
+large text file,
+large general regex,
+large literal window,
+megabyte file,
+megabyte memory.
 
 ## Memoization decision
 
-Memoization is **deferred**. The [shared-prefix profile](benchmarks/phase4-profile.json)
+Memoization is **deferred**. The shared-prefix profile
 recorded seven parser entries, one repeated parser/byte position and 4105 work
 units. It identifies a synthetic optimization candidate, not a demonstrated
 cache benefit. Scope context is omitted from this bounded profile; repeated

@@ -54,20 +54,15 @@ final class RuleReference extends Parser implements AnalyzableParser
     public function snapshot(GraphSnapshot $context): Parser
     {
         $copy = clone $this;
+        $context->registerCopy($this, $copy);
         if (!$context->resolvesReferences()) {
             // Authoring copies retain their builder so forward definitions remain visible.
-            $context->registerCopy($this, $copy);
 
             return $copy;
         }
 
-        // Register before resolving the factory so recursive references find this destination.
-        $shared = $context->registerIdentity($this, $copy, [self::class, $this->graphKey()]);
-        if ($shared !== $copy) {
-            return $shared;
-        }
-
-        $copy->bindSnapshotTarget($context->copy($this->graphTarget(true)));
+        // Share the production, never the reference's guards, semantics or tree metadata.
+        $copy->bindSnapshotTarget($context->copyRuleTarget($this));
 
         return $copy;
     }

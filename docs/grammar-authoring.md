@@ -47,6 +47,10 @@ returns are grammar errors. Named references preserve their Ruleset group in
 AST/diagnostic output. Ruleset roots inherit the selected root's typed value
 unless the Ruleset has its own mapping.
 
+Freezing shares resolved productions while preserving each reference's own guards,
+names, tags, value mappings, semantic validators and commit effects. Specification
+roots and nested references retain the specification's group name.
+
 Ruleset constructor entries, `define()` and `root()` accept Comprehend values
 directly. Registration exports a detached parser graph internally, preserving
 facade isolation without explicit `parser()` calls. Deferred references still

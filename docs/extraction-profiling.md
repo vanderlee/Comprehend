@@ -1,5 +1,7 @@
 # Extraction profiling
 
+> Historical benchmark artifacts referenced on this page are no longer included in the documentation.
+
 The extraction profile separates recognition and CST construction from lazy
 application values, cached access, result release and cycle collection. It uses
 the existing [Extraction comparison](extraction-comparison.md) grammar and independent
@@ -28,7 +30,7 @@ comparison variant. Without it, the original `set()->many()` policy is used.
 Failure and Diagnostic: method call stacks, diagnostic byte offsets, expectations
 and rule paths, and failure progress. It stores copied scalar/array details, not
 the execution records. This adds probe overhead and is for attribution only.
-See the [failure-path investigation](benchmarks/failure-paths-2026-10-17.md).
+See the failure-path investigation.
 
 Parser-entry metrics run separately so their retained position map does not
 distort phase memory. Reports include PHP/PCRE versions and source/tool hashes.
@@ -48,7 +50,7 @@ self-times help locate candidates but do not establish native CPU percentages.
 
 ## Local result, 2026-10-16
 
-The [raw artifact](benchmarks/extraction-profile-2026-10-16.json) records PHP
+The raw artifact records PHP
 8.2.10 on Windows, five fresh workers per variant and case, with 15 observations
 per worker. Execution alternated baseline/current order. Values below are the
 median of the five worker medians, not confidence intervals.
@@ -103,7 +105,7 @@ start and end all match the parent interval. Parent and child still have separat
 execution records, concrete nodes, lazy values and effect lifecycles. Different
 intervals receive a new span; there is no pool or retained lookup table.
 
-The [span reuse artifact](benchmarks/span-reuse-2026-10-16.json) uses the same
+The span reuse artifact uses the same
 profiler, with five fresh workers per variant/case and 15 observations per worker,
 alternating execution order. Nested recognition creates 1,929 spans instead of
 2,207 (278 fewer, 12.6%). Retained memory after projection falls from 600,792 to
@@ -127,7 +129,7 @@ Previously, retaining it created state on the following match and could keep an
 otherwise unnecessary execution graph alive. Children with deferred operations
 still retain their original ordering and commit lifecycle.
 
-The [state allocation artifact](benchmarks/state-allocation-2026-10-16.json)
+The state allocation artifact
 compares this change against span reuse, using five fresh workers per
 variant/case, 15 observations per worker and alternating order. Nested recognition
 creates 417 execution states instead of 550 (24.2% fewer). Other source allocation

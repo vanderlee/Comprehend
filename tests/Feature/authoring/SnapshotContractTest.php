@@ -166,7 +166,7 @@ test('resolving ruleset prunes unused factories and remains detached', function 
     $this->assertTrue($rules->parseAll(new ByteSource('b'))->success);
 });
 
-test('equivalent object arguments reuse references without merging distinct objects', function (): void {
+test('object arguments share targets while references stay distinct', function (): void {
     $calls = 0;
     $first = (object) ['text' => 'a'];
     $second = (object) ['text' => 'a'];
@@ -185,7 +185,8 @@ test('equivalent object arguments reuse references without merging distinct obje
     $children = $copy->children();
 
     $this->assertSame(2, $calls);
-    $this->assertSame($children[0], $children[2]);
-    $this->assertNotSame($children[0], $children[1]);
+    $this->assertNotSame($children[0], $children[2]);
+    $this->assertSame($children[0]->children()[0], $children[2]->children()[0]);
+    $this->assertNotSame($children[0]->children()[0], $children[1]->children()[0]);
     $this->assertTrue($copy->parseAll(new ByteSource('aaa'))->success);
 });
