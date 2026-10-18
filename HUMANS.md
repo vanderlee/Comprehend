@@ -5,12 +5,13 @@ AI AGENTS MUST NOT USE THIS FILE!
 - Final review
 
 ## Future directions
-- Implement some known languages as examples?
+- Implement some known languages as example?
 - Performance improvements overall.
   - Make things optional.
   - Look at inner loops.
   - Move some parsers to regex.
-- Comparisons.
+- Feature comparisons.
+- Add solid test coverage.
 
 ## Ongoing concerns
 - Benchmark and improve performance

@@ -24,26 +24,13 @@ cached and rethrown; a partially executed effect sequence is never retried or
 reported as committed. External effects cannot be rolled back automatically.
 Recursive value reads, named-result evaluation, validation and commit are errors.
 
-Internally, each selected match owns an effect execution with pending, running,
-completed and failed states. Shared child traversal executes effects once;
-explicit commit during running effects is rejected. A failed execution retains
-the original exception and never transitions back to pending.
-
 Grammar callbacks/validators/mappings/names are snapshotted per recognition.
-After CST construction, validation traversal retains children carrying validators,
-recoveries or descendant validation. Value-only concrete children do not require
-validation traversal. Their separate value, collection and commit dependencies
-remain intact, including commit status observable through a selected child result.
-Custom execution-record subclasses conservatively retain their validation path.
-Selected-value sequences can forward a built-in child's own cached value
-without allocating another semantic projection. The selected child's narrower
-span still determines its default text. Custom records and delegated values
-retain a separate cached projection, preserving custom getter and mapping
-registration behavior. Outer mapping overrides and explicit commit remain
-independent of this optimization.
 Discarded alternative callbacks and speculative trivia produce no committed
 effects. A semantic rejection does not retry a syntactically selected choice;
 use a pure guard when rejection belongs to recognition.
+
+For runtime maintenance details, see
+[lifecycle implementation notes](contribute.md#lifecycle-implementation-notes).
 
 See [structured validation](validation.md), [semantic values](semantic-values.md), [ParseResult](parse-results.md) and
 the [runnable examples](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/execution.php).

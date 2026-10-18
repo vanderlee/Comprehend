@@ -52,6 +52,7 @@ nav:
       - Concrete syntax trees: concrete-trees.md
       - Abstract syntax trees: ast.md
       - Semantic values: semantic-values.md
+      - Structured validation: validation.md
       - Lifecycle and effects: lifecycle.md
       - Serialization: serialization.md
   - Extensions:

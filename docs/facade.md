@@ -10,8 +10,12 @@ snapshot. Reusing a facade expression does not mutate previously built grammars.
 Ruleset constructor entries, `define()` and `root()` accept facade values
 directly and export detached parsers internally when registering them.
 Both facade and frozen grammars expose `parse()`, `parseAll()` and `matchPrefix()`.
-Facade parsing freezes current definitions per call; frozen parsing reuses its
-fixed graph. Parsing and AST navigation never commit application effects.
+Facade parsing prepares a snapshot on first use and reuses it when the entire
+graph declares the `ReusableSnapshot` capability. Built-ins qualify by exact
+class; custom subclasses must explicitly opt in. Deferred rules, definitions and
+other custom parsers refresh on each call. Freeze those explicitly when repeated
+parsing must use a fixed graph. Frozen parsing always reuses its fixed graph.
+Parsing and AST navigation never commit application effects.
 Shared factory/fluent names use authoring-only magic dispatch. Extend syntax in
 an immutable scope with `Comprehend::syntax()->defineRule(name, factory)`; factories
 still produce the same graph, and unknown names raise errors. Ruleset lookup

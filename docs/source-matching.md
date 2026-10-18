@@ -15,8 +15,10 @@ case mappings that expand into more than one code point.
 Regex matches must begin at the supplied byte position and consume a nonempty
 match. Text mode enables PCRE UTF-8, rejects `\C` byte escapes and checks complete
 code-point endpoints. Byte mode rejects regex UTF options. Regex execution errors
-throw rather than masquerading as ordinary failures. The whole subject may be
-accessed; bounded regex windows are later work.
+throw rather than masquerading as ordinary failures. General regexes retain
+full-subject semantics and may access the whole source. For quoted literals,
+`Regex::literalWindow(string)` and the facade's `literalWindow()` factory provide
+bounded matching. See [file input](file-input.md) for source-memory costs.
 
 Start/End use source byte positions. Nothing succeeds with a zero-width span;
 repeating a nullable parser throws. Combinators retain byte consumption and
