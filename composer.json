@@ -1,8 +1,8 @@
 {
   "name": "vanderlee/comprehend",
-  "description": "Framework for building BNF LR(1) parsers",
+  "description": "PHP parser combinators with ABNF authoring, immutable syntax trees and explicit effects",
   "type": "library",
-  "keywords": ["parser", "bnf", "abnf", "lexer", "tokenizer", "ast"],
+  "keywords": ["parser", "parser-combinator", "abnf", "unicode", "cst", "ast"],
   "homepage": "https://github.com/vanderlee/Comprehend",
   "license": "MIT",
   "support": {
@@ -10,18 +10,33 @@
     "source": "https://github.com/vanderlee/Comprehend/"
   },
   "require": {
-    "php": ">=7.0.0",
-    "ext-dom": "*",
-    "ext-json": "*"
+    "php": ">=8.2.0",
+    "ext-json": "*",
+    "ext-mbstring": "*"
+  },
+  "config": {
+    "platform": {"php": "8.2.0"},
+    "allow-plugins": {"pestphp/pest-plugin": true}
+  },
+  "suggest": {
+    "ext-dom": "Required only for CST/AST XML serialization via toXml()."
   },
   "require-dev": {
-    "codacy/coverage": "dev-master",
-    "phpunit/phpunit": "6.* || ^9.6",
-    "phpmd/phpmd": "2.6.0"
+    "friendsofphp/php-cs-fixer": "^3.95",
+    "phpstan/phpstan": "^2.1",
+    "pestphp/pest": "^2.36.1",
+    "phpmd/phpmd": "2.6.0",
+    "squizlabs/php_codesniffer": "^4.0"
   },
   "autoload": {
     "psr-4": {
+      "Vanderlee\\Comprehend\\Extensions\\": "extensions/",
       "Vanderlee\\Comprehend\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
     }
   }
 }

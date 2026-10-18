@@ -1,91 +1,75 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Match;
 
-use Exception;
 use InvalidArgumentException;
-use Vanderlee\Comprehend\Core\Token;
+use Vanderlee\Comprehend\Result\Diagnostic;
+use Vanderlee\Comprehend\Source\Span;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 /**
- * Description of ParserToken.
+ * Carries source metadata and observed progress between recognition operations. ParseResult
+ * wraps these internal execution records as the public result API.
  *
- * @author Martijn
- *
- * @property-read bool $match   Success or failure?
- * @property-read int $length  Length of the match
- * @property-read array $results List of output results
- * @property-read string|array|null $result  Default output result
- * @property-read Token|null $token
+ * @internal Execution record, not a public result or serialization model.
  */
 abstract class AbstractMatch
 {
-    protected $length;
+    public readonly bool $accepted;
+    public ?Span $span = null;
+    public ?int $farthestFailure = null;
+    public ?Diagnostic $diagnostic = null;
+    public ?ConcreteNode $node = null;
 
-    /**
-     * @param string $name
-     *
-     * @return mixed
-     * @throws Exception
-     *
-     */
-    public function __get(string $name)
+    /** $length is byte progress; failed attempts still consume zero bytes. */
+    public function __construct(public readonly int $length = 0)
     {
-        switch ($name) {
-            case 'length':
-                return $this->length;
-            case 'results':
-                return [];
-            case 'result':
-            case 'token':
-                return null;
+        if ($length < 0) {
+            throw new InvalidArgumentException('Recognition progress cannot be negative');
         }
-
-        throw new InvalidArgumentException('Property name `' . $name . '` not recognized');
+        $this->accepted = $this instanceof Success;
     }
 
-    /**
-     * Create a new match.
-     *
-     * @param int $length
-     */
-    public function __construct(int $length = 0)
+    public function setConcreteNode(ConcreteNode $node): void
     {
-        $this->length = $length;
+        if (!$this->accepted || $node->span !== $this->span) {
+            throw new InvalidArgumentException('Concrete root must use the successful match span');
+        }
+        $this->node = $node;
     }
 
-    /**
-     * Resolve any match stuff (should only ever be called from AbstractParser).
-     * Not for human consumption.
-     *
-     * @return $this
-     */
-    public function resolve(): AbstractMatch
+    public function setSourceMetadata(Span $span, ?int $farthestFailure, ?Diagnostic $diagnostic = null): void
     {
-        return $this;
+        if (!$this->accepted && $span->byteLength() !== 0) {
+            throw new InvalidArgumentException('Failed matches must have zero-width spans');
+        }
+        // A diagnostic has already checked this exact source position at construction.
+        if (
+            $farthestFailure !== null && (
+                $diagnostic === null
+                || $diagnostic->source !== $span->source
+                || $diagnostic->byteOffset !== $farthestFailure
+            )
+        ) {
+            Span::assertByteOffset($span->source, $farthestFailure);
+        }
+        $this->span = $span;
+        $this->farthestFailure = $farthestFailure;
+        $this->diagnostic = $diagnostic;
     }
 
     /**
-     * Return the result for the name specified or the default value if not set.
-     *
-     * @param string|null $name
-     * @param mixed $default
-     *
-     * @return mixed
+     * @return array<array-key, mixed>
      */
-    public function getResult(string $name = null, $default = null)
+    public function getResults(): array
+    {
+        return [];
+    }
+
+    public function getResult(?string $name = null, mixed $default = null): mixed
     {
         return $default;
-    }
-
-    /**
-     * Return whether there is a result for the name specified.
-     *
-     * @param string|null $name
-     *
-     * @return bool
-     */
-    public function hasResult(string $name = null): bool
-    {
-        return false;
     }
 }

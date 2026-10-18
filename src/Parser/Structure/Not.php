@@ -1,39 +1,95 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use InvalidArgumentException;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Parser\FailureDiagnosticAtStart;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Description of NotParser.
- *
- * @author Martijn
+ * Implements negative lookahead without consuming input. Rejects when its child matches and
+ * discards probe diagnostics so lookahead does not contaminate ordinary failures.
  */
-class Not extends Parser
+class Not extends Parser implements AnalyzableParser, FailureDiagnosticAtStart, ReusableSnapshot
 {
-    use ArgumentsTrait;
+    use ExactClassSnapshotReuseTrait;
+    use DefaultAnalysisTrait;
 
-    private $parser;
+    public function __construct(private Parser $parser) {}
 
-    public function __construct($parser)
+    protected function copyConfigurationTo(Parser $copy): void
     {
-        $this->parser = self::getArgument($parser);
+        if (!$copy instanceof self) {
+            throw new InvalidArgumentException('Not configuration requires a Not destination');
+        }
+        parent::copyConfigurationTo($copy);
+        $copy->parser = $this->parser;
     }
 
-    protected function parse(&$input, $offset, Context $context)
+    /** @internal Structural operand for graph analysis. */
+    public function getParser(): Parser
     {
-        $match = $this->parser->parse($input, $offset, $context);
-
-        return ($match instanceof Success)
-            ? $this->failure($input, $offset, $match->length)
-            : $this->success($input, $offset);
+        return $this->parser;
     }
 
-    public function __toString()
+    /** @return list<Parser> */
+    public function analysisLeadingParsers(NullabilityLookup $lookup): array
+    {
+        return [$this->parser];
+    }
+
+    public function analysisNullability(NullabilityLookup $lookup): ?bool
+    {
+        return true;
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        $this->parser = $context->copy($this->parser);
+    }
+
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return [$this->parser];
+    }
+
+    public function __toString(): string
     {
         return '!' . $this->parser;
+    }
+
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
+    {
+        $diagnostics = $session->diagnosticState();
+        try {
+            $match = $this->attemptChild($source, $byteOffset, $session);
+        } finally {
+            $session->restoreDiagnostics($diagnostics);
+        }
+
+        if ($match instanceof Success) {
+            return $this->failure($source, $byteOffset, $match->length);
+        }
+
+        return $this->success($source, $byteOffset);
+    }
+
+    protected function attemptChild(Source $source, int $offset, ParseSession $session): AbstractMatch
+    {
+        return $this->parser->recognizeInSession($source, $offset, $session);
     }
 }

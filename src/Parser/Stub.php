@@ -1,66 +1,89 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser;
 
-use InvalidArgumentException;
 use UnexpectedValueException;
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+use LogicException;
 
 /**
- * Description of StubParser.
- *
- * @property Parser|null $parser
+ * Provides an explicitly bound placeholder for recursive object grammars. Delegates to its
+ * assigned Parser; graph freezing rejects stubs that have no target.
  *
  * @author Martijn
  */
-class Stub extends Parser
+class Stub extends Parser implements AnalyzableParser, ReusableSnapshot
 {
-    use ArgumentsTrait;
+    use ExactClassSnapshotReuseTrait;
+    use ForwardingAnalysisTrait;
 
     /**
      * @var Parser|null
      */
-    private $parser = null;
+    private ?Parser $parser = null;
 
-    public function __set($name, $parser)
+    public function getParser(): ?Parser
     {
-        if ($name === 'parser') {
-            return $this->parser = self::getArgument($parser);
-        }
-
-        throw new InvalidArgumentException('Property `' . $name . '` does not exist');
+        return $this->parser;
     }
 
-    public function __get($name)
+    public function setParser(Parser $parser): static
     {
-        if ($name === 'parser') {
-            return $this->parser;
-        }
+        $this->parser = $parser;
 
-        throw new InvalidArgumentException('Property `' . $name . '` does not exist');
+        return $this;
     }
 
-    protected function parse(&$input, $offset, Context $context)
+    public function analysisError(): ?string
+    {
+        return $this->parser === null ? 'Unresolved stub' : null;
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        if ($this->parser !== null) {
+            $this->parser = $context->copy($this->parser);
+        }
+    }
+
+    /** @return list<Parser> */
+    public function children(): array
+    {
+        return $this->parser === null ? [] : [$this->parser];
+    }
+
+    protected function analysisTarget(): Parser
+    {
+        return $this->parser ?? throw new LogicException('Unresolved stub');
+    }
+
+    public function __toString(): string
+    {
+        /* @noinspection HtmlUnknownTag */
+        return $this->parser ? (string) $this->parser : '<undefined>';
+    }
+
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
         if ($this->parser === null) {
             throw new UnexpectedValueException('Missing parser');
         }
-
-        $match = $this->parser->parse($input, $offset, $context);
+        $match = $this->parser->recognizeInSession($source, $byteOffset, $session);
         if ($match instanceof Success) {
-            return $this->success($input, $offset, $match->length, $match);
+            return $this->success($source, $byteOffset, $match->length, $match);
         }
 
-        return $this->failure($input, $offset, $match->length);
-    }
-
-    public function __toString()
-    {
-        /* @noinspection HtmlUnknownTag */
-        return $this->parser
-            ? (string)$this->parser
-            : '<undefined>';
+        return $this->failure($source, $byteOffset, $match->length);
     }
 }

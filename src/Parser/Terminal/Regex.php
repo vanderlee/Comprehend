@@ -1,57 +1,198 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
 use InvalidArgumentException;
-use Vanderlee\Comprehend\Core\Context;
+use RuntimeException;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
+use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Source\SourceMode;
+use Vanderlee\Comprehend\Source\Utf8Source;
 
 /**
- * Matches regular expressions.
+ * Recognizes a PCRE pattern anchored at the current source offset. Integrates source-mode and
+ * boundary checks; literalWindow offers a bounded subject for known literals.
  *
  * @author Martijn
  */
-class Regex extends Parser
+class Regex extends Parser implements AnalyzableParser, ReusableSnapshot
 {
+    use ExactClassSnapshotReuseTrait;
+    use DefaultAnalysisTrait;
+    use DiagnosticExpectationTrait;
     use CaseSensitiveTrait;
 
-    /**
-     * @var string|null
-     */
-    private $pattern = null;
+    private string $pattern;
+    private ?string $windowLiteral = null;
+    /** @var array<string, string> */
+    private array $preparedPatterns = [];
+    private ?int $utf8Window = null;
 
     public function __construct(string $pattern)
     {
         if (empty($pattern)) {
             throw new InvalidArgumentException('Empty pattern');
         }
-
-        if (@preg_match($pattern, null) === false) {
+        if (@preg_match($pattern, '') === false) {
             throw new InvalidArgumentException('Invalid pattern');
         }
 
         $this->pattern = $pattern;
     }
 
-    protected function parse(&$input, $offset, Context $context)
+    /** Only quoted literals have a proven context-free, finite read window. */
+    public static function literalWindow(string $literal): self
     {
-        $this->pushCaseSensitivityToContext($context);
-        $pattern = $this->pattern . ($context->isCaseSensitive()
-                ? ''
-                : 'i');
-        $this->popCaseSensitivityFromContext($context);
+        if ($literal === '') {
+            throw new InvalidArgumentException('Empty window literal');
+        }
 
-        if (preg_match($pattern, $input, $match, 0, $offset) !== false) {
-            if (count($match) > 0 && mb_strlen($match[0]) > 0 && strpos($input, $match[0], $offset) === $offset) {
-                return $this->success($input, $offset, mb_strlen($match[0]));
+        $parser = new self('/\A' . preg_quote($literal, '/') . '/');
+        $parser->windowLiteral = $literal;
+
+        return $parser;
+    }
+
+    public function analysisNullability(NullabilityLookup $lookup): ?bool
+    {
+        return false;
+    }
+
+    public function lexicalLookahead(): ?int
+    {
+        // Only a single character class with an optional finite quantifier is context-free here.
+        // Exclude assertions, captures, mode switches, Unicode/byte escapes and unbounded repeats.
+        $finiteClass = '~^/\[(?:\\\\[dDsSwWnrtfv/\\\\\-]|\\\\x[0-9a-fA-F]{2}|[^\\\\\]\x80-\xff])+\]'
+            . '(?:\{([0-9]+)(?:,([0-9]+))?\})?/[AiD]*$~D';
+        if (preg_match($finiteClass, $this->pattern, $bounds) !== 1) {
+            return null;
+        }
+
+        return isset($bounds[1]) ? (int) ($bounds[2] ?? $bounds[1]) : 1;
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->pattern;
+    }
+
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
+    {
+        [$pattern, $textMode] = $this->recognitionPattern($session);
+        [$subject, $subjectOffset] = $this->recognitionSubject($source, $byteOffset, $session, $textMode);
+
+        $status = @preg_match($pattern, $subject, $match, PREG_OFFSET_CAPTURE, $subjectOffset);
+        if ($status === false) {
+            throw new RuntimeException('Regex recognition failed: ' . preg_last_error_msg());
+        }
+        if ($status !== 1 || $match[0][1] !== $subjectOffset || $match[0][0] === '') {
+            return $this->failure($source, $byteOffset);
+        }
+
+        $length = strlen($match[0][0]);
+        if ($textMode && !$session->source()->isUnitBoundary($byteOffset + $length)) {
+            throw new InvalidArgumentException('Text regex matched a partial UTF-8 code point');
+        }
+
+        return $this->success($source, $byteOffset, $length);
+    }
+
+    /** @return array{string, bool} Pattern and whether the source uses UTF-8. */
+    private function recognitionPattern(ParseSession $context): array
+    {
+        $textMode = $context->source()->mode() === SourceMode::UTF8;
+        $this->pushCaseSensitivityToContext($context);
+        try {
+            $key = $context->source()->mode()->value . ':' . (int) $context->isCaseSensitive();
+            if (isset($this->preparedPatterns[$key])) {
+                return [$this->preparedPatterns[$key], $textMode];
+            }
+            $pattern = $this->pattern . ($context->isCaseSensitive() ? '' : 'i');
+        } finally {
+            $this->popCaseSensitivityFromContext($context);
+        }
+
+        if (!$textMode && $this->usesUtf8()) {
+            throw new InvalidArgumentException('UTF-8 regex cannot recognize a byte source');
+        }
+        if ($textMode) {
+            new Utf8Source($this->pattern);
+        }
+        if ($textMode && $this->containsByteEscape()) {
+            throw new InvalidArgumentException('Text regex cannot use the byte escape \C');
+        }
+
+        $pattern .= $textMode ? 'u' : '';
+        $this->preparedPatterns[$key] = $pattern;
+
+        return [$pattern, $textMode];
+    }
+
+    private function usesUtf8(): bool
+    {
+        if (preg_match('/[a-zA-Z]*$/', $this->pattern, $modifiers) === 1 && str_contains($modifiers[0], 'u')) {
+            return true;
+        }
+        // PCRE permits UTF mode switches before the pattern body as well.
+        $body = substr($this->pattern, 1);
+        while (preg_match('/^\(\*([A-Z0-9_]+)(?:=[0-9]+)?\)/', $body, $option) === 1) {
+            if (in_array($option[1], ['UTF', 'UTF8'], true)) {
+                return true;
+            }
+            $body = substr($body, strlen($option[0]));
+        }
+
+        return false;
+    }
+
+    private function containsByteEscape(): bool
+    {
+        $quoted = false;
+        for ($index = 0; $index < strlen($this->pattern) - 1; $index++) {
+            if ($this->pattern[$index] === '\\') {
+                if ($this->pattern[$index + 1] === 'Q' && !$quoted) {
+                    $quoted = true;
+                } elseif ($this->pattern[$index + 1] === 'E' && $quoted) {
+                    $quoted = false;
+                } elseif ($this->pattern[$index + 1] === 'C' && !$quoted) {
+                    return true;
+                }
+                $index++;
+                // An escaped backslash is literal, not a byte escape.
             }
         }
 
-        return $this->failure($input, $offset);
+        return false;
     }
 
-    public function __toString()
+    /** @return array{string, int} Subject text and its PCRE starting offset. */
+    private function recognitionSubject(Source $input, int $offset, ParseSession $context, bool $textMode): array
     {
-        return (string)$this->pattern;
+        if ($this->windowLiteral === null) {
+            $context->consumeWork(max(1, $input->byteLength()), $offset);
+
+            return [$context->regexSubject(), $offset];
+        }
+
+        $window = $textMode
+            ? $this->utf8Window ??= 4 * (new Utf8Source($this->windowLiteral))->codePointLength()
+            : strlen($this->windowLiteral);
+        $end = min($input->byteLength(), $offset + $window);
+        while (!$input->isUnitBoundary($end)) {
+            --$end;
+        }
+
+        $context->consumeWork(max(1, $end - $offset), $offset);
+
+        return [$input->sliceBytes($offset, $end), 0];
     }
 }

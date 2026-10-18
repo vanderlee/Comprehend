@@ -1,58 +1,61 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Terminal;
 
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 
 /**
- * Classes implementing this can scan.
- *
- * @author Martijn
+ * Adds an optional local case policy to text-comparing terminals. Scopes the override in
+ * ParseSession so unset terminals inherit the enclosing grammar policy.
  */
 trait CaseSensitiveTrait
 {
-    /**
-     * @var bool
-     */
-    private $caseSensitivity = null;
+    private ?bool $caseSensitivity = null;
 
-    private function pushCaseSensitivityToContext(Context $context)
+    public function getCaseSensitivity(): ?bool
     {
-        if ($this->caseSensitivity !== null) {
-            $context->pushCaseSensitivity($this->caseSensitivity);
-        }
-    }
-
-    private function popCaseSensitivityFromContext(Context $context)
-    {
-        if ($this->caseSensitivity !== null) {
-            $context->popCaseSensitivity();
-        }
+        return $this->caseSensitivity;
     }
 
     /**
-     * @param bool $preference
+     * @param bool|null $preference
      *
      * @return $this
      */
-    public function setCaseSensitivity($preference)
+    public function setCaseSensitivity(?bool $preference): static
     {
         $this->caseSensitivity = $preference;
 
         return $this;
     }
 
-    public function caseSensitive()
+    public function caseSensitive(): static
     {
         $this->caseSensitivity = true;
 
         return $this;
     }
 
-    public function caseInsensitive()
+    public function caseInsensitive(): static
     {
         $this->caseSensitivity = false;
 
         return $this;
+    }
+
+    private function pushCaseSensitivityToContext(ParseSession $context): void
+    {
+        if ($this->caseSensitivity !== null) {
+            $context->pushCaseSensitivity($this->caseSensitivity);
+        }
+    }
+
+    private function popCaseSensitivityFromContext(ParseSession $context): void
+    {
+        if ($this->caseSensitivity !== null) {
+            $context->popCaseSensitivity();
+        }
     }
 }

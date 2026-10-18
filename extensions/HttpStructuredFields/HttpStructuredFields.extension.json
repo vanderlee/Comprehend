@@ -1,0 +1,10 @@
+{
+  "class": "Vanderlee\\Comprehend\\Extensions\\HttpStructuredFields\\HttpStructuredFields",
+  "rules": [
+    "structuredFieldItem",
+    "structuredFieldList",
+    "structuredFieldDictionary",
+    "rfc9651"
+  ],
+  "fluents": []
+}

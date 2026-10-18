@@ -1,0 +1,12 @@
+{
+  "name": "comprehend/extraction-comparison",
+  "description": "Isolated, pinned dependency for the optional Extraction comparison harness",
+  "license": "MIT",
+  "require": {
+    "parsica-php/parsica": "0.8.3"
+  },
+  "config": {
+    "vendor-dir": "../../build/extraction/vendor",
+    "allow-plugins": false
+  }
+}

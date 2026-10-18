@@ -1,0 +1,84 @@
+# Canonical runtime and Phase 2A removal inventory
+
+Phase 2A implements the mandatory cleanup before Phase 3. The runtime separates
+source access, recognition, concrete trees and named ASTs. It uses byte-coordinate,
+immutable snapshot, cached semantic and explicit-commit contracts.
+
+```text
+typed objects / Ruleset factories / RFC imports
+                    |
+           Source + ParseSession
+                    |
+       ParseResult + diagnostics + CST
+                    |
+         AST / typed value / collections
+                    |
+           validation + explicit commit
+```
+
+## Closed removal inventory
+
+| Removed surface | Supported replacement | Verification |
+|---|---|---|
+| `Parser\Terminal\Integer` | Automatically loaded Numbers extension and `Extensions\Numbers\Parser\IntegerNumber` | Integer parser tests, extension discovery tests and canonical API gate |
+| `Extensions\Integers` and its parser namespace | `Extensions\Numbers\Numbers` and `Extensions\Numbers\Parser` | Numbers tests and canonical API gate |
+| `Extensions\Numbers\Parser\Integer` | `Extensions\Numbers\Parser\IntegerNumber` | Numeric parser tests and canonical API gate |
+| String/context runtime and protected `parse(&$input, ...)` | Typed `recognize(Source, int, ParseSession)` and one checked delegation path | Terminal/combinator fixtures, Unicode and custom extension tests |
+| `match()`, `matchSource()`, `parseSource()`, unresolved/ASCII matching bridges and Parser invocation | `matchPrefix()` and `parseAll()` returning ParseResult | Consumption tests and canonical API gate |
+| `supportsSource()` allowlist/opt-in, ASCII fallback, compatibility mode flags | Every subclass implements the same source contract | Custom parser and Source-interface tests |
+| CoordinatePolicy, Coordinates, CoordinateToken, LegacyParserAdapter | Canonical byte spans; explicit source code-point conversions | Source and diagnostics tests |
+| LegacySpacing and independent-context spacing dispatch | Scoped intervening trivia in the owning session, explicit boundary trivia and lexeme suppression | Trivia, effect order, case-policy and scope-restoration tests |
+| Automatic callbacks and four-argument string callback signatures | `onCommit(callable(ParseResult))`, semantic validation and idempotent commit | Lifecycle tests, discarded attempts and retained errors |
+| TokenProjection, Core Token and parser/match token callbacks | Direct immutable CST/AST array, JSON and XML schemas | TreeSerializationTest, AST and concrete-node tests |
+| Token transparency, token child indexes and compatibility-only serialization layouts | Complete CST children, named AST projection and semantic-leaf markers | Punctuation, unnamed input, trivia and empty-span tests |
+| ArgumentsTrait and string/int/array/class-name rule coercion | Typed facade/Parser factory results; low-level constructors retain explicit Parser arguments, while facade composition accepts literal strings as Text | Constructor rejection, facade literal and factory-contract tests |
+| Magic instance/static Ruleset dispatch and shared rule registry | `define()`, facade-returning `rule()`, Parser-returning `ref()`, `defined()`, `undefine()` on each instance; facade definitions detach on registration | Rule isolation, forward references and missing-name tests |
+| Magic Stub/Implementation properties and Definition invocation | Low-level `Stub::setParser()/getParser()`, facade-returning `Definition::build()` | Recursive examples and canonical API gate |
+| Definition's speculative validation and parent-dependent processors | ParseResult semantic validators and cached processors over local collections | Selected validation, caching and abandoned-definition tests |
+| Compatibility-only fixtures and obsolete documentation | Canonical behavior fixtures, updated contracts and runnable examples | Full suite, PHP syntax/API gate and example execution |
+| Free Library functions (`s`, `c`, `star`, `plus`, `opt`, `repeat` and terminal factories) | Immutable `Comprehend` factories/composition, accepted directly by Ruleset; `parser()` exports for Parser-only boundaries | Grammar factory/RFC tests and canonical API gate |
+
+Internal `Match\AbstractMatch`, Success and Failure are execution records,
+not additional public result shapes. Success allocates mutable `ExecutionState`
+only where needed. After tree construction and guards, plain child records can
+be released; records with deferred state remain on the selected collection/effect
+and concrete validation paths. They retain lazy operations and observed recognition
+progress; consumers use ParseResult and immutable source trees.
+
+## Breaking changes
+
+Pass `new Utf8Source($text)` or `new ByteSource($bytes)` explicitly. Replace old
+matching calls with `matchPrefix()` or `parseAll()`. Success is `->success`;
+consumption is `->consumedByteLength`, zero on failure; observed failure position
+is `->farthestFailure` with structured diagnostics. Use `results()`/`result()` for
+collections, `value()` for typed output and `node`/`ast()` for syntax. No coordinate
+adapter or old output wrapper remains.
+
+Construct `new Sequence(new Text('a'), new Text('b'))`, not string/array shorthand.
+Call `rule('name', ...$arguments)` explicitly; supply Comprehend, Parser, Definition or a
+factory to `define()`. Strings are not rule aliases or class-name factories.
+Use `chr()` explicitly for octets passed to Char/Range. Replace `token()` naming
+with `name()`; serializers operate on CST/AST, with the schema in
+[serialization](serialization.md). Replace `callback()` with `onCommit()` and
+take ParseResult as its only argument. Definition validators likewise receive
+ParseResult; processors receive local collection arrays, without parent output.
+
+`spacing(null)` disables intervening trivia; omission inherits the scoped policy.
+Boolean spacing toggles are removed. Intervening policy applies between grammar
+items, including zero-width items. Automatic trivia shares session case/choice
+policy and disables recursive automatic spacing within the trivia grammar.
+Leading/trailing material must be explicit. Nothing silently consumes boundary
+trivia. Accepted trivia stays in the CST and participates in validation/commit,
+but automatic trivia does not add named collections or AST nodes.
+
+## Verification and remaining work
+
+The suite, examples, canonical gate and PHPStan have been verified locally on
+PHP 8.1.34 with freshly resolved dependencies in an isolated build copy, as well
+as PHP 8.2.10 in the working tree. CI now targets PHP 8.2–8.5, with an experimental
+PHP 8.6 job. No remote CI run is claimed by this document.
+
+Phase 3 still owns graph-wide reference resolution/freezing, the new named graph
+API, immutable fluent composition, graph analysis and facade equivalence. The
+explicit `rule()` operation here replaces magic lookup without introducing a
+second authoring runtime. File input, budgets and performance work remain Phase 4.

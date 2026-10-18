@@ -1,106 +1,113 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Output;
 
+use Vanderlee\Comprehend\Source\Span;
+use Stringable;
+use Throwable;
+use UnexpectedValueException;
+
 /**
- * @author Martijn
+ * Configures named collection operations on Parser for later semantic reads. Selected Success
+ * records apply set, concatenation and push operations with cached transformed values.
  */
 trait ResultTrait
 {
     /**
-     * List of result names to assign the matched text to.
-     *
-     * @var callable[]
+     * @var list<callable(Span): callable>
      */
-    private $resultCallbacks = [];
+    private array $resultCallbacks = [];
 
-    private function resolveResultCallbacks(&$results, $text)
+    public function setResult(?string $key = null, mixed $value = null): static
     {
-        foreach ($this->resultCallbacks as $callback) {
-            $callback($results, $text);
+        return $this->collect('set', $key, $value);
+    }
+
+    private function collect(string $operation, ?string $key, mixed $value): static
+    {
+        $this->resultCallbacks[] = static function (Span $span) use ($operation, $key, $value) {
+            $evaluated = false;
+            $mapped = null;
+            $error = null;
+
+            return static function (array &$results) use (
+                $span,
+                $operation,
+                $key,
+                $value,
+                &$evaluated,
+                &$mapped,
+                &$error
+            ) {
+                if (!$evaluated) {
+                    $evaluated = true;
+                    try {
+                        $mapped = is_callable($value) ? $value($span->rawText()) : $value ?? $span->rawText();
+                    } catch (Throwable $failure) {
+                        $error = $failure;
+                    }
+                }
+                if ($error !== null) {
+                    throw $error;
+                }
+
+                self::applyCollectionResult($results, $operation, $key ?? '', $mapped);
+            };
+        };
+
+        return $this;
+    }
+
+    /** @param array<array-key, mixed> $results */
+    private static function applyCollectionResult(array &$results, string $operation, string $name, mixed $value): void
+    {
+        if ($operation === 'set') {
+            $results[$name] = $value;
+
+            return;
+        }
+        if (!array_key_exists($name, $results)) {
+            $results[$name] = $operation === 'push' ? [$value] : self::resultText($value);
+
+            return;
+        }
+
+        if ($operation === 'push') {
+            if (is_array($results[$name])) {
+                $results[$name][] = $value;
+            } else {
+                $results[$name] = [$results[$name], $value];
+            }
+        } elseif (is_array($results[$name])) {
+            $results[$name][] = self::resultText(array_pop($results[$name])) . self::resultText($value);
+        } else {
+            $results[$name] = self::resultText($results[$name]) . self::resultText($value);
         }
     }
 
-    /**
-     * After parsing, assign the matched input of this parser to the named result.
-     * Only assign if successfully matched entire parent up to root.
-     *
-     * @param string|int $key
-     * @param null|callable|string $value
-     *
-     * @return $this
-     */
-    public function setResult($key = null, $value = null)
+    private static function resultText(mixed $value): string
     {
-        $this->resultCallbacks[] = function (&$results, $text) use (&$key, &$value) {
-            if (is_callable($value)) {
-                $text = $value($text);
-            } elseif ($value !== null) {
-                $text = $value;
-            }
+        if (
+            is_scalar($value)
+            || $value === null
+            || is_resource($value)
+            || $value instanceof Stringable
+        ) {
+            return (string) $value;
+        }
 
-            $results[$key] = $text;
-        };
-
-        return $this;
+        throw new UnexpectedValueException('Concatenated results must be scalar, null, resources or Stringable');
     }
 
-    /**
-     * If result exists, concatenate the matched text as a string, otherwise
-     * create it. If result is an array, concat to the last entry.
-     *
-     * @param null|string $key
-     * @param null|callable|string $value
-     *
-     * @return $this
-     */
-    public function concatResult($key = null, $value = null)
+    public function concatResult(?string $key = null, mixed $value = null): static
     {
-        $this->resultCallbacks[] = function (&$results, $text) use (&$key, &$value) {
-            if (is_callable($value)) {
-                $text = $value($text);
-            } elseif ($value !== null) {
-                $text = $value;
-            }
-
-            if (!isset($results[$key])) {
-                $results[$key] = (string)$text;
-            } elseif (is_array($results[$key])) {
-                $results[$key][] = array_pop($results[$key]) . $text;
-            } else {
-                $results[$key] .= $text;
-            }
-        };
-
-        return $this;
+        return $this->collect('concat', $key, $value);
     }
 
-    /**
-     * Turn the result into an array and start a new entry.
-     *
-     * @param null|string $key
-     * @param null|callable|string $value
-     *
-     * @return $this
-     */
-    public function pushResult($key = null, $value = null)
+    public function pushResult(?string $key = null, mixed $value = null): static
     {
-        $this->resultCallbacks[] = function (&$results, $text) use (&$key, &$value) {
-            if (is_callable($value)) {
-                $text = $value($text);
-            } elseif ($value !== null) {
-                $text = $value;
-            }
-
-            if (!isset($results[$key])) {
-                $results[$key] = [$text];
-            } elseif (is_array($results[$key])) {
-                $results[$key][] = $text;
-            } else {
-                $results[$key] = [$results[$key], $text];
-            }
-        };
-
-        return $this;
+        return $this->collect('push', $key, $value);
     }
 }

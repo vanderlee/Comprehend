@@ -1,55 +1,60 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Directive;
 
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Description of LexemeDirective.
- *
- * @author Martijn
+ * Configures or disables automatic intervening trivia for a parser subtree. Scopes the spacer
+ * in ParseSession so enclosing grammars retain their own spacing policy.
  */
-class Space extends Parser
+class Space extends UnaryDirective implements ReusableSnapshot
 {
-    use ArgumentsTrait;
+    use ExactClassSnapshotReuseTrait;
 
-    /**
-     * @var null|Parser
-     */
-    private $spacer;
-
-    /**
-     * @var null|Parser
-     */
-    private $parser;
-
-    /**
-     * Set (or disable) a spacer for the parser.
-     *
-     * @param Parser|string|int|bool|null $spacer
-     * @param Parser|string|int $parser
-     */
-    public function __construct($spacer, $parser)
+    public function __construct(private ?Parser $spacer, Parser $parser)
     {
-        $this->spacer = $spacer === null
-            ? null
-            : self::getArgument($spacer);
-        $this->parser = self::getArgument($parser);
+        parent::__construct($parser);
     }
 
-    protected function parse(&$input, $offset, Context $context)
+    protected function copyDependencies(GraphSnapshot $context): void
     {
-        $context->pushSpacer($this->spacer);
-        $match = $this->parser->parse($input, $offset, $context);
-        $context->popSpacer();
-
-        return $match;
+        parent::copyDependencies($context);
+        if ($this->spacer !== null) {
+            $this->spacer = $context->copy($this->spacer);
+        }
     }
 
-    public function __toString()
+    /** @return list<Parser> */
+    public function children(): array
     {
-        return (string)$this->parser;
+        if ($this->spacer === null) {
+            return [$this->parser];
+        }
+
+        return [$this->spacer, $this->parser];
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->parser;
+    }
+
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
+    {
+        $session->pushSpacer($this->spacer);
+        try {
+            return $this->parser->recognizeInSession($source, $byteOffset, $session);
+        } finally {
+            $session->popSpacer();
+        }
     }
 }

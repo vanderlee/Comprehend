@@ -1,53 +1,41 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Directive;
 
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Description of CaseDirective.
- *
- * @author Martijn
+ * Overrides case sensitivity for a parser subtree. Pushes a ParseSession policy and restores it
+ * even when recognition fails or throws.
  */
-class CaseSensitive extends Parser
+class CaseSensitive extends UnaryDirective implements ReusableSnapshot
 {
-    use ArgumentsTrait;
+    use ExactClassSnapshotReuseTrait;
 
-    /**
-     * @var Parser
-     */
-    private $parser;
-
-    /**
-     * @var bool
-     */
-    private $sensitivity;
-
-    /**
-     * @param Parser|string|int $parser
-     * @param bool $sensitivity
-     */
-    public function __construct($sensitivity, $parser)
+    public function __construct(private readonly bool $sensitivity, Parser $parser)
     {
-        $this->parser = self::getArgument($parser);
-        $this->sensitivity = (bool)$sensitivity;
+        parent::__construct($parser);
     }
 
-    protected function parse(&$input, $offset, Context $context)
+    public function __toString(): string
     {
-        $context->pushCaseSensitivity($this->sensitivity);
-        $match = $this->parser->parse($input, $offset, $context);
-        $context->popCaseSensitivity();
-
-        return $match;
+        return ($this->sensitivity ? 'case' : 'no-case') . '( ' . $this->parser . ' )';
     }
 
-    public function __toString()
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        return ($this->sensitivity
-                ? 'case'
-                : 'no-case') . '( ' . $this->parser . ' )';
+        $session->pushCaseSensitivity($this->sensitivity);
+        try {
+            return $this->parser->recognizeInSession($source, $byteOffset, $session);
+        } finally {
+            $session->popCaseSensitivity();
+        }
     }
 }

@@ -1,23 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Match;
 
 /**
- * Result of a failed parse.
+ * Records an unsuccessful recognition attempt for Parser and ParseSession. Its length tracks
+ * observed progress rather than consumed input, preserving failure information for ParseResult.
  *
- * @author Martijn
+ * @internal Failed recognition; length records observed progress, not consumption.
  */
-class Failure extends AbstractMatch
-{
-    public function __get(string $name)
-    {
-        return $name === 'match'
-            ? false
-            : parent::__get($name);
-    }
-
-    public function __toString(): string
-    {
-        return 'Failed match at ' . $this->length . ' characters';
-    }
-}
+final class Failure extends AbstractMatch {}

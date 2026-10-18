@@ -1,9 +1,9 @@
 <?php
 
-namespace tests;
+namespace Tests;
 
 use PHPUnit\Framework\TestCase;
-use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Result\ParseResult;
 
 /**
  * Description of TestCase.
@@ -18,9 +18,13 @@ class ParserTestCase extends TestCase
      * @param AbstractMatch $result
      * @param string $message
      */
-    protected function assertResult($match, $length, AbstractMatch $result, $message = '')
+    protected function assertResult($match, $length, ParseResult $result, $message = '')
     {
-        $this->assertSame($match, $result->match, $message . ' (@'.$result->length.')');
-        $this->assertSame($length, $result->length, $message);
+        $this->assertSame($match, $result->success, $message);
+        $this->assertSame($match ? $length : 0, $result->consumedByteLength, $message);
+        if (!$match) {
+            $this->assertSame($result->start, $result->end, $message);
+            $this->assertNotNull($result->diagnostic, $message);
+        }
     }
 }

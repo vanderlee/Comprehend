@@ -1,76 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Directive;
 
-use DomainException;
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
+use Vanderlee\Comprehend\Builder\ReusableSnapshot;
+use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
 
 /**
- * Description of OrDirective.
- *
- * @author Martijn
+ * Overrides first, longest or shortest choice selection within a subtree. Scopes the
+ * ParseSession preference consumed by Choice and restores it after recognition.
  */
-class Prefer extends Parser
+class Prefer extends UnaryDirective implements ReusableSnapshot
 {
-    const FIRST = 'first';
-    const LONGEST = 'longest';
-    const SHORTEST = 'shortest';
+    use ExactClassSnapshotReuseTrait;
 
-    use ArgumentsTrait;
-
-    /**
-     * @var Parser;
-     */
-    private $parser = null;
-
-    /**
-     * One of self::*.
-     *
-     * @var int
-     */
-    private $preference = null;
-
-    /**
-     * @param mixed $preference
-     * @param mixed $parser
-     *
-     * @throws DomainException
-     */
-    public function __construct($preference, $parser)
+    public function __construct(private readonly ChoicePolicy $preference, Parser $parser)
     {
-        if (!in_array($preference, [
-            self::FIRST,
-            self::LONGEST,
-            self::SHORTEST,
-        ])) {
-            throw new DomainException('Invalid preference `' . $preference . '`');
-        }
-        $this->preference = $preference;
-
-        $this->parser = self::getArgument($parser);
+        parent::__construct($parser);
     }
 
-    protected function parse(&$input, $offset, Context $context)
+    public function __toString(): string
     {
-        $context->pushPreference($this->preference);
-        $match = $this->parser->parse($input, $offset, $context);
-        $context->popPreference();
-
-        return $match;
+        return match ($this->preference) {
+            ChoicePolicy::LONGEST => 'longest-of' . $this->parser,
+            ChoicePolicy::SHORTEST => 'shortest-of' . $this->parser,
+            default => (string) $this->parser,
+        };
     }
 
-    public function __toString()
+    protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        switch ($this->preference) {
-            default:
-            case self::FIRST:
-                return (string)$this->parser;
-            case self::LONGEST:
-                return 'longest-of' . $this->parser;
-            case self::SHORTEST:
-                return 'shortest-of' . $this->parser;
+        $session->pushPreference($this->preference);
+        try {
+            return $this->parser->recognizeInSession($source, $byteOffset, $session);
+        } finally {
+            $session->popPreference();
         }
     }
 }

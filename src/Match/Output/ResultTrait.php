@@ -1,26 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Match\Output;
 
+use LogicException;
+use Throwable;
+
+/**
+ * Evaluates and caches named result collections for Success. Combines selected child operations
+ * with local callbacks, retaining evaluation errors and detecting recursive reads.
+ */
 trait ResultTrait
 {
     /**
-     * Map of resolved result callbacks.
-     *
-     * @var array|null
-     */
-    private $resultCache = null;
-
-    /**
-     * List of partial-resolvable result callbacks.
-     *
-     * @var callable[]
-     */
-    private $resultCallbacks = [];
-
-    /**
-     * Add a callback to this match, to be called after parsing is finished and
-     * only if this match was part of the matched rules.
+     * Register a collection operation for lazy result reads, independently of commit.
      *
      * @param callable $callback
      *
@@ -28,56 +22,67 @@ trait ResultTrait
      */
     public function addResultCallback(callable $callback)
     {
-        $this->resultCallbacks[] = $callback;
+        $state = $this->executionState();
+        $state->resultCallbacks[] = $callback;
 
         return $this;
     }
 
-    /**
-     * Handle all registered result callbacks for this match and any matches
-     * at deeper levels of this match.
-     *
-     * @param array $results map of result-key => value
-     */
-    private function processResultCallbacks(&$results)
-    {
-        /** @var self $success */
-        foreach ($this->successes as $success) {
-            $success->processResultCallbacks($results);
-        }
-
-        foreach ($this->resultCallbacks as $callback) {
-            $callback($results);
-        }
-    }
-
-    /**
-     * Pre-calculate results.
-     *
-     * @return array
-     */
-    public function getResults()
-    {
-        if ($this->resultCache === null) {
-            $this->resultCache = [];
-            $this->processResultCallbacks($this->resultCache);
-        }
-
-        return $this->resultCache;
-    }
-
-    //@todo deprecate? Saves no time and is part of collection
-    public function getResult(string $name = null, $default = null)
+    public function getResult(?string $name = null, mixed $default = null): mixed
     {
         $results = $this->getResults();
+        $key = $name ?? '';
 
-        return $results[$name]
-            ?? $default;
+        return array_key_exists($key, $results) ? $results[$key] : $default;
     }
 
-    //@todo deprecate? Saves no time and is part of collection
-    public function hasResult(string $name = null): bool
+    /**
+     * Evaluate once, retaining either the completed collection or the thrown error.
+     *
+     * @return array<array-key, mixed>
+     */
+    public function getResults(): array
     {
-        return isset($this->getResults()[$name]);
+        $state = $this->executionState();
+        if ($state->resultError !== null) {
+            throw $state->resultError;
+        }
+        if ($state->resultCache !== null) {
+            return $state->resultCache;
+        }
+        if ($state->evaluatingResults) {
+            throw new LogicException('Recursive named result evaluation');
+        }
+        $state->evaluatingResults = true;
+        try {
+            $results = [];
+            $this->applyResultOperations($results);
+
+            return $state->resultCache = $results;
+        } catch (Throwable $error) {
+            $state->resultError = $error;
+            throw $error;
+        } finally {
+            $state->evaluatingResults = false;
+        }
+    }
+
+    /**
+     * Apply child operations before local operations to the same accumulator.
+     * Child collection caches cannot replace these operations: concatenation and push
+     * depend on the values already accumulated by earlier siblings.
+     *
+     * @param array<array-key, mixed> $results map of result-key => value
+     */
+    private function applyResultOperations(array &$results): void
+    {
+        $state = $this->executionState();
+        /** @var self $success */
+        foreach ($state->successes as $success) {
+            $success->applyResultOperations($results);
+        }
+        foreach ($state->resultCallbacks as $callback) {
+            $callback($results);
+        }
     }
 }

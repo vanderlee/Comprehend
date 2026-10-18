@@ -6,11 +6,44 @@ on:
     branches:
       - master
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
 jobs:
+  coverage:
+    name: Line coverage report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up PHP with PCOV
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, json, mbstring
+          tools: composer:v2
+          coverage: pcov
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Collect core and extension line coverage
+        run: >-
+          php -d memory_limit=512M -d pcov.directory=.
+          -d 'pcov.exclude=~/(vendor|tests|tools|docs)/~'
+          vendor/pestphp/pest/bin/pest --do-not-cache-result
+          --coverage-clover=build/logs/clover.xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: line-coverage
+          path: build/logs/clover.xml
+          if-no-files-found: error
+
   test:
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.php == '8.6' }}
@@ -19,8 +52,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php: '7.2'
-            composer: '2.2'
+          - php: '8.2'
+            composer: 'v2'
+          - php: '8.3'
+            composer: 'v2'
+          - php: '8.4'
+            composer: 'v2'
+          - php: '8.5'
+            composer: 'v2'
           - php: '8.6'
             composer: 'v2'
 
@@ -44,5 +83,66 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
 
+      - name: Check runtime platform requirements
+        run: composer check-platform-reqs --no-dev
+
+      # Pest 2's ParaTest dependency declares PHP support only through 8.4.
+      # The serial suite below still exercises newer PHP versions in full.
+      - name: Check development platform requirements
+        if: matrix.php != '8.5' && matrix.php != '8.6'
+        run: composer check-platform-reqs
+
       - name: Run tests
-        run: vendor/bin/phpunit
+        run: make test
+
+      - name: Verify canonical API and syntax
+        run: php tools/check-canonical.php
+
+      - name: Verify runtime without DOM
+        run: php -n -d extension=mbstring tools/check-without-dom.php
+
+      - name: Verify quick start
+        run: php docs/examples/quick-start.php
+
+      - name: Verify execution examples
+        run: php docs/examples/execution.php
+
+      - name: Verify authoring equivalence
+        run: php docs/examples/authoring.php
+
+      - name: Verify file source and limits
+        run: php docs/examples/file-input.php
+
+      - name: Verify benchmark harness
+        run: php tools/benchmark.php --worker=text --mode=recognition --source=memory --iterations=1 --size=64
+
+      - name: Verify ABNF equivalence
+        run: php docs/examples/abnf.php
+
+      - name: Verify breaking-release examples
+        run: php docs/examples/release.php
+
+      - name: Verify release notes
+        run: php tools/release-notes.php 2.0.0
+
+  phpstan:
+    name: PHPStan (level 8)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, json, mbstring
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        run: make install
+
+      - name: Run static analysis
+        run: make phpstan

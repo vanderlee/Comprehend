@@ -1,0 +1,11 @@
+parameters:
+    level: 10
+    phpVersion: 80200
+    paths:
+        - grammars.php
+        - types.php
+    scanFiles:
+        - ../../docs/examples/application-values-grammar.php
+    bootstrapFiles:
+        - ../../build/extraction/vendor/autoload.php
+    tmpDir: ../../build/extraction/phpstan

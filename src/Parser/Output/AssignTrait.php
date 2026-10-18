@@ -1,8 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Output;
 
 /**
+ * Registers assignments of matched source text to caller variables on Parser. Assignments
+ * become selected-match effects and run only during explicit commit.
+ *
  * @author Martijn
  */
 trait AssignTrait
@@ -12,22 +17,10 @@ trait AssignTrait
      *
      * @var callable[]
      */
-    private $assignCallbacks = [];
+    private array $assignCallbacks = [];
 
     /**
-     * Resolve all callbacks registered to this trait.
-     *
-     * @param $text
-     */
-    private function resolveAssignCallbacks($text)
-    {
-        foreach ($this->assignCallbacks as $callback) {
-            $callback($text);
-        }
-    }
-
-    /**
-     * After parsing, assign the matched input to the specified local variable.
+     * On explicit commit, assign the matched input to the specified local variable.
      * Only assign if successfully matched entire parent up to root.
      *
      * @param mixed $variable

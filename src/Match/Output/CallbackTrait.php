@@ -1,19 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Match\Output;
 
+use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Match\EffectExecution;
+
+/**
+ * Executes selected Success effects once during explicit commit. Preserves preceding-match and
+ * child ordering and retains thrown errors to prevent effects from being retried.
+ */
 trait CallbackTrait
 {
     /**
-     * List of ordinary callbacks to process.
+     * Retain accepted effects before this match's callbacks, without adding
+     * named collections. Used for trivia and processed rules.
      *
-     * @var callable[]
+     * @internal
      */
-    private $customCallbacks = [];
+    public function addPrecedingMatch(Success $match): void
+    {
+        // A completed stateless child has no deferred operations to retain.
+        if ($match->state === null) {
+            return;
+        }
+        $state = $this->executionState();
+        $state->precedingMatches[] = $match;
+    }
 
     /**
-     * Add a callback to this match, to be called after parsing is finished and
-     * only if this match was part of the matched rules.
+     * Register a local effect for explicit commit of the selected match.
      *
      * @param callable $callback
      *
@@ -21,29 +38,46 @@ trait CallbackTrait
      */
     public function addCustomCallback(callable $callback)
     {
-        $this->customCallbacks[] = $callback;
+        $state = $this->executionState();
+        $state->customCallbacks[] = $callback;
 
         return $this;
     }
 
-    /**
-     * Handle all registered custom callbacks for this match and any matches
-     * at deeper levels of this match.
-     */
-    private function processCustomCallbacks()
+    public function getCallback(): void
     {
+        $this->processCustomCallbacks();
+    }
+
+    /**
+     * Retain completion or failure for this match's entire selected effect sequence.
+     */
+    private function processCustomCallbacks(): void
+    {
+        $this->effectExecution()->run($this->runSelectedEffects(...));
+    }
+
+    private function effectExecution(): EffectExecution
+    {
+        $state = $this->executionState();
+        return $state->effectExecution ??= new EffectExecution();
+    }
+
+    private function runSelectedEffects(): void
+    {
+        $state = $this->executionState();
+        // Preceding matches retain trivia and processed-rule effects outside the collection graph.
+        foreach ($state->precedingMatches as $match) {
+            $match->processCustomCallbacks();
+        }
+
         /** @var self $success */
-        foreach ($this->successes as $success) {
+        foreach ($state->successes as $success) {
             $success->processCustomCallbacks();
         }
 
-        foreach ($this->customCallbacks as $callback) {
+        foreach ($state->customCallbacks as $callback) {
             $callback();
         }
-    }
-
-    public function getCallback()
-    {
-        $this->processCustomCallbacks();
     }
 }

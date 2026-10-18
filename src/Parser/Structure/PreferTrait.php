@@ -1,69 +1,64 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Core\Context;
-use Vanderlee\Comprehend\Directive\Prefer;
-use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ChoicePolicy;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 
 /**
- * Classes implementing this can scan.
- *
- * @author Martijn
+ * Adds a local choice-selection policy to composite parsers such as Choice. Pushes an explicit
+ * preference into ParseSession or inherits the enclosing policy when unset.
  */
 trait PreferTrait
 {
-    /**
-     * Parser used for scanning the text.
-     *
-     * @var Parser
-     */
-    private $preference = null;
-
-    private function pushPreferenceToContext(Context $context)
-    {
-        if ($this->preference) {
-            $context->pushPreference($this->preference);
-        }
-    }
-
-    private function popPreferenceFromContext(Context $context)
-    {
-        if ($this->preference) {
-            $context->popPreference();
-        }
-    }
+    private ?ChoicePolicy $preference = null;
 
     /**
-     * @param string $preference
+     * @param ChoicePolicy|null $preference
      *
      * @return $this
      */
-    public function setPreference($preference)
+    public function setPreference(?ChoicePolicy $preference): static
     {
         $this->preference = $preference;
 
         return $this;
     }
 
-    public function preferShortest()
+    public function preferShortest(): static
     {
-        $this->preference = Prefer::SHORTEST;
+        $this->preference = ChoicePolicy::SHORTEST;
 
         return $this;
     }
 
-    public function preferLongest()
+    public function preferLongest(): static
     {
-        $this->preference = Prefer::LONGEST;
+        $this->preference = ChoicePolicy::LONGEST;
 
         return $this;
     }
 
-    public function preferFirst()
+    public function preferFirst(): static
     {
-        $this->preference = Prefer::FIRST;
+        $this->preference = ChoicePolicy::FIRST;
 
         return $this;
+    }
+
+    private function pushPreferenceToContext(ParseSession $context): void
+    {
+        if ($this->preference !== null) {
+            $context->pushPreference($this->preference);
+        }
+    }
+
+    private function popPreferenceFromContext(ParseSession $context): void
+    {
+        if ($this->preference !== null) {
+            $context->popPreference();
+        }
     }
 }

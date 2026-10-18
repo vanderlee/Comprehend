@@ -1,59 +1,67 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Parser\Structure;
 
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
-use Vanderlee\Comprehend\Core\Context;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Runtime\ParseSession;
 
 /**
- * Classes implementing this can scan.
- *
- * @author Martijn
+ * Adds an explicit intervening-trivia policy to composite parsers. Pushes the configured
+ * spacer into ParseSession; null disables spacing and an unset policy inherits its scope.
  */
 trait SpacingTrait
 {
-    use ArgumentsTrait;
+    private ?Parser $spacer = null;
+    private bool $hasSpacingPolicy = false;
+
+    public function spacing(?Parser $trivia): static
+    {
+        $this->spacer = $trivia;
+        $this->hasSpacingPolicy = true;
+
+        return $this;
+    }
+
+    /** Whether this parser establishes a local spacing scope, including an explicit null policy. */
+    public function hasExplicitSpacing(): bool
+    {
+        return $this->hasSpacingPolicy;
+    }
+
+    private function copySpacer(GraphSnapshot $context): void
+    {
+        if ($this->spacer !== null) {
+            $this->spacer = $context->copy($this->spacer);
+        }
+    }
 
     /**
-     * Parser used for scanning the text.
-     *
-     * @var Parser
+     * @param list<Parser> $children
+     * @return list<Parser>
      */
-    private $spacer = false;
-
-    private function pushSpacer(Context $context)
+    private function childrenWithSpacer(array $children): array
     {
-        if ($this->spacer !== false) {
+        if ($this->spacer !== null) {
+            $children[] = $this->spacer;
+        }
+
+        return $children;
+    }
+
+    private function pushSpacer(ParseSession $context): void
+    {
+        if ($this->hasSpacingPolicy) {
             $context->pushSpacer($this->spacer);
         }
     }
 
-    private function popSpacer(Context $context)
+    private function popSpacer(ParseSession $context): void
     {
-        if ($this->spacer !== false) {
+        if ($this->hasSpacingPolicy) {
             $context->popSpacer();
         }
-    }
-
-    /**
-     * Set a spacing parser for this parser or disable or enable (if a previous
-     * spacing parser is enabled) spacing parsing.
-     *
-     * @param Parser|bool|null $spacer
-     *
-     * @return $this
-     */
-    public function spacing($spacer = true)
-    {
-        if ($spacer === true) {
-            $this->spacer = true;
-        } elseif ($spacer === null || $spacer === false) {
-            $this->spacer = null;
-        } else {
-            $this->spacer = self::getArgument($spacer);
-        }
-
-        return $this;
     }
 }

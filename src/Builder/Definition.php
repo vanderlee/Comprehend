@@ -1,117 +1,83 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vanderlee\Comprehend\Builder;
 
-use InvalidArgumentException;
-use Vanderlee\Comprehend\Core\ArgumentsTrait;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Comprehend;
+use Vanderlee\Comprehend\Result\ParseResult;
+use Vanderlee\Comprehend\Result\ValidationIssue;
 
 /**
- * Shorthand for parser definitions.
- *
- * @author Martijn
+ * Packages a grammar generator with semantic validators and collection processors.
+ * Implementation binds arguments and applies this metadata to selected recognition results.
  */
-class Definition
+final class Definition implements SnapshotParticipant
 {
-    use ArgumentsTrait;
-
-    /**
-     * @var callable|Parser
-     */
+    /** @var Comprehend|Parser|(callable(mixed...): (Comprehend|Parser)) */
     public $generator;
-    public $validators = [];
-    public $processors = [];
+    /** @var list<callable(ParseResult): (bool|string|ValidationIssue|list<ValidationIssue>)> */
+    public array $validators = [];
+    /** @var array<string, callable(array<array-key, mixed>): mixed> */
+    public array $processors = [];
 
-    /**
-     * @param Parser|callable $generator Either a parser or a function returning a parser ('generator')
-     * @param callable[] $validator
-     */
-    public function __construct($generator = null, $validator = null)
+    public function __construct(Comprehend|Parser|callable $generator, ?callable $validator = null)
     {
-        //@todo validate parser and validator
-
-        $this->generator = $generator;
-        if (is_callable($validator)) {
+        $this->setGenerator($generator);
+        if ($validator !== null) {
             $this->validators[] = $validator;
         }
     }
 
-    /**
-     * (Re-)define this definition from any supported source.
-     *
-     * @param mixed $definition
-     *
-     * @throws InvalidArgumentException
-     */
-    public function define($definition)
+    public function setGenerator(Comprehend|Parser|callable $generator): self
     {
-        if ($definition instanceof self) {
-            $this->generator = $definition->generator;
-            $this->validators = $definition->validators;
-
-            return;
-        }
-
-        if ($definition instanceof Parser
-            || is_callable($definition)) {
-            $this->generator = $definition;
-
-            return;
-        }
-
-        $this->generator = self::getArgument($definition);
-    }
-
-    public function setGenerator($parser)
-    {
-        $this->generator = $parser;
+        $this->generator = $generator instanceof Comprehend ? $generator->parser() : $generator;
 
         return $this;
     }
 
-    public function clearValidators()
+    public function snapshot(GraphSnapshot $context): Definition
+    {
+        $copy = clone $this;
+        $context->registerCopy($this, $copy);
+        // Parser generators are owned grammar state; callable captures remain caller-owned.
+        if ($this->generator instanceof Parser) {
+            $copy->generator = $context->copy($this->generator);
+        }
+
+        return $copy;
+    }
+
+    public function clearValidators(): self
     {
         $this->validators = [];
 
         return $this;
     }
 
-    public function addValidator($validator)
+    public function addValidator(callable $validator): self
     {
         $this->validators[] = $validator;
 
         return $this;
     }
 
-    public function addProcessor($key, $processor)
+    public function addProcessor(string $name, callable $processor): self
     {
-        $this->processors[$key] = $processor;
+        $this->processors[$name] = $processor;
 
         return $this;
     }
 
-    /**
-     * Build an instance of this parser definition.
-     *
-     * @param array $arguments
-     *
-     * @return Implementation
-     */
-    public function build(...$arguments)
+    public function build(mixed ...$arguments): Comprehend
     {
-        return new Implementation($this, $arguments);
+        return Comprehend::of($this->implementation(...$arguments));
     }
 
-    /**
-     * Build an instance of this parser definition.
-     * Alias of `build()` method.
-     *
-     * @param array $arguments
-     *
-     * @return Implementation
-     */
-    public function __invoke(...$arguments)
+    /** @internal Runtime instance; public authoring uses build(). */
+    public function implementation(mixed ...$arguments): Implementation
     {
-        return $this->build(...$arguments);
+        return new Implementation($this, $arguments);
     }
 }

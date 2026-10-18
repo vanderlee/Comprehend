@@ -1,6 +1,9 @@
 /.debug/
 /.idea/
 /build/
+/site/
+/.venv-docs/
 /nbproject/
 /vendor/
 /composer.lock
+/.phpunit.result.cache

@@ -1,0 +1,19 @@
+{
+  "class": "Vanderlee\\Comprehend\\Extensions\\Optimizer\\GraphOptimizer",
+  "providers": {
+    "Vanderlee\\Comprehend\\Extensions\\Optimizer\\GraphOptimizer": [
+      "Vanderlee\\Comprehend\\Builder\\GraphOptimization"
+    ]
+  },
+  "rules": [
+    "readWhile",
+    "readUntil",
+    "readWhileSet",
+    "readWhileRange",
+    "readRest",
+    "skipWhile",
+    "skipUntil",
+    "skipRest"
+  ],
+  "fluents": []
+}

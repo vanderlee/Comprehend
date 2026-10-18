@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Comprehend">
+    <description>PSR-12 checks; PHP-CS-Fixer supplies the PER Coding Style checks.</description>
+    <file>src</file>
+    <file>extensions</file>
+    <file>tests</file>
+    <file>tools</file>
+    <file>docs/examples</file>
+    <file>.php-cs-fixer.dist.php</file>
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <rule ref="PSR12"/>
+</ruleset>
