@@ -5,24 +5,24 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend;
 
 use ArgumentCountError;
+use BadMethodCallException;
 use Closure;
 use ReflectionFunction;
 use UnexpectedValueException;
 use Vanderlee\Comprehend\Builder\AbstractRuleset;
 use Vanderlee\Comprehend\Builder\Definition;
-use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\FreezeFlags;
+use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
-use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Extensions\Numbers\Parser\IntegerNumber;
 use Vanderlee\Comprehend\Extensions\Numbers\SignPolicy;
+use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Syntax\Catalog;
 use Vanderlee\Comprehend\Syntax\ExtensionLoader;
-use BadMethodCallException;
 
 /**
  * Provides immutable fluent grammar authoring over the shared Parser graph. Magic calls use
@@ -165,7 +165,7 @@ use BadMethodCallException;
  * @method static self<string> except(self|Parser|string $match, self|Parser|string $not)
  * @method static self<string> not(self|Parser|string $parser)
  * @method static self ref(AbstractRuleset $rules, string $name, mixed ...$arguments)
- * @method static self or(self|Parser|string ...$parsers)
+ * @method static self or (self|Parser|string ...$parsers)
  * @method static self repeat(mixed ...$arguments)
  * @method static self recoverUntil(mixed ...$arguments)
  * @method static self recoverDelimited(mixed ...$arguments)
@@ -204,7 +204,10 @@ final class Comprehend
 {
     /** @var array<int, FrozenGrammar> Reusable preparation is isolated by its complete flag set. */
     private array $preparedGrammars = [];
-    private function __construct(private readonly Parser $parser, private readonly ?Syntax $syntax = null) {}
+
+    private function __construct(private readonly Parser $parser, private readonly ?Syntax $syntax = null)
+    {
+    }
 
     public static function syntax(): Syntax
     {
@@ -234,9 +237,11 @@ final class Comprehend
     public function __call(string $name, array $arguments): self
     {
         $name = strtolower($name);
+
         $fluent = $this->syntax === null
             ? (Catalog::builtinFluent($name) ?? ExtensionLoader::defaults()->fluent($name))
             : $this->syntax->fluent($name);
+
         if ($fluent !== null) {
             $result = self::invoke($fluent, [$this, ...$arguments]);
 
@@ -250,18 +255,21 @@ final class Comprehend
     }
 
     /**
-     * @internal Scoped vocabularies call this same typed dispatch boundary.
      * @param array<array-key, mixed> $arguments
+     * @internal Scoped vocabularies call this same typed dispatch boundary.
      */
     public static function callSyntax(string $name, array $arguments, ?Syntax $syntax = null): self
     {
         $name = strtolower($name);
+
         $factory = $syntax === null
             ? (Catalog::builtinRule($name) ?? ExtensionLoader::defaults()->rule($name))
             : $syntax->rule($name);
+
         if ($factory === null) {
             throw new BadMethodCallException('Unknown syntax: ' . $name);
         }
+
         $result = self::invoke($factory, $arguments);
 
         return self::syntaxExpression($result, $name, $syntax);
@@ -279,8 +287,12 @@ final class Comprehend
             );
         }
         $expression = self::of($result);
+
         // Unscoped calls retain a returned expression's vocabulary. Scoped calls supply their own.
-        if ($syntax === null || $syntax === $expression->syntax) {
+        if (
+            $syntax === null
+            || $syntax === $expression->syntax
+        ) {
             return $expression;
         }
 
@@ -292,10 +304,14 @@ final class Comprehend
      */
     private static function invoke(Closure $factory, array $arguments): mixed
     {
-        $signature = new ReflectionFunction($factory);
         // PHP permits surplus positional arguments to user functions; authoring rejects them.
         // Unpacking below retains PHP's own named-argument and type checks.
-        if (!$signature->isVariadic() && count($arguments) > $signature->getNumberOfParameters()) {
+        $signature = new ReflectionFunction($factory);
+
+        if (
+            !$signature->isVariadic()
+            && count($arguments) > $signature->getNumberOfParameters()
+        ) {
             throw new ArgumentCountError('Too many syntax arguments');
         }
 
@@ -315,8 +331,13 @@ final class Comprehend
     public static function of(self|Parser|Definition $parser, ?Syntax $syntax = null): self
     {
         if ($parser instanceof self) {
-            return $syntax === null || $syntax === $parser->syntax ? $parser : new self($parser->parser, $syntax);
+            return
+                $syntax === null
+                || $syntax === $parser->syntax
+                    ? $parser
+                    : new self($parser->parser, $syntax);
         }
+
         if ($parser instanceof Definition) {
             $parser = $parser->implementation();
         }
@@ -340,10 +361,13 @@ final class Comprehend
     public function freeze(int $flags = FreezeFlags::DEFAULT): FrozenGrammar
     {
         FreezeFlags::validate($flags);
+
         if (isset($this->preparedGrammars[$flags])) {
             return $this->preparedGrammars[$flags];
         }
+
         $grammar = $this->parser->freeze($flags);
+
         if ($grammar->canReuseFor($this->parser)) {
             $this->preparedGrammars[$flags] = $grammar;
         }
@@ -371,7 +395,9 @@ final class Comprehend
         ?ParseLimits $limits = null,
         self|Parser|null $spacing = null,
     ): ParseResult {
-        $grammar = $spacing === null ? $this : $this->spacing($spacing);
+        $grammar = $spacing === null
+            ? $this
+            : $this->spacing($spacing);
 
         return $grammar->freeze()->parseAll($source, $byteOffset, $limits);
     }
@@ -383,7 +409,9 @@ final class Comprehend
         ?ParseLimits $limits = null,
         self|Parser|null $spacing = null,
     ): ParseResult {
-        $grammar = $spacing === null ? $this : $this->spacing($spacing);
+        $grammar = $spacing === null
+            ? $this
+            : $this->spacing($spacing);
 
         return $grammar->freeze()->matchPrefix($source, $byteOffset, $limits);
     }

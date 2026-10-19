@@ -286,6 +286,12 @@ final readonly class Catalog
         };
     }
 
+    /**
+     * @param Comprehend|Parser|string $parser
+     * @param int $min
+     * @param int|null $max
+     * @return Comprehend
+     */
     private static function repeat(Comprehend|Parser|string $parser, int $min = 0, ?int $max = null): Comprehend
     {
         // Enter fluent dispatch on an expression; static dispatch would call this factory again.
@@ -298,6 +304,7 @@ final readonly class Catalog
     /**
      * Inherited choice policies are associative; explicit policies remain nested.
      * @param array<array-key, Comprehend|Parser|string> $items
+     * @return Choice
      */
     private static function choice(array $items): Choice
     {
@@ -315,9 +322,14 @@ final readonly class Catalog
         $pending = array_reverse($parsers);
         $children = [];
         $expanded = new SplObjectStorage();
+
         while ($pending !== []) {
             $parser = array_pop($pending);
-            if (!$parser instanceof Choice || !$parser->canFlatten() || isset($expanded[$parser])) {
+            if (
+                !$parser instanceof Choice
+                || !$parser->canFlatten()
+                || isset($expanded[$parser])
+            ) {
                 $children[] = $parser;
                 continue;
             }
@@ -329,6 +341,7 @@ final readonly class Catalog
             }
 
             $expanded[$parser] = true;
+
             // The stack visits alternatives in their original order, including ties.
             array_push($pending, ...array_reverse($alternatives));
         }
@@ -354,23 +367,34 @@ final readonly class Catalog
     private static function flattenSequencePrefix(array $parsers): array
     {
         $seen = new SplObjectStorage();
-        while (($parsers[0] ?? null) instanceof Sequence && $parsers[0]->canFlattenPrefix()) {
+        while (
+            ($parsers[0] ?? null) instanceof Sequence
+            && $parsers[0]->canFlattenPrefix()
+        ) {
             $prefix = $parsers[0];
             if (isset($seen[$prefix])) {
                 break;
             }
+
             $seen[$prefix] = true;
+
             $children = iterator_to_array($prefix, false);
             if ($children === []) {
                 break;
             }
+
             $parsers = [...$children, ...array_slice($parsers, 1)];
         }
 
         return $parsers;
     }
 
-    /** Detach caller-owned graphs before composing syntax. */
+    /**
+     * Detach caller-owned graphs before composing syntax.
+     *
+     * @param Comprehend|Parser|string $parser
+     * @return Parser
+     */
     public static function parser(Comprehend|Parser|string $parser): Parser
     {
         if (is_string($parser)) {
@@ -389,29 +413,55 @@ final readonly class Catalog
      */
     public static function builtinNames(): array
     {
-        return [...self::RULES, ...self::FLUENTS, ...array_keys(self::ALIASES)];
+        return [
+            ...self::RULES,
+            ...self::FLUENTS,
+            ...array_keys(self::ALIASES)
+        ];
     }
 
+    /**
+     * @param string $name
+     * @param callable $factory
+     * @return self
+     */
     public function defineRule(string $name, callable $factory): self
     {
         $name = self::validateName($name);
 
-        return new self([...$this->rules, $name => Closure::fromCallable($factory)], $this->fluents);
+        return new self([
+            ...$this->rules,
+            $name => Closure::fromCallable($factory)],
+            $this->fluents
+        );
     }
 
+    /**
+     * @param string $name
+     * @param callable $factory
+     * @return self
+     */
     public function defineFluent(string $name, callable $factory): self
     {
         $name = self::validateName($name);
 
-        return new self($this->rules, [...$this->fluents, $name => Closure::fromCallable($factory)]);
+        return new self($this->rules, [
+            ...$this->fluents,
+            $name => Closure::fromCallable($factory)
+        ]);
     }
 
+    /**
+     * @param string $name
+     * @return string
+     */
     private static function validateName(string $name): string
     {
         $name = strtolower($name);
         if (!preg_match('/\A[a-z][a-z0-9_]*\z/', $name)) {
             throw new InvalidArgumentException('Syntax names must be method identifiers');
         }
+
         // Keep all declared facade/vocabulary names reserved, including private helpers.
         if (
             in_array($name, self::builtinNames(), true)
@@ -424,6 +474,10 @@ final readonly class Catalog
         return $name;
     }
 
+    /**
+     * @param string $name
+     * @return Closure|null
+     */
     public function rule(string $name): ?Closure
     {
         $builtin = self::builtinRule($name);
@@ -434,6 +488,10 @@ final readonly class Catalog
         return $this->rules[self::canonicalName($name)] ?? ExtensionLoader::defaults()->rule($name);
     }
 
+    /**
+     * @param string $name
+     * @return Closure|null
+     */
     public function fluent(string $name): ?Closure
     {
         $builtin = self::builtinFluent($name);

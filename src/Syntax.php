@@ -180,6 +180,7 @@ final readonly class Syntax
 
     /**
      * Attach this vocabulary to an existing expression or detached parser graph.
+     *
      * @template U
      * @param Comprehend<U>|Parser|Definition $parser
      * @return ($parser is Comprehend<U> ? Comprehend<U> : Comprehend<mixed>)
@@ -189,19 +190,25 @@ final readonly class Syntax
         return Comprehend::of($parser, $this);
     }
 
-    /** Existing expressions retain their original catalog. */
+    /**
+     * Existing expressions retain their original catalog.
+     */
     public function defineRule(string $name, callable $factory): self
     {
         return new self($this->catalog->defineRule($name, $factory));
     }
 
-    /** Install rule then fluent factories; the original vocabulary survives installation errors. */
+    /**
+     * Install rule then fluent factories; the original vocabulary survives installation errors.
+     */
     public function extend(SyntaxExtension $extension): self
     {
         $syntax = $this;
+
         foreach ($extension->rules() as $name => $factory) {
             $syntax = $syntax->defineRule($name, $factory);
         }
+
         foreach ($extension->fluents() as $name => $factory) {
             $syntax = $syntax->defineFluent($name, $factory);
         }
@@ -209,7 +216,9 @@ final readonly class Syntax
         return $syntax;
     }
 
-    /** Callbacks receive the current facade before user arguments. */
+    /**
+     * Callbacks receive the current facade before user arguments.
+     */
     public function defineFluent(string $name, callable $factory): self
     {
         return new self($this->catalog->defineFluent($name, $factory));
@@ -217,6 +226,7 @@ final readonly class Syntax
 
     /**
      * Start an expression through static factory lookup, including when a fluent shares its name.
+     *
      * @param array<array-key, mixed> $arguments
      */
     public function __call(string $name, array $arguments): Comprehend
@@ -224,25 +234,43 @@ final readonly class Syntax
         return Comprehend::callSyntax($name, $arguments, $this);
     }
 
-    /** Explicit-name equivalent of magic factory dispatch; argument keys are retained. */
+    /**
+     * Explicit-name equivalent of magic factory dispatch; argument keys are retained.
+     *
+     *
+     *
+     * @param string $name
+     * @param mixed ...$arguments
+     * @return Comprehend
+     */
     public function call(string $name, mixed ...$arguments): Comprehend
     {
         return Comprehend::callSyntax($name, $arguments, $this);
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     public function names(): array
     {
         return $this->catalog->names();
     }
 
-    /** @internal Authoring dispatch only. */
+    /**
+     * @internal Authoring dispatch only.
+     * @param string $name
+     * @return Closure|null
+     */
     public function rule(string $name): ?Closure
     {
         return $this->catalog->rule($name);
     }
 
-    /** @internal Authoring dispatch only. */
+    /**
+     * @internal Authoring dispatch only.
+     * @param string $name
+     * @return Closure|null
+     */
     public function fluent(string $name): ?Closure
     {
         return $this->catalog->fluent($name);
