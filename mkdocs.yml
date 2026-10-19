@@ -35,6 +35,7 @@ nav:
   - Getting started:
       - Tutorial: tutorial.md
       - Parse application values: application-values.md
+      - Laravel integration: laravel.md
       - FAQ: faq.md
   - Grammar authoring:
       - Grammar authoring: grammar-authoring.md

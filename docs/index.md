@@ -63,6 +63,7 @@ Side effects run only through explicit `commit()`.
 
 - Start with the [tutorial](tutorial.md) and [grammar-authoring guide](grammar-authoring.md).
 - Build domain objects with [Parse application values](application-values.md).
+- Use grammars as Laravel validation rules with the separate [Laravel bridge](laravel.md).
 - Learn about [sources](sources.md), [spacing](trivia.md) and [diagnostics](diagnostics.md).
 - Extract [semantic values](semantic-values.md) and navigate [syntax trees](ast.md).
 - Author grammars with the [immutable facade](facade.md), [Rulesets](builder.md) or [ABNF](abnf.md).

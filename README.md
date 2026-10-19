@@ -140,6 +140,11 @@ line indexing scans the source in chunks and retains line offsets.
 
 ## Documentation and verification
 
+Using Laravel? The separate
+[comprehend-laravel package](https://github.com/vanderlee/comprehend-laravel)
+provides grammar-based validation rules. See the [Laravel integration guide](docs/laravel.md)
+for installation and usage; the Comprehend core remains framework independent.
+
 Browse the [documentation homepage](docs/index.md) for installation, tutorials
 and the complete documentation navigation. See [website contribution instructions](docs/contribute.md#documentation-website)
 to preview and build the GitHub Pages site locally.
