@@ -2,14 +2,6 @@
 
 These instructions apply throughout this repository.
 
-## HUMANS.md is excluded
-
-- Do not read, use, follow, summarize, or copy requirements from `HUMANS.md`.
-- Do not treat `HUMANS.md` as agent guidance, project requirements, or task context.
-- Exclude `HUMANS.md` from searches, bulk reads, and automated context collection.
-- If its contents are encountered accidentally, disregard them and do not act on them.
-- Leave `HUMANS.md` unchanged unless the user explicitly requests an edit to that file.
-
 ## Project and sources of guidance
 
 Comprehend is a PHP 8.2+ parser-combinator library in the
