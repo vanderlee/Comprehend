@@ -46,6 +46,59 @@ independent grammars against one output oracle and records extraction timings,
 memory retention, diagnostics and static-analysis observations. It includes
 Comprehend's mandatory CST cost and an isolated optional dependency.
 
+### Runtime allocation and dispatch (2026-10-20)
+
+Optimized repetition now creates its original per-unit CST nodes directly. Its
+shared scan primitive returns acceptance and byte progress without constructing
+a discarded scanner tree or temporary child execution records. Parser metadata
+and deferred operations on the repeat still use the ordinary preparation path.
+
+Sequence preparation compiles adjacent eligible literal runs around ordinary
+operands such as regexes and decorated parsers. Failed runs retry only their own
+original operands, preserving diagnostics without repeating earlier recognition
+callbacks. Active spacing, case-insensitive scopes and finite work/depth limits
+retain the ordinary sequence path.
+
+Diagnostic accumulation keeps ordered expectation/path lists with membership
+indexes. Restoring a changed checkpoint invalidates the corresponding index;
+the next insertion rebuilds it from the restored list. Binary labels, strict path
+identity, insertion order and the existing checkpoint shape remain intact.
+Semantic projections also consult their value/error cache before constructing a
+callback-facing ParseResult. Nulls, object identity, recursive evaluation errors
+and explicit commit behavior retain their existing contracts.
+
+Local Windows/PHP 8.2.10 measurements compare a saved source snapshot with these
+four changes together. Each case/variant used five fresh workers, alternating
+before/after order. Workers used two warmups and seven measured batches; the table
+reports the median of worker medians. Parse fixtures use in-memory byte sources.
+Preparation and source construction are excluded; parsing includes full CST
+construction, acceptance checks and result release.
+
+| Fixture | Before | After | Speedup |
+|---|---:|---:|---:|
+| Repeat 4,096 set characters, original character nodes retained | 8.271 ms | 3.677 ms | 2.25x |
+| 32 literal children, regex, 32 literal children | 0.405 ms | 0.152 ms | 2.66x |
+| Accumulate 4,000 distinct expectations and paths at one position | 205.025 ms | 3.858 ms | 53.15x |
+| One cached scalar value read | 0.664 us | 0.305 us | 2.18x |
+| Nested application-value fixture, recognition and CST | 9.896 ms | 8.625 ms | 1.15x |
+
+Scanner/mixed batches contain 20 parses, nested batches five parses, diagnostics
+one accumulation and cached-value batches 100,000 reads. The diagnostic fixture
+isolates accumulation before requesting its Diagnostic; it does not model the
+cost of creating and retaining a diagnostic snapshot after every insertion.
+Cached-value evaluation is warmed before measurement. Parse CST hashes agree
+across all workers and variants, and the nested fixture checks expected domain
+values outside timing. These synthetic, combined measurements do not establish
+individual attribution, a general throughput guarantee or a preparation-time win.
+
+Separate traces over copies of both source and extension methods counted 4,098
+Success allocations before and one after for the repeated-character fixture.
+Its retained tree still contains 4,097 nodes; ConcreteNode allocations fell from
+4,098 to 4,097. Ten warmed value reads allocated ten ParseResult wrappers before
+and zero after. Tracing adds overhead and is used only for allocation evidence.
+The fixture driver, source hashes, worker reports and traces are saved locally
+under ignored `build/architecture-optimizations/`.
+
 ### Recursive literal sequences (2026-10-20)
 
 The optimizer can compile eligible nested literal sequences and fixed repetitions

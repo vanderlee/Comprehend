@@ -12,6 +12,8 @@ use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Parser\Terminal\Regex;
+use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseMetrics;
@@ -150,5 +152,147 @@ test('compiled literal recipes bind to each file source rather than the classifi
     } finally {
         $source->close();
         fclose($stream);
+    }
+});
+
+test('mixed literal runs preserve static metadata regex values diagnostics and byte offsets', function (): void {
+    $parser = new Sequence(
+        (new Text('a'))->name('first')->tag('letter'),
+        new Text('b'),
+        (new Regex('/[0-9]+/A'))->pushResult('number', static fn(string $text): int => (int) $text),
+        new Text('c'),
+        (new Text('d'))->name('last'),
+    );
+    $plain = $parser->freeze(FreezeFlags::NONE);
+    $optimized = $parser->freeze();
+    foreach (['ab12cd', 'ab12cd!', 'ab12c?', 'ab12c', 'a?12cd', 'ab?cd'] as $text) {
+        foreach ([new ByteSource("\xc3\xa9" . $text), new Utf8Source("\u{e9}" . $text)] as $source) {
+            foreach (['parseAll', 'matchPrefix'] as $operation) {
+                $expected = $plain->$operation($source, 2);
+                $actual = $optimized->$operation($source, 2);
+                expect($actual->success)->toBe($expected->success)
+                    ->and($actual->consumedByteLength)->toBe($expected->consumedByteLength)
+                    ->and($actual->node)->toEqual($expected->node)
+                    ->and($actual->ast())->toEqual($expected->ast())
+                    ->and($actual->diagnostic)->toEqual($expected->diagnostic)
+                    ->and($actual->results())->toBe($expected->results())
+                    ->and($actual->value())->toBe($expected->value());
+            }
+        }
+    }
+});
+
+test('mixed literal fallback executes preceding guards and dynamic names once and keeps effects deferred', function (
+    int $flags,
+): void {
+    $events = [];
+    $middle = (new Regex('/[0-9]+/A'))
+        ->name(static function () use (&$events): string {
+            $events[] = 'name';
+            return 'number';
+        })->mapValue(static function (ParseResult $result) use (&$events): int {
+            $events[] = 'value';
+            return (int) $result->rawText();
+        })->validateSemantic(static function (ParseResult $result) use (&$events): bool {
+            $events[] = 'validate';
+            return $result->value() === 12;
+        })->onCommit(static function () use (&$events): void {
+            $events[] = 'commit';
+        });
+    $parser = new Sequence(
+        (new Text('@'))->guard(static function () use (&$events): bool {
+            $events[] = 'guard';
+            return true;
+        }),
+        new Text('a'),
+        new Text('b'),
+        $middle,
+        new Text('c'),
+        new Text('d'),
+    );
+    $grammar = $parser->freeze($flags);
+    expect($events)->toBe([]);
+    expect($grammar->parse('@ab12c?')->success)->toBeFalse()->and($events)->toBe(['guard', 'name']);
+    $events = [];
+    $result = $grammar->parse('@ab12cd');
+    expect($result->success)->toBeTrue()->and($events)->toBe(['guard', 'name']);
+    $result->commit();
+    $result->commit();
+    expect($events)->toBe(['guard', 'name', 'validate', 'value', 'commit']);
+})->with([FreezeFlags::NONE, FreezeFlags::OPTIMIZE]);
+
+test('literal runs on both sides of a regex reduce dispatch without adding tree boundaries', function (): void {
+    $left = array_fill(0, 32, new Text('a'));
+    $right = array_fill(0, 32, new Text('b'));
+    $parser = new Sequence(...[...$left, new Regex('/[0-9]+/A'), ...$right]);
+    $source = new ByteSource(str_repeat('a', 32) . '12' . str_repeat('b', 32));
+    $observations = [];
+    foreach ([FreezeFlags::NONE, FreezeFlags::OPTIMIZE] as $flags) {
+        $grammar = $parser->freeze($flags);
+        $root = (new ReflectionProperty(FrozenGrammar::class, 'root'))->getValue($grammar);
+        $metrics = new ParseMetrics();
+        $match = $root->recognizeInSession($source, 0, new ParseSession($source, metrics: $metrics));
+        $observations[] = [$match->node, $metrics->snapshot()['parser_entries']];
+    }
+    expect($observations[1][0])->toEqual($observations[0][0])
+        ->and($observations[1][0]->children)->toHaveCount(65)
+        ->and($observations[1][1])->toBeLessThan($observations[0][1] / 10);
+});
+
+test('mixed sequences retain inherited spacing case policies and exact exhausted budgets', function (): void {
+    $sequence = static fn(): Sequence => new Sequence(
+        new Text('A'),
+        new Text('B'),
+        new Regex('/[0-9]+/A'),
+        new Text('C'),
+        new Text('D'),
+    );
+    $parsers = [
+        [$sequence(), 'AB12CD'],
+        [new CaseSensitive(false, $sequence()), 'ab12cd'],
+        [(new Sequence($sequence()))->spacing(Repeat::star(new Text(' '))), 'A B 12 C D'],
+    ];
+    foreach ($parsers as [$parser, $text]) {
+        $source = new Utf8Source($text);
+        foreach ([null, new ParseLimits(maxWork: 12), new ParseLimits(maxDepth: 2)] as $limits) {
+            $observations = [];
+            foreach ([FreezeFlags::NONE, FreezeFlags::OPTIMIZE] as $flags) {
+                try {
+                    $result = $parser->freeze($flags)->parse($source, limits: $limits);
+                    $observations[] = [$result->success, $result->node, $result->diagnostic];
+                } catch (ParseLimitException $error) {
+                    $observations[] = [$error->getMessage(), $error->byteOffset];
+                }
+            }
+            expect($observations[1])->toEqual($observations[0]);
+        }
+    }
+});
+
+test('literal run limits split oversized sequences without changing their original syntax', function (): void {
+    $parsers = [
+        new Sequence(
+            new Text(str_repeat('a', 40000)),
+            new Text(str_repeat('b', 40000)),
+            new Text('c'),
+            new Text('d'),
+        ),
+        new Sequence(
+            Repeat::exact(new Text('a'), 3000),
+            Repeat::exact(new Text('b'), 3000),
+            new Text('c'),
+            new Text('d'),
+        ),
+    ];
+    $inputs = [
+        str_repeat('a', 40000) . str_repeat('b', 40000) . 'cd',
+        str_repeat('a', 3000) . str_repeat('b', 3000) . 'cd',
+    ];
+    foreach ($parsers as $index => $parser) {
+        $source = new ByteSource($inputs[$index]);
+        $expected = $parser->freeze(FreezeFlags::NONE)->parse($source);
+        $actual = $parser->freeze()->parse($source);
+        expect($actual->success)->toBeTrue()->and($actual->node)->toEqual($expected->node)
+            ->and($actual->diagnostic)->toEqual($expected->diagnostic);
     }
 });

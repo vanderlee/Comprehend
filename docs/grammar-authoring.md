@@ -312,7 +312,9 @@ original per-unit CST node:
 | `Text` | `ReadWhileSet` | One ASCII character |
 | `Any` | `ReadWhileRange` over all units | Ignores case policy, as the original child does |
 
-All rewrites preserve repetition bounds. Literal and range scanners inherit the
+All rewrites preserve repetition bounds. Eligible scans build the original
+per-unit concrete nodes directly, without temporary child execution records or
+a discarded scanner tree. Literal and range scanners inherit the
 child's local or enclosing case policy. Names, tags, groups, guards, lazy values,
 validators and commit effects on the repeat remain intact. Decorated children,
 excluded sets/ranges, non-ASCII literal/range bounds, multi-unit text and custom
@@ -354,21 +356,24 @@ Manifests advertise this interface in the class-to-interfaces `providers` map;
 preparation resolves it through `ExtensionLoader::requireOne(GraphOptimization::class)`.
 See [Extension capabilities](extension-discovery.md#capability-providers) for generic discovery.
 
-After references are resolved and graph safety checks pass, literal sequences can
-also compile to one internal `Text` terminal. Compilation recursively follows
-sequences, exact-count repetitions and resolved named references whose leaves
+After references are resolved and graph safety checks pass, adjacent literal runs
+within sequences can also compile to internal `Text` terminals. Compilation
+recursively follows sequences, exact-count repetitions and resolved named references whose leaves
 are case-sensitive ASCII `Text` terminals. For example, a sequence containing
 `Repeat::exact(new Text('ab'), 256)` followed by `Text('!')` recognizes its complete
 literal in one terminal call. Source-free templates reconstruct every original
 child node, name, tag and span; the CST is not collapsed to one text node.
 
-Literal plans are bounded to 64 KiB, 4,096 expanded child nodes and 32 levels of
+Each literal run is bounded to 64 KiB, 4,096 expanded child nodes and 32 levels of
 descent. Child guards, dynamic names, mappings, validators, effects, labels,
-custom parser classes and local spacing prevent compilation. Root metadata still
-executes normally. A mismatch uses the original graph for its diagnostic and
-partial-progress behavior. Active spacing, case-insensitive scopes and work/depth
-limits also use the original graph. Non-ASCII text, variable repetitions and
-general regex composition are not compiled by this path. Freezing classifies only
+custom parser classes and local spacing separate runs and retain ordinary
+recognition. For example, `Text('a'), Text('b'), Regex(...), Text('c'), Text('d')`
+can batch `ab` and `cd` while recognizing the regex normally. Root metadata still
+executes normally. A mismatch uses the original operands of that run for its
+diagnostic and partial-progress behavior; preceding executable operands are not
+repeated. Active spacing, case-insensitive scopes and work/depth limits use the
+original sequence. Non-ASCII text, variable repetitions and general regexes
+remain ordinary operands between runs. Freezing classifies only
 proven callback-free children and retains their source-free templates; recognition
 always creates fresh nodes bound to the current source.
 

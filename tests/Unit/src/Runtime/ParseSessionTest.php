@@ -329,3 +329,40 @@ test('recursion protection distinguishes positions and releases completed frames
     $session->leaveParser($parser, 0);
     $this->assertSame(3, $session->workUsed());
 });
+
+test('failure detail membership preserves strict byte strings path boundaries and insertion order', function (): void {
+    $session = new ParseSession(new ByteSource('a'));
+    $expected = ['', '0', '00', "a\0b", "\xff"];
+    $paths = [[], ['a', 'b'], ["a\0b"], ['0'], ['00'], ["\xff"]];
+    foreach ($expected as $expectation) {
+        $session->recordFailure(1, $expectation, $paths);
+    }
+    $diagnostic = $session->diagnostic();
+    foreach (array_reverse($expected) as $expectation) {
+        $session->recordFailure(1, $expectation, array_reverse($paths));
+    }
+
+    $this->assertSame($expected, $diagnostic->expected);
+    $this->assertSame($paths, $diagnostic->rulePaths);
+    $this->assertSame($diagnostic, $session->diagnostic());
+});
+
+test('restored failure details admit discarded entries again without duplicating retained entries', function (): void {
+    $session = new ParseSession(new ByteSource('ab'));
+    $session->recordFailure(1, 'first', [['root', 'first']]);
+    $checkpoint = $session->diagnosticState();
+    $original = $session->diagnostic();
+    for ($pass = 0; $pass < 2; ++$pass) {
+        $session->recordFailure(1, 'second', [['root', 'second']]);
+        $session->recordFailure(2, 'farther', [['root', 'farther']]);
+        $session->restoreDiagnostics($checkpoint);
+        $session->recordFailure(1, 'first', [['root', 'first']]);
+        $session->recordFailure(1, 'second', [['root', 'second']]);
+        $this->assertSame(['first', 'second'], $session->diagnostic()->expected);
+        $this->assertSame([['root', 'first'], ['root', 'second']], $session->diagnostic()->rulePaths);
+        $session->restoreDiagnostics($checkpoint);
+    }
+    $this->assertSame(['first'], $original->expected);
+    $this->assertSame($original->expected, $session->diagnostic()->expected);
+    $this->assertSame($original->rulePaths, $session->diagnostic()->rulePaths);
+});

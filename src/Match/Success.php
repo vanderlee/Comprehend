@@ -34,6 +34,8 @@ class Success extends AbstractMatch
     private ?ExecutionState $state = null;
     /** @var list<Success> Children needed only until their immutable CST is built. */
     private array $concreteOnlyMatches = [];
+    /** @var list<ConcreteNode> Optimized plain syntax without temporary execution records. */
+    private array $concreteOnlyNodes = [];
 
     /**
      * Create a new match.
@@ -77,6 +79,7 @@ class Success extends AbstractMatch
      */
     public function setConcreteMatches(array $matches): void
     {
+        $this->concreteOnlyNodes = [];
         if ($this->state === null && self::arePlainMatches($matches)) {
             $this->concreteOnlyMatches = $matches;
 
@@ -86,6 +89,19 @@ class Success extends AbstractMatch
         $state = $this->executionState();
         $state->concreteMatches = $matches;
         $this->inheritRecoveries($matches);
+    }
+
+    /**
+     * @internal Replace concrete children with syntax that has no deferred operations.
+     * @param list<ConcreteNode> $nodes
+     */
+    public function setConcreteNodes(array $nodes): void
+    {
+        $this->concreteOnlyMatches = [];
+        $this->concreteOnlyNodes = $nodes;
+        if ($this->state !== null) {
+            $this->state->concreteMatches = [];
+        }
     }
 
     public function addRecovery(Recovery $recovery): void
@@ -134,6 +150,7 @@ class Success extends AbstractMatch
         );
         // Recognizers can install deferred operations even without parser-level metadata.
         $this->concreteOnlyMatches = [];
+        $this->concreteOnlyNodes = [];
         if ($this->state !== null) {
             $this->retainExecutionState();
         }
@@ -193,6 +210,9 @@ class Success extends AbstractMatch
     /** @return list<ConcreteNode> */
     private function concreteChildNodes(): array
     {
+        if ($this->concreteOnlyNodes !== []) {
+            return $this->concreteOnlyNodes;
+        }
         $children = [];
         $matches = $this->concreteOnlyMatches !== []
             ? $this->concreteOnlyMatches
@@ -268,7 +288,7 @@ class Success extends AbstractMatch
 
         $state->semanticProjection ??= new SemanticProjection(null);
 
-        return $state->semanticProjection->value(new ParseResult($this));
+        return $state->semanticProjection->value($this);
     }
 
     /**
@@ -429,6 +449,7 @@ class Success extends AbstractMatch
     public function retainExecutionState(): void
     {
         $this->concreteOnlyMatches = [];
+        $this->concreteOnlyNodes = [];
         $state = $this->state;
         if ($state === null) {
             return;

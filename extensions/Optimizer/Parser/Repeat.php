@@ -53,8 +53,12 @@ class Repeat extends OrdinaryRepeat
     {
         $scan = GraphOptimizer::scanRepeat($this->scanner, $this->getParser(), $source, $byteOffset, $session);
 
-        return $scan === null
-            ? parent::recognizeRepetition($source, $byteOffset, $session)
-            : $this->success($source, $byteOffset, $scan[0], $scan[1]);
+        if ($scan === null) {
+            return parent::recognizeRepetition($source, $byteOffset, $session);
+        }
+        $success = $this->success($source, $byteOffset, $scan[0]);
+        $success->setConcreteNodes($scan[1]);
+
+        return $success;
     }
 }

@@ -23,29 +23,61 @@ final class LiteralSequence
     private const MAX_BYTES = 65536;
     private const MAX_NODES = 4096;
 
-    /** @param list<ConcreteTemplate> $children */
-    private function __construct(private Text $terminal, private array $children)
+    /**
+     * @param list<Parser> $parsers Original operands for local failure fallback.
+     * @param list<ConcreteTemplate> $children
+     */
+    private function __construct(private Text $terminal, private array $parsers, private array $children)
     {
         // Prepared once for a frozen graph; parsing instantiates fresh source-bound nodes.
     }
 
-    public static function prepare(Sequence $sequence): ?self
+    /** @return list<Parser|self> Empty when there is no useful literal run. */
+    public static function prepare(Sequence $sequence): array
     {
+        $steps = [];
+        $run = [];
         $literal = '';
         $nodes = 0;
         foreach ($sequence as $child) {
             $compiled = self::compile($child);
-            if ($compiled === null) {
-                return null;
+            if (
+                $compiled === null
+                || strlen($literal) + strlen($compiled[0]) > self::MAX_BYTES
+                || $nodes + $compiled[1] > self::MAX_NODES
+            ) {
+                self::appendRun($steps, $run, $literal);
+                $run = [];
+                $literal = '';
+                $nodes = 0;
             }
+            if ($compiled === null) {
+                $steps[] = $child;
+                continue;
+            }
+            $run[] = $child;
             $literal .= $compiled[0];
             $nodes += $compiled[1];
-            if (strlen($literal) > self::MAX_BYTES || $nodes > self::MAX_NODES) {
-                return null;
+        }
+        self::appendRun($steps, $run, $literal);
+        foreach ($steps as $step) {
+            if ($step instanceof self) {
+                return $steps;
             }
         }
-        if ($literal === '') {
-            return null;
+
+        return [];
+    }
+
+    /**
+     * @param list<Parser|self> $steps
+     * @param list<Parser> $parsers
+     */
+    private static function appendRun(array &$steps, array $parsers, string $literal): void
+    {
+        if ($literal === '' || (count($parsers) === 1 && $parsers[0]::class === Text::class)) {
+            array_push($steps, ...$parsers);
+            return;
         }
 
         // Only proven callback-free ASCII literals reach this classification parse.
@@ -54,16 +86,23 @@ final class LiteralSequence
         $session = new ParseSession($source);
         $offset = 0;
         $children = [];
-        foreach ($sequence as $child) {
+        foreach ($parsers as $child) {
             $match = $child->recognizeInSession($source, $offset, $session);
             if (!$match instanceof Success || $match->node === null) {
-                return null;
+                array_push($steps, ...$parsers);
+                return;
             }
             $children[] = ConcreteTemplate::from($match->node, 0);
             $offset += $match->length;
         }
 
-        return new self((new Text($literal))->caseSensitive(), $children);
+        $steps[] = new self((new Text($literal))->caseSensitive(), $parsers, $children);
+    }
+
+    /** @return list<Parser> */
+    public function parsers(): array
+    {
+        return $this->parsers;
     }
 
     /**

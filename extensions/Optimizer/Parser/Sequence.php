@@ -8,6 +8,8 @@ use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Extensions\Optimizer\LiteralSequence;
 use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Sequence as OrdinarySequence;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
@@ -17,7 +19,8 @@ class Sequence extends OrdinarySequence
 {
     use ExactClassSnapshotReuseTrait;
 
-    private ?LiteralSequence $literal = null;
+    /** @var list<Parser|LiteralSequence> */
+    private array $steps = [];
 
     public static function from(OrdinarySequence $original): self
     {
@@ -29,24 +32,47 @@ class Sequence extends OrdinarySequence
 
     public function prepareRecognition(): void
     {
-        $this->literal = LiteralSequence::prepare($this);
+        $this->steps = LiteralSequence::prepare($this);
     }
 
     protected function copyDependencies(GraphSnapshot $context): void
     {
         parent::copyDependencies($context);
-        $this->literal = null;
+        $this->steps = [];
     }
 
     protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
     {
-        $children = $this->literal?->attempt($source, $byteOffset, $session);
-        if ($children === null) {
+        if (
+            $this->steps === [] || $this->hasExplicitSpacing()
+            || $session->hasRecognitionLimits() || $session->hasActiveSpacing() || !$session->isCaseSensitive()
+        ) {
             return parent::recognize($source, $byteOffset, $session);
         }
+
+        // Without automatic spacing, adjacent plain operands can be recognized in batches.
+        // Failed runs fall back locally: earlier executable operands must never run twice.
+        $children = [];
         $length = 0;
-        foreach ($children as $child) {
-            $length += $child->length;
+        foreach ($this->steps as $step) {
+            if ($step instanceof LiteralSequence) {
+                $batch = $step->attempt($source, $byteOffset + $length, $session);
+                if ($batch !== null) {
+                    foreach ($batch as $child) {
+                        $length += $child->length;
+                        $children[] = $child;
+                    }
+                    continue;
+                }
+            }
+            foreach ($step instanceof LiteralSequence ? $step->parsers() : [$step] as $parser) {
+                $child = $parser->recognizeInSession($source, $byteOffset + $length, $session);
+                $length += $child->length;
+                if (!$child instanceof Success) {
+                    return $this->failure($source, $byteOffset, $length);
+                }
+                $children[] = $child;
+            }
         }
 
         return $this->success($source, $byteOffset, $length, $children);

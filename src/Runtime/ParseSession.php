@@ -45,6 +45,10 @@ final class ParseSession
      * @var list<list<string>>
      */
     private array $rulePaths = [];
+    /** @var array<string, true>|null Rebuilt lazily after a diagnostic checkpoint is restored. */
+    private ?array $expectationIndex = [];
+    /** @var array<string, true>|null */
+    private ?array $rulePathIndex = [];
     /**
      * @var list<string>
      */
@@ -223,6 +227,12 @@ final class ParseSession
      */
     public function restoreDiagnostics(array $state): void
     {
+        if ($state[1] !== $this->expectations) {
+            $this->expectationIndex = null;
+        }
+        if ($state[2] !== $this->rulePaths) {
+            $this->rulePathIndex = null;
+        }
         if (
             $state[0] !== $this->farthestFailure
             || $state[1] !== $this->expectations
@@ -339,6 +349,8 @@ final class ParseSession
             $this->farthestFailure = $byteOffset;
             $this->expectations = [];
             $this->rulePaths = [];
+            $this->expectationIndex = [];
+            $this->rulePathIndex = [];
         }
 
         if ($byteOffset !== $this->farthestFailure) {
@@ -351,14 +363,33 @@ final class ParseSession
     /** @param list<list<string>>|null $paths */
     private function mergeFailureDetails(?string $expected, ?array $paths): void
     {
-        if ($expected !== null && !in_array($expected, $this->expectations, true)) {
-            $this->diagnosticCache = null;
-            $this->expectations[] = $expected;
+        if ($expected !== null) {
+            if ($this->expectationIndex === null) {
+                $this->expectationIndex = [];
+                foreach ($this->expectations as $expectation) {
+                    $this->expectationIndex['expected:' . $expectation] = true;
+                }
+            }
+            $key = 'expected:' . $expected;
+            if (!isset($this->expectationIndex[$key])) {
+                $this->diagnosticCache = null;
+                $this->expectationIndex[$key] = true;
+                $this->expectations[] = $expected;
+            }
         }
 
+        if ($this->rulePathIndex === null) {
+            $this->rulePathIndex = [];
+            foreach ($this->rulePaths as $path) {
+                $this->rulePathIndex[serialize($path)] = true;
+            }
+        }
         foreach ($paths ?? [$this->path] as $path) {
-            if (!in_array($path, $this->rulePaths, true)) {
+            // Serialization preserves strict path identity, including embedded delimiters and bytes.
+            $key = serialize($path);
+            if (!isset($this->rulePathIndex[$key])) {
                 $this->diagnosticCache = null;
+                $this->rulePathIndex[$key] = true;
                 $this->rulePaths[] = $path;
             }
         }

@@ -7,6 +7,7 @@ namespace Vanderlee\Comprehend\Result;
 use Closure;
 use LogicException;
 use Throwable;
+use Vanderlee\Comprehend\Match\Success;
 
 /**
  * Caches one recognition-owned semantic mapping for ParseResult. Retains nulls, objects and
@@ -25,13 +26,14 @@ final class SemanticProjection
         $this->mapper = $mapper === null ? null : Closure::fromCallable($mapper);
     }
 
-    public function value(ParseResult $result): mixed
+    public function value(ParseResult|Success $result): mixed
     {
         if ($this->evaluating) {
             throw new LogicException('Recursive semantic value evaluation');
         }
         if (!$this->evaluated) {
-            $this->evaluate($result);
+            // Cached reads and errors need no new public result wrapper.
+            $this->evaluate($result instanceof Success ? new ParseResult($result) : $result);
         }
         if ($this->error !== null) {
             throw $this->error;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Src\Match;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
@@ -12,6 +13,7 @@ use Vanderlee\Comprehend\Result\ValidationResult;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use WeakReference;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 uses(TestCase::class);
 
@@ -288,4 +290,60 @@ test('parent collections apply child operations even when child results are cach
     $this->assertSame(['text' => 'first second'], $parent->getResults());
     $this->assertSame(['text' => ' second'], $second->getResults());
     $this->assertSame(['text' => 'first second'], $parent->getResults());
+});
+
+test('direct concrete children survive node preparation alongside lazy values and explicit effects', function (): void {
+    $source = new ByteSource('ab');
+    $nodes = [
+        new ConcreteNode(Text::class, $source->span(0, 1)),
+        new ConcreteNode(Text::class, $source->span(1, 2)),
+    ];
+    $parent = new Success(2);
+    $parent->setSourceMetadata($source->span(0, 2), null);
+    $parent->setConcreteNodes($nodes);
+    $parent->setValueMapper(static fn(ParseResult $result): string => strtoupper($result->rawText()));
+    $effects = 0;
+    $parent->addCustomCallback(static function () use (&$effects): void {
+        ++$effects;
+    });
+    $parent->buildConcreteNode(new Text('ab'), 'word');
+    $parent->retainExecutionState();
+
+    $this->assertSame($nodes, $parent->node->children);
+    $this->assertSame('ab', $parent->node->rawText());
+    $this->assertSame('AB', $parent->getValue());
+    $this->assertSame('AB', $parent->getValue());
+    $this->assertSame(0, $effects);
+    $parent->commit();
+    $parent->commit();
+    $this->assertSame(1, $effects);
+});
+
+test('direct and execution-backed concrete children replace one another including empty lists', function (): void {
+    $source = new ByteSource('a');
+    $child = (new Text('a'))->recognizeInSession($source, 0, new ParseSession($source));
+    $this->assertInstanceOf(Success::class, $child);
+    $replacement = new ConcreteNode(Text::class, $source->span(0, 1), name: 'replacement');
+    $parent = new Success(1, [$child]);
+    $parent->setSourceMetadata($source->span(0, 1), null);
+    $parent->setConcreteNodes([$replacement]);
+    $parent->preparePlainNode(new Text('a'));
+    $this->assertSame([$replacement], $parent->node->children);
+    $parent->setConcreteNodes([$replacement]);
+    $parent->setConcreteMatches([$child]);
+    $parent->preparePlainNode(new Text('a'));
+    $this->assertSame([$child->node], $parent->node->children);
+    $parent->setConcreteMatches([$child]);
+    $parent->setConcreteNodes([]);
+    $parent->preparePlainNode(new Text('a'));
+    $this->assertSame([], $parent->node->children);
+});
+
+test('direct concrete children still reject nodes from another source', function (): void {
+    $parent = new Success(1);
+    $parent->setSourceMetadata((new ByteSource('a'))->span(0, 1), null);
+    $parent->setConcreteNodes([new ConcreteNode(Text::class, (new ByteSource('a'))->span(0, 1))]);
+    $this->expectException(InvalidArgumentException::class);
+    $this->expectExceptionMessage('Concrete children must be nodes from the same source');
+    $parent->preparePlainNode(new Text('a'));
 });

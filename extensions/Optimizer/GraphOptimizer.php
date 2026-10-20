@@ -18,7 +18,6 @@ use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhile;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileRange;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileSet;
 use Vanderlee\Comprehend\Match\AbstractMatch;
-use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Not;
@@ -32,6 +31,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 /** Owns all optimized recognition decisions; ordinary parsers use the standard runtime. */
 final class GraphOptimizer implements GraphOptimization, SyntaxExtension
@@ -139,7 +139,7 @@ final class GraphOptimizer implements GraphOptimization, SyntaxExtension
         };
     }
 
-    /** @return array{int, list<Success>}|null Null requests ordinary repetition, including minimum failures. */
+    /** @return array{int, list<ConcreteNode>}|null Null requests ordinary repetition, including minimum failures. */
     public static function scanRepeat(
         ?ReadRun $scanner,
         Parser $operand,
@@ -150,31 +150,22 @@ final class GraphOptimizer implements GraphOptimization, SyntaxExtension
         if ($scanner === null || $session->hasRecognitionLimits() || $session->hasActiveSpacing()) {
             return null;
         }
-        $diagnostics = $session->diagnosticState();
-        try {
-            $scan = $scanner->recognizeInSession($source, $offset, $session);
-        } finally {
-            $session->restoreDiagnostics($diagnostics);
-        }
-        if (!$scan instanceof Success) {
+        [$accepted, $length] = $scanner->scanLength($source, $offset, $session);
+        if (!$accepted) {
             return null;
         }
         $children = [];
-        $diagnostic = $session->diagnostic();
-        $end = $offset + $scan->length;
+        $end = $offset + $length;
         while ($offset < $end) {
             $unit = $source->readUnit($offset);
             if ($unit === null) {
                 throw new LogicException('Scanned source unit is missing');
             }
-            $child = new Success($unit->byteLength());
-            $child->setSourceMetadata($unit, $diagnostic?->byteOffset, $diagnostic);
-            $child->buildConcreteNode($operand);
-            $children[] = $child;
+            $children[] = new ConcreteNode($operand->concreteKind(), $unit);
             $offset = $unit->end;
         }
 
-        return [$scan->length, $children];
+        return [$length, $children];
     }
 
     private static function textScanner(Text $parser, int $min, ?int $max): ?ReadRun

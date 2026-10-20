@@ -6,6 +6,11 @@ use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Extensions\Extraction\Extraction;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhile;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadRun;
+use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Match\Failure;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -139,6 +144,68 @@ test('scanner exceptions restore the owning session', function (): void {
     $this->assertTrue((new ReadWhile(static fn(string $c): bool => $c === 'A'))
         ->recognizeInSession($source, 0, $session)->accepted);
 });
+
+test('custom scanner result hooks retain their case scope and restore it after an exception', function (
+    string $text,
+    bool $throw,
+): void {
+    $source = new ByteSource($text);
+    $session = new ParseSession($source);
+    $parser = new class ($session, $throw) extends ReadRun {
+        public ?bool $caseWhileBuilding = null;
+
+        public function __construct(private ParseSession $session, private bool $throw)
+        {
+            parent::__construct(1);
+        }
+
+        protected function acceptsUnit(Span $unit, ParseSession $session): bool
+        {
+            return $session->handleCase($unit->rawText()) === 'a';
+        }
+
+        protected function success(
+            Source $source,
+            int $offset,
+            int $length = 0,
+            array|Success $children = [],
+        ): Success {
+            $this->observeScope();
+            return parent::success($source, $offset, $length, $children);
+        }
+
+        protected function failure(Source $source, int $offset, int $progress = 0): Failure
+        {
+            $this->observeScope();
+            return parent::failure($source, $offset, $progress);
+        }
+
+        private function observeScope(): void
+        {
+            $this->caseWhileBuilding = $this->session->isCaseSensitive();
+            if ($this->throw) {
+                throw new LogicException('result hook failed');
+            }
+        }
+
+        public function __toString(): string
+        {
+            return 'custom scanner';
+        }
+    };
+    $parser->caseInsensitive();
+    try {
+        $match = $parser->recognizeInSession($source, 0, $session);
+        $this->assertFalse($throw);
+        $this->assertSame($text === 'A', $match->accepted);
+    } catch (LogicException $error) {
+        $this->assertTrue($throw);
+        $this->assertSame('result hook failed', $error->getMessage());
+    }
+    $this->assertFalse($parser->caseWhileBuilding);
+    $this->assertTrue($session->isCaseSensitive());
+    $this->assertSame([], $session->rulePath());
+})->with(['A', '!'])->with([false, true]);
 
 test('scanners enforce work limits', function (C $parser): void {
     $this->expectException(ParseLimitException::class);
