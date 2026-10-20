@@ -34,7 +34,10 @@ abstract class AbstractMatch
 
     public function setConcreteNode(ConcreteNode $node): void
     {
-        if (!$this->accepted || $node->span !== $this->span) {
+        if (
+            !$this->accepted
+            || $node->span !== $this->span
+        ) {
             throw new InvalidArgumentException('Concrete root must use the successful match span');
         }
         $this->node = $node;
@@ -42,7 +45,10 @@ abstract class AbstractMatch
 
     public function setSourceMetadata(Span $span, ?int $farthestFailure, ?Diagnostic $diagnostic = null): void
     {
-        if (!$this->accepted && $span->byteLength() !== 0) {
+        if (
+            !$this->accepted
+            && $span->byteLength() !== 0
+        ) {
             throw new InvalidArgumentException('Failed matches must have zero-width spans');
         }
         // A diagnostic has already checked this exact source position at construction.

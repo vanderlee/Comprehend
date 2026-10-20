@@ -416,7 +416,7 @@ final readonly class Catalog
         return [
             ...self::RULES,
             ...self::FLUENTS,
-            ...array_keys(self::ALIASES)
+            ...array_keys(self::ALIASES),
         ];
     }
 
@@ -429,10 +429,11 @@ final readonly class Catalog
     {
         $name = self::validateName($name);
 
-        return new self([
-            ...$this->rules,
-            $name => Closure::fromCallable($factory)],
-            $this->fluents
+        return new self(
+            [
+                ...$this->rules,
+                $name => Closure::fromCallable($factory)],
+            $this->fluents,
         );
     }
 
@@ -447,7 +448,7 @@ final readonly class Catalog
 
         return new self($this->rules, [
             ...$this->fluents,
-            $name => Closure::fromCallable($factory)
+            $name => Closure::fromCallable($factory),
         ]);
     }
 

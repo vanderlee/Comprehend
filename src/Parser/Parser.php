@@ -23,6 +23,8 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Span;
 
+use function count;
+
 /**
  * Defines the shared source-based recognition contract for terminals, combinators and
  * directives. Checks delegated matches, builds source-bound results and separates pure guards
@@ -371,20 +373,22 @@ abstract class Parser implements SnapshotParticipant
             : $match;
 
         if (
-            $label !== null
-            && $labelCheckpoint !== null
-            && !$match->accepted
+            $label === null
+            || $labelCheckpoint === null
+            || $match->accepted
         ) {
-            $session->pushRule($this->diagnosticName());
+            return $match;
+        }
 
-            try {
-                if ($session->relabelFailure($offset, $label, $labelCheckpoint)) {
-                    $diagnostic = $session->diagnostic(true);
-                    $match->setSourceMetadata($source->span($offset, $offset), $diagnostic?->byteOffset, $diagnostic);
-                }
-            } finally {
-                $session->popRule();
+        $session->pushRule($this->diagnosticName());
+
+        try {
+            if ($session->relabelFailure($offset, $label, $labelCheckpoint)) {
+                $diagnostic = $session->diagnostic(true);
+                $match->setSourceMetadata($source->span($offset, $offset), $diagnostic?->byteOffset, $diagnostic);
             }
+        } finally {
+            $session->popRule();
         }
 
         return $match;
@@ -470,10 +474,14 @@ abstract class Parser implements SnapshotParticipant
      */
     protected function success(Source $source, int $offset, int $length = 0, array|Success $children = []): Success
     {
-        $success = new Success($length, is_array($children) ? $children : [$children]);
+        $success = new Success($length, is_array($children)
+            ? $children
+            : [$children]
+        );
+
         $childSpan = $children instanceof Success
             ? $children->span
-            : (count($children) === 1 ? $children[0]->span : null);
+            : $children[0]?->span ?? null;
 
         // Wrappers can share an immutable interval without sharing execution state.
         $span = $childSpan !== null
@@ -482,11 +490,17 @@ abstract class Parser implements SnapshotParticipant
         && $childSpan->end === $offset + $length
             ? $childSpan
             : $source->span($offset, $offset + $length);
+
         $success->setSourceMetadata($span, null);
+
         if ($this->resultCallbacks !== []) {
             $this->bindResultCallbacks($success, $span);
         }
-        if ($this->effects !== [] || $this->assignCallbacks !== []) {
+
+        if (
+            $this->effects !== []
+            || $this->assignCallbacks !== []
+        ) {
             $this->bindCommitEffects($success, $span);
         }
 

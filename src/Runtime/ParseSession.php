@@ -276,9 +276,14 @@ final class ParseSession
                 $this->rulePaths,
             );
         }
-        if (!$includeDeferredLists || $this->deferredListFailure === null) {
+
+        if (
+            !$includeDeferredLists
+            || $this->deferredListFailure === null
+        ) {
             return $diagnostic;
         }
+
         if (
             $this->combinedDiagnosticActive !== $diagnostic
             || $this->combinedDiagnosticDeferred !== $this->deferredListFailure
@@ -296,15 +301,18 @@ final class ParseSession
         if ($left === null || ($right !== null && $right->byteOffset > $left->byteOffset)) {
             return $right;
         }
+
         if ($right === null || $left->byteOffset > $right->byteOffset) {
             return $left;
         }
 
         $expected = array_values(array_unique(array_merge($left->expected, $right->expected)));
         $paths = array_values(array_unique(array_merge($left->rulePaths, $right->rulePaths), SORT_REGULAR));
+
         if ($expected === $left->expected && $paths === $left->rulePaths) {
             return $left;
         }
+
         if ($expected === $right->expected && $paths === $right->rulePaths) {
             return $right;
         }

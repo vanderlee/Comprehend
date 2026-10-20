@@ -75,7 +75,7 @@ final class ExtensionLoader
                         'class' => $class,
                         'rules' => $rules,
                         'fluents' => $fluents,
-                        'provides' => $provides
+                        'provides' => $provides,
                     ] = $provider;
 
                     $id = $package . ':' . strtolower($class);
@@ -104,7 +104,7 @@ final class ExtensionLoader
                     foreach (
                         [
                             'rules' => $rules,
-                            'fluents' => $fluents
+                            'fluents' => $fluents,
                         ] as $kind => $names
                     ) {
                         foreach ($names as $name) {
@@ -171,7 +171,7 @@ final class ExtensionLoader
                 'class' => $class,
                 'rules' => [],
                 'fluents' => [],
-                'provides' => $provides
+                'provides' => $provides,
             ];
         }
         $syntaxKey = null;
@@ -241,8 +241,8 @@ final class ExtensionLoader
                     array_map(
                         fn(string $id): string => $id . ' (' . implode(', ', $this->sources[$id]) . ')',
                         $ids,
-                    )
-                )
+                    ),
+                ),
             );
         }
 
@@ -318,7 +318,7 @@ final class ExtensionLoader
             foreach (
                 [
                     '/extensions/*.extension.json',
-                    '/extensions/*/*.extension.json'
+                    '/extensions/*/*.extension.json',
                 ] as $pattern
             ) {
                 $matches = glob($path . $pattern);
@@ -346,8 +346,8 @@ final class ExtensionLoader
                     '_comprehend_manifest_path' => $file,
                     'extra' => [
                         'comprehend' => [
-                            'extensions' => [$entry]
-                        ]
+                            'extensions' => [$entry],
+                        ],
                     ],
                 ];
             }
@@ -441,7 +441,7 @@ final class ExtensionLoader
         if (
             !is_array($contracts)
             || !array_is_list(
-                $contracts
+                $contracts,
             )) {
             throw new RuntimeException('Invalid provides list in ' . $context);
         }
@@ -578,7 +578,7 @@ final class ExtensionLoader
                 foreach (
                     [
                         'rules',
-                        'fluents'
+                        'fluents',
                     ] as $kind
                 ) {
                     $factories[$kind] = [];

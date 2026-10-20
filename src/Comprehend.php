@@ -205,9 +205,7 @@ final class Comprehend
     /** @var array<int, FrozenGrammar> Reusable preparation is isolated by its complete flag set. */
     private array $preparedGrammars = [];
 
-    private function __construct(private readonly Parser $parser, private readonly ?Syntax $syntax = null)
-    {
-    }
+    private function __construct(private readonly Parser $parser, private readonly ?Syntax $syntax = null) {}
 
     public static function syntax(): Syntax
     {
