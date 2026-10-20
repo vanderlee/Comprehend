@@ -34,10 +34,6 @@ class Success extends AbstractMatch
     private ?ExecutionState $state = null;
     /** @var list<Success> Children needed only until their immutable CST is built. */
     private array $concreteOnlyMatches = [];
-    /** @var (Closure(self): bool)|null */
-    private static ?Closure $retainState = null;
-    /** @var (Closure(self): bool)|null */
-    private static ?Closure $retainValidation = null;
 
     /**
      * Create a new match.
@@ -417,30 +413,47 @@ class Success extends AbstractMatch
         if ($state === null) {
             return;
         }
-        $retain = self::$retainState ??= static fn(self $match): bool => $match->state !== null;
+        // Build packed lists directly instead of filtering and then reindexing.
         if ($state->successes !== []) {
-            $state->successes = array_values(array_filter($state->successes, $retain));
+            $retained = [];
+            foreach ($state->successes as $child) {
+                if ($child->state !== null) {
+                    $retained[] = $child;
+                }
+            }
+            $state->successes = $retained;
         }
         if ($state->concreteMatches !== []) {
-            $validate = self::$retainValidation ??= static function (self $match): bool {
+            $retained = [];
+            foreach ($state->concreteMatches as $child) {
                 // Custom execution records may implement validation outside the built-in state.
-                if ($match::class !== self::class) {
-                    return true;
+                if ($child::class !== self::class) {
+                    $retained[] = $child;
+                    continue;
                 }
-                $childState = $match->state;
-
-                return $childState !== null && (
-                    $childState->semanticValidators !== []
-                    || $childState->recoveries !== []
-                    || $childState->concreteMatches !== []
-                    || $childState->validation !== null
-                    || $childState->validationError !== null
-                );
-            };
-            $state->concreteMatches = array_values(array_filter($state->concreteMatches, $validate));
+                $childState = $child->state;
+                if (
+                    $childState !== null && (
+                        $childState->semanticValidators !== []
+                        || $childState->recoveries !== []
+                        || $childState->concreteMatches !== []
+                        || $childState->validation !== null
+                        || $childState->validationError !== null
+                    )
+                ) {
+                    $retained[] = $child;
+                }
+            }
+            $state->concreteMatches = $retained;
         }
         if ($state->precedingMatches !== []) {
-            $state->precedingMatches = array_values(array_filter($state->precedingMatches, $retain));
+            $retained = [];
+            foreach ($state->precedingMatches as $child) {
+                if ($child->state !== null) {
+                    $retained[] = $child;
+                }
+            }
+            $state->precedingMatches = $retained;
         }
         if ($state->isEmpty()) {
             $this->state = null;

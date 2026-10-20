@@ -372,16 +372,8 @@ general regex composition are not compiled by this path. Freezing classifies onl
 proven callback-free children and retains their source-free templates; recognition
 always creates fresh nodes bound to the current source.
 
-Measure the literal fixtures, including preparation and warm recognition with CST:
-
-```sh
-php tools/benchmark-literal-sequences.php --iterations=20 --samples=7
-```
-
-The benchmark checks identical CST hashes with `FreezeFlags::NONE`, alternates
-timing order and excludes grammar/source preparation from recognition time.
-`--optimizer-dir=path/to/Optimizer` loads an alternate optimizer source snapshot
-for before/after measurements; run each snapshot in a fresh process.
+Historical measurements of literal preparation and warm recognition with CST are
+recorded in [Performance measurements](performance.md).
 
 After references are resolved and graph safety checks pass, optimization also
 prepares bounded lexical tables for Repeat operands, Choice alternatives and Not

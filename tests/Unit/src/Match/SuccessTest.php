@@ -15,6 +15,37 @@ use WeakReference;
 
 uses(TestCase::class);
 
+test('mixed sparse children keep CST order and deferred operations after retention', function (): void {
+    $source = new ByteSource('abc');
+    $calls = [];
+    $children = [];
+    foreach (['a', 'b', 'c'] as $offset => $text) {
+        $parser = new Text($text);
+        if ($text !== 'b') {
+            $parser->onCommit(static function () use (&$calls, $text): void {
+                $calls[] = $text;
+            });
+        }
+        $children[$offset * 2 + 1] = $parser->recognizeInSession($source, $offset, new ParseSession($source));
+    }
+    $plain = WeakReference::create($children[3]);
+    $nodes = array_map(static fn(Success $child) => $child->node, array_values($children));
+    $parent = new Success(3, $children);
+    $parent->setSourceMetadata($source->span(0, 3), null);
+    $parent->buildConcreteNode(new Text('abc'));
+    $parent->retainExecutionState();
+    unset($children);
+
+    $this->assertNull($plain->get());
+    $this->assertSame($nodes, $parent->node->children);
+    $this->assertSame('abc', $parent->node->rawText());
+    $this->assertTrue($parent->validateSemantic()->valid);
+    $this->assertSame([], $calls);
+    $parent->commit();
+    $parent->commit();
+    $this->assertSame(['a', 'c'], $calls);
+});
+
 test('plain siblings keep their trees and release execution records when the parent gains a value', function (): void {
     $source = new ByteSource('xy');
     $left = (new Text('x'))->recognizeInSession($source, 0, new ParseSession($source));

@@ -68,7 +68,7 @@ alternated; workers used two warmups and seven batches of 20 parses per prepared
 grammar. Timings include recognition, full CST construction, acceptance checks and
 result release, and exclude source construction and grammar preparation. CST
 hashes matched across all workers and both optimizer versions for each fixture.
-The benchmark also checks the unoptimized CST and alternates unoptimized/optimized
+The benchmark also checked the unoptimized CST and alternated unoptimized/optimized
 batch order within each worker. These synthetic results are not general latency
 guarantees; they do not establish gains for variable mail or XML grammars.
 
@@ -78,13 +78,7 @@ Compilation adds preparation work: optimized preparation medians increased from
 class loading. Reuse frozen grammars to amortize classification and template
 creation. Raw local reports are saved under ignored `build/performance-review/`.
 
-```sh
-php tools/benchmark-literal-sequences.php --iterations=20 --samples=7
-```
-
-Use `--optimizer-dir=path/to/Optimizer` in a separate process to compare a saved
-optimizer source snapshot with the current implementation. `--output=path.json`
-saves preparation, warm min/median/max, runtime and CST hashes.
+The specialized benchmark used for these historical measurements has been removed.
 
 ### Library lexical tables (2026-10-17)
 
@@ -96,19 +90,13 @@ The first observation uses the original runtime; executable metadata and custom
 parsers always execute normally. Tables hold at most 128 entries per operand,
 with at most 32 bytes of proven lookahead. `FreezeFlags::NONE` disables them.
 
-Reproduce this comparison from the repository root:
-
-```sh
-php tools/benchmark-library-optimizer.php --iterations=30 --samples=7
-```
-
-The tool runs each case/flag pair in a fresh PHP worker. It records grammar
+The historical benchmark ran each case/flag pair in a fresh PHP worker. It recorded grammar
 preparation, first-parse time, warm min/median/max time, retained memory, allocated
-process peak and warmed parser visits. Before accepting results it checks complete
+process peak and warmed parser visits. Before accepting results it checked complete
 consumption and identical CST/diagnostic fingerprints across flags and between
 the first and warmed parses. Recognition includes full CST construction; source
 construction and serialization used for verification are outside the timed loop.
-The default JSON output is `build/library-optimizer-benchmark.json`.
+The specialized benchmark has been removed.
 
 Measured on Windows with PHP 8.2.10, validated in-memory UTF-8 sources, seven samples
 of 30 parses per prepared grammar:
@@ -280,15 +268,10 @@ unique Unicode members. Cold preparation and source setup are outside timing.
 Literal/repeat timings include result release; Set timings exclude it. No file
 or non-ASCII folding speedup is inferred from this table.
 
-Raw before/after data records ranges,
-runtime, timings and commands. Run the maintained sweep with:
-
-```sh
-php tools/benchmark-inner-loops.php
-```
-
-It checks acceptance and late-literal failure positions, reports literal/repeat
-and Set sweeps, and includes an accounting-only microbenchmark. The latter is not
+Raw before/after data records ranges, runtime, timings and commands. The historical
+sweep checked acceptance and late-literal failure positions, reported literal/repeat
+and Set sweeps, and included an accounting-only microbenchmark. The specialized
+benchmark has been removed. The accounting-only microbenchmark is not
 a parsing speedup or an exhausted-budget equivalence test. Regression tests cover
 partial budgets, Unicode mismatch boundaries, byte/text cache separation, policy
 changes, invalid UTF-8, frozen graphs and retained trivia/effect order.
