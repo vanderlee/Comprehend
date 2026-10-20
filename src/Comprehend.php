@@ -165,7 +165,7 @@ use Vanderlee\Comprehend\Syntax\ExtensionLoader;
  * @method static self<string> except(self|Parser|string $match, self|Parser|string $not)
  * @method static self<string> not(self|Parser|string $parser)
  * @method static self ref(AbstractRuleset $rules, string $name, mixed ...$arguments)
- * @method static self or (self|Parser|string ...$parsers)
+ * @method static self or(self|Parser|string ...$parsers)
  * @method static self repeat(mixed ...$arguments)
  * @method static self recoverUntil(mixed ...$arguments)
  * @method static self recoverDelimited(mixed ...$arguments)

@@ -52,6 +52,10 @@ to their nearest named descendants; tags on a named node stay on that node.
 Trivia is excluded from this propagation. AST and CST expose `tags` and
 `hasTag()`. AST `firstTagged()` and `allTagged()` search immediate children.
 
+String and integer names are always literal, even when a string matches a PHP
+function name. For a dynamic name, pass a closure, first-class callable, callable
+array or invokable object.
+
 A name callback receives the immutable ConcreteNode before its own name is
 resolved, and returns string, integer or null (unnamed). It runs once per
 successful recognition attempt, before guards, and must be pure: speculative

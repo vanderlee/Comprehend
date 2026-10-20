@@ -16,6 +16,7 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 abstract class ParserTest extends TestCase
 {
@@ -36,6 +37,48 @@ abstract class ParserTest extends TestCase
 }
 
 uses(ParserTest::class);
+
+test('string and integer node names remain literal', function (string|int $name): void {
+    $parser = (new Text('a'))->name($name);
+    foreach ([$parser, $parser->freeze()] as $grammar) {
+        $result = $grammar->parseAll(new ByteSource('a'));
+        $this->assertTrue($result->success);
+        $this->assertSame($name, $result->node->name);
+        $this->assertSame($name, $result->ast()->name);
+    }
+})->with(['mail', 'key', 'strlen', 0, 42]);
+
+test('dynamic node names run only during successful recognition', function (string $kind): void {
+    $callback = new class {
+        public int $calls = 0;
+
+        public function __invoke(ConcreteNode $node): string
+        {
+            ++$this->calls;
+
+            return 'token_' . $node->rawText();
+        }
+    };
+    $name = match ($kind) {
+        'closure' => $callback->__invoke(...),
+        'array' => [$callback, '__invoke'],
+        'object' => $callback,
+    };
+    $parser = (new Text('a'))->name($name);
+    $frozen = $parser->freeze();
+    $this->assertSame(0, $callback->calls);
+
+    foreach ([$parser, $frozen] as $grammar) {
+        $this->assertFalse($grammar->parseAll(new ByteSource('b'))->success);
+        $calls = $callback->calls;
+        $result = $grammar->parseAll(new ByteSource('a'));
+        $this->assertTrue($result->success);
+        $this->assertSame('token_a', $result->node->name);
+        $this->assertSame('token_a', $result->ast()->name);
+        $this->assertSame($calls + 1, $callback->calls);
+    }
+    $this->assertSame(2, $callback->calls);
+})->with(['closure', 'array', 'object']);
 
 test('plain preparation respects later metadata and frozen isolation', function (string $operation): void {
     $parser = new Text('a');

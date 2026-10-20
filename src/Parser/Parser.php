@@ -171,7 +171,7 @@ abstract class Parser implements SnapshotParticipant
     public function name(string|int|callable $name, ?string $group = null, bool $leaf = false): static
     {
         $this->requiresNodePreparation = true;
-        $this->nodeName = is_callable($name) ? $name(...) : $name;
+        $this->nodeName = is_string($name) || is_int($name) ? $name : $name(...);
         $this->nodeGroup = $group;
         $this->semanticLeaf = $leaf;
 
@@ -474,14 +474,16 @@ abstract class Parser implements SnapshotParticipant
      */
     protected function success(Source $source, int $offset, int $length = 0, array|Success $children = []): Success
     {
-        $success = new Success($length, is_array($children)
+        $success = new Success(
+            $length,
+            is_array($children)
             ? $children
-            : [$children]
+            : [$children],
         );
 
         $childSpan = $children instanceof Success
             ? $children->span
-            : $children[0]?->span ?? null;
+            : $children[0]->span ?? null;
 
         // Wrappers can share an immutable interval without sharing execution state.
         $span = $childSpan !== null
