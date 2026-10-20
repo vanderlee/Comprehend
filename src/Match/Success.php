@@ -49,15 +49,12 @@ class Success extends AbstractMatch
     {
         parent::__construct($length);
         if ($successes !== []) {
-            // Plain terminal wrappers need the child tree, but no deferred execution state.
+            // Plain children need their trees, but no deferred execution state.
             // Keep custom records on the general path because they may override lifecycle behavior.
-            if (count($successes) === 1) {
-                $child = reset($successes);
-                if ($child::class === self::class && $child->state === null) {
-                    $this->concreteOnlyMatches = [$child];
+            if (self::arePlainMatches($successes)) {
+                $this->concreteOnlyMatches = array_values($successes);
 
-                    return;
-                }
+                return;
             }
             $state = $this->executionState();
             $state->successes = array_values($successes);
@@ -66,12 +63,29 @@ class Success extends AbstractMatch
         }
     }
 
+    /** @param Success[] $matches */
+    private static function arePlainMatches(array $matches): bool
+    {
+        foreach ($matches as $match) {
+            if ($match::class !== self::class || $match->state !== null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
      * @internal Recognition children can differ from semantic output children.
      * @param list<Success> $matches
      */
     public function setConcreteMatches(array $matches): void
     {
+        if ($this->state === null && self::arePlainMatches($matches)) {
+            $this->concreteOnlyMatches = $matches;
+
+            return;
+        }
         $this->concreteOnlyMatches = [];
         $state = $this->executionState();
         $state->concreteMatches = $matches;

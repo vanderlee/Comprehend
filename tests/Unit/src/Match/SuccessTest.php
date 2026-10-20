@@ -15,6 +15,51 @@ use WeakReference;
 
 uses(TestCase::class);
 
+test('plain siblings keep their trees and release execution records when the parent gains a value', function (): void {
+    $source = new ByteSource('xy');
+    $left = (new Text('x'))->recognizeInSession($source, 0, new ParseSession($source));
+    $right = (new Text('y'))->recognizeInSession($source, 1, new ParseSession($source));
+    $references = [WeakReference::create($left), WeakReference::create($right)];
+    $nodes = [$left->node, $right->node];
+    $parent = new Success(2, [$left, $right]);
+    $state = new \ReflectionProperty(Success::class, 'state');
+    $this->assertNull($state->getValue($parent));
+    $parent->setConcreteMatches([$left, $right]);
+    $this->assertNull($state->getValue($parent));
+    $parent->setSourceMetadata($source->span(0, 2), null);
+    $parent->setValueMapper(static fn(): int => 7);
+    $parent->buildConcreteNode(new Text('xy'));
+    $parent->retainExecutionState();
+    unset($left, $right);
+
+    $this->assertSame($nodes, $parent->node->children);
+    $this->assertSame('xy', $parent->node->rawText());
+    $this->assertNull($references[0]->get());
+    $this->assertNull($references[1]->get());
+    $this->assertSame(7, $parent->getValue());
+    $this->assertTrue($parent->validateSemantic()->valid);
+});
+
+test('replacing plain siblings retains concrete child validation and deferred effects', function (): void {
+    $source = new ByteSource('xy');
+    $calls = 0;
+    $left = (new Text('x'))->recognizeInSession($source, 0, new ParseSession($source));
+    $right = (new Text('y'))->recognizeInSession($source, 1, new ParseSession($source));
+    $parent = new Success(2, [$left, $right]);
+    $replacement = (new Text('xy'))->validateSemantic(static fn(): string => 'invalid replacement')
+        ->onCommit(static function () use (&$calls): void {
+            ++$calls;
+        })->recognizeInSession($source, 0, new ParseSession($source));
+    $parent->setSourceMetadata($source->span(0, 2), null);
+    $parent->setConcreteMatches([$replacement]);
+    $parent->buildConcreteNode(new Text('xy'));
+    $parent->retainExecutionState();
+
+    $this->assertSame([$replacement->node], $parent->node->children);
+    $this->assertSame(['invalid replacement'], array_column($parent->validateSemantic()->issues, 'message'));
+    $this->assertSame(0, $calls);
+});
+
 test('a plain child keeps its concrete node when the wrapper gains semantic state', function (): void {
     $source = new ByteSource('x');
     $child = (new Text('x'))->recognizeInSession($source, 0, new ParseSession($source));

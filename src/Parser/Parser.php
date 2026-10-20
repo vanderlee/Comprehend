@@ -403,18 +403,18 @@ abstract class Parser implements SnapshotParticipant
             ? $childSpan
             : $source->span($offset, $offset + $length);
         $success->setSourceMetadata($span, null);
-        $this->bindResultCallbacks($success, $span);
-        $this->bindCommitEffects($success, $span);
+        if ($this->resultCallbacks !== []) {
+            $this->bindResultCallbacks($success, $span);
+        }
+        if ($this->effects !== [] || $this->assignCallbacks !== []) {
+            $this->bindCommitEffects($success, $span);
+        }
 
         return $success;
     }
 
     private function bindResultCallbacks(Success $success, Span $span): void
     {
-        if ($this->resultCallbacks === []) {
-            return;
-        }
-
         $resultCallbacks = array_map(static fn($factory) => $factory($span), $this->resultCallbacks);
         $success->addResultCallback(
             static function (&$results) use ($resultCallbacks) {
@@ -427,10 +427,6 @@ abstract class Parser implements SnapshotParticipant
 
     private function bindCommitEffects(Success $success, Span $span): void
     {
-        if ($this->effects === [] && $this->assignCallbacks === []) {
-            return;
-        }
-
         // Snapshot registrations now; assignments and effects remain deferred until commit.
         $effects = $this->effects;
         $assignments = $this->assignCallbacks;
@@ -464,7 +460,9 @@ abstract class Parser implements SnapshotParticipant
         if ($this->valueMapper !== null) {
             $match->setValueMapper($this->valueMapper);
         }
-        $match->addSemanticValidators($this->semanticValidators);
+        if ($this->semanticValidators !== []) {
+            $match->addSemanticValidators($this->semanticValidators);
+        }
         foreach ($this->valueTransforms as $transform) {
             $match->mapValue($transform);
         }
