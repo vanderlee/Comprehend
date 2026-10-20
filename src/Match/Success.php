@@ -119,6 +119,26 @@ class Success extends AbstractMatch
         }
     }
 
+    /** @internal Exact built-in records without parser-level node metadata or semantic operations. */
+    public function preparePlainNode(Parser $parser): void
+    {
+        $span = $this->span;
+        if ($span === null) {
+            throw new LogicException('Concrete nodes require source-bound recognition');
+        }
+        $this->node = new ConcreteNode(
+            $parser->concreteKind(),
+            $span,
+            $this->concreteChildNodes(),
+            $parser instanceof Trivia,
+        );
+        // Recognizers can install deferred operations even without parser-level metadata.
+        $this->concreteOnlyMatches = [];
+        if ($this->state !== null) {
+            $this->retainExecutionState();
+        }
+    }
+
     /**
      * @internal Build without evaluating lazy semantic output or effects.
      * @param list<string> $tags

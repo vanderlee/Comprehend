@@ -36,6 +36,80 @@ abstract class ParserTest extends TestCase
 
 uses(ParserTest::class);
 
+test('plain preparation respects later metadata and frozen isolation', function (string $operation): void {
+    $parser = new Text('a');
+    $source = new ByteSource('a');
+    $this->assertTrue($parser->parseAll($source)->success);
+    $plain = $parser->freeze();
+    $calls = 0;
+    match ($operation) {
+        'name' => $parser->name(static fn(): string => 'named', 'group', true),
+        'tag' => $parser->tag('marked'),
+        'guard' => $parser->guard(static fn(): bool => false),
+        'validate' => $parser->validateSemantic(static fn(): string => 'invalid'),
+        'mapValue' => $parser->mapValue(static fn(): string => 'mapped'),
+        'map' => $parser->map(static fn(string $value): string => strtoupper($value)),
+        'effect' => $parser->onCommit(static function () use (&$calls): void {
+            ++$calls;
+        }),
+    };
+    foreach ([$parser, $parser->freeze()] as $configured) {
+        $result = $configured->parseAll($source);
+        if ($operation === 'guard') {
+            $this->assertFalse($result->success);
+            continue;
+        }
+        $this->assertTrue($result->success);
+        match ($operation) {
+            'name' => $this->assertSame(
+                ['named', 'group', true],
+                [$result->node->name, $result->node->group, $result->node->semanticLeaf],
+            ),
+            'tag' => $this->assertSame(['marked'], $result->node->tags),
+            'validate' => $this->assertFalse($result->validate()->valid),
+            'mapValue' => $this->assertSame('mapped', $result->value()),
+            'map' => $this->assertSame('A', $result->value()),
+            'effect' => $result->commit(),
+        };
+    }
+    $this->assertSame($operation === 'effect' ? 2 : 0, $calls);
+    $result = $plain->parseAll($source);
+    $this->assertTrue($result->success);
+    $this->assertNull($result->node->name);
+    $this->assertSame([], $result->node->tags);
+    $this->assertSame('a', $result->value());
+    $this->assertTrue($result->validate()->valid);
+})->with(['name', 'tag', 'guard', 'validate', 'mapValue', 'map', 'effect']);
+
+test('plain parsers preserve custom match preparation hooks', function (): void {
+    $parser = new class extends Parser {
+        public ?Success $match = null;
+
+        protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
+        {
+            return $this->match = new class (1) extends Success {
+                public int $retentions = 0;
+
+                public function retainExecutionState(): void
+                {
+                    ++$this->retentions;
+                    parent::retainExecutionState();
+                }
+            };
+        }
+
+        public function __toString(): string
+        {
+            return 'custom match';
+        }
+    };
+    $result = $parser->parseAll(new ByteSource('a'));
+
+    $this->assertTrue($result->success);
+    $this->assertSame(1, $parser->match->retentions);
+    $this->assertSame('a', $result->node->rawText());
+});
+
 test('a wrapper shares only the child interval while retaining independent values and effects', function (
     bool $arrayChild,
     int $parentLength,

@@ -62,6 +62,7 @@ abstract class Parser implements SnapshotParticipant
     private ?string $expectationLabel = null;
     private ?string $classLabel = null;
     private ?string $concreteKind = null;
+    private bool $requiresNodePreparation = false;
 
     /** @internal Preserve concrete identity when a preparation provider changes implementation. */
     public function concreteKind(): string
@@ -85,6 +86,7 @@ abstract class Parser implements SnapshotParticipant
         $copy->expectationLabel = $this->expectationLabel;
         $copy->classLabel = $this->diagnosticName();
         $copy->concreteKind = $this->concreteKind();
+        $copy->requiresNodePreparation = $this->requiresNodePreparation;
         $copy->resultCallbacks = $this->resultCallbacks;
         $copy->assignCallbacks = $this->assignCallbacks;
     }
@@ -151,6 +153,7 @@ abstract class Parser implements SnapshotParticipant
 
     public function name(string|int|callable $name, ?string $group = null, bool $leaf = false): static
     {
+        $this->requiresNodePreparation = true;
         $this->nodeName = is_string($name) || is_int($name) ? $name : Closure::fromCallable($name);
         $this->nodeGroup = $group;
         $this->semanticLeaf = $leaf;
@@ -166,6 +169,7 @@ abstract class Parser implements SnapshotParticipant
             }
         }
         $this->nodeTags = array_values(array_unique([...$this->nodeTags, ...$tags]));
+        $this->requiresNodePreparation = $this->requiresNodePreparation || $this->nodeTags !== [];
 
         return $this;
     }
@@ -221,6 +225,7 @@ abstract class Parser implements SnapshotParticipant
 
     public function guard(callable $predicate): static
     {
+        $this->requiresNodePreparation = true;
         $this->guards[] = $predicate;
 
         return $this;
@@ -228,6 +233,7 @@ abstract class Parser implements SnapshotParticipant
 
     public function validateSemantic(callable $validator): static
     {
+        $this->requiresNodePreparation = true;
         $this->semanticValidators[] = $validator;
 
         return $this;
@@ -235,6 +241,7 @@ abstract class Parser implements SnapshotParticipant
 
     public function mapValue(callable $mapper): static
     {
+        $this->requiresNodePreparation = true;
         $this->valueMapper = $mapper;
         $this->valueTransforms = [];
 
@@ -244,6 +251,7 @@ abstract class Parser implements SnapshotParticipant
     /** Transform the current lazy value; mapValue() replaces this projection chain. */
     public function map(callable $mapper): static
     {
+        $this->requiresNodePreparation = true;
         $this->valueTransforms[] = $mapper;
 
         return $this;
@@ -449,6 +457,12 @@ abstract class Parser implements SnapshotParticipant
         ParseSession $session,
         Success $match,
     ): AbstractMatch {
+        // Custom records retain their overridable node-building and lifecycle hooks.
+        if (!$this->requiresNodePreparation && $match::class === Success::class) {
+            $match->preparePlainNode($this);
+
+            return $match;
+        }
         $match->buildConcreteNode(
             $this,
             $this->nodeName,
