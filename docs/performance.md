@@ -46,6 +46,46 @@ independent grammars against one output oracle and records extraction timings,
 memory retention, diagnostics and static-analysis observations. It includes
 Comprehend's mandatory CST cost and an isolated optional dependency.
 
+### Recursive literal sequences (2026-10-20)
+
+The optimizer can compile eligible nested literal sequences and fixed repetitions
+to one internal `Text` recognizer, retaining every original CST node through
+source-free templates. See [grammar optimization](grammar-authoring.md) for the
+eligibility rules and fallbacks. This reduces parser dispatch and temporary match
+records; it does not remove CST allocation or change character-node granularity.
+
+Local Windows/PHP 8.2.10 measurements compare the previous optimizer with literal
+compilation enabled, rather than comparing all optimization against `NONE`:
+
+| Fixture | Bytes | Previous optimizer ms | Literal compilation ms | Speedup |
+|---|---:|---:|---:|---:|
+| Flat sequence of 512 one-byte texts | 512 | 3.460 | 0.908 | 3.81× |
+| 16 sequences of 32 one-byte texts | 512 | 3.666 | 0.601 | 6.10× |
+| Exact repeat of 256 `ab` texts, then `!` | 513 | 1.126 | 0.297 | 3.79× |
+
+Each result is the median of three fresh-worker medians. Before/after worker order
+alternated; workers used two warmups and seven batches of 20 parses per prepared
+grammar. Timings include recognition, full CST construction, acceptance checks and
+result release, and exclude source construction and grammar preparation. CST
+hashes matched across all workers and both optimizer versions for each fixture.
+The benchmark also checks the unoptimized CST and alternates unoptimized/optimized
+batch order within each worker. These synthetic results are not general latency
+guarantees; they do not establish gains for variable mail or XML grammars.
+
+Compilation adds preparation work: optimized preparation medians increased from
+30.55 to 34.58 ms for the flat fixture, 1.49 to 9.81 ms for nested sequences, and
+1.15 to 3.03 ms for the fixed repeat. The first fixture also includes cold optimizer
+class loading. Reuse frozen grammars to amortize classification and template
+creation. Raw local reports are saved under ignored `build/performance-review/`.
+
+```sh
+php tools/benchmark-literal-sequences.php --iterations=20 --samples=7
+```
+
+Use `--optimizer-dir=path/to/Optimizer` in a separate process to compare a saved
+optimizer source snapshot with the current implementation. `--output=path.json`
+saves preparation, warm min/median/max, runtime and CST hashes.
+
 ### Library lexical tables (2026-10-17)
 
 Freeze-time optimization now configures bounded lexical tables after references

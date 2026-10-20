@@ -8,6 +8,7 @@ use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Choice as OptimizedChoice;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Not as OptimizedNot;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Repeat as OptimizedRepeat;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Sequence as OptimizedSequence;
 use Vanderlee\Comprehend\Builder\RuleReference;
 use Vanderlee\Comprehend\Directive\CaseSensitive;
 use Vanderlee\Comprehend\Match\AbstractMatch;
@@ -63,6 +64,7 @@ final class LexicalTable
             OptimizedRepeat::class => Repeat::class,
             OptimizedChoice::class => Choice::class,
             OptimizedNot::class => Not::class,
+            OptimizedSequence::class => Sequence::class,
             default => $parser::class,
         };
         $supported = [Set::class, Char::class, Range::class, Text::class, Regex::class, Any::class,

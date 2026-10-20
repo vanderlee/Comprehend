@@ -10,6 +10,7 @@ use Vanderlee\Comprehend\Builder\GraphOptimization;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Choice as OptimizedChoice;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Not as OptimizedNot;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Repeat as OptimizedRepeat;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Sequence as OptimizedSequence;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadRest;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadRun;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadUntil;
@@ -22,6 +23,7 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Not;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Parser\Terminal\Char;
 use Vanderlee\Comprehend\Parser\Terminal\Range;
@@ -63,6 +65,8 @@ final class GraphOptimizer implements GraphOptimization, SyntaxExtension
             Repeat::class => OptimizedRepeat::from($parser),
             Choice::class => OptimizedChoice::from($parser),
             Not::class => OptimizedNot::from($parser),
+            Sequence::class => $parser->hasExplicitSpacing() || $parser->children() === []
+                ? clone $parser : OptimizedSequence::from($parser),
             default => clone $parser,
         };
     }
@@ -77,7 +81,10 @@ final class GraphOptimizer implements GraphOptimization, SyntaxExtension
                 continue;
             }
             $seen->attach($parser);
-            if (in_array($parser::class, [OptimizedRepeat::class, OptimizedChoice::class, OptimizedNot::class], true)) {
+            if (
+                in_array($parser::class, [OptimizedRepeat::class, OptimizedChoice::class,
+                    OptimizedNot::class, OptimizedSequence::class], true)
+            ) {
                 $parser->prepareRecognition();
             }
             array_push($pending, ...$parser->children());
