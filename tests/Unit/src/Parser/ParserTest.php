@@ -11,6 +11,7 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\FailureDiagnosticAtStart;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Source;
@@ -158,6 +159,61 @@ test('a wrapper shares only the child interval while retaining independent value
     $result->commit();
     $this->assertSame(['child', 'parent'], $commits);
 })->with([false, true])->with([2, 3]);
+
+test('plain delegated matches preserve child projections effects and session scopes', function (): void {
+    $projections = 0;
+    $commits = 0;
+    $child = (new Text("\u{e9}"))->mapValue(static function () use (&$projections): string {
+        ++$projections;
+
+        return 'child value';
+    })->onCommit(static function () use (&$commits): void {
+        ++$commits;
+    });
+    $parser = new class ($child) extends Parser {
+        public ?AbstractMatch $childMatch = null;
+        private Parser $child;
+
+        public function __construct(Parser $child)
+        {
+            $this->child = $child;
+        }
+
+        protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
+        {
+            return $this->childMatch = $this->child->recognizeInSession($source, $byteOffset, $session);
+        }
+
+        public function __toString(): string
+        {
+            return 'delegate';
+        }
+    };
+    $parser->label('letter')->diagnosticRule('delegate');
+    $source = new Utf8Source("x\u{e9}");
+    $session = new ParseSession($source);
+    $session->recordFailure(0, 'earlier observation');
+    $match = $parser->recognizeInSession($source, 1, $session);
+    $result = new ParseResult($match);
+
+    $this->assertNotSame($parser->childMatch, $match);
+    $this->assertSame($parser->childMatch->node, $result->node->children[0]);
+    $this->assertSame($parser->childMatch->span, $result->span);
+    $this->assertSame([1, 3], [$result->start, $result->end]);
+    $this->assertSame("\u{e9}", $result->rawText());
+    $this->assertSame(['earlier observation'], $result->diagnostic->expected);
+    $this->assertSame([], $session->rulePath());
+    $this->assertSame([0, 0], [$projections, $commits]);
+    $this->assertSame('child value', $result->value());
+    $this->assertSame('child value', $parser->childMatch->getValue());
+    $this->assertSame(1, $projections);
+    $this->assertSame(0, $commits);
+    $this->assertTrue($result->commit());
+    $this->assertTrue($result->commit());
+    $this->assertSame(1, $commits);
+    $this->assertTrue($parser->recognizeInSession($source, 1, $session)->accepted);
+    $this->assertSame([], $session->rulePath());
+});
 
 test('explicit diagnostic names take precedence after the class label has been used', function () {
     $parser = new Text('a');

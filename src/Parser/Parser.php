@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Parser;
 
+use Closure;
 use InvalidArgumentException;
 use LogicException;
-use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\FreezeFlags;
+use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\SnapshotParticipant;
 use Vanderlee\Comprehend\Directive\Lexeme;
@@ -21,7 +22,6 @@ use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Span;
-use Closure;
 
 /**
  * Defines the shared source-based recognition contract for terminals, combinators and
@@ -40,7 +40,7 @@ abstract class Parser implements SnapshotParticipant
     /**
      * @var callable|null
      */
-    private $valueMapper = null;
+    private $valueMapper;
     /** @var list<callable> */
     private array $valueTransforms = [];
     /**
@@ -64,14 +64,21 @@ abstract class Parser implements SnapshotParticipant
     private ?string $concreteKind = null;
     private bool $requiresNodePreparation = false;
 
-    /** @internal Preserve concrete identity when a preparation provider changes implementation. */
+    /**
+     * @internal Preserve concrete identity when a preparation provider changes implementation.
+     */
     public function concreteKind(): string
     {
         return $this->concreteKind ?? static::class;
     }
 
-    /** Copy authoring configuration without executing callbacks or copying owned dependencies. */
-    protected function copyConfigurationTo(Parser $copy): void
+    /**
+     * Copy authoring configuration without executing callbacks or copying owned dependencies.
+     *
+     * @param Parser $copy
+     * @return void
+     */
+    protected function copyConfigurationTo(self $copy): void
     {
         $copy->effects = $this->effects;
         $copy->valueMapper = $this->valueMapper;
@@ -108,7 +115,7 @@ abstract class Parser implements SnapshotParticipant
         return FrozenGrammar::from($this, $flags);
     }
 
-    public function snapshot(GraphSnapshot $context): Parser
+    public function snapshot(GraphSnapshot $context): self
     {
         $copy = $context->copyParser($this);
         $context->registerCopy($this, $copy);
@@ -148,13 +155,21 @@ abstract class Parser implements SnapshotParticipant
         }
         $separator = strrpos(static::class, '\\');
 
-        return $this->classLabel = $separator === false ? static::class : substr(static::class, $separator + 1);
+        return $this->classLabel = $separator === false
+            ? static::class
+            : substr(static::class, $separator + 1);
     }
 
+    /**
+     * @param string|int|callable $name
+     * @param string|null $group
+     * @param bool $leaf
+     * @return $this
+     */
     public function name(string|int|callable $name, ?string $group = null, bool $leaf = false): static
     {
         $this->requiresNodePreparation = true;
-        $this->nodeName = is_string($name) || is_int($name) ? $name : Closure::fromCallable($name);
+        $this->nodeName = is_callable($name) ? $name(...) : $name;
         $this->nodeGroup = $group;
         $this->semanticLeaf = $leaf;
 
@@ -172,11 +187,6 @@ abstract class Parser implements SnapshotParticipant
         $this->requiresNodePreparation = $this->requiresNodePreparation || $this->nodeTags !== [];
 
         return $this;
-    }
-
-    public function hasName(): bool
-    {
-        return $this->nodeName !== null;
     }
 
     /** @internal Metadata makes a parser an observable composition boundary. */
@@ -289,6 +299,7 @@ abstract class Parser implements SnapshotParticipant
     final public function recognizeInSession(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
         $session->enterParser($this, $offset);
+
         try {
             return $this->recognizeChecked($source, $offset, $session);
         } finally {
@@ -296,15 +307,29 @@ abstract class Parser implements SnapshotParticipant
         }
     }
 
+    /**
+     * @param Source $source
+     * @param int $offset
+     * @param ParseSession $session
+     * @return AbstractMatch
+     */
     private function recognizeChecked(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
         $this->assertRecognitionPosition($source, $offset, $session);
+
         $label = $this->expectationLabel;
-        $labelCheckpoint = $label === null ? null : $session->diagnosticState();
+
+        $labelCheckpoint = $label === null
+            ? null
+            : $session->diagnosticState();
+
         $failureRevision = $session->failureRevision();
+
         $session->pushRule($this->diagnosticName());
+
         try {
             $match = $this->recognize($source, $offset, $session);
+
             if (
                 !$match->accepted
                 && $failureRevision === $session->failureRevision()
@@ -319,13 +344,24 @@ abstract class Parser implements SnapshotParticipant
         } finally {
             $session->popRule();
         }
+
         $this->assertReturnedMatch($source, $offset, $match);
+
         $match = $this->wrapReturnedChild($source, $offset, $match);
-        $end = $match->accepted ? $offset + $match->length : $offset;
+
+        $end = $match->accepted
+            ? $offset + $match->length
+            : $offset;
+
         $span = $match->span;
+
         $diagnostic = $session->diagnostic(!$match->accepted);
+
         $match->setSourceMetadata(
-            $span !== null && $span->end === $end ? $span : $source->span($offset, $end),
+            $span !== null
+            && $span->end === $end
+                ? $span
+                : $source->span($offset, $end),
             $diagnostic?->byteOffset,
             $diagnostic,
         );
@@ -333,8 +369,14 @@ abstract class Parser implements SnapshotParticipant
         $match = $match instanceof Success
             ? $this->prepareSuccessfulMatch($source, $offset, $session, $match)
             : $match;
-        if ($label !== null && $labelCheckpoint !== null && !$match->accepted) {
+
+        if (
+            $label !== null
+            && $labelCheckpoint !== null
+            && !$match->accepted
+        ) {
             $session->pushRule($this->diagnosticName());
+
             try {
                 if ($session->relabelFailure($offset, $label, $labelCheckpoint)) {
                     $diagnostic = $session->diagnostic(true);
@@ -348,6 +390,12 @@ abstract class Parser implements SnapshotParticipant
         return $match;
     }
 
+    /**
+     * @param Source $source
+     * @param int $offset
+     * @param ParseSession $session
+     * @return void
+     */
     private function assertRecognitionPosition(Source $source, int $offset, ParseSession $session): void
     {
         if ($session->source() !== $source) {
@@ -361,13 +409,28 @@ abstract class Parser implements SnapshotParticipant
         }
     }
 
+    /**
+     * @param Source $source
+     * @param int $byteOffset
+     * @param ParseSession $session
+     * @return AbstractMatch
+     */
     abstract protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch;
 
+    /**
+     * @return string
+     */
     protected function diagnosticExpectation(): string
     {
         return $this->diagnosticName();
     }
 
+    /**
+     * @param Source $source
+     * @param int $offset
+     * @param AbstractMatch $match
+     * @return void
+     */
     private function assertReturnedMatch(Source $source, int $offset, AbstractMatch $match): void
     {
         if ($match->length > $source->byteLength() - $offset) {
@@ -381,6 +444,12 @@ abstract class Parser implements SnapshotParticipant
         }
     }
 
+    /**
+     * @param Source $source
+     * @param int $offset
+     * @param AbstractMatch $match
+     * @return AbstractMatch
+     */
     private function wrapReturnedChild(Source $source, int $offset, AbstractMatch $match): AbstractMatch
     {
         // A directive may return an existing child execution record. Always
@@ -405,9 +474,12 @@ abstract class Parser implements SnapshotParticipant
         $childSpan = $children instanceof Success
             ? $children->span
             : (count($children) === 1 ? $children[0]->span : null);
+
         // Wrappers can share an immutable interval without sharing execution state.
-        $span = $childSpan !== null && $childSpan->source === $source
-            && $childSpan->start === $offset && $childSpan->end === $offset + $length
+        $span = $childSpan !== null
+        && $childSpan->source === $source
+        && $childSpan->start === $offset
+        && $childSpan->end === $offset + $length
             ? $childSpan
             : $source->span($offset, $offset + $length);
         $success->setSourceMetadata($span, null);
@@ -451,6 +523,13 @@ abstract class Parser implements SnapshotParticipant
         );
     }
 
+    /**
+     * @param Source $source
+     * @param int $offset
+     * @param ParseSession $session
+     * @param Success $match
+     * @return AbstractMatch
+     */
     private function prepareSuccessfulMatch(
         Source $source,
         int $offset,
@@ -470,13 +549,16 @@ abstract class Parser implements SnapshotParticipant
             $this->semanticLeaf,
             $this->nodeTags,
         );
+
         // Explicit mappings override defaults installed by a recognizer (for example lists).
         if ($this->valueMapper !== null) {
             $match->setValueMapper($this->valueMapper);
         }
+
         if ($this->semanticValidators !== []) {
             $match->addSemanticValidators($this->semanticValidators);
         }
+
         foreach ($this->valueTransforms as $transform) {
             $match->mapValue($transform);
         }
@@ -492,6 +574,13 @@ abstract class Parser implements SnapshotParticipant
         return $match;
     }
 
+    /**
+     * @param Source $source
+     * @param int $offset
+     * @param ParseSession $session
+     * @param Success $match
+     * @return Failure
+     */
     private function guardFailure(Source $source, int $offset, ParseSession $session, Success $match): Failure
     {
         $session->pushRule($this->diagnosticName());
@@ -510,6 +599,12 @@ abstract class Parser implements SnapshotParticipant
         return $failure;
     }
 
+    /**
+     * @param Source $source
+     * @param int $byteOffset
+     * @param ParseLimits|null $limits
+     * @return ParseResult
+     */
     final public function parseAll(
         Source $source,
         int $byteOffset = 0,
@@ -564,7 +659,9 @@ abstract class Parser implements SnapshotParticipant
         int $length = 0,
         array|Success $children = [],
     ): AbstractMatch {
-        return $accepted ? $this->success($source, $offset, $length, $children) : $this->failure($source, $offset);
+        return $accepted
+            ? $this->success($source, $offset, $length, $children)
+            : $this->failure($source, $offset);
     }
 
     protected function failure(Source $source, int $offset, int $progress = 0): Failure
