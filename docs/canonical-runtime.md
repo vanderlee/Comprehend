@@ -1,8 +1,8 @@
-# Canonical runtime and Phase 2A removal inventory
+# Canonical runtime and removal inventory
 
-Phase 2A implements the mandatory cleanup before Phase 3. The runtime separates
-source access, recognition, concrete trees and named ASTs. It uses byte-coordinate,
-immutable snapshot, cached semantic and explicit-commit contracts.
+The runtime separates source access, recognition, concrete trees and named ASTs.
+The removal inventory records the breaking API cleanup. All authoring styles use
+byte-coordinate, immutable snapshot, cached semantic and explicit-commit contracts.
 
 ```text
 typed objects / Ruleset factories / RFC imports
@@ -47,8 +47,10 @@ progress; consumers use ParseResult and immutable source trees.
 
 ## Breaking changes
 
-Pass `new Utf8Source($text)` or `new ByteSource($bytes)` explicitly. Replace old
-matching calls with `matchPrefix()` or `parseAll()`. Success is `->success`;
+Low-level Parser entry points require an explicit `new Utf8Source($text)` or
+`new ByteSource($bytes)`. Comprehend and FrozenGrammar also accept strings as
+validated UTF-8. Use facade `parse()` or `parseAll()` for complete input and
+`matchPrefix()` when remaining input is allowed. Success is `->success`;
 consumption is `->consumedByteLength`, zero on failure; observed failure position
 is `->farthestFailure` with structured diagnostics. Use `results()`/`result()` for
 collections, `value()` for typed output and `node`/`ast()` for syntax. No coordinate
@@ -71,14 +73,14 @@ Leading/trailing material must be explicit. Nothing silently consumes boundary
 trivia. Accepted trivia stays in the CST and participates in validation/commit,
 but automatic trivia does not add named collections or AST nodes.
 
-## Verification and remaining work
+## Current implementation and verification
 
-The suite, examples, canonical gate and PHPStan have been verified locally on
-PHP 8.1.34 with freshly resolved dependencies in an isolated build copy, as well
-as PHP 8.2.10 in the working tree. CI now targets PHP 8.2–8.5, with an experimental
-PHP 8.6 job. No remote CI run is claimed by this document.
+Graph-wide reference resolution, frozen snapshots, named grammar authoring,
+immutable fluent composition and graph safety analysis are implemented. See
+[Grammar authoring](grammar-authoring.md) for the current contracts. They use
+the same typed parser graph and recognition runtime.
 
-Phase 3 still owns graph-wide reference resolution/freezing, the new named graph
-API, immutable fluent composition, graph analysis and facade equivalence. The
-explicit `rule()` operation here replaces magic lookup without introducing a
-second authoring runtime. File input, budgets and performance work remain Phase 4.
+Seekable file snapshots and cooperative depth/work limits are also implemented;
+see [File input](file-input.md) and [Performance measurements](performance.md)
+for their costs and limits. See [Contributing](contribute.md) for verification
+commands. CI targets PHP 8.2–8.5, with an experimental PHP 8.6 job.

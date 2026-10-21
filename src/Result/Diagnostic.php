@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Result;
 
+use JsonSerializable;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Span;
@@ -13,7 +14,7 @@ use Vanderlee\Comprehend\Source\Span;
  * indexes source lines to provide readable locations and excerpts for ParseResult and grammar
  * errors.
  */
-final class Diagnostic
+final class Diagnostic implements JsonSerializable
 {
     /**
      * @var non-empty-list<int>|null
@@ -76,6 +77,42 @@ final class Diagnostic
 
         return 'Expected ' . $expected . ' at line ' . $location['line']
             . ', column ' . $location['column'] . ' (byte ' . $this->byteOffset . ')';
+    }
+
+    /**
+     * Source details are opt-in because indexing locations may read the entire source.
+     * @return array{byteOffset: int, expected: list<string>, rulePaths: list<list<string>>,
+     *     location?: array{line: int, column: int}, excerpt?: string, excerptEncoding?: 'utf8'|'base64'}
+     */
+    public function toArray(bool $includeLocation = false, bool $includeExcerpt = false): array
+    {
+        $data = [
+            'byteOffset' => $this->byteOffset,
+            'expected' => $this->expected,
+            'rulePaths' => $this->rulePaths,
+        ];
+        if ($includeLocation) {
+            $data['location'] = $this->location();
+        }
+        if ($includeExcerpt) {
+            $excerpt = $this->excerpt();
+            $utf8 = mb_check_encoding($excerpt, 'UTF-8');
+            $data['excerpt'] = $utf8 ? $excerpt : base64_encode($excerpt);
+            $data['excerptEncoding'] = $utf8 ? 'utf8' : 'base64';
+        }
+
+        return $data;
+    }
+
+    /** @return array{byteOffset: int, expected: list<string>, rulePaths: list<list<string>>} */
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
+    }
+
+    public function toJson(bool $includeLocation = false, bool $includeExcerpt = false): string
+    {
+        return json_encode($this->toArray($includeLocation, $includeExcerpt), JSON_THROW_ON_ERROR);
     }
 
     /** @return non-empty-list<int> */

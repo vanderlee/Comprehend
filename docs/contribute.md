@@ -9,6 +9,7 @@ composer validate --strict
 composer check-platform-reqs
 php vendor/bin/pest --do-not-cache-result
 php tools/check-canonical.php
+php docs/examples/consumer-guide.php
 php docs/examples/execution.php
 php docs/examples/authoring.php
 php docs/examples/file-input.php

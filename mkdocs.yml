@@ -34,6 +34,7 @@ nav:
   - Home: index.md
   - Getting started:
       - Tutorial: tutorial.md
+      - Consumer guide for AI agents: agent-guide.md
       - Parse application values: application-values.md
       - Laravel integration: laravel.md
       - FAQ: faq.md

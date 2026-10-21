@@ -5,7 +5,8 @@ These instructions apply throughout this repository.
 ## Project and sources of guidance
 
 Comprehend is a PHP 8.2+ parser-combinator library in the
-`Vanderlee\Comprehend` namespace. It requires DOM, JSON, and mbstring.
+`Vanderlee\Comprehend` namespace. It requires JSON and mbstring. DOM is optional
+at runtime, and required for XML serialization and the test suite.
 
 Use `README.md`, `docs/contribute.md`, relevant documentation in `docs/`,
 and the existing implementation and tests to establish intended behavior.

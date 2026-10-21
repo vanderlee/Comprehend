@@ -6,6 +6,50 @@ Tied alternative failures retain distinct expected labels and paths. Named rules
 add readable names. Text literal diagnostics use quoted literals; custom parsers
 can override protected `diagnosticName()` and `diagnosticExpectation()`.
 
+## Array and JSON output
+
+Diagnostic implements JsonSerializable and exposes `toArray()` and `toJson()`.
+The default payload contains only `byteOffset`, `expected` and `rulePaths`.
+It excludes the Source object and does not read source bytes or index lines:
+
+```php
+use Vanderlee\Comprehend\Comprehend as C;
+
+$status = C::text('ok')->label('status')->diagnosticRule('status');
+$result = $status->parse('?');
+echo json_encode($result->diagnostics(), JSON_THROW_ON_ERROR);
+// [{"byteOffset":0,"expected":["status"],"rulePaths":[["status"]]}]
+```
+
+Use `ParseResult::diagnostics()` for selected recovery errors and terminal failure.
+A successful result can retain an observed `diagnostic` without being rejected;
+inspect `success` and `hasRecovery()` separately. Semantic issues are returned by
+explicit `validate()` and have their own [validation serialization](validation.md).
+
+Opt into source details with named arguments on `toArray()` or `toJson()`:
+
+```php
+echo $result->diagnostic->toJson(includeLocation: true, includeExcerpt: true);
+// {"byteOffset":0,"expected":["status"],"rulePaths":[["status"]],
+//  "location":{"line":1,"column":1},"excerpt":"?","excerptEncoding":"utf8"}
+```
+
+Both options default to false and can be used independently. `includeLocation`
+adds `location` with one-based `line` and `column`. `includeExcerpt` adds `excerpt`
+and `excerptEncoding`: valid UTF-8 is emitted directly as `utf8`, and arbitrary
+non-UTF-8 bytes are base64 with encoding `base64`. Empty excerpts use `utf8`.
+This preserves the original bytes, including NUL. Offsets remain bytes; UTF-8
+columns count code points and byte-source columns count bytes. Either option may
+index the entire source, including a file source. Plain `json_encode($diagnostic)`
+always uses the default compact payload, even after source details were requested.
+
+Serialization does not evaluate semantic values, run validation or commit effects.
+`toJson()` uses JSON_THROW_ON_ERROR; invalid UTF-8 in expectation labels or rule
+names throws JsonException rather than replacing metadata. Only excerpts receive
+the explicit base64 encoding. Run the
+[consumer guide example](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/consumer-guide.php)
+for checked reporting and lifecycle behavior.
+
 ## Expectation labels
 
 Use `label(string $label)` to describe what a parser expects:

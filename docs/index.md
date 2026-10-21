@@ -62,6 +62,7 @@ Side effects run only through explicit `commit()`.
 ## Explore the documentation
 
 - Start with the [tutorial](tutorial.md) and [grammar-authoring guide](grammar-authoring.md).
+- Use the [consumer guide for AI agents](agent-guide.md) for a compact API contract and failure-reporting workflow.
 - Build domain objects with [Parse application values](application-values.md).
 - Use grammars as Laravel validation rules with the separate [Laravel bridge](laravel.md).
 - Learn about [sources](sources.md), [spacing](trivia.md) and [diagnostics](diagnostics.md).

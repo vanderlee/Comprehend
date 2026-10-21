@@ -2,8 +2,10 @@
 
 ## Composing application values
 
-These helpers belong to the optional [Extraction expansion](extraction.md).
-Use `Extraction::syntax()` or `C::syntax()->extend(new Extraction())` to author them.
+These helpers belong to the bundled [Extraction expansion](extraction.md),
+which loads automatically on first use through `Comprehend` or `Syntax`.
+`Extraction::syntax()` and `C::syntax()->extend(new Extraction())` remain available
+for explicit local registration.
 
 Follow [Parse application values](application-values.md) for a complete domain-object
 example with optional settings, alternatives and nested lists.
@@ -90,8 +92,9 @@ $digit->optionalValue(default: 9)->parse('0')->value(); // 0
 Static and Syntax forms accept facades, Parser objects or literal strings:
 `C::manyValues($item)`, `C::someValues($item)`,
 `C::repeatValues($item, min: 2, max: 4)` and
-`C::optionalValue($item, default: 'missing')`. These four names are reserved
-built-ins; custom Syntax registrations with those names must be renamed.
+`C::optionalValue($item, default: 'missing')`. These names are discovered
+Extraction factories, not reserved core built-ins. Explicit Syntax registrations
+follow the ordinary replacement and isolation rules.
 Existing `many()`, `some()`, `repeat()`, `maybe()` and `optional()` keep their
 raw-text defaults. Low-level constructors in `Extensions\Extraction\Parser` are
 `new ValueRepeat(Parser $item, int $min = 0, ?int $max = null)` and
@@ -120,7 +123,8 @@ factory declarations. No executable PHPStan extensions or configuration includes
 are needed. Remove the former `phpstan-extension.neon` and
 `extensions/Extraction/phpstan.neon` includes from consumer configurations.
 PHPStan is not a runtime dependency. Bundled Extraction signatures are visible to
-analysis even on an unextended vocabulary; install Extraction explicitly at runtime.
+analysis even on an unextended vocabulary, and runtime factories load automatically
+on first use. Explicit installation is optional.
 
 ```php
 use Vanderlee\Comprehend\Extensions\Extraction\Extraction;

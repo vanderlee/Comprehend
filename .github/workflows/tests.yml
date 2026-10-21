@@ -104,6 +104,9 @@ jobs:
       - name: Verify quick start
         run: php docs/examples/quick-start.php
 
+      - name: Verify consumer guide
+        run: php docs/examples/consumer-guide.php
+
       - name: Verify execution examples
         run: php docs/examples/execution.php
 
