@@ -41,6 +41,55 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Automatic trivia syntax (2026-10-21)
+
+Eligible prepared sequence, repeat and separated-list implementations now retain
+nullable automatic trivia as its original immutable syntax without constructing
+a temporary wrapper execution record. Required-minimum trivia, metadata, custom
+classes, explicit trivia and finite work/depth limits keep their existing paths.
+The public session `skipSpacing()` method still returns independent matches.
+
+A local Windows/PHP 8.2.10 comparison used complete core/extension snapshots,
+five fresh workers per variant/scenario, alternating before/after order, three
+warmups and 30 timed parses per worker (seven for the 1,024-ID fixture). PCOV was
+disabled. Timings include fresh UTF-8 source setup, complete recognition/CST and
+the first domain value. Preparation, assertions, serialization, result release
+and cycle collection are outside timing. Medians of worker medians, microseconds:
+
+| Fixture | Before | After | Speedup |
+|---|---:|---:|---:|
+| Nested 128 IDs, repeated-character spacing | 5453.8 | 4513.2 | 1.21x |
+| Nested 128 IDs, scanner spacing | 5010.4 | 4206.1 | 1.19x |
+| Late malformed nested list, scanner spacing | 5060.6 | 4170.8 | 1.21x |
+| Nested 1,024 IDs, scanner spacing | 40396.3 | 32447.8 | 1.24x |
+
+Every application worker checked all 21 independent oracle cases, and all
+before/after workers agreed on CST/diagnostic fingerprints. No-spacing sequence
+and repeat controls were approximately unchanged. A longer small-record run
+used 15 workers per variant and 100 parses each: repeated spacing took 785.8
+versus 751.9 us; scanner spacing took 713.6 versus 716.2 us. The latter is
+effectively neutral. Host variation and small-input overhead preclude a universal
+speed claim. Cold/preparation observations are retained in the raw report;
+class loading and extension discovery affect those costs, and no preparation
+speedup is established.
+
+A separate trace of both core and extension methods on the scanner-spacing
+128-ID fixture counted 429 to 168 checked parser entries and 425 to 164 Success
+allocations. ConcreteNode allocations remained 826, spans remained 555, and the
+retained tree still had 820 nodes and the same serialized hash. Retained used
+memory after value access was unchanged at 392,536 bytes. Incremental used-memory
+parse peaks fell from 449,312 to 400,480 bytes; the 1,024-ID peaks fell from
+3,338,016 to 2,896,032 bytes. These are PHP used bytes above a warmed baseline,
+not allocated process peaks or OS RSS. The rewrite reduces temporary records,
+while CST retention and recognition complexity remain unchanged.
+
+The driver, full snapshots and reports are under ignored
+`build/trivia-record-optimization/`. Run
+`php -d pcov.enabled=0 -d memory_limit=512M build/trivia-record-optimization/measure.php`
+to repeat the timing comparison while that local snapshot is retained. Trace
+workers use `--worker --variant=before|after --case=nested --spacing=scanner
+--iterations=1 --trace` separately; instrumented times are not performance data.
+
 ### Prepared trivia and direct list punctuation (2026-10-21)
 
 Prepared plain trivia can scan its operand and construct the same child syntax

@@ -18,6 +18,7 @@ use Vanderlee\Comprehend\Source\Source;
 class Sequence extends OrdinarySequence
 {
     use ExactClassSnapshotReuseTrait;
+    use SyntaxSpacingTrait;
 
     /** @var list<Parser|LiteralSequence> */
     private array $steps = [];

@@ -388,6 +388,16 @@ explicit trivia keeps its own metadata, lazy mappings and commit lifecycle.
 Operand metadata, custom classes and finite work/depth limits retain ordinary
 delegation. Authoring copies clear these prepared plans.
 
+Prepared sequence, repeat and separated-list implementations can also retain
+nullable automatic trivia directly as immutable syntax, avoiding the wrapper's
+temporary execution record. Both original node layers and each source-bound span
+remain present, including empty trivia. Required-minimum trivia and custom
+combinators keep execution records; the existing `skipSpacing()` session method
+also continues to return independent matches. This specialization shares the
+prepared operand scan and restores the lexeme scope on exceptions. It does not
+evaluate semantic values or effects, and finite work/depth limits retain checked
+delegation and the original budget positions and paths.
+
 Plain ASCII `Text` separators in built-in separated lists can construct their
 CST nodes directly too. The existing list loop still owns bounds, leading/trailing
 separator policies, spacing and rollback. Decorated/custom separators, incompatible

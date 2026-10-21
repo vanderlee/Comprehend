@@ -19,6 +19,7 @@ class Repeat extends OrdinaryRepeat
 {
     use ExactClassSnapshotReuseTrait;
     use PreparedTriviaTrait;
+    use SyntaxSpacingTrait;
 
     private ?ReadRun $scanner = null;
     private ?LexicalTable $lexical = null;

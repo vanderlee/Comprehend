@@ -233,12 +233,18 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
         bool $isSeparator = false,
     ): Success|ConcreteNode|null {
         $spacing = null;
-        $skip = $withSpacing ? $session->skipSpacing($source, $cursor, $spacing) : 0;
+        $skip = $withSpacing ? $this->skipSpacing($source, $cursor, $session, $spacing) : 0;
         if ($skip === false) {
             return null;
         }
         $match = $isSeparator
-            ? $this->recognizeSeparator($parser, $source, $cursor + $skip, $session, $spacing)
+            ? $this->recognizeSeparator(
+                $parser,
+                $source,
+                $cursor + $skip,
+                $session,
+                $spacing instanceof Success ? $spacing : null,
+            )
             : $parser->recognizeInSession($source, $cursor + $skip, $session);
         if ($match instanceof ConcreteNode) {
             // Direct separators are stateless, including their preceding automatic trivia.
@@ -254,7 +260,9 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
             return null;
         }
         if ($spacing !== null) {
-            $match->addPrecedingMatch($spacing);
+            if ($spacing instanceof Success) {
+                $match->addPrecedingMatch($spacing);
+            }
             $concrete[] = $spacing;
         }
         $selected[] = $match;

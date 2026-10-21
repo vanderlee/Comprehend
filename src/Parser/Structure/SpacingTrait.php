@@ -6,7 +6,10 @@ namespace Vanderlee\Comprehend\Parser\Structure;
 
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 /**
  * Adds an explicit intervening-trivia policy to composite parsers. Pushes the configured
@@ -29,6 +32,18 @@ trait SpacingTrait
     public function hasExplicitSpacing(): bool
     {
         return $this->hasSpacingPolicy;
+    }
+
+    /** Prepared implementations may return stateless syntax while ordinary/custom loops retain matches. */
+    protected function skipSpacing(
+        Source $source,
+        int $offset,
+        ParseSession $session,
+        Success|ConcreteNode|null &$syntax,
+    ): int|false {
+        $syntax = null;
+
+        return $session->skipSpacing($source, $offset, $syntax);
     }
 
     private function copySpacer(GraphSnapshot $context): void

@@ -17,6 +17,7 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 /**
  * Greedily recognizes a child within repetition bounds, with optional intervening trivia.
@@ -144,12 +145,13 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
     {
         $childMatches = [];
         $concreteMatches = null;
+        $concreteChildren = null;
         $acceptedByteLength = 0;
         while ($this->max === null || count($childMatches) < $this->max) {
             $diagnostics = $session->diagnosticState();
             $spacingMatch = null;
             $skip = $acceptedByteLength > 0
-                ? $session->skipSpacing($source, $byteOffset + $acceptedByteLength, $spacingMatch)
+                ? $this->skipSpacing($source, $byteOffset + $acceptedByteLength, $session, $spacingMatch)
                 : 0;
             $match = null;
             if ($skip !== false) {
@@ -170,13 +172,24 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
             }
             // Retain trivia only after the following child has consumed input successfully.
             if ($spacingMatch !== null) {
-                $match->addPrecedingMatch($spacingMatch);
-                $concreteMatches ??= $childMatches;
-                $concreteMatches[] = $spacingMatch;
+                if ($spacingMatch instanceof Success) {
+                    $match->addPrecedingMatch($spacingMatch);
+                }
+                if ($spacingMatch instanceof ConcreteNode) {
+                    $concreteChildren ??= $concreteMatches ?? $childMatches;
+                    $concreteChildren[] = $spacingMatch;
+                } elseif ($concreteChildren !== null) {
+                    $concreteChildren[] = $spacingMatch;
+                } else {
+                    $concreteMatches ??= $childMatches;
+                    $concreteMatches[] = $spacingMatch;
+                }
             }
             $acceptedByteLength += $skip + $match->length;
             $childMatches[] = $match;
-            if ($concreteMatches !== null) {
+            if ($concreteChildren !== null) {
+                $concreteChildren[] = $match;
+            } elseif ($concreteMatches !== null) {
                 $concreteMatches[] = $match;
             }
         }
@@ -184,7 +197,9 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
             return $this->failure($source, $byteOffset, $acceptedByteLength);
         }
         $success = $this->success($source, $byteOffset, $acceptedByteLength, $childMatches);
-        if ($concreteMatches !== null) {
+        if ($concreteChildren !== null) {
+            $success->setConcreteChildren($concreteChildren);
+        } elseif ($concreteMatches !== null) {
             $success->setConcreteMatches($concreteMatches);
         }
 

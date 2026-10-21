@@ -16,6 +16,7 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 /**
  * Recognizes child parsers in order to build a compound match. Applies scoped intervening
@@ -97,13 +98,14 @@ class Sequence extends IterableParser implements AnalyzableParser, ReusableSnaps
     {
         $childMatches = [];
         $concreteMatches = [];
+        $concreteChildren = null;
         $this->pushSpacer($session);
         try {
             $progressByteLength = 0;
             foreach ($this->parsers as $parser) {
                 $spacingMatch = null;
                 if ($childMatches !== []) {
-                    $skip = $session->skipSpacing($source, $byteOffset + $progressByteLength, $spacingMatch);
+                    $skip = $this->skipSpacing($source, $byteOffset + $progressByteLength, $session, $spacingMatch);
                     if ($skip === false) {
                         return $this->failure($source, $byteOffset, $progressByteLength);
                     }
@@ -116,17 +118,34 @@ class Sequence extends IterableParser implements AnalyzableParser, ReusableSnaps
                     return $this->failure($source, $byteOffset, $progressByteLength);
                 }
                 if ($spacingMatch !== null) {
-                    $match->addPrecedingMatch($spacingMatch);
-                    $concreteMatches[] = $spacingMatch;
+                    if ($spacingMatch instanceof Success) {
+                        $match->addPrecedingMatch($spacingMatch);
+                    }
+                    if ($spacingMatch instanceof ConcreteNode) {
+                        $concreteChildren ??= $concreteMatches;
+                        $concreteChildren[] = $spacingMatch;
+                    } elseif ($concreteChildren !== null) {
+                        $concreteChildren[] = $spacingMatch;
+                    } else {
+                        $concreteMatches[] = $spacingMatch;
+                    }
                 }
                 $childMatches[] = $match;
-                $concreteMatches[] = $match;
+                if ($concreteChildren !== null) {
+                    $concreteChildren[] = $match;
+                } else {
+                    $concreteMatches[] = $match;
+                }
             }
         } finally {
             $this->popSpacer($session);
         }
         $success = $this->success($source, $byteOffset, $progressByteLength, $childMatches);
-        $success->setConcreteMatches($concreteMatches);
+        if ($concreteChildren !== null) {
+            $success->setConcreteChildren($concreteChildren);
+        } else {
+            $success->setConcreteMatches($concreteMatches);
+        }
         $this->prepareSequenceValue($success, $childMatches);
 
         return $success;

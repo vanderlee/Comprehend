@@ -6,16 +6,20 @@ use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Directive\CaseSensitive;
+use Vanderlee\Comprehend\Directive\Space;
 use Vanderlee\Comprehend\Directive\Trivia;
 use Vanderlee\Comprehend\Extensions\Optimizer\GraphOptimizer;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileRange;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileSet;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\SeparatedList;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Set;
+use Vanderlee\Comprehend\Parser\Terminal\Regex;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
@@ -23,8 +27,138 @@ use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseMetrics;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Utf8FileSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
+
+test('prepared sequences retain trivia nodes without entering temporary wrapper records', function (
+    Parser $spacing,
+): void {
+    $parser = new Space($spacing, new Sequence(new Text('a'), new Regex('/b/A'), new Text('c')));
+    $source = new Utf8Source('ab  c');
+    $expected = $parser->freeze(FreezeFlags::NONE)->parse($source);
+    $grammar = $parser->freeze();
+    $root = (new ReflectionProperty(FrozenGrammar::class, 'root'))->getValue($grammar);
+    $metrics = new ParseMetrics();
+    $session = new ParseSession($source, metrics: $metrics);
+    $result = new ParseResult($root->recognizeInSession($source, 0, $session));
+
+    expect($result->node)->toEqual($expected->node)
+        ->and($result->ast())->toEqual($expected->ast())
+        ->and($result->diagnostic)->toEqual($expected->diagnostic)
+        ->and($result->value())->toBe($expected->value())
+        // Space, Sequence and its three operands; both trivia wrappers remain in the CST only.
+        ->and($metrics->snapshot()['parser_entries'])->toBe(5);
+})->with([[new ReadWhileSet(' ')], [Repeat::star(new Text(' '))]]);
+
+test('syntax only trivia preserves rollback and partial failure across prepared loops', function (
+    Closure $build,
+    array $inputs,
+): void {
+    foreach ([new ReadWhileSet(" \t"), Repeat::star(new Set(" \t"))] as $spacing) {
+        $parser = new Space($spacing, $build());
+        $plain = $parser->freeze(FreezeFlags::NONE);
+        $prepared = $parser->freeze();
+        foreach ($inputs as $input) {
+            foreach ([new ByteSource('>' . $input), new Utf8Source('>' . $input)] as $source) {
+                foreach (['matchPrefix', 'parseAll'] as $method) {
+                    for ($pass = 0; $pass < 2; ++$pass) {
+                        $expected = $plain->$method($source, 1);
+                        $actual = $prepared->$method($source, 1);
+                        expect($actual->success)->toBe($expected->success)
+                            ->and($actual->consumedByteLength)->toBe($expected->consumedByteLength)
+                            ->and($actual->node)->toEqual($expected->node)
+                            ->and($actual->diagnostic)->toEqual($expected->diagnostic)
+                            ->and($actual->farthestFailure)->toBe($expected->farthestFailure)
+                            ->and($actual->ast())->toEqual($expected->ast())
+                            ->and($actual->value())->toBe($expected->value());
+                    }
+                }
+            }
+        }
+    }
+})->with([
+    'sequence' => [static fn(): Parser => new Sequence(new Text('a'), new Text('bc'), new Text('d')),
+        ['abcd', 'a bc  d', "a\tbc d", 'a bx', 'a bc ', 'a bc d!', 'a bc d ']],
+    'repeat' => [static fn(): Parser => new Repeat(new Text('ab'), 1, 3),
+        ['ab', 'abab', 'ab ab  ab', 'ab ax', 'ab ab ', 'ab ab ab ab', 'ab ab!', 'ax']],
+    'list' => [static fn(): Parser => new SeparatedList(new Text('ab'), new Text('::'), 0, 3, true, true),
+        ['', 'ab', 'ab::ab', '::ab :: ab ::', 'ab :: ax', 'ab :: ', 'ab :: ab :: ab :: ab', 'ab!']],
+]);
+
+test('syntax only trivia preserves collection caching validation and explicit effect order', function (
+    bool $repeat,
+): void {
+    $observations = [];
+    foreach ([FreezeFlags::NONE, FreezeFlags::OPTIMIZE] as $flags) {
+        $events = [];
+        $item = (new Text('a'))->pushResult('items', static function (string $text) use (&$events): string {
+            $events[] = 'collect';
+
+            return strtoupper($text);
+        })->validateSemantic(static function (ParseResult $result) use (&$events): bool {
+            $events[] = 'validate:' . $result->start;
+
+            return true;
+        })->onCommit(static function (ParseResult $result) use (&$events): void {
+            $events[] = 'commit:' . $result->start;
+        });
+        $body = $repeat ? Repeat::exact($item, 3) : new Sequence($item, $item, $item);
+        $body->mapValue(static fn(ParseResult $result): object => (object) $result->results());
+        $parser = new Space(new ReadWhileSet(' '), $body);
+        $result = $parser->freeze($flags)->parse('a a  a');
+        expect($result->success)->toBeTrue()->and($events)->toBe([]);
+        $value = $result->value();
+        expect($result->value())->toBe($value)->and($value->items)->toBe(['A', 'A', 'A'])
+            ->and($events)->toBe(['collect', 'collect', 'collect']);
+        expect($result->commit())->toBeTrue()->and($result->commit())->toBeTrue();
+        $observations[] = [$result->node->toArray(), $result->results(), $events];
+    }
+    expect($observations[1])->toBe($observations[0]);
+})->with([false, true]);
+
+test('custom list separator hooks still receive preceding trivia execution records', function (): void {
+    $list = new class (new Text('a'), new Text(',')) extends SeparatedList {
+        protected function recognizeSeparator(
+            Parser $parser,
+            Source $source,
+            int $offset,
+            ParseSession $session,
+            ?Success $spacing,
+        ): AbstractMatch|ConcreteNode {
+            expect($spacing)->not->toBeNull()->and($spacing->node->isTrivia)->toBeTrue();
+
+            return parent::recognizeSeparator($parser, $source, $offset, $session, $spacing);
+        }
+    };
+    $parser = new Space(new ReadWhileSet(' '), $list);
+    expect($parser->freeze()->parse('a , a')->value())->toBe(['a', 'a']);
+});
+
+test('syntax only sequence and repeat trivia retain every exhausted recognition limit', function (bool $repeat): void {
+    $body = $repeat ? Repeat::exact(new Text('a'), 3) : new Sequence(new Text('a'), new Text('a'), new Text('a'));
+    $parser = new Space(new ReadWhileSet(' '), $body);
+    $plain = $parser->freeze(FreezeFlags::NONE);
+    $prepared = $parser->freeze();
+    $source = new Utf8Source('a a  a');
+    $budgets = [
+        ...array_map(static fn(int $n): ParseLimits => new ParseLimits(maxWork: $n), range(1, 45)),
+        ...array_map(static fn(int $n): ParseLimits => new ParseLimits(maxDepth: $n), range(1, 8)),
+    ];
+    foreach ($budgets as $limits) {
+        $observations = [];
+        foreach ([$plain, $prepared] as $grammar) {
+            try {
+                $result = $grammar->parse($source, limits: $limits);
+                $observations[] = [$result->success, $result->node?->toArray(), $result->diagnostic?->toArray()];
+            } catch (ParseLimitException $error) {
+                $observations[] = $error->getMessage();
+            }
+        }
+        expect($observations[1])->toBe($observations[0]);
+    }
+})->with([false, true]);
 
 test('prepared trivia and direct list separators preserve syntax values diagnostics and offsets', function (
     Parser $spacing,
@@ -254,18 +388,18 @@ test('prepared trivia and list nodes bind to each file snapshot and reconstruct 
     }
 });
 
-test('throwing prepared trivia restores the session spacing scope', function (): void {
+test('throwing prepared trivia restores the session spacing scope', function (string $method): void {
     $grammar = (new ReadWhileSet("\xff"))->freeze();
     $root = (new ReflectionProperty(FrozenGrammar::class, 'root'))->getValue($grammar);
     $source = new Utf8Source(' ');
     $session = new ParseSession($source, $root);
     try {
-        $session->skipSpacing($source, 0, $match);
+        $session->$method($source, 0, $match);
         throw new LogicException('Invalid UTF-8 trivia must fail');
     } catch (InvalidArgumentException $error) {
         expect($error->getMessage())->toBe('Source must contain valid UTF-8');
     }
     expect($match)->toBeNull()->and($session->isLexeme())->toBeFalse();
     $session->pushSpacer(new Text(' '));
-    expect($session->skipSpacing($source, 0))->toBe(1);
-});
+    expect($session->$method($source, 0))->toBe(1);
+})->with(['skipSpacing', 'skipSpacingSyntax']);

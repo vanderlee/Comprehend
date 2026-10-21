@@ -19,6 +19,7 @@ use Vanderlee\Comprehend\Tree\ConcreteNode;
 class SeparatedList extends OrdinarySeparatedList
 {
     use ExactClassSnapshotReuseTrait;
+    use SyntaxSpacingTrait;
 
     private ?Text $literal = null;
 

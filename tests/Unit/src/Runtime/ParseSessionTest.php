@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace Tests\Src\Runtime;
 
 use LogicException;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 use RuntimeException;
 use TypeError;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Builder\FrozenGrammar;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileSet;
 use Vanderlee\Comprehend\Directive\Trivia;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
@@ -18,8 +23,72 @@ use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 uses(TestCase::class);
+
+test('prepared spacing syntax stays source bound while skipSpacing retains independent records', function (): void {
+    $grammar = (new ReadWhileSet(' '))->freeze();
+    $spacing = (new ReflectionProperty(FrozenGrammar::class, 'root'))->getValue($grammar);
+    $source = new Utf8Source('  a');
+    $session = new ParseSession($source, $spacing);
+    $this->assertSame(2, $session->skipSpacingSyntax($source, 0, $syntax));
+    $this->assertInstanceOf(ConcreteNode::class, $syntax);
+    $this->assertTrue($syntax->isTrivia);
+    $this->assertSame($source, $syntax->span->source);
+    $syntaxWork = $session->workUsed();
+    $this->assertSame(2, $session->skipSpacing($source, 0, $match));
+    $this->assertSame($syntaxWork, $session->workUsed() - $syntaxWork);
+    $this->assertInstanceOf(Success::class, $match);
+    $this->assertEquals($syntax, $match->node);
+    $this->assertSame(0, $session->skipSpacingSyntax($source, 2, $empty));
+    $this->assertInstanceOf(ConcreteNode::class, $empty);
+    $this->assertSame('', $empty->rawText());
+    $this->assertSame(1, $session->skipSpacingSyntax($source, 1, $second));
+    $this->assertNotSame($syntax, $second);
+    $this->assertSame('  ', $syntax->rawText());
+    $ordinary = (new GraphSnapshot())->copy($spacing);
+    $ordinarySession = new ParseSession($source, $ordinary);
+    $this->assertSame(2, $ordinarySession->skipSpacingSyntax($source, 0, $ordinarySyntax));
+    $this->assertInstanceOf(Success::class, $ordinarySyntax);
+});
+
+test('required spacing and inactive policies retain syntax failure and zero width contracts', function (): void {
+    $grammar = (new ReadWhileSet(' ', min: 1))->freeze();
+    $spacing = (new ReflectionProperty(FrozenGrammar::class, 'root'))->getValue($grammar);
+    $source = new ByteSource('a');
+    $session = new ParseSession($source, $spacing);
+    $this->assertFalse($session->skipSpacingSyntax($source, 0, $syntax));
+    $this->assertNull($syntax);
+    $this->assertNotNull($session->diagnostic());
+    $this->assertFalse($session->isLexeme());
+    $session->pushSpacer(null);
+    $this->assertSame(0, $session->skipSpacingSyntax($source, 0, $syntax));
+    $this->assertNull($syntax);
+    $session->popSpacer();
+    $session->pushLexeme();
+    $this->assertSame(0, $session->skipSpacingSyntax($source, 0, $syntax));
+    $this->assertNull($syntax);
+    $session->popLexeme();
+});
+
+test('syntax only trivia rejects foreign sources and partial UTF8 offsets and restores scope', function (): void {
+    $grammar = (new ReadWhileSet(' '))->freeze();
+    $spacing = (new ReflectionProperty(FrozenGrammar::class, 'root'))->getValue($grammar);
+    $source = new Utf8Source("\u{e9} ");
+    $session = new ParseSession($source, $spacing);
+    foreach ([[new ByteSource(' '), 0], [$source, -1], [$source, 4], [$source, 1]] as [$input, $offset]) {
+        try {
+            $session->skipSpacingSyntax($input, $offset, $syntax);
+            $this->fail('Invalid source position must be rejected');
+        } catch (InvalidArgumentException) {
+            $this->assertNull($syntax);
+            $this->assertFalse($session->isLexeme());
+        }
+    }
+    $this->assertSame(1, $session->skipSpacingSyntax($source, 2, $syntax));
+    $this->assertSame(' ', $syntax->rawText());
+});
 
 test('spacing reuses its wrapper but retains independent matches and effects', function (): void {
     $source = new ByteSource('  ');

@@ -9,6 +9,7 @@ use Vanderlee\Comprehend\Builder\ReusableSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 /**
  * Marks explicitly recognized whitespace or comments as concrete-tree trivia. Keeps their
@@ -21,6 +22,12 @@ class Trivia extends UnaryDirective implements ReusableSnapshot
     public function __toString(): string
     {
         return (string) $this->parser;
+    }
+
+    /** @internal Prepared nullable trivia may supply stateless syntax; null keeps checked recognition. */
+    public function tryConcreteSyntax(Source $source, int $byteOffset, ParseSession $session): ?ConcreteNode
+    {
+        return null;
     }
 
     protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch

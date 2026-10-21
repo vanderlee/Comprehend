@@ -9,6 +9,7 @@ use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Directive\Trivia;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 use WeakMap;
 
 /**
@@ -57,14 +58,45 @@ trait SpacingContextTrait
         return $match->length;
     }
 
-    private function recognizeTrivia(Parser $trivia, Source $source, int $byteOffset): AbstractMatch
+    /** @internal Built-in prepared combinators can retain plain trivia syntax without an execution record. */
+    public function skipSpacingSyntax(Source $source, int $offset, Success|ConcreteNode|null &$syntax = null): int|false
     {
+        $syntax = null;
+        $trivia = end($this->spacers);
+        if ($this->isLexeme() || !$trivia instanceof Parser) {
+            return 0;
+        }
+
+        $attempt = $this->recognizeTrivia($trivia, $source, $offset, syntaxOnly: true);
+        if ($attempt instanceof ConcreteNode) {
+            $syntax = $attempt;
+
+            return $attempt->span->byteLength();
+        }
+        if (!$attempt instanceof Success) {
+            return false;
+        }
+        $syntax = $attempt;
+
+        return $attempt->length;
+    }
+
+    private function recognizeTrivia(
+        Parser $trivia,
+        Source $source,
+        int $byteOffset,
+        bool $syntaxOnly = false,
+    ): AbstractMatch|ConcreteNode {
         // Trivia shares case, choice and diagnostics with the owning session,
         // but cannot recursively insert itself inside its own grammar.
         $this->pushLexeme();
         try {
             $wrappers = $this->triviaParsers ??= new WeakMap();
             $parser = $wrappers[$trivia] ??= $trivia->trivia();
+
+            if ($syntaxOnly && ($syntax = $parser->tryConcreteSyntax($source, $byteOffset, $this)) !== null) {
+                return $syntax;
+            }
 
             return $parser->recognizeInSession($source, $byteOffset, $this);
         } finally {
