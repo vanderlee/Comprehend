@@ -380,6 +380,24 @@ always creates fresh nodes bound to the current source.
 Historical measurements of literal preparation and warm recognition with CST are
 recorded in [Performance measurements](performance.md).
 
+Prepared snapshots also specialize plain `ReadWhileSet`/`ReadWhileRange` trivia
+and eligible repeated-character trivia. The wrapper scans its operand directly
+and constructs the original operand nodes without an intermediate child match.
+Automatic spacing retains zero-width trivia nodes and repeated-character detail;
+explicit trivia keeps its own metadata, lazy mappings and commit lifecycle.
+Operand metadata, custom classes and finite work/depth limits retain ordinary
+delegation. Authoring copies clear these prepared plans.
+
+Plain ASCII `Text` separators in built-in separated lists can construct their
+CST nodes directly too. The existing list loop still owns bounds, leading/trailing
+separator policies, spacing and rollback. Decorated/custom separators, incompatible
+case policies and finite limits use ordinary recognition. Preceding trivia with
+deferred behavior also retains the ordinary separator record so validation,
+collections and effects preserve their original ownership and order. Literal
+mismatches retry only the separator for its original diagnostics; preceding
+trivia is never replayed. Neither optimization removes syntax nodes or evaluates
+semantic callbacks during recognition. `FreezeFlags::NONE` disables both.
+
 After references are resolved and graph safety checks pass, optimization also
 prepares bounded lexical tables for Repeat operands, Choice alternatives and Not
 probes. These cover named character rules, character-class choices, fixed escapes

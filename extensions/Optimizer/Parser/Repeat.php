@@ -18,6 +18,7 @@ use Vanderlee\Comprehend\Source\Source;
 class Repeat extends OrdinaryRepeat
 {
     use ExactClassSnapshotReuseTrait;
+    use PreparedTriviaTrait;
 
     private ?ReadRun $scanner = null;
     private ?LexicalTable $lexical = null;
@@ -39,6 +40,7 @@ class Repeat extends OrdinaryRepeat
     protected function copyDependencies(GraphSnapshot $context): void
     {
         parent::copyDependencies($context);
+        $this->triviaPrepared = false;
         $this->lexical = null;
         $this->scanner = $context->optimizationEnabled()
             ? GraphOptimizer::scanner($this->getParser(), $this->getMinimum(), $this->getMaximum()) : null;

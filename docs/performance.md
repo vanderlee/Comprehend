@@ -41,6 +41,44 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Prepared trivia and direct list punctuation (2026-10-21)
+
+Prepared plain trivia can scan its operand and construct the same child syntax
+without a temporary child execution record. Eligible ASCII literal list separators
+can likewise create their final CST node directly. The ordinary list loop retains
+bounds, rollback and lazy item values. Custom/decorated operands, deferred trivia
+and finite execution limits retain the corresponding ordinary paths. See
+[grammar optimization](grammar-authoring.md) for eligibility and fallbacks.
+
+Local Windows/PHP 8.2.10 measurements compare saved source and extension snapshots
+with whitespace specialization alone and both changes. Each variant/case used six
+fresh workers in rotating/reversed order, three warmups and 30 timed parses per
+worker. The table reports medians of worker medians, in microseconds. Parsing
+starts from a string, requires complete input and obtains the domain value;
+preparation, assertions, result release and cycle collection are outside timing.
+PCOV is disabled. The nested fixture contains 128 generated IDs.
+
+| Fixture | Before | Trivia alone | Both changes | Combined speedup |
+|---|---:|---:|---:|---:|
+| Record, repeated-character spacing | 773.6 | 671.1 | 704.8 | 1.10x |
+| Record, scanner spacing | 711.3 | 626.8 | 637.1 | 1.12x |
+| Nested list, repeated-character spacing | 7338.4 | 5840.2 | 5482.4 | 1.34x |
+| Nested list, scanner spacing | 6807.0 | 5579.1 | 5189.2 | 1.31x |
+
+Every worker checked all 21 independent acceptance/output oracle cases. CST and
+diagnostic fingerprints agreed across all workers and variants. Retained CST
+counts and used-memory deltas were unchanged. The list specialization improved
+the larger fixture beyond trivia alone, but its extra list bookkeeping made the
+record slightly slower than trivia alone in this run. These workload-specific
+measurements do not establish universal gains or individual CPU attribution.
+Separate traces on the scanner-spacing nested fixture counted 830 parser entries
+before and 429 after, and 826 temporary Success allocations before and 425 after.
+The retained tree still has 820 nodes and the same serialized hash. Tracing covers
+core source methods, adds overhead and is used for call/allocation counts only;
+new expressions in uninstrumented extension methods are not included.
+The local driver, snapshots and raw reports are under ignored
+`build/trivia-cst-optimization/`.
+
 The [Extraction application-value comparison](extraction-comparison.md) checks two
 independent grammars against one output oracle and records extraction timings,
 memory retention, diagnostics and static-analysis observations. It includes

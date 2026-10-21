@@ -104,6 +104,35 @@ class Success extends AbstractMatch
         }
     }
 
+    /** @internal Whether replacing this record by its immutable syntax would lose deferred behavior. */
+    public function hasDeferredState(): bool
+    {
+        return $this::class !== self::class || $this->state !== null;
+    }
+
+    /**
+     * @internal Combine direct syntax with children that still own values, validation or effects.
+     * @param list<Success|ConcreteNode> $children
+     */
+    public function setConcreteChildren(array $children): void
+    {
+        $matches = [];
+        $nodes = [];
+        foreach ($children as $child) {
+            if ($child instanceof ConcreteNode) {
+                $nodes[] = $child;
+            } else {
+                if ($child->node === null) {
+                    throw new LogicException('Concrete children require source-bound recognition');
+                }
+                $matches[] = $child;
+                $nodes[] = $child->node;
+            }
+        }
+        $this->setConcreteMatches($matches);
+        $this->concreteOnlyNodes = $nodes;
+    }
+
     public function addRecovery(Recovery $recovery): void
     {
         $this->executionState()->recoveries[] = $recovery;

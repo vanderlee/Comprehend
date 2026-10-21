@@ -7,6 +7,7 @@ namespace Tests\Src\Match;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Result\ValidationResult;
@@ -16,6 +17,48 @@ use WeakReference;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 uses(TestCase::class);
+
+test('mixed direct syntax retains lazy values validation and explicit child effects', function (): void {
+    $events = [];
+    $source = new ByteSource('a,a');
+    $item = (new Text('a'))->mapValue(static fn(): int => 7)
+        ->validateSemantic(static function () use (&$events): bool {
+            $events[] = 'validate';
+
+            return true;
+        })->onCommit(static function () use (&$events): void {
+            $events[] = 'commit';
+        });
+    $child = $item->recognizeInSession($source, 0, new ParseSession($source));
+    $punctuation = new ConcreteNode(Text::class, $source->span(1, 2));
+    $parent = new Success(2, [$child]);
+    $parent->setSourceMetadata($source->span(0, 2), null);
+    $parent->setConcreteChildren([$child, $punctuation]);
+    $parent->setValueMapper(static fn(): mixed => $child->getValue());
+    $parent->preparePlainNode(new Sequence(new Text('a'), new Text(',')));
+    $result = new ParseResult($parent);
+    $this->assertSame([$child->node, $punctuation], $result->node->children);
+    $this->assertSame([], $events);
+    $this->assertSame(7, $result->value());
+    $this->assertSame(7, $result->value());
+    $this->assertTrue($result->commit());
+    $this->assertTrue($result->commit());
+    $this->assertSame(['validate', 'commit'], $events);
+});
+
+test('only built in stateless execution records can be replaced by syntax alone', function (): void {
+    $plain = new Success();
+    $this->assertFalse($plain->hasDeferredState());
+    $plain->setValueMapper(static fn(): int => 7);
+    $this->assertTrue($plain->hasDeferredState());
+    $custom = new class extends Success {
+        public function getResults(): array
+        {
+            return ['custom' => 7];
+        }
+    };
+    $this->assertTrue($custom->hasDeferredState());
+});
 
 test('mixed sparse children keep CST order and deferred operations after retention', function (): void {
     $source = new ByteSource('abc');

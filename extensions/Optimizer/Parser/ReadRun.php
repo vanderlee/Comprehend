@@ -10,6 +10,7 @@ use Vanderlee\Comprehend\Parser\Terminal\DiagnosticExpectationTrait;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
 use Vanderlee\Comprehend\Builder\DefaultAnalysisTrait;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
+use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -24,6 +25,7 @@ abstract class ReadRun extends Parser implements AnalyzableParser
     use DefaultAnalysisTrait;
     use DiagnosticExpectationTrait;
     use CaseSensitiveTrait;
+    use PreparedTriviaTrait;
 
     /** Keep generated classes and tempered literals comfortably below PCRE compilation limits. */
     private const MAX_REGEX_ATOM_BYTES = 8192;
@@ -41,6 +43,12 @@ abstract class ReadRun extends Parser implements AnalyzableParser
     public function analysisNullability(NullabilityLookup $lookup): ?bool
     {
         return $this->min === 0;
+    }
+
+    protected function copyDependencies(GraphSnapshot $context): void
+    {
+        parent::copyDependencies($context);
+        $this->triviaPrepared = false;
     }
 
     protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch

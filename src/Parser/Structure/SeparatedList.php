@@ -14,6 +14,7 @@ use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
@@ -41,6 +42,22 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
     public function __toString(): string
     {
         return 'separated(' . $this->item . ', ' . $this->separator . ')';
+    }
+
+    protected function copyConfigurationTo(Parser $copy): void
+    {
+        if (!$copy instanceof self) {
+            throw new InvalidArgumentException('Separated list configuration requires a SeparatedList destination');
+        }
+        parent::copyConfigurationTo($copy);
+        $copy->item = $this->item;
+        $copy->separator = $this->separator;
+        $copy->min = $this->min;
+        $copy->max = $this->max;
+        $copy->allowLeading = $this->allowLeading;
+        $copy->allowTrailing = $this->allowTrailing;
+        $copy->spacer = $this->spacer;
+        $copy->hasSpacingPolicy = $this->hasSpacingPolicy;
     }
 
     /** @return list<Parser> */
@@ -102,8 +119,9 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
                         $items !== [],
                         $pairSelected,
                         $pairConcrete,
+                        true,
                     );
-                    if ($separator instanceof Success) {
+                    if ($separator !== null) {
                         $hasSeparator = true;
                     } elseif ($items !== []) {
                         if (count($items) >= $this->min) {
@@ -164,8 +182,9 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
                     true,
                     $tailSelected,
                     $tailConcrete,
+                    true,
                 );
-                if ($tail instanceof Success) {
+                if ($tail !== null) {
                     array_push($selected, ...$tailSelected);
                     array_push($concrete, ...$tailConcrete);
                     $end = $cursor;
@@ -180,7 +199,7 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
             return $this->failure($source, $byteOffset, $end - $byteOffset);
         }
         $success = $this->success($source, $byteOffset, $end - $byteOffset, $selected);
-        $success->setConcreteMatches($concrete);
+        $success->setConcreteChildren($concrete);
         $this->prepareListValue($success, $items, $selected);
 
         return $success;
@@ -201,7 +220,7 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
     /**
      * Stage syntax and trivia until the enclosing pair is accepted.
      * @param list<Success> $selected
-     * @param list<Success> $concrete
+     * @param list<Success|ConcreteNode> $concrete
      */
     private function attempt(
         Parser $parser,
@@ -211,13 +230,26 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
         bool $withSpacing,
         array &$selected,
         array &$concrete,
-    ): ?Success {
+        bool $isSeparator = false,
+    ): Success|ConcreteNode|null {
         $spacing = null;
         $skip = $withSpacing ? $session->skipSpacing($source, $cursor, $spacing) : 0;
         if ($skip === false) {
             return null;
         }
-        $match = $parser->recognizeInSession($source, $cursor + $skip, $session);
+        $match = $isSeparator
+            ? $this->recognizeSeparator($parser, $source, $cursor + $skip, $session, $spacing)
+            : $parser->recognizeInSession($source, $cursor + $skip, $session);
+        if ($match instanceof ConcreteNode) {
+            // Direct separators are stateless, including their preceding automatic trivia.
+            if ($spacing !== null) {
+                $concrete[] = $spacing;
+            }
+            $concrete[] = $match;
+            $cursor = $match->span->end;
+
+            return $match;
+        }
         if (!$match instanceof Success) {
             return null;
         }
@@ -230,5 +262,16 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
         $cursor += $skip + $match->length;
 
         return $match;
+    }
+
+    /** @internal Specializations may construct plain separator syntax without a temporary execution record. */
+    protected function recognizeSeparator(
+        Parser $parser,
+        Source $source,
+        int $offset,
+        ParseSession $session,
+        ?Success $spacing,
+    ): AbstractMatch|ConcreteNode {
+        return $parser->recognizeInSession($source, $offset, $session);
     }
 }
