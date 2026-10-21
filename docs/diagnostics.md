@@ -39,8 +39,9 @@ adds `location` with one-based `line` and `column`. `includeExcerpt` adds `excer
 and `excerptEncoding`: valid UTF-8 is emitted directly as `utf8`, and arbitrary
 non-UTF-8 bytes are base64 with encoding `base64`. Empty excerpts use `utf8`.
 This preserves the original bytes, including NUL. Offsets remain bytes; UTF-8
-columns count code points and byte-source columns count bytes. Either option may
-index the entire source, including a file source. Plain `json_encode($diagnostic)`
+columns count code points and byte-source columns count bytes. Locations scan up
+to the requested byte offset; excerpts also scan to the current line's end.
+Plain `json_encode($diagnostic)`
 always uses the default compact payload, even after source details were requested.
 
 Serialization does not evaluate semantic values, run validation or commit effects.
@@ -93,10 +94,26 @@ tree names, semantic values or commit effects. See the runnable
 
 ## Locations and retained observations
 
-`location()` lazily indexes CRLF, lone CR and LF and returns one-based line/column.
-UTF-8 columns count code points; byte-source columns count bytes. `excerpt()`
-returns the original current line and `message()` formats expectations/location.
-Indexing may read the whole source. Raw byte excerpts may not be valid UTF-8.
+`location()` lazily scans the prefix ending at the diagnostic's byte offset and
+returns one-based line/column. CRLF is one newline; lone CR and LF also start
+lines. If the prefix ends in CR before EOF, one lookahead byte distinguishes CRLF
+from a lone CR. A position between CR and LF still belongs to the preceding line.
+UTF-8 columns count code points; byte-source columns count bytes.
+
+`excerpt()` returns the original current line without its terminator. It scans
+forward from the diagnostic offset in chunks of at most 8 KiB, stopping when a
+chunk contains CR or LF. That final read can include bytes beyond the terminator;
+file page reads can also include surrounding bytes. Raw byte excerpts may not be
+valid UTF-8. `message()` formats expectations and the cached location.
+
+Each diagnostic caches its location and line boundaries rather than an index of
+all source lines. Repeated location requests read no nonempty byte slices, but
+still check that the source is readable; closing a file snapshot invalidates
+cached location, message and excerpt reads. Excerpts reread their line's bytes.
+Auxiliary position storage is constant, while a requested prefix within a long
+line or the excerpt itself can allocate that line's size. An EOF location still
+scans the entire prefix. Different diagnostic snapshots scan independently;
+there is no shared source line index. See the [measured comparison](performance.md#bounded-diagnostic-scanning-2026-10-21).
 
 Within a parse session, unchanged failure details reuse the same Diagnostic
 snapshot. New expectations, paths or failure positions produce a new snapshot;

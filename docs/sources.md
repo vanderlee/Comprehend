@@ -44,8 +44,10 @@ position when its source and offset both match. Recognition still checks source
 unit boundaries independently.
 
 Sources may be in memory or seekable disk snapshots. UTF-8 validation/counting scans the input;
-position conversions scan prefixes. Regex matching and diagnostic indexing may
-access the full input. No constant-memory streaming guarantee is made.
+position conversions and diagnostic locations scan prefixes. Diagnostic excerpts
+also read their current line; regex matching may access the full input. An EOF
+diagnostic or a single-line excerpt can still read the whole source. No
+constant-memory streaming guarantee is made.
 
 ## Code-point capability
 

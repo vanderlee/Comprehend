@@ -11,15 +11,15 @@ use Vanderlee\Comprehend\Source\Span;
 
 /**
  * Describes a recognition failure with expectations, rule paths and a byte offset. Lazily
- * indexes source lines to provide readable locations and excerpts for ParseResult and grammar
- * errors.
+ * scans the source prefix and current line to provide readable locations and excerpts for
+ * ParseResult and grammar errors.
  */
 final class Diagnostic implements JsonSerializable
 {
-    /**
-     * @var non-empty-list<int>|null
-     */
-    private ?array $lineStarts = null;
+    /** @var array{line: int, column: int}|null */
+    private ?array $locationCache = null;
+    private int $lineStart = 0;
+    private ?int $lineEnd = null;
 
     /**
      * @param list<string> $expected
@@ -37,12 +37,11 @@ final class Diagnostic implements JsonSerializable
     /** Raw current line; byte sources may contain arbitrary bytes. */
     public function excerpt(): string
     {
-        $line = $this->location()['line'] - 1;
-        $lineStarts = $this->indexLines();
-        $start = $lineStarts[$line];
-        $end = $lineStarts[$line + 1] ?? $this->source->byteLength();
+        $this->location();
+        $end = $this->lineEnd ??= $this->findLineEnd();
 
-        return rtrim($this->source->sliceBytes($start, $end), "\r\n");
+        // An offset between CR and LF still belongs to the preceding line.
+        return rtrim($this->source->sliceBytes($this->lineStart, $end), "\r\n");
     }
 
     /**
@@ -51,23 +50,19 @@ final class Diagnostic implements JsonSerializable
      */
     public function location(): array
     {
-        $lineStarts = $this->indexLines();
+        if ($this->locationCache !== null) {
+            // Cached coordinates must not make a closed snapshot readable again.
+            $this->source->sliceBytes($this->byteOffset, $this->byteOffset);
 
-        $low = 0;
-        $high = count($lineStarts);
-        while ($low + 1 < $high) {
-            $middle = intdiv($low + $high, 2);
-            if ($lineStarts[$middle] <= $this->byteOffset) {
-                $low = $middle;
-            } else {
-                $high = $middle;
-            }
+            return $this->locationCache;
         }
+        [$line, $start] = $this->findLineStart();
 
-        $prefix = $this->source->sliceBytes($lineStarts[$low], $this->byteOffset);
+        $prefix = $this->source->sliceBytes($start, $this->byteOffset);
         $length = $this->source->mode() === SourceMode::UTF8 ? mb_strlen($prefix, 'UTF-8') : strlen($prefix);
+        $this->lineStart = $start;
 
-        return ['line' => $low + 1, 'column' => $length + 1];
+        return $this->locationCache = ['line' => $line, 'column' => $length + 1];
     }
 
     public function message(): string
@@ -80,7 +75,7 @@ final class Diagnostic implements JsonSerializable
     }
 
     /**
-     * Source details are opt-in because indexing locations may read the entire source.
+     * Source details are opt-in: locations scan the prefix, and excerpts also read the current line.
      * @return array{byteOffset: int, expected: list<string>, rulePaths: list<list<string>>,
      *     location?: array{line: int, column: int}, excerpt?: string, excerptEncoding?: 'utf8'|'base64'}
      */
@@ -115,22 +110,20 @@ final class Diagnostic implements JsonSerializable
         return json_encode($this->toArray($includeLocation, $includeExcerpt), JSON_THROW_ON_ERROR);
     }
 
-    /** @return non-empty-list<int> */
-    private function indexLines(): array
+    /** @return array{int, int} One-based line number and its starting byte offset. */
+    private function findLineStart(): array
     {
-        if ($this->lineStarts !== null) {
-            return $this->lineStarts;
-        }
-
-        $this->lineStarts = [0];
+        $line = 1;
+        $lineStart = 0;
         $pendingCr = false;
-        for ($start = 0; $start < $this->source->byteLength(); $start += 8192) {
-            $chunk = $this->source->sliceBytes($start, min($start + 8192, $this->source->byteLength()));
+        for ($start = 0; $start < $this->byteOffset; $start += 8192) {
+            $chunk = $this->source->sliceBytes($start, min($start + 8192, $this->byteOffset));
             $indexMax = strlen($chunk);
             for ($index = 0; $index < $indexMax; ++$index) {
                 $byte = $chunk[$index];
                 if ($pendingCr) {
-                    $this->lineStarts[] = $start + $index + ($byte === "\n" ? 1 : 0);
+                    ++$line;
+                    $lineStart = $start + $index + ($byte === "\n" ? 1 : 0);
                     $pendingCr = false;
                     if ($byte === "\n") {
                         continue;
@@ -139,14 +132,33 @@ final class Diagnostic implements JsonSerializable
                 if ($byte === "\r") {
                     $pendingCr = true;
                 } elseif ($byte === "\n") {
-                    $this->lineStarts[] = $start + $index + 1;
+                    ++$line;
+                    $lineStart = $start + $index + 1;
                 }
             }
         }
-        if ($pendingCr) {
-            $this->lineStarts[] = $this->source->byteLength();
+        if (
+            $pendingCr && ($this->byteOffset === $this->source->byteLength()
+                || $this->source->sliceBytes($this->byteOffset, $this->byteOffset + 1) !== "\n")
+        ) {
+            ++$line;
+            $lineStart = $this->byteOffset;
         }
 
-        return $this->lineStarts;
+        return [$line, $lineStart];
+    }
+
+    private function findLineEnd(): int
+    {
+        $length = $this->source->byteLength();
+        for ($start = $this->byteOffset; $start < $length; $start += 8192) {
+            $chunk = $this->source->sliceBytes($start, min($start + 8192, $length));
+            $end = strcspn($chunk, "\r\n");
+            if ($end < strlen($chunk)) {
+                return $start + $end;
+            }
+        }
+
+        return $length;
     }
 }

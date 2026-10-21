@@ -41,6 +41,73 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Bounded diagnostic scanning (2026-10-21)
+
+`Diagnostic::location()` now scans only its source prefix, with one-byte
+lookahead when that prefix ends in CR. `excerpt()` searches forward for the
+current line's terminator in 8 KiB chunks. A diagnostic retains its coordinates
+and line boundaries, replacing the per-diagnostic array of every line start.
+Repeated locations retain the closed-file check without rereading prefix bytes.
+Default array/JSON output continues to read no source bytes.
+
+A local Windows/PHP 8.2.10 comparison loaded the saved original Diagnostic or
+the changed class in fresh workers against the same remaining checkout. PCOV
+was disabled. Each of 32 scenarios used three workers per variant in alternating
+order, a separate first-use observation, two warmups and seven timed observations.
+The sources were in-memory and file-backed UTF-8; fixtures had 64, 4,096, 65,536
+or 350,000 short CRLF lines, or a 64 KiB/1 MiB Unicode line. Offsets covered the
+start, middle and EOF. Source preparation, fixture construction, assertions and
+release were outside formatting timers. Medians of warmed worker medians:
+
+| Source and requested position, 1,050,001-byte short-line fixture | First location before | After |
+|---|---:|---:|
+| UTF-8 memory, start | 62.07 ms | 0.0007 ms |
+| UTF-8 memory, middle | 62.42 ms | 24.82 ms |
+| UTF-8 memory, EOF | 63.17 ms | 49.41 ms |
+| UTF-8 file, start | 63.08 ms | 0.0008 ms |
+| UTF-8 file, middle | 64.04 ms | 26.09 ms |
+| UTF-8 file, EOF | 64.01 ms | 50.09 ms |
+
+All workers matched independent expected locations, excerpts, messages and JSON;
+before/after output fingerprints agreed in every scenario. Separate read-counting
+workers requested 1,050,001 logical bytes for the original byte-zero location and
+zero nonempty bytes afterward. Requesting its first excerpt then read 8,194 bytes
+(one search window and the two-byte line). These are Source slice requests, not
+physical disk I/O. Instrumented timings are not used as performance data.
+
+Location retained used memory on that in-memory fixture fell from 10,486,344 to
+536 bytes, measured above prepared-source baselines. For the single-line fixture,
+it rose from 504 to 536 bytes. These deltas include the diagnostic object and
+returned coordinates; they are PHP used bytes, not allocated process peaks or
+RSS. No preparation or parsing speedup is claimed.
+
+First location remains O(requested byte offset), with O(1) retained position
+metadata. First excerpt additionally scans the remaining current line and copies
+the requested line; repeated excerpts still copy it. A first excerpt after a
+known location can cost more than the old index lookup: the file/middle case
+above took 15.6 versus 10.8 us. The 1 MiB Unicode line at EOF showed no meaningful
+first-location improvement (memory: 53.51 versus 53.44 ms; file: 54.35 versus
+54.25 ms). Cached location access avoids recounting long prefixes (memory/EOF:
+1.95 ms to 0.00044 ms in that fixture). Small timings and three workers are noisy;
+these measurements establish bounded reads and workload-specific gains.
+
+The driver, original class snapshot, raw observations and summary are under ignored
+`build/diagnostic-line-scanning/`. While that snapshot is retained, reproduce with:
+
+```sh
+php -d pcov.enabled=0 -d memory_limit=512M build/diagnostic-line-scanning/experiment.php
+php -d pcov.enabled=0 -d memory_limit=512M build/diagnostic-line-scanning/experiment.php --reads
+php -d pcov.enabled=0 build/diagnostic-line-scanning/summarize.php
+```
+
+Timing workers separately measure construction, first/cached location access,
+first/cached excerpt after location, and JSON after both caches are populated.
+The first-use observation follows source setup and is not cold disk I/O.
+Regression tests cover every byte position in mixed-newline/Unicode/binary
+fixtures, CRLF at chunk/page boundaries, read bounds, failed-read retry and
+closed snapshots. Any changed coordinates, excerpt bytes, source-lifetime
+behavior or unbounded early-position reads would reject this optimization.
+
 ### Automatic trivia syntax (2026-10-21)
 
 Eligible prepared sequence, repeat and separated-list implementations now retain
@@ -523,8 +590,8 @@ separate increment. Parser/byte-position counts alone do not justify those risks
   construction. Tree memory grows with matched nodes; the earlier 1 MiB example's 52 MiB peak
   demonstrates why this is not constant-memory streaming.
 - ASTs, arrays, JSON/XML, raw text and semantic values add output-dependent
-  retention. Diagnostic line starts are scanned lazily in bounded chunks, but
-  the index grows with line count; a requested long line/prefix can be large.
+  retention. Diagnostics scan their prefix and current line lazily, retaining
+  constant position metadata; a requested long line/prefix can still be large.
 - Results and spans retain their source and snapshot lifetime. Explicit close
   invalidates later data reads. See [File input](file-input.md) for ownership.
 - Runtime budgets count cooperative recognition work/depth, not wall-clock CPU,
