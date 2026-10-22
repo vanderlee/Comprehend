@@ -16,7 +16,6 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\SourceMode;
-use Vanderlee\Comprehend\Source\Utf8Source;
 
 /**
  * Recognizes one source unit included in or excluded from a supplied character set. Splits the
@@ -83,11 +82,14 @@ class Set extends Parser implements AnalyzableParser, ReusableSnapshot
         try {
             $key = $source->mode()->value . ':' . (int) $session->isCaseSensitive();
             if (!isset($this->memberships[$key])) {
-                $characters = $source->mode() === SourceMode::UTF8 ? mb_str_split(
-                    (new Utf8Source($this->sourceSet))->sliceBytes(0, strlen($this->sourceSet)),
-                    1,
-                    'UTF-8',
-                ) : str_split($this->sourceSet);
+                if ($source->mode() === SourceMode::UTF8) {
+                    if (!mb_check_encoding($this->sourceSet, 'UTF-8')) {
+                        throw new InvalidArgumentException('Source must contain valid UTF-8');
+                    }
+                    $characters = mb_str_split($this->sourceSet, 1, 'UTF-8');
+                } else {
+                    $characters = str_split($this->sourceSet);
+                }
                 $membership = [];
                 foreach ($characters as $character) {
                     $membership['unit:' . $session->handleCase($character)] = true;
@@ -101,7 +103,13 @@ class Set extends Parser implements AnalyzableParser, ReusableSnapshot
             $value = $session->handleCase($unit->rawText());
             $inside = isset($this->memberships[$key]['unit:' . $value]);
 
-            return $this->makeMatch($inside === $this->include, $source, $byteOffset, $unit->byteLength());
+            if ($this::class !== self::class) {
+                return $this->makeMatch($inside === $this->include, $source, $byteOffset, $unit->byteLength());
+            }
+
+            return $inside === $this->include
+                ? $this->successFromSpan($unit)
+                : $this->failure($source, $byteOffset);
         } finally {
             $this->popCaseSensitivityFromContext($session);
         }

@@ -91,6 +91,12 @@ lifetime policies follow the [file-input contract](file-input.md) for built-in
 seekable snapshots. The runnable [execution examples](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/execution.php) include a
 custom parser implementing this contract.
 
+Built-in single-unit terminals can reuse the immutable span returned by `readUnit()`
+for their successful match and CST node. Sources must not depend on a fresh span
+being requested after each read. Sharing a source span does not share match records,
+trees, semantic caches or commit state between recognitions. Terminal subclasses
+retain the existing `success()` and `makeMatch()` extension hooks.
+
 Custom recognizers with long loops should use session `readSourceUnit()` or
 `consumeWork()` to cooperate with optional ParseLimits. Parser entry/depth checks
 are automatic; arbitrary user PHP work cannot be preempted.

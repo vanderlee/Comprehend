@@ -15,7 +15,6 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\SourceMode;
-use Vanderlee\Comprehend\Source\Utf8Source;
 
 /**
  * Recognizes one source unit inside or outside an inclusive character range. Interprets
@@ -88,9 +87,13 @@ class Range extends Parser implements AnalyzableParser, ReusableSnapshot
             $value = $this->foldedOrdinal($unit->rawText(), $session);
             $inside = $first <= $value && ($last === null || $value <= $last);
 
-            return $inside === $this->in
-                ? $this->success($source, $byteOffset, $unit->byteLength())
-                : $this->failure($source, $byteOffset);
+            if ($inside !== $this->in) {
+                return $this->failure($source, $byteOffset);
+            }
+
+            return $this::class === self::class
+                ? $this->successFromSpan($unit)
+                : $this->success($source, $byteOffset, $unit->byteLength());
         } finally {
             $this->popCaseSensitivityFromContext($session);
         }
@@ -100,8 +103,9 @@ class Range extends Parser implements AnalyzableParser, ReusableSnapshot
     {
         $textMode = $context->source()->mode() === SourceMode::UTF8;
         if ($textMode) {
-            if ((new Utf8Source($character))->codePointLength() !== 1) {
-                throw new InvalidArgumentException('Text Range requires single code-point bounds');
+            // Bounds were constructed as single units, but may contain arbitrary byte literals.
+            if (!mb_check_encoding($character, 'UTF-8')) {
+                throw new InvalidArgumentException('Source must contain valid UTF-8');
             }
         } elseif (strlen($character) !== 1) {
             throw new InvalidArgumentException('Byte Range requires single-octet bounds');

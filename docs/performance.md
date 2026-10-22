@@ -41,6 +41,74 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Single-unit terminal allocations (2026-10-22)
+
+Exact built-in Char, Range, Set and Any terminals now reuse a successful
+`Source::readUnit()` span instead of constructing an equal match span. Both success
+factories use the same metadata, collection and effect binding code. Subclasses
+retain the existing `success()` and `makeMatch()` hooks. Char validates its literal
+encoding directly; construction already established its unit count. Range bounds
+and Set membership preparation likewise validate strings without temporary
+Utf8Source objects. Invalid literals still fail at recognition, including EOF.
+
+A local Windows/PHP 8.2.10/PCRE 10.40 comparison used complete saved original
+core/extension sources and the changed checkout. It isolates this change. Separate
+allocation traces covered copies of both trees; elapsed time and memory came from
+uninstrumented workers with PCOV disabled. Fourteen scenarios used five fresh workers
+per variant in alternating order, three warmups and 21 timed observations; separate
+memory workers used three observations. Grammar/source preparation, correctness
+checks, serialization, result release and explicit GC were outside recognition
+timers. Medians of worker medians for 1,024-unit repeats:
+
+| Scalar terminal/source | Recognition ms before / after | Source Span allocations before / after |
+|---|---:|---:|
+| Char, Unicode UTF-8 memory | 7.112 / 6.194 | 2,050 / 1,026 |
+| Char, ASCII UTF-8 memory, optimization disabled | 6.754 / 6.094 | 2,050 / 1,026 |
+| Char, byte memory, optimization disabled | 6.129 / 5.567 | 2,050 / 1,026 |
+| Range, Unicode UTF-8 memory | 7.010 / 6.790 | 2,050 / 1,026 |
+| Set, Unicode UTF-8 memory, optimization disabled | 6.593 / 6.260 | 2,050 / 1,026 |
+| Any, UTF-8 memory, optimization disabled | 5.481 / 5.190 | 2,050 / 1,026 |
+| Char, Unicode UTF-8 file | 10.115 / 9.574 | 2,050 / 1,026 |
+
+The Unicode Char fixture also removed 1,025 temporary Utf8Sources, including its
+EOF attempt. Warm Range/Set already cached their validation, so their corresponding
+source counts were zero in both recognition traces. Counts describe source `new`
+expressions, excluding PHP internals, arrays and closure creation. The resulting
+CST still has 1,025 nodes and retains 1,025 spans. Retained recognition memory
+remained 316,184 used bytes and the parse peak remained 535,448 bytes in the Char
+fixture: this removes short-lived objects, not the retained tree/execution graph.
+First/cached value allocation and semantic behavior are unchanged.
+
+The larger first-run application controls were noisy, so a separate comparison used
+11 workers per variant and 101 parses each. Unicode Char recognition took 7.429
+versus 6.624 ms (about 11% faster), with nonoverlapping worker-median ranges in that
+run. Nested application recognition took 4.395 versus 4.476 ms, the record took
+0.651 versus 0.645 ms, and an unoptimized Text repeat took 5.730 versus 5.818 ms.
+Those control ranges overlap; the added common binding call may impose a small
+cost on ordinary successes. No general application speedup is established. Already
+optimized ASCII/scanner repetitions keep their existing allocation counts and have
+little to gain from this scalar change. Preparation adds no caches or state fields,
+and recognition/tree-retention complexity is unchanged.
+
+Baseline/current workers agreed on CST/diagnostic hashes and all 21 application
+acceptance/domain oracles. A separate 8,968-case comparison matched byte/UTF-8
+sources, every tested byte position, include/exclude and case policies, invalid
+literals, both freeze modes, metadata, collections, values, assignments, explicit
+commit, AST/CST output, formatted diagnostics and exact work/depth failures.
+Regression tests also cover custom forwarding sources, subclass hooks and scope
+restoration on exceptions, page-crossing file units, closed snapshots, zero-width
+failures and independent recognitions sharing one immutable source span.
+
+The source snapshot, drivers and raw reports are under ignored
+`build/single-unit-allocations-20261022/`. While those artifacts remain:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File build/single-unit-allocations-20261022/run.ps1
+php build/single-unit-allocations-20261022/summarize.php
+powershell -NoProfile -ExecutionPolicy Bypass -File build/single-unit-allocations-20261022/run-controls.ps1
+php build/single-unit-allocations-20261022/summarize-controls.php
+```
+
 ### Nullability preparation (2026-10-21)
 
 Graph analysis now records lookup dependencies during each stable nullability

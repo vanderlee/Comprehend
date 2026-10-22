@@ -493,6 +493,17 @@ abstract class Parser implements SnapshotParticipant
             ? $childSpan
             : $source->span($offset, $offset + $length);
 
+        return $this->bindSuccess($success, $span);
+    }
+
+    /** @internal Exact built-in terminals can retain their already-read immutable unit span. */
+    protected function successFromSpan(Span $span): Success
+    {
+        return $this->bindSuccess(new Success($span->byteLength()), $span);
+    }
+
+    private function bindSuccess(Success $success, Span $span): Success
+    {
         $success->setSourceMetadata($span, null);
 
         if ($this->resultCallbacks !== []) {

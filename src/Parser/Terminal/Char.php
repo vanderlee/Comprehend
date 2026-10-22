@@ -15,7 +15,6 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\SourceMode;
-use Vanderlee\Comprehend\Source\Utf8Source;
 
 /**
  * Recognizes one specified source unit or its complement. Uses the source mode and scoped case
@@ -65,8 +64,9 @@ class Char extends Parser implements AnalyzableParser, ReusableSnapshot
     {
         $textMode = $session->source()->mode() === SourceMode::UTF8;
         if ($textMode) {
-            if ((new Utf8Source($this->character))->codePointLength() !== 1) {
-                throw new InvalidArgumentException('Text Char requires one UTF-8 code point');
+            // Construction already checked unit count; byte literals may still be invalid UTF-8.
+            if (!mb_check_encoding($this->character, 'UTF-8')) {
+                throw new InvalidArgumentException('Source must contain valid UTF-8');
             }
         } elseif (strlen($this->character) !== 1) {
             throw new InvalidArgumentException('Byte Char requires one octet');
@@ -79,7 +79,13 @@ class Char extends Parser implements AnalyzableParser, ReusableSnapshot
         try {
             $equal = $session->handleCase($unit->rawText()) === $session->handleCase($this->character);
 
-            return $this->makeMatch($equal === $this->include, $source, $byteOffset, $unit->byteLength());
+            if ($this::class !== self::class) {
+                return $this->makeMatch($equal === $this->include, $source, $byteOffset, $unit->byteLength());
+            }
+
+            return $equal === $this->include
+                ? $this->successFromSpan($unit)
+                : $this->failure($source, $byteOffset);
         } finally {
             $this->popCaseSensitivityFromContext($session);
         }

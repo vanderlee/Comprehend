@@ -40,8 +40,12 @@ class Any extends Parser implements AnalyzableParser, ReusableSnapshot
     {
         $unit = $session->readSourceUnit($byteOffset);
 
-        return $unit !== null
-            ? $this->success($source, $byteOffset, $unit->byteLength())
-            : $this->failure($source, $byteOffset);
+        if ($unit === null) {
+            return $this->failure($source, $byteOffset);
+        }
+
+        return $this::class === self::class
+            ? $this->successFromSpan($unit)
+            : $this->success($source, $byteOffset, $unit->byteLength());
     }
 }
