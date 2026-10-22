@@ -24,6 +24,8 @@ class Trivia extends OrdinaryTrivia
     private ?ReadRun $scanner = null;
     private bool $repeated = false;
     private bool $nullable = false;
+    private string $wrapperKind = OrdinaryTrivia::class;
+    private string $operandKind = '';
 
     public static function from(OrdinaryTrivia $original): self
     {
@@ -38,6 +40,8 @@ class Trivia extends OrdinaryTrivia
         $this->scanner = null;
         $this->repeated = false;
         $this->nullable = false;
+        $this->wrapperKind = OrdinaryTrivia::class;
+        $this->operandKind = '';
         if ($this->parser->hasCompositionMetadata()) {
             return;
         }
@@ -52,6 +56,10 @@ class Trivia extends OrdinaryTrivia
             $this->repeated = $this->scanner !== null;
         }
         $this->nullable = $this->scanner?->analysisNullability(new NullabilityLookup([])) === true;
+        if ($this->nullable && $this::class === self::class) {
+            $this->wrapperKind = $this->concreteKind();
+            $this->operandKind = $this->parser->concreteKind();
+        }
     }
 
     protected function copyDependencies(GraphSnapshot $context): void
@@ -60,6 +68,8 @@ class Trivia extends OrdinaryTrivia
         $this->scanner = null;
         $this->repeated = false;
         $this->nullable = false;
+        $this->wrapperKind = OrdinaryTrivia::class;
+        $this->operandKind = '';
     }
 
     public function tryConcreteSyntax(Source $source, int $byteOffset, ParseSession $session): ?ConcreteNode
@@ -89,9 +99,9 @@ class Trivia extends OrdinaryTrivia
         $span = $source->span($byteOffset, $byteOffset + $length);
 
         return new ConcreteNode(
-            $this->concreteKind(),
+            $this->wrapperKind,
             $span,
-            [new ConcreteNode($this->parser->concreteKind(), $span, $children)],
+            [new ConcreteNode($this->operandKind, $span, $children)],
             true,
         );
     }

@@ -43,8 +43,8 @@ Distinguish measured findings from hypotheses. Do not change production code.
 
 ### 4. Optimize spacing and list loops
 
-[ ] Fuse eligible composed scanners while retaining their existing CST.
-[ ] Reduce automatic-spacing dispatch inside prepared loops.
+[x] Fuse eligible composed scanners while retaining their existing CST.
+[x] Reduce automatic-spacing dispatch inside prepared loops.
 [ ] Reduce SeparatedList staging-array traffic.
 
 ### 5. Reduce repeated recognition and dispatch

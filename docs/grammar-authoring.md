@@ -408,6 +408,10 @@ also continues to return independent matches. This specialization shares the
 prepared operand scan and restores the lexeme scope on exceptions. It does not
 evaluate semantic values or effects, and finite work/depth limits retain checked
 delegation and the original budget positions and paths.
+The syntax-spacing session path shares its cached wrapper with ordinary spacing
+and avoids forwarding through the match-returning helper. Eligible prepared
+wrappers retain source-free kind names once, avoiding repeated lookups for each
+new node. Custom trivia hooks still run under the restored lexeme scope contract.
 
 Plain ASCII `Text` separators in built-in separated lists can construct their
 CST nodes directly too. The existing list loop still owns bounds, leading/trailing

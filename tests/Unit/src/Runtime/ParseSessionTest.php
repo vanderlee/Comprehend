@@ -28,6 +28,52 @@ use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 uses(TestCase::class);
 
+test('syntax spacing shares custom wrappers with ordinary spacing and restores throwing hooks', function (): void {
+    $trivia = new class (' ') extends Text {
+        public int $wrappers = 0;
+
+        public function trivia(): Trivia
+        {
+            ++$this->wrappers;
+
+            return new class ($this) extends Trivia {
+                public function tryConcreteSyntax(Source $source, int $byteOffset, ParseSession $session): ?ConcreteNode
+                {
+                    if (!$session->isLexeme()) {
+                        throw new LogicException('Automatic trivia must suppress recursive spacing');
+                    }
+                    if ($byteOffset === 0) {
+                        throw new RuntimeException('Trivia probe failed');
+                    }
+
+                    return null;
+                }
+            };
+        }
+    };
+    $source = new ByteSource('  ');
+    $session = new ParseSession($source, $trivia);
+    $syntax = null;
+    try {
+        $session->skipSpacingSyntax($source, 0, $syntax);
+        $this->fail('The custom trivia hook must run');
+    } catch (RuntimeException $error) {
+        $this->assertSame('Trivia probe failed', $error->getMessage());
+    }
+    $this->assertNull($syntax);
+    $this->assertFalse($session->isLexeme());
+    $this->assertSame(1, $session->skipSpacing($source, 0, $first));
+    $session->pushSpacer(null);
+    $this->assertSame(0, $session->skipSpacingSyntax($source, 1, $syntax));
+    $this->assertNull($syntax);
+    $session->popSpacer();
+    $this->assertSame(1, $session->skipSpacingSyntax($source, 1, $second));
+    $this->assertInstanceOf(Success::class, $second);
+    $this->assertNotSame($first, $second);
+    $this->assertSame(1, $trivia->wrappers);
+    $this->assertFalse($session->isLexeme());
+});
+
 test('prepared spacing syntax stays source bound while skipSpacing retains independent records', function (): void {
     $grammar = (new ReadWhileSet(' '))->freeze();
     $spacing = (new ReflectionProperty(FrozenGrammar::class, 'root'))->getValue($grammar);

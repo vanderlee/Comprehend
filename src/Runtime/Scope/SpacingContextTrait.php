@@ -67,11 +67,19 @@ trait SpacingContextTrait
             return 0;
         }
 
-        $attempt = $this->recognizeTrivia($trivia, $source, $offset, syntaxOnly: true);
-        if ($attempt instanceof ConcreteNode) {
-            $syntax = $attempt;
-
-            return $attempt->span->byteLength();
+        // Keep the prepared loop's hot path here rather than forwarding through
+        // the match-returning path. Both paths share the same cached wrapper.
+        $this->pushLexeme();
+        try {
+            $wrappers = $this->triviaParsers ??= new WeakMap();
+            $parser = $wrappers[$trivia] ??= $trivia->trivia();
+            $syntax = $parser->tryConcreteSyntax($source, $offset, $this);
+            if ($syntax !== null) {
+                return $syntax->span->end - $syntax->span->start;
+            }
+            $attempt = $parser->recognizeInSession($source, $offset, $this);
+        } finally {
+            $this->popLexeme();
         }
         if (!$attempt instanceof Success) {
             return false;
@@ -85,18 +93,13 @@ trait SpacingContextTrait
         Parser $trivia,
         Source $source,
         int $byteOffset,
-        bool $syntaxOnly = false,
-    ): AbstractMatch|ConcreteNode {
+    ): AbstractMatch {
         // Trivia shares case, choice and diagnostics with the owning session,
         // but cannot recursively insert itself inside its own grammar.
         $this->pushLexeme();
         try {
             $wrappers = $this->triviaParsers ??= new WeakMap();
             $parser = $wrappers[$trivia] ??= $trivia->trivia();
-
-            if ($syntaxOnly && ($syntax = $parser->tryConcreteSyntax($source, $byteOffset, $this)) !== null) {
-                return $syntax;
-            }
 
             return $parser->recognizeInSession($source, $byteOffset, $this);
         } finally {

@@ -41,6 +41,55 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Automatic-spacing dispatch (2026-10-22)
+
+`ParseSession::skipSpacingSyntax()` now owns its syntax-returning path rather
+than forwarding through `recognizeTrivia()`. It still shares the per-session
+wrapper cache with ordinary `skipSpacing()`, suppresses recursive spacing and
+restores that scope in `finally`. Prepared nullable trivia caches the two static
+CST kind names once. No scanner, trivia node, child match or diagnostic is removed.
+
+A fresh trace of core and extension copies on the 128-ID nested application
+fixture with scanner spacing counted 22,816 source method calls before and
+21,774 after, 1,042 fewer. `recognizeTrivia()` calls fell from 272 to 11,
+`concreteKind()` calls from 827 to 307, and the 261 syntax-only results no longer
+call `Span::byteLength()`. Parser entries, work, source allocation counts and
+the retained 820-node CST hash agree. Instrumented times are not performance data.
+
+Five fresh Windows/PHP 8.2.10 workers per variant used alternating order, three
+warmups and 31 observations each, with PCOV disabled. Recognition/CST median of
+worker medians was 5.134 versus 4.765 ms for scanner spacing and 5.279 versus
+5.066 ms for repeated-character spacing. Worker-median ranges overlap in both
+cases; these observations establish no consistent throughput improvement.
+Preparation, source setup, values, correctness checks, serialization, result
+release and collection are outside timing. Host activity was uncontrolled.
+
+Retained recognition memory remains 388,600 bytes for scanner spacing and
+389,608 for repeated-character spacing. The two cached kind references increase
+each prepared wrapper's size; the observed incremental recognition peak rose
+64 used bytes in each fixture. Automatic wrappers live with the session, while
+explicit prepared Trivia can retain those fields with the grammar. There is no
+new cache, preparation pass or asymptotic change. First wrapper preparation does
+two extra kind lookups, replacing two per successful syntax-only attempt.
+
+Original files, full-source trace reports and timing workers are retained under
+ignored `build/spacing-dispatch/`, using the independent-oracle research driver
+under `build/spacing-research/`. While retained, run each in fresh processes and
+alternate order:
+
+```sh
+php -d pcov.enabled=0 build/spacing-dispatch/before.php --spacing=scan
+php -d pcov.enabled=0 build/spacing-research/experiment.php --spacing=scan
+```
+
+Use `--spacing=set` for the repeated-character control. The existing trivia
+regressions compare prepared/plain sequence, Repeat and SeparatedList behavior,
+including byte/UTF-8 sources, rollback, boundaries, effects and exhausted limits.
+A session regression covers custom syntax hooks throwing and falling back to
+ordinary matches while sharing one cached wrapper. Reject this change if trees,
+ordered diagnostics, work, scope restoration, effects or custom hooks differ,
+or stable common-workload regressions outweigh the dispatch reduction.
+
 ### Composed scanner dispatch (2026-10-22)
 
 Prepared sequences batch adjacent metadata-free `ReadWhileSet` and
