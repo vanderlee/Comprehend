@@ -49,7 +49,14 @@ class Repeat extends OrdinaryRepeat
 
     protected function attemptChild(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
-        return GraphOptimizer::attempt($this->lexical, $this->getParser(), $source, $offset, $session);
+        return GraphOptimizer::attempt(
+            $this->lexical,
+            $this->getParser(),
+            $source,
+            $offset,
+            $session,
+            retainFailureDiagnostic: static::class !== self::class,
+        );
     }
 
     protected function recognizeRepetition(Source $source, int $byteOffset, ParseSession $session): AbstractMatch

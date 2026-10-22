@@ -48,6 +48,13 @@ class Choice extends OrdinaryChoice
         int $offset,
         ParseSession $session,
     ): AbstractMatch {
-        return GraphOptimizer::attempt($this->lexical[$index] ?? null, $parser, $source, $offset, $session);
+        return GraphOptimizer::attempt(
+            $this->lexical[$index] ?? null,
+            $parser,
+            $source,
+            $offset,
+            $session,
+            retainFailureDiagnostic: static::class !== self::class,
+        );
     }
 }

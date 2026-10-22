@@ -41,6 +41,99 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Discarded terminal failure snapshots (2026-10-22)
+
+The shared checked recognition path now permits exact built-in Choice, Repeat
+and SeparatedList consumers to omit Diagnostic snapshots on terminal failures
+whose records they discard without inspecting. Ordinary recognition still records
+every failure, expectation and rule path. The owning combinator materializes the
+observable diagnostic, including deferred list failures and relabeling. Successful
+child records and guard rejections retain their snapshots. Custom terminals,
+combinator subclasses and other consumers retain eager metadata by default.
+The eligible ordinary terminals are exact Any, Char, Range, Regex, Set and Text
+classes; overriding their failure hooks does not opt a subclass in.
+
+Optimizer Choice and Repeat apply the same rule to lexical-table replay. First
+observations still materialize diagnostics needed to prepare relative recipes.
+No new recognition entry point, lazy public Diagnostic proxy, persistent history,
+session cache or grammar preparation pass is introduced. Byte progress remains
+available without constructing an active/deferred diagnostic union. The internal
+delegation option is local to one attempt, so it requires no mutable scope to
+restore after exceptions. Deferred-list accumulation and checkpoint representation
+are unchanged.
+
+A fresh Windows/PHP 8.2.10 comparison instrumented source copies separately from
+time and memory workers, with PCOV disabled. A fixture tries 512 distinct failing
+Text alternatives before accepting `az`; repeat and list fixtures accept eight
+items. Warmed frozen optimization produced these Diagnostic construction counts:
+
+| Successful fixture | Before | After |
+|---|---:|---:|
+| Choice | 512 | 1 |
+| Repeat of Choice | 10 | 9 |
+| SeparatedList of Choice | 4,098 | 10 |
+
+The already optimized repeat has little additional opportunity. The nested
+application-value fixture still constructs four Failures and four Diagnostics,
+retains 822 CST nodes and uses 389,704 bytes after recognition. There is no
+application allocation reduction in that control.
+
+Separate warmed memory workers measured the 512-alternative choice's PHP used
+recognition peak at 73,888 versus 61,816 bytes above the prepared baseline.
+Retained result memory was unchanged at 14,080 bytes. The 128-alternative list
+fixture's peak was 56,552 versus 54,320 bytes, with unchanged retained memory of
+37,480 bytes. These are used bytes, not RSS, process allocation peaks or cumulative
+allocation. Temporary object elimination does not remove retained CSTs or selected
+semantic state.
+
+Timing used five fresh workers per variant, alternating order, three warmups and
+101 observations per worker. One run's median of worker medians improved the
+512-alternative choice from 2.952 to 2.209 ms; a follow-up measured 3.188 versus
+3.252 ms with widely overlapping worker ranges. The nested control measured
+5.317 versus 5.344 ms initially, and 7.521 versus 5.208 ms in the follow-up, again
+with overlapping ranges. Tiny literal/sequence controls varied too. These noisy
+runs establish no consistent throughput improvement or regression. Do not infer
+application speedups from allocation counts or instrumented timings.
+
+There is no additional retained grammar or session data structure. Preparation
+complexity is unchanged; a cold preparation-time difference was not established.
+Recognition still visits the same parsers and records the same failures. Avoided
+snapshots reduce temporary allocation and some copy-on-write pressure, while
+ordered expectation/path accumulation and observable array materialization remain.
+Selected successful children can still retain different historical snapshots.
+
+A 52,992-case baseline/current comparison matched acceptance, byte consumption,
+ordered diagnostics with formatted locations/excerpts, CST/AST, cached values,
+explicit effects and exact work/depth exception offsets and paths. Cases include
+byte/UTF-8 sources, nonzero entry positions, all choice policies, both freeze modes,
+labels, malformed nested lists and optional/lookahead rollback. Regression tests
+cover successful/guard-rejected operands, retained custom terminal failures,
+combinator subclass hooks through cold and warmed lexical tables, immutable
+observations and deferred farthest offsets. The full runtime suite also passes.
+Reject this optimization if any observer loses metadata, a retained snapshot
+changes, failure ordering or rollback differs, effects execute speculatively,
+limit accounting changes, or reproducible common-workload regressions outweigh
+the temporary allocation benefit.
+
+The original sources, experiment drivers and raw reports are under ignored
+`build/deferred-attempts/`. While retained, reproduce baseline and current in fresh
+processes, alternating their order:
+
+```powershell
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-attempts/measure.php --baseline
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-attempts/measure.php
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-attempts/measure.php --memory
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-attempts/experiment.php --trace --frozen-opt
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-attempts/differential.php --baseline
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-attempts/differential.php
+```
+
+Add `--baseline` to trace or memory commands for the saved source snapshot.
+`profile.php` wraps the maintained extraction profiler with matching extension
+sources; baseline workers additionally pass
+`--source-dir=build/deferred-attempts/baseline/src`. Reports under `idle/` retain
+the follow-up timings. Neither run controls unrelated host activity.
+
 ### Internal effect lifetimes (2026-10-22)
 
 `Parser::bindCommitEffects()` now stores a `CommitEffects` registration snapshot

@@ -41,23 +41,11 @@ Return:
 
 Distinguish measured findings from hypotheses. Do not change production code.
 
-
-
-### 2:
-
-[x] Delay mapped SemanticProjection allocation - Slightly better memory, worse performance
-[x] Remove redundant single-unit terminal allocations
-[ ] Break internal effect-closure self-cycles
-
 ### 3. Make speculative failures cheaper
 
-Investigate failure and diagnostic costs in Choice, Repeat, SeparatedList
-and ParseSession. Successful parses may still create failed attempts.
-
-Quantify checkpoint copying, restoration, diagnostic materialization and
-expectation/path merging. Look beyond the existing membership indexes.
-Explore whether immutable diagnostic snapshots can be delayed or shared
-while preserving exact offsets, ordering, relabeling and deferred failures.
+[ ] Delay snapshots inside provably unobserved built-in attempts.
+[ ] Delay and share deferred-list unions
+[ ] Reuse SeparatedList’s identical separator checkpoint
 
 ### 4. Optimize spacing and list loops
 

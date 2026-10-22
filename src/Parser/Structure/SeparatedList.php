@@ -245,7 +245,12 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
                 $session,
                 $spacing instanceof Success ? $spacing : null,
             )
-            : $parser->recognizeInSession($source, $cursor + $skip, $session);
+            : $parser->recognizeInSession(
+                $source,
+                $cursor + $skip,
+                $session,
+                retainFailureDiagnostic: static::class !== self::class,
+            );
         if ($match instanceof ConcreteNode) {
             // Direct separators are stateless, including their preceding automatic trivia.
             if ($spacing !== null) {
@@ -280,6 +285,11 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
         ParseSession $session,
         ?Success $spacing,
     ): AbstractMatch|ConcreteNode {
-        return $parser->recognizeInSession($source, $offset, $session);
+        return $parser->recognizeInSession(
+            $source,
+            $offset,
+            $session,
+            retainFailureDiagnostic: static::class !== self::class,
+        );
     }
 }

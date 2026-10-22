@@ -395,8 +395,13 @@ final class ParseSession
         }
     }
 
-    public function farthestFailure(): ?int
+    /** Read observed progress without constructing an active/deferred diagnostic union. */
+    public function farthestFailure(bool $includeDeferredLists = false): ?int
     {
+        if ($includeDeferredLists && $this->deferredListFailure !== null) {
+            return max($this->farthestFailure ?? 0, $this->deferredListFailure->byteOffset);
+        }
+
         return $this->farthestFailure;
     }
 

@@ -36,7 +36,12 @@ class Choice extends IterableParser implements AnalyzableParser, ReusableSnapsho
         int $offset,
         ParseSession $session,
     ): AbstractMatch {
-        return $parser->recognizeInSession($source, $offset, $session);
+        return $parser->recognizeInSession(
+            $source,
+            $offset,
+            $session,
+            retainFailureDiagnostic: static::class !== self::class,
+        );
     }
 
     public function __construct(Parser ...$arguments)

@@ -17,6 +17,12 @@ use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\CommitEffects;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
+use Vanderlee\Comprehend\Parser\Terminal\Any;
+use Vanderlee\Comprehend\Parser\Terminal\Char;
+use Vanderlee\Comprehend\Parser\Terminal\Range;
+use Vanderlee\Comprehend\Parser\Terminal\Regex;
+use Vanderlee\Comprehend\Parser\Terminal\Set;
+use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\Diagnostic;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
@@ -298,13 +304,21 @@ abstract class Parser implements SnapshotParticipant
         );
     }
 
-    /** @internal The only delegation path; custom parsers implement recognize(). */
-    final public function recognizeInSession(Source $source, int $offset, ParseSession $session): AbstractMatch
-    {
+    /**
+     * @internal The only delegation path; custom parsers implement recognize().
+     * Built-in consumers may omit diagnostics on terminal failures they discard without inspecting.
+     * Custom parsers and successful records always retain their observable diagnostic snapshots.
+     */
+    final public function recognizeInSession(
+        Source $source,
+        int $offset,
+        ParseSession $session,
+        bool $retainFailureDiagnostic = true,
+    ): AbstractMatch {
         $session->enterParser($this, $offset);
 
         try {
-            return $this->recognizeChecked($source, $offset, $session);
+            return $this->recognizeChecked($source, $offset, $session, $retainFailureDiagnostic);
         } finally {
             $session->leaveParser($this, $offset);
         }
@@ -316,8 +330,12 @@ abstract class Parser implements SnapshotParticipant
      * @param ParseSession $session
      * @return AbstractMatch
      */
-    private function recognizeChecked(Source $source, int $offset, ParseSession $session): AbstractMatch
-    {
+    private function recognizeChecked(
+        Source $source,
+        int $offset,
+        ParseSession $session,
+        bool $retainFailureDiagnostic,
+    ): AbstractMatch {
         $this->assertRecognitionPosition($source, $offset, $session);
 
         $label = $this->expectationLabel;
@@ -358,14 +376,20 @@ abstract class Parser implements SnapshotParticipant
 
         $span = $match->span;
 
-        $diagnostic = $session->diagnostic(!$match->accepted);
+        // Only these exact terminals create private failures with no overridable record hooks.
+        // Keep accumulating observations; their owning combinator materializes the final snapshot.
+        $omitDiagnostic = !$match->accepted && !$retainFailureDiagnostic && match ($this::class) {
+            Any::class, Char::class, Range::class, Regex::class, Set::class, Text::class => true,
+            default => false,
+        };
+        $diagnostic = $omitDiagnostic ? null : $session->diagnostic(!$match->accepted);
 
         $match->setSourceMetadata(
             $span !== null
             && $span->end === $end
                 ? $span
                 : $source->span($offset, $end),
-            $diagnostic?->byteOffset,
+            $omitDiagnostic ? $session->farthestFailure(true) : $diagnostic?->byteOffset,
             $diagnostic,
         );
 
@@ -385,8 +409,12 @@ abstract class Parser implements SnapshotParticipant
 
         try {
             if ($session->relabelFailure($offset, $label, $labelCheckpoint)) {
-                $diagnostic = $session->diagnostic(true);
-                $match->setSourceMetadata($source->span($offset, $offset), $diagnostic?->byteOffset, $diagnostic);
+                $diagnostic = $omitDiagnostic ? null : $session->diagnostic(true);
+                $match->setSourceMetadata(
+                    $source->span($offset, $offset),
+                    $omitDiagnostic ? $session->farthestFailure(true) : $diagnostic?->byteOffset,
+                    $diagnostic,
+                );
             }
         } finally {
             $session->popRule();

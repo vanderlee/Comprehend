@@ -175,6 +175,21 @@ test('unchanged diagnostic snapshots are shared without mutating retained failur
     $this->assertSame($second, $session->diagnostic());
 });
 
+test('observed failure offsets include deferred lists without materializing their union', function (): void {
+    $session = new ParseSession(new ByteSource('abc'));
+    $checkpoint = $session->diagnosticState();
+    $session->recordFailure(2, 'item');
+    $session->deferListDiagnostics($checkpoint);
+    $session->recordFailure(1, 'close');
+    $this->assertSame(1, $session->farthestFailure());
+    $this->assertSame(2, $session->farthestFailure(true));
+    $this->assertSame(2, $session->diagnostic(true)->byteOffset);
+    $session->recordFailure(3, 'farther');
+    $this->assertSame(3, $session->farthestFailure(true));
+    $session->restoreDiagnostics($checkpoint);
+    $this->assertNull($session->farthestFailure(true));
+});
+
 test('restored diagnostic revisions cannot reuse a different speculative failure', function (): void {
     $session = new ParseSession(new ByteSource('abc'));
     $session->recordFailure(0, 'base');

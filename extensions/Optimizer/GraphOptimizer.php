@@ -126,10 +126,11 @@ final class GraphOptimizer implements GraphOptimization, SyntaxExtension
         Source $source,
         int $offset,
         ParseSession $session,
+        bool $retainFailureDiagnostic = true,
     ): AbstractMatch {
         return $table !== null && !$session->hasRecognitionLimits() && !$session->hasActiveSpacing()
-            ? $table->attempt($source, $offset, $session)
-            : $parser->recognizeInSession($source, $offset, $session);
+            ? $table->attempt($source, $offset, $session, $retainFailureDiagnostic)
+            : $parser->recognizeInSession($source, $offset, $session, $retainFailureDiagnostic);
     }
 
     public static function scanner(Parser $parser, int $min, ?int $max): ?ReadRun

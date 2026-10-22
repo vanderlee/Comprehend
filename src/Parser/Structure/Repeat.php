@@ -138,7 +138,12 @@ class Repeat extends Parser implements AnalyzableParser, ReusableSnapshot
 
     protected function attemptChild(Source $source, int $offset, ParseSession $session): AbstractMatch
     {
-        return $this->parser->recognizeInSession($source, $offset, $session);
+        return $this->parser->recognizeInSession(
+            $source,
+            $offset,
+            $session,
+            retainFailureDiagnostic: static::class !== self::class,
+        );
     }
 
     protected function recognizeRepetition(Source $source, int $byteOffset, ParseSession $session): AbstractMatch

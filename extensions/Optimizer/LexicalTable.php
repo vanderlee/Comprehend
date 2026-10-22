@@ -100,11 +100,15 @@ final class LexicalTable
     }
 
     /** @internal The owning combinator establishes its spacing and budget scopes first. */
-    public function attempt(Source $source, int $offset, ParseSession $session): AbstractMatch
-    {
+    public function attempt(
+        Source $source,
+        int $offset,
+        ParseSession $session,
+        bool $retainFailureDiagnostic = true,
+    ): AbstractMatch {
         $prefix = $source->sliceBytes($offset, min($source->byteLength(), $offset + $this->lookahead));
         if (preg_match('/[\x80-\xff]/', $prefix) !== 0) {
-            return $this->parser->recognizeInSession($source, $offset, $session);
+            return $this->parser->recognizeInSession($source, $offset, $session, $retainFailureDiagnostic);
         }
         $key = $source->mode()->value . ':' . (int) $session->isCaseSensitive()
             . ':' . $session->getPreference()->value . ':' . $prefix;
@@ -114,10 +118,11 @@ final class LexicalTable
             $this->replayFailure($session, $offset, $path, $failure, $expected, $paths);
             $node = $tree?->instantiate($source, $offset);
             $match = $node === null ? new Failure($length) : new Success($length);
-            $diagnostic = $session->diagnostic($node === null);
+            $omitDiagnostic = $node === null && !$retainFailureDiagnostic;
+            $diagnostic = $omitDiagnostic ? null : $session->diagnostic($node === null);
             $match->setSourceMetadata(
                 $node->span ?? $source->span($offset, $offset),
-                $diagnostic?->byteOffset,
+                $omitDiagnostic ? $session->farthestFailure(true) : $diagnostic?->byteOffset,
                 $diagnostic,
             );
             if ($node !== null) {
@@ -127,7 +132,7 @@ final class LexicalTable
             return $match;
         }
         if (count($this->entries) >= self::MAX_ENTRIES) {
-            return $this->parser->recognizeInSession($source, $offset, $session);
+            return $this->parser->recognizeInSession($source, $offset, $session, $retainFailureDiagnostic);
         }
 
         $diagnostics = $session->diagnosticState();
@@ -146,9 +151,14 @@ final class LexicalTable
             $observed->rulePaths ?? [],
         );
         $this->replayFailure($session, $offset, $path, $failure, $expected, $paths);
-        $diagnostic = $session->diagnostic(!$match->accepted);
+        $omitDiagnostic = !$match->accepted && !$retainFailureDiagnostic;
+        $diagnostic = $omitDiagnostic ? null : $session->diagnostic(!$match->accepted);
         if ($match->span !== null) {
-            $match->setSourceMetadata($match->span, $diagnostic?->byteOffset, $diagnostic);
+            $match->setSourceMetadata(
+                $match->span,
+                $omitDiagnostic ? $session->farthestFailure(true) : $diagnostic?->byteOffset,
+                $diagnostic,
+            );
         }
         $this->entries[$key] = [$match->length,
             $match->node === null ? null : ConcreteTemplate::from($match->node, $offset), $failure, $expected, $paths];
