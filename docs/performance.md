@@ -41,6 +41,127 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Deferred-list union sharing (2026-10-22)
+
+ParseSession now retains tied, unobserved deferred-list observations as shared
+`Runtime\DeferredDiagnostic` unions. Their ordered operands are logically
+immutable. Reporting flattens shared branches once, caches a normal Diagnostic
+with fixed arrays, and releases the materialized node's operand references.
+Already observed active/deferred combinations reuse their cached output and keep
+eager merging; rebuilding a lazy history on that path would add unnecessary work.
+Farther observations still win without flattening nearer histories.
+
+Flattening preserves left-before-right ordering, including both nested deferral
+boundaries: the checkpoint's deferred details precede newly deferred details,
+while ordinary details precede deferred details when exposed. Numeric-looking
+path components retain the original pairwise `SORT_REGULAR` merges. Numeric and
+lexical string comparisons can interact, so an arbitrary flattened union must
+not silently substitute strict path equality or regroup those operations.
+Identical normalized observations share their existing snapshot, and pending
+chain depth is capped at 128 by periodic materialization. Explicit checkpoints
+can still retain older histories; this is not constant-memory parsing.
+
+Checkpoint arrays retain five fields, with the deferred field typed as
+`Diagnostic|DeferredDiagnostic|null`. Save and restore them as opaque snapshots;
+`diagnostic()` and `diagnostic(true)` remain the observation APIs. Public result
+Diagnostics retain their existing class, ordered readonly arrays and byte offsets.
+Work/depth accounting, parser delegation, selected trees, semantic caches and
+explicit effects are unchanged. Cache keys publish only after materialization
+succeeds, allowing a failed source check to retry without returning stale output.
+
+A Windows/PHP 8.2.10 comparison used five fresh workers per variant in alternating
+order, one warmup and 11 observations per synthetic timing case, with PCOV disabled.
+Instrumented workers counted allocations and candidate entries separately; their
+times are not performance evidence. These medians are medians of worker medians:
+
+| 512 tied deferred probes | Before ms | After ms |
+|---|---:|---:|
+| Accumulate without exposing the final union | 140.701 | 4.726 |
+| Accumulate and expose the final union | 141.680 | 5.128 |
+| Repeated identical singleton details | 1.658 | 1.441 |
+
+The distinct probes have different expectation labels and different nonnumeric
+paths at one byte offset. Before, both distinct cases constructed 1,534 Diagnostics
+and processed 393,470 expectation entries plus 393,470 path entries through tied
+unions. After, pending accumulation constructed 526 Diagnostics and 1,022 small
+union nodes, processing 5,474 entries of each kind during 14 compactions. Requesting
+the final union raised that to 527 Diagnostics, 5,986 entries of each kind and
+15 materializations. These are logical input slots, not allocated bytes or unique
+output entries. Total object count does not decrease: cheap union nodes replace
+much more expensive repeated array merging. Identical singleton probes create no
+pending nodes. Numeric-path probes retain their eager operations; the 128-probe
+numeric control measured 10.044 versus 10.172 ms, showing a small overhead.
+
+The benefit depends on whether intermediate unions are observable. A longest
+Choice over 512 nullable SeparatedLists, followed by a successful literal, creates
+tied termination failures while succeeding. With `FreezeFlags::NONE`, its
+Diagnostic count fell from 1,534 to 526 and expectation input slots from 393,470
+to 5,474. Three fresh timing workers per variant measured 16.367 versus 12.068 ms;
+a trailing-input failure variant measured 17.091 versus 12.189 ms. The worker
+ranges did not overlap in these synthetic cases. With default optimization, failed item metadata
+already exposes each union: the cache-reuse path retains the original 1,534
+Diagnostics and input-slot counts. A focused five-worker comparison with 51
+observations per worker measured 17.153 versus 17.289 ms for success, with
+overlapping ranges. Do not infer the isolated
+session fixture's roughly 30-fold gain for ordinary application parsing.
+
+The nested application control used five fresh workers and 101 observations each.
+Recognition medians were 4.464 versus 4.457 ms with overlapping worker ranges;
+retained recognition memory remained 389,704 bytes and the CST hash was unchanged.
+No application throughput improvement or consistent regression is established.
+
+Separate memory workers measured PHP used-byte deltas above each iteration's
+pre-call baseline, with the source and grammar already prepared.
+Keeping the 512-probe session pending retained 219,592 versus 220,376 bytes; peak
+usage rose from 289,336 to 348,312 bytes. Exposing the final Diagnostic retained
+168,208 bytes in both versions, but still incurred the higher peak. Shared nodes,
+traversal bookkeeping and materialization chunks trade temporary memory for less
+repeated union work. The default-optimized successful grammar retained 1,144 bytes
+and peaked at 425,160 bytes in both versions. These are neither RSS nor cumulative
+allocation measurements.
+
+There is no new freeze pass or retained grammar cache; first use can autoload the
+new runtime class. Cold preparation/first-parse differences were not established.
+Flattening visits shared branches once per materialization, but candidate arrays
+still need merging/deduplication. Periodic compaction and repeatedly observed
+growing prefixes can still produce quadratic total traffic. Numeric paths keep
+the original complexity. No general linear-time or bounded-total-memory guarantee
+is introduced.
+
+Baseline/current fingerprints matched 52,992 parser cases and 14,306 randomized
+session observations, including checkpoint forks, restore/relabel/defer ordering,
+numeric and binary paths, byte/UTF-8 sources, both freeze modes, all choice policies,
+values, effects and work/depth exceptions. Focused tests cover shared branches,
+operand reuse, immediate operand release, duplicate/long histories, numeric
+comparison boundaries and retry after failed materialization. Reject the change
+if ordered payloads, rollback, retained snapshots or limit outcomes differ; if
+pending memory exceeds the application's budget; or if stable common-workload
+regressions outweigh the gains on deferred-heavy inputs.
+
+Saved original core/extension sources, drivers and raw reports are under ignored
+`build/deferred-unions/`. While retained, run each variant in fresh processes,
+alternating order; add `--baseline` to select the saved original sources:
+
+```powershell
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-unions/measure.php --iterations=11
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-unions/measure.php --trace
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-unions/measure.php --memory
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-unions/measure.php --no-optimize --case=grammar --iterations=11
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-unions/session-differential.php
+php -d pcov.enabled=0 -d memory_limit=512M build/deferred-unions/differential.php
+php build/deferred-unions/summarize-published.php
+```
+
+Correctness checks and serialization are outside synthetic timers and memory
+observations. Grammar preparation is separate; sessions/parse results are returned
+from timed calls, and result release occurs afterward. The pending-session memory
+case deliberately retains that session before observing its final union. Instrumented
+counts stop before correctness inspection. `profile.php` wraps the maintained
+extraction profiler with matching extension sources; baseline runs also pass
+`--source-dir=build/deferred-unions/baseline/src`. Final timing artifacts are
+`summary-published.jsonl`, `summary-control.json` and `summary-none.json`;
+earlier exploratory runs remain alongside them. Host activity is uncontrolled.
+
 ### Discarded terminal failure snapshots (2026-10-22)
 
 The shared checked recognition path now permits exact built-in Choice, Repeat

@@ -138,6 +138,13 @@ column 1 rather than the opening bracket on line 2. Successful prefixes and
 complete lists do not expose these termination probes. Optional, repetition,
 lookahead and recovery probe checkpoints also restore these deferred details.
 
+Tied deferred observations can share an internal union until reporting needs
+their arrays. Materialized histories cache their output and release their operand
+references; long pending chains are compacted. Numeric-looking rule-path entries
+retain the original pairwise regular comparison rather than being flattened
+through a different equality rule. Observable Diagnostic objects still expose
+fixed ordered arrays, including on retained results and across rollback.
+
 Explicit [error recovery](recovery.md) retains each recovered region's original
 failure separately. Use `diagnostics()` for that selected list and `hasRecovery()`
 to distinguish recovered acceptance from ordinary acceptance. Synchronization

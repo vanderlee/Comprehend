@@ -43,8 +43,8 @@ Distinguish measured findings from hypotheses. Do not change production code.
 
 ### 3. Make speculative failures cheaper
 
-[ ] Delay snapshots inside provably unobserved built-in attempts.
-[ ] Delay and share deferred-list unions
+[x] Delay snapshots inside provably unobserved built-in attempts.
+[x] Delay and share deferred-list unions
 [ ] Reuse SeparatedList’s identical separator checkpoint
 
 ### 4. Optimize spacing and list loops

@@ -39,6 +39,14 @@ entry/end bounds, UTF-8 boundaries, diagnostics, guards and immutable CST output
 It never commits effects. A returned partial code point or foreign-source record
 is an extension error. Internal execution records are not consumer result types.
 
+For speculative diagnostic scopes, save `ParseSession::diagnosticState()` and
+pass the complete checkpoint back to `restoreDiagnostics()`. Treat checkpoints
+as opaque snapshots: their deferred-failure field can hold an internal immutable
+union rather than a materialized Diagnostic. Use `diagnostic()` or
+`diagnostic(true)` to inspect ordinary or combined failure details. Restoring a
+checkpoint also restores deferred-list observations; it does not undo consumed
+recognition work or commit effects.
+
 Implement the optional `Parser\FailureDiagnosticAtStart` marker interface when
 a failed recognition should report its fallback diagnostic at the entry byte
 offset, independently of observed progress. `Not` and `Except` implement this

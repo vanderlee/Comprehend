@@ -22,6 +22,7 @@ use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Utf8Source;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 
@@ -223,6 +224,63 @@ test('deferred list diagnostic merges are cached and isolated by rollback', func
     $this->assertSame(['list'], $deferred->expected);
     $session->restoreDiagnostics($checkpoint);
     $this->assertNull($session->diagnostic(true));
+});
+
+test('shared deferred histories preserve nested rollback ordering and independent forks', function (): void {
+    $session = new ParseSession(new ByteSource('a'));
+    $empty = $session->diagnosticState();
+    $session->recordFailure(0, 'a', [['a']]);
+    $session->deferListDiagnostics($empty);
+    $first = $session->diagnosticState();
+    $session->recordFailure(0, 'b', [['b']]);
+    $session->deferListDiagnostics($first);
+    $session->recordFailure(0, 'c', [['c']]);
+    $session->deferListDiagnostics($empty);
+    $snapshot = $session->diagnostic(true);
+    $this->assertSame(['c', 'a', 'b'], $snapshot->expected);
+    $this->assertSame([['c'], ['a'], ['b']], $snapshot->rulePaths);
+    $this->assertNull($session->diagnostic());
+    $session->recordFailure(0, 'outer', [['outer']]);
+    $this->assertSame(['outer', 'c', 'a', 'b'], $session->diagnostic(true)->expected);
+    $session->restoreDiagnostics($first);
+    $session->recordFailure(0, 'd', [['d']]);
+    $session->deferListDiagnostics($first);
+    $this->assertSame(['a', 'd'], $session->diagnostic(true)->expected);
+    $this->assertSame(['c', 'a', 'b'], $snapshot->expected);
+    $session->restoreDiagnostics($empty);
+    $this->assertNull($session->diagnostic(true));
+});
+
+test('failed union materialization retries without publishing stale cache keys or losing operands', function (): void {
+    $failure = new RuntimeException('Transient source failure');
+    $fail = false;
+    $source = $this->createMock(Source::class);
+    $source->method('byteLength')->willReturnCallback(static function () use (&$fail, $failure): int {
+        if ($fail) {
+            $fail = false;
+            throw $failure;
+        }
+
+        return 1;
+    });
+    $session = new ParseSession($source);
+    $empty = $session->diagnosticState();
+    $session->recordFailure(0, 'a', [['a']]);
+    $session->deferListDiagnostics($empty);
+    $first = $session->diagnosticState();
+    $observed = $session->diagnostic(true);
+    $session->recordFailure(0, 'b', [['b']]);
+    $session->deferListDiagnostics($first);
+    $fail = true;
+    try {
+        $session->diagnostic(true);
+        $this->fail('Expected failed materialization');
+    } catch (RuntimeException $error) {
+        $this->assertSame($failure, $error);
+    }
+    $this->assertSame(['a', 'b'], $session->diagnostic(true)->expected);
+    $this->assertSame(['a'], $observed->expected);
+    $this->assertSame([['a']], $observed->rulePaths);
 });
 
 test('regex subject ownership is local to each session', function () {

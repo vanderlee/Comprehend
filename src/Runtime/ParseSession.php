@@ -32,11 +32,11 @@ final class ParseSession
 
     private readonly Source $source;
     private ?int $farthestFailure = null;
-    private ?Diagnostic $deferredListFailure = null;
+    private Diagnostic|DeferredDiagnostic|null $deferredListFailure = null;
     private ?Diagnostic $diagnosticCache = null;
     private ?Diagnostic $combinedDiagnosticCache = null;
     private ?Diagnostic $combinedDiagnosticActive = null;
-    private ?Diagnostic $combinedDiagnosticDeferred = null;
+    private Diagnostic|DeferredDiagnostic|null $combinedDiagnosticDeferred = null;
     /**
      * @var list<string>
      */
@@ -212,7 +212,7 @@ final class ParseSession
     }
 
     /**
-     * @return array{int|null, list<string>, list<list<string>>, int, Diagnostic|null}
+     * @return array{int|null, list<string>, list<list<string>>, int, Diagnostic|DeferredDiagnostic|null}
      */
     public function diagnosticState(): array
     {
@@ -223,7 +223,7 @@ final class ParseSession
     }
 
     /**
-     * @param array{int|null, list<string>, list<list<string>>, int, Diagnostic|null} $state
+     * @param array{int|null, list<string>, list<list<string>>, int, Diagnostic|DeferredDiagnostic|null} $state
      */
     public function restoreDiagnostics(array $state): void
     {
@@ -248,7 +248,7 @@ final class ParseSession
 
     /**
      * @internal Replace only this scope's entry failure; preceding alternatives remain intact.
-     * @param array{int|null, list<string>, list<list<string>>, int, Diagnostic|null} $checkpoint
+     * @param array{int|null, list<string>, list<list<string>>, int, Diagnostic|DeferredDiagnostic|null} $checkpoint
      */
     public function relabelFailure(int $offset, string $label, array $checkpoint): bool
     {
@@ -266,13 +266,21 @@ final class ParseSession
 
     /**
      * Roll back list syntax probes while keeping their failure available to a failed enclosing parse.
-     * @param array{int|null, list<string>, list<list<string>>, int, Diagnostic|null} $state
+     * @param array{int|null, list<string>, list<list<string>>, int, Diagnostic|DeferredDiagnostic|null} $state
      */
     public function deferListDiagnostics(array $state): void
     {
-        $failure = $this->diagnostic(true);
+        $active = $this->diagnostic();
+        $observed = $this->combinedDiagnosticCache !== null
+            && $this->combinedDiagnosticActive === $active
+            && $this->combinedDiagnosticDeferred === $this->deferredListFailure;
+        // An eager child may already have exposed exactly this union. Reuse that work.
+        $failure = $observed ? $this->combinedDiagnosticCache
+            : DeferredDiagnostic::merge($this->source, $active, $this->deferredListFailure);
         $this->restoreDiagnostics($state);
-        $this->deferredListFailure = $this->mergeDiagnostics($this->deferredListFailure, $failure);
+        $this->deferredListFailure = $observed
+            ? DeferredDiagnostic::mergeMaterialized($this->source, $this->deferredListFailure, $failure)
+            : DeferredDiagnostic::merge($this->source, $this->deferredListFailure, $failure);
     }
 
     public function diagnostic(bool $includeDeferredLists = false): ?Diagnostic
@@ -298,36 +306,18 @@ final class ParseSession
             $this->combinedDiagnosticActive !== $diagnostic
             || $this->combinedDiagnosticDeferred !== $this->deferredListFailure
         ) {
+            // Drop obsolete operands before building the replacement; publish keys only on success.
+            $this->combinedDiagnosticActive = null;
+            $this->combinedDiagnosticDeferred = null;
+            $this->combinedDiagnosticCache = null;
+            // Once observed, collapse this shared history so future probes reuse its flat snapshot.
+            $combined = DeferredDiagnostic::mergeMaterialized($this->source, $diagnostic, $this->deferredListFailure);
             $this->combinedDiagnosticActive = $diagnostic;
             $this->combinedDiagnosticDeferred = $this->deferredListFailure;
-            $this->combinedDiagnosticCache = $this->mergeDiagnostics($diagnostic, $this->deferredListFailure);
+            $this->combinedDiagnosticCache = $combined;
         }
 
         return $this->combinedDiagnosticCache;
-    }
-
-    private function mergeDiagnostics(?Diagnostic $left, ?Diagnostic $right): ?Diagnostic
-    {
-        if ($left === null || ($right !== null && $right->byteOffset > $left->byteOffset)) {
-            return $right;
-        }
-
-        if ($right === null || $left->byteOffset > $right->byteOffset) {
-            return $left;
-        }
-
-        $expected = array_values(array_unique(array_merge($left->expected, $right->expected)));
-        $paths = array_values(array_unique(array_merge($left->rulePaths, $right->rulePaths), SORT_REGULAR));
-
-        if ($expected === $left->expected && $paths === $left->rulePaths) {
-            return $left;
-        }
-
-        if ($expected === $right->expected && $paths === $right->rulePaths) {
-            return $right;
-        }
-
-        return new Diagnostic($this->source, $left->byteOffset, $expected, $paths);
     }
 
     public function source(): Source
