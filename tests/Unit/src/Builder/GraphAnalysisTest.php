@@ -7,10 +7,12 @@ namespace Tests\Src\Builder;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\GraphAnalysis;
+use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Directive;
 use Vanderlee\Comprehend\Parser\Structure\All;
 use Vanderlee\Comprehend\Parser\Structure\Except;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
+use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
@@ -20,6 +22,34 @@ uses(TestCase::class);
 
 test('consuming repetition needs no warnings', function (): void {
     $this->assertSame([], (new GraphAnalysis())->validate(Repeat::star(new Text('a'))));
+});
+
+test('nullability calculations read stable estimates throughout each round', function (): void {
+    $parser = new class (new Nothing(), new Nothing()) extends Sequence {
+        /** @var list<list<bool|null>> */
+        public array $observed = [];
+
+        public function analysisNullability(NullabilityLookup $lookup): ?bool
+        {
+            $this->observed[] = array_map($lookup->get(...), $this->children());
+
+            return parent::analysisNullability($lookup);
+        }
+    };
+
+    $this->assertSame([], (new GraphAnalysis())->validate($parser));
+    $this->assertSame([false, false], $parser->observed[0]);
+    $this->assertContains([true, true], $parser->observed);
+    foreach ($parser->observed as $estimates) {
+        $this->assertSame($estimates[0], $estimates[1]);
+    }
+});
+
+test('analysis can be reused after a failed graph without stale estimates', function (): void {
+    $analysis = new GraphAnalysis();
+    expect(static fn() => $analysis->validate(Repeat::plus(new Nothing())))
+        ->toThrow(LogicException::class, 'Nullable repetition:');
+    $this->assertSame([], $analysis->validate(Repeat::plus(new Text('a'))));
 });
 
 test('nullable repetition is rejected before recognition', function (): void {

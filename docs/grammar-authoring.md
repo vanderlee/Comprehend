@@ -547,6 +547,13 @@ exceptions. This is not left-recursion support, memoization, or a general depth
 or work limit by itself. [ParseLimits](file-input.md) adds optional per-session
 depth and work budgets; it does not add memoization or wall-clock deadlines.
 
+Nullability preparation tracks which estimates each calculation reads and
+revisits affected parsers when those estimates change. This avoids repeated
+whole-graph passes on deep nullable chains while preserving stable fixed-point
+rounds and custom analysis contracts. Dependency tables add temporary memory
+during preparation; paths and leading-cycle checks can still dominate very deep
+graphs. See the [measured preparation comparison](performance.md#nullability-preparation-2026-10-21).
+
 ## Checked authoring examples
 
 Run `php docs/examples/authoring.php`. The [complete example](https://github.com/vanderlee/Comprehend/blob/master/docs/examples/authoring.php)

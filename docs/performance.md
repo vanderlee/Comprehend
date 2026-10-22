@@ -41,6 +41,90 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Nullability preparation (2026-10-21)
+
+Graph analysis now records lookup dependencies during each stable nullability
+round and schedules calculations whose observed estimates changed. This includes
+self-reads, custom reads of collected descendants and operands discovered as
+short circuits open. Updates are published after the round's lookup is released,
+avoiding an entire estimate-map copy on each round. The conservative ordering
+false < unknown < true, progress checks and leading-cycle checks still apply.
+The dependency tables are temporary; frozen grammars retain no analysis cache.
+
+A local Windows/PHP 8.2.10 comparison loaded saved original GraphAnalysis and
+NullabilityLookup classes or their changed versions against the same remaining
+checkout. Each of 32 scenarios used three fresh workers per variant in alternating
+order, a first-use freeze, two warmups and five timed observations. PCOV was
+disabled. Builder construction, source setup, recognition, correctness checks and release
+were outside freeze timers. Timed phases separated snapshot copying/resolution,
+analysis and optimizer preparation, alongside complete `Parser::freeze()` calls.
+Deferred factory construction remains part of snapshot copying/resolution.
+Medians of warmed worker medians, with default optimization enabled:
+
+| Grammar | Complete freeze before (us) | After (us) |
+|---|---:|---:|
+| One Text terminal | 4.8 | 5.2 |
+| 128 nested nullable Sequences | 8405.7 | 3586.2 |
+| 1,024 nested nullable Sequences | 396236.8 | 46157.1 |
+| 512 branches sharing a nullable chain | 21388.7 | 16888.0 |
+| RFC URI | 2880.4 | 2687.1 |
+| Mail address list | 1172.2 | 1138.8 |
+| XML document | 3165.2 | 2982.4 |
+| JSON text | 456.5 | 459.8 |
+| Application-value extraction | 94.2 | 91.4 |
+| 512 consuming sequence operands | 4096.6 | 4375.8 |
+
+Both `FreezeFlags::NONE` and `OPTIMIZE` were measured. With optimization disabled,
+the 1,024-wrapper freeze took 363.31 versus 19.32 ms. URI analysis alone took
+0.883 versus 0.557 ms without optimization, and 0.890 versus 0.578 ms with it.
+JSON and extraction changes were small; the one-terminal and consuming controls
+show overhead without a reduction in nullability calculations. Cold samples are
+retained separately: initial freezes can include provider discovery and class
+loading, while some authoring paths incur those costs during construction.
+No general cold-start or warmed recognition speedup is claimed.
+
+Separate instrumented runs counted all nullability calculations on the
+1,024-wrapper graph: 1,051,650 before and 2,049 after; the Sequence-only counts
+are 1,050,624 and 2,048. Fixed-point rounds were still 1,026 versus 1,025: the
+gain comes from avoiding whole-graph visits each round. URI calculations fell
+from 1,750 to 281, and the 512-branch shared graph from 10,600 to 1,059.
+Instrumented times are not used as performance measurements.
+
+The reverse dependency map costs O(V + E) temporary storage for observed reads.
+Each estimate increases at most twice, bounding scheduling notifications by
+O(E); calculation cost still depends on operand scans and custom hooks. A simple
+chain now needs O(V) nullability calculations, but collected paths and cycle
+traversal still have quadratic costs on deep chains. The optimized URI analysis
+used-memory peak rose from 176,264 to 230,376 bytes; the 512-operand nullable
+sequence rose from 312,296 to 485,576 bytes. The deep-chain analysis peak stayed
+about 44.3 MB because paths dominate. These are incremental PHP used-memory
+peaks above prepared snapshot baselines, not process allocation peaks or RSS.
+Retained frozen-grammar memory was unchanged in these scenarios.
+
+All workers checked independent acceptance and source round trips, with exact
+application values for extraction. Cold/warm frozen graphs and the phase-split
+prepared roots produced matching CST, AST, value and diagnostic fingerprints
+across variants. Library inputs included valid/malformed cases and generated
+sizes 1/8/64 (repetitions or payload length); this preparation change does not
+depend on input length. The same
+targeted safety tests passed against original and changed classes. Regression
+coverage includes stable-round reads, unknown propagation, changing read
+dependencies, non-monotone self-reads, recursion and both freeze modes.
+
+The driver, original classes, raw cold/warm observations, trace copies and summary
+are under ignored `build/nullability-preparation/`. While those snapshots remain:
+
+```sh
+php -d pcov.enabled=0 -d memory_limit=512M build/nullability-preparation/measure.php
+php -d pcov.enabled=0 -d memory_limit=512M build/nullability-preparation/measure.php --trace
+php -d pcov.enabled=0 build/nullability-preparation/summarize.php
+```
+
+Three workers and small timings have host/allocator noise. Reject the optimization
+if safety decisions, warnings, paths, snapshot isolation or deferred operations
+differ, or if the application's preparation/memory cost regresses beyond its
+budget. Large chain gains do not imply gains for already shallow or reused graphs.
+
 ### Bounded diagnostic scanning (2026-10-21)
 
 `Diagnostic::location()` now scans only its source prefix, with one-byte

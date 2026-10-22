@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Builder;
 
+use Closure;
 use LogicException;
 use Vanderlee\Comprehend\Parser\Parser;
 
@@ -13,8 +14,11 @@ final readonly class NullabilityLookup
     /** @var array<int, bool|null> */
     private array $values;
 
-    /** @param array<int, bool|null> $values */
-    public function __construct(array $values)
+    /**
+     * @param array<int, bool|null> $values
+     * @param (Closure(int): void)|null $recordDependency Internal analysis scheduling only.
+     */
+    public function __construct(array $values, private ?Closure $recordDependency = null)
     {
         $this->values = $values;
     }
@@ -25,6 +29,7 @@ final readonly class NullabilityLookup
         if (!array_key_exists($id, $this->values)) {
             throw new LogicException('Analysis operand is outside the collected graph: ' . $parser->graphLabel());
         }
+        $this->recordDependency?->__invoke($id);
 
         return $this->values[$id];
     }

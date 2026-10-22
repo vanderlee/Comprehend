@@ -7,12 +7,14 @@ namespace Tests\Feature\authoring;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\AnalyzableParser;
+use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Builder\ForwardingAnalysisTrait;
 use Vanderlee\Comprehend\Builder\GraphAnalysis;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
+use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Stub;
@@ -179,6 +181,79 @@ test('unknown custom nullability propagates without rejection', function (): voi
     $this->assertSame([], $grammar->analysisWarnings);
     $this->assertTrue($grammar->parse('aa')->success);
 });
+
+test('unknown estimates can become nullable through a delayed alternative', function (int $flags): void {
+    $unknown = new class ('a') extends Text {
+        public function analysisNullability(NullabilityLookup $lookup): ?bool
+        {
+            return null;
+        }
+    };
+    $empty = new Sequence(new Sequence(new Sequence(new Nothing())));
+    $parser = Repeat::plus(new Choice($unknown, $empty));
+
+    expect(static fn() => $parser->freeze($flags))->toThrow(LogicException::class, 'Nullable repetition:');
+})->with([FreezeFlags::NONE, FreezeFlags::OPTIMIZE]);
+
+test('nullability follows operands reached after an earlier short circuit opens', function (int $flags): void {
+    $early = new Sequence(new Nothing());
+    $late = new Sequence(new Sequence(new Sequence(new Sequence(new Nothing()))));
+    $parser = Repeat::plus(new Sequence($early, $late, $early));
+
+    expect(static fn() => $parser->freeze($flags))->toThrow(LogicException::class, 'Nullable repetition:');
+})->with([FreezeFlags::NONE, FreezeFlags::OPTIMIZE]);
+
+test('custom nullability can read a collected descendant directly', function (int $flags): void {
+    $parser = new class (new Sequence(new Nothing())) extends Sequence {
+        public function analysisNullability(NullabilityLookup $lookup): ?bool
+        {
+            return $lookup->get($this->children()[0]->children()[0]);
+        }
+    };
+
+    expect(static fn() => Repeat::plus($parser)->freeze($flags))
+        ->toThrow(LogicException::class, 'Nullable repetition:');
+})->with([FreezeFlags::NONE, FreezeFlags::OPTIMIZE]);
+
+test('custom unknown estimates cannot move back to false', function (int $flags): void {
+    $parser = new class ('a') extends Text {
+        public function analysisNullability(NullabilityLookup $lookup): ?bool
+        {
+            return $lookup->get($this) === false ? null : false;
+        }
+    };
+
+    expect(static fn() => $parser->freeze($flags))->toThrow(LogicException::class, 'Non-monotone nullability:');
+})->with([FreezeFlags::NONE, FreezeFlags::OPTIMIZE]);
+
+test('undiscovered nullability operand is rejected', function (int $flags): void {
+    $parser = new class ('a') extends Text {
+        public function analysisNullability(NullabilityLookup $lookup): ?bool
+        {
+            return $lookup->get(new Nothing());
+        }
+    };
+
+    expect(static fn() => $parser->freeze($flags))->toThrow(LogicException::class, 'outside the collected graph');
+})->with([FreezeFlags::NONE, FreezeFlags::OPTIMIZE]);
+
+test('consuming recursive cycles converge with a delayed nullable alternative', function (int $flags): void {
+    $stub = new Stub();
+    $stub->setParser(new Choice(
+        new Sequence(new Text('a'), $stub),
+        new Sequence(new Sequence(new Nothing())),
+    ));
+    $grammar = $stub->freeze($flags);
+    $this->assertSame([], $grammar->analysisWarnings);
+    foreach (['', 'a', 'aaa'] as $text) {
+        $result = $grammar->parse($text);
+        $this->assertTrue($result->success);
+        $this->assertSame($text, $result->rawText());
+    }
+    $this->assertFalse($grammar->parse('b')->success);
+    expect(static fn() => Repeat::plus($stub)->freeze($flags))
+        ->toThrow(LogicException::class, 'Nullable repetition:');
+})->with([FreezeFlags::NONE, FreezeFlags::OPTIMIZE]);
 
 test('custom structural error includes graph path', function (): void {
     $parser = new class ('a') extends Text {

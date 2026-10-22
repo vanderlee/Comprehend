@@ -75,19 +75,39 @@ final class GraphAnalysis
 
     private function resolveNullability(): void
     {
-        // Read one stable set of estimates per iteration. Monotone estimates over
-        // false < unknown < true can increase at most twice per node.
+        $pending = $this->nodes;
+        $dependents = [];
         do {
-            $lookup = new NullabilityLookup($this->nullable);
-            $changed = $this->updateNullability($lookup);
-        } while ($changed);
+            $changes = $this->updateNullability($pending, $dependents);
+            $pending = [];
+            // The round's lookup has been released, so publishing these estimates
+            // preserves stable reads without copying the entire map on every round.
+            foreach ($changes as $id => $nullable) {
+                $this->nullable[$id] = $nullable;
+                foreach ($dependents[$id] ?? [] as $dependent => $_) {
+                    $pending[$dependent] = $this->nodes[$dependent];
+                }
+            }
+        } while ($pending !== []);
     }
 
-    /** Return whether this pass changed any estimate. */
-    private function updateNullability(NullabilityLookup $lookup): bool
+    /**
+     * @param array<int, Parser> $pending
+     * @param array<int, array<int, true>> $dependents
+     * @return array<int, bool|null> Changed estimates, published only after this round.
+     */
+    private function updateNullability(array $pending, array &$dependents): array
     {
-        $changed = false;
-        foreach ($this->nodes as $id => $node) {
+        $changes = [];
+        $id = 0;
+        // Actual reads capture self-references and discover operands as short circuits open.
+        $lookup = new NullabilityLookup(
+            $this->nullable,
+            static function (int $dependency) use (&$dependents, &$id): void {
+                $dependents[$dependency][$id] = true;
+            },
+        );
+        foreach ($pending as $id => $node) {
             if (!$node instanceof AnalyzableParser) {
                 continue;
             }
@@ -105,11 +125,10 @@ final class GraphAnalysis
             ) {
                 throw new LogicException('Non-monotone nullability: ' . implode(' -> ', $this->paths[$id]));
             }
-            $this->nullable[$id] = $nullable;
-            $changed = true;
+            $changes[$id] = $nullable;
         }
 
-        return $changed;
+        return $changes;
     }
 
     private function rejectNullableProgress(NullabilityLookup $lookup): void

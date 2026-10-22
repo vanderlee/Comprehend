@@ -126,6 +126,15 @@ estimates increase. Each iteration reads a stable set of estimates. A backwards
 transition raises `LogicException` rather than allowing analysis to oscillate.
 The lookup is valid only for that analysis step and must not be retained.
 
+The analyzer records the estimates read through `get()`, `every()` and `any()`.
+After the first round, it recalculates only parsers whose observed estimates
+changed. Short-circuiting can reveal new dependencies in later rounds, and
+self-references are tracked too. Calculation count and order are not a callback
+protocol; implementations must not depend on repeated visits or mutate grammar
+state. Each scheduled calculation still reads that round's stable estimates.
+The scheduling tables belong to the current analysis and are not cached across
+freezes or retained in the frozen grammar.
+
 `DefaultAnalysisTrait` supplies empty leading/progress lists and no local error;
 the parser still implements its nullability calculation. For transparent wrappers,
 `ForwardingAnalysisTrait` supplies all four methods using an
