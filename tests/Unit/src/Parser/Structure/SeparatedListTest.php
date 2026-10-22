@@ -7,6 +7,7 @@ namespace Tests\Src\Parser\Structure;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use Vanderlee\Comprehend\Builder\FreezeFlags;
 use Vanderlee\Comprehend\Parser\Structure\SeparatedList;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
@@ -84,3 +85,20 @@ test('required items retain their useful diagnostic', function (): void {
     $this->assertSame(6, $result->diagnostic->byteOffset);
     $this->assertContains('"abc"', $result->diagnostic->expected);
 });
+
+test('partial leading separator diagnostics do not leak into item recognition', function (int $flags): void {
+    $parser = new SeparatedList(new Text('ab'), new Text('abcd'), min: 1, max: 1, allowLeading: true);
+    $grammar = $parser->freeze($flags);
+    $prefix = $grammar->matchPrefix(new ByteSource('abc?'));
+    $this->assertTrue($prefix->success);
+    $this->assertSame('ab', $prefix->rawText());
+    $this->assertNull($prefix->diagnostic);
+    $complete = $grammar->parseAll(new ByteSource('abc?'));
+    $this->assertFalse($complete->success);
+    $this->assertSame(2, $complete->diagnostic->byteOffset);
+    $this->assertSame(['end'], $complete->diagnostic->expected);
+    $required = $grammar->parseAll(new ByteSource('a?'));
+    $this->assertFalse($required->success);
+    $this->assertSame(1, $required->diagnostic->byteOffset);
+    $this->assertSame(['"ab"'], $required->diagnostic->expected);
+})->with([FreezeFlags::NONE, FreezeFlags::OPTIMIZE]);

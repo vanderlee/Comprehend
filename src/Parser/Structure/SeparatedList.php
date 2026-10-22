@@ -110,7 +110,6 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
                 $pairConcrete = [];
                 $hasSeparator = false;
                 if ($items !== [] || $this->allowLeading) {
-                    $separatorDiagnostics = $session->diagnosticState();
                     $separator = $this->attempt(
                         $this->separator,
                         $source,
@@ -130,7 +129,7 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
                         break;
                     } else {
                         // An absent optional leading separator must not affect item diagnostics.
-                        $session->restoreDiagnostics($separatorDiagnostics);
+                        $session->restoreDiagnostics($diagnostics);
                         $cursor = $end;
                     }
                 }

@@ -41,6 +41,35 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Separated-list checkpoint reuse (2026-10-22)
+
+`SeparatedList::recognize()` reuses its loop-entry diagnostic checkpoint for an
+absent optional leading separator. Only local variables are initialized between
+loop entry and the separator attempt, so the second checkpoint captured identical
+session state. Pair termination, bounds, spacing and deferred failures retain
+their existing restoration paths.
+
+A fresh PHP 8.2.10 instrumented comparison counted checkpoint captures on a
+successful eight-item list: 17 before versus 9 after, or 18 versus 9 with leading
+separators enabled. Both freeze modes produced the same counts and matching
+CST/value/diagnostic fingerprints. A separate 52,992-case baseline/current
+comparison matched parser outputs and execution-limit outcomes. Regression tests
+cover a partial optional leading separator observing farther input before its
+failure is discarded, followed by successful or required-failing item recognition.
+
+This removes transient outer checkpoint arrays, not deep copies of their shared
+contents. No state, preparation pass or asymptotic change is introduced. No
+throughput or retained-memory improvement is established. The saved original
+SeparatedList, counter and differential driver are under ignored
+`build/list-checkpoint/`; while retained, reproduce from the repository root:
+
+```powershell
+php -d pcov.enabled=0 build/list-checkpoint/count.php --baseline
+php -d pcov.enabled=0 build/list-checkpoint/count.php
+php -d pcov.enabled=0 -d memory_limit=512M build/list-checkpoint/differential.php --baseline
+php -d pcov.enabled=0 -d memory_limit=512M build/list-checkpoint/differential.php
+```
+
 ### Deferred-list union sharing (2026-10-22)
 
 ParseSession now retains tied, unobserved deferred-list observations as shared
