@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend\Match\Output;
 
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Match\EffectExecution;
+use Vanderlee\Comprehend\Match\CommitEffects;
 
 /**
  * Executes selected Success effects once during explicit commit. Preserves preceding-match and
@@ -77,7 +78,12 @@ trait CallbackTrait
         }
 
         foreach ($state->customCallbacks as $callback) {
-            $callback();
+            // Internal bindings borrow the owner rather than retaining a self-cycle.
+            if ($callback instanceof CommitEffects) {
+                $callback($this);
+            } else {
+                $callback();
+            }
         }
     }
 }

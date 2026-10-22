@@ -14,6 +14,7 @@ use Vanderlee\Comprehend\Builder\SnapshotParticipant;
 use Vanderlee\Comprehend\Directive\Lexeme;
 use Vanderlee\Comprehend\Directive\Trivia;
 use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Match\CommitEffects;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Result\Diagnostic;
@@ -535,19 +536,7 @@ abstract class Parser implements SnapshotParticipant
     private function bindCommitEffects(Success $success, Span $span): void
     {
         // Snapshot registrations now; assignments and effects remain deferred until commit.
-        $effects = $this->effects;
-        $assignments = $this->assignCallbacks;
-        $success->addCustomCallback(
-            static function () use ($success, $span, $effects, $assignments) {
-                foreach ($assignments as $assignment) {
-                    $assignment($span->rawText());
-                }
-                $result = new ParseResult($success);
-                foreach ($effects as $effect) {
-                    $effect($result);
-                }
-            },
-        );
+        $success->addCustomCallback(new CommitEffects($span, $this->effects, $this->assignCallbacks));
     }
 
     /**

@@ -29,6 +29,10 @@ Discarded alternative callbacks and speculative trivia produce no committed
 effects. A semantic rejection does not retry a syntactically selected choice;
 use a pure guard when rejection belongs to recognition.
 
+Internal effect snapshots receive their owning match only during commit, so they
+do not keep discarded matches alive through self-references. User callbacks,
+cached values and retained exceptions can still introduce reference cycles.
+
 For runtime maintenance details, see
 [lifecycle implementation notes](contribute.md#lifecycle-implementation-notes).
 

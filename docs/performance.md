@@ -41,6 +41,72 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Internal effect lifetimes (2026-10-22)
+
+`Parser::bindCommitEffects()` now stores a `CommitEffects` registration snapshot
+instead of a closure capturing its owning Success. `CallbackTrait` supplies that
+owner only when executing the binding. Ordinary custom callbacks retain their
+zero-argument contract and position in the same callback list. Assignments still
+precede effects; one ParseResult wrapper is shared by the effects in each binding.
+No additional ExecutionState fields, weak references or per-recognition caches
+are needed. One binding object replaces one closure; this is primarily a lifetime
+improvement, not a reduction in the number of objects constructed.
+
+A fresh local Windows/PHP 8.2.10 comparison used 128 successful longest-choice
+alternatives, each with a cached constant mapping and a no-op commit effect.
+Separate instrumented source copies counted allocations and live objects with GC
+disabled. Both versions created 129 Successes, 129 ExecutionStates, 128 Spans,
+129 ConcreteNodes and 128 SemanticProjections. Before explicit GC, live Successes
+fell from 129 to 2, live projections from 128 to 1, and live nodes from 129 to 2.
+The new version created 128 binding objects, with only one still live at return;
+the old trace excludes its 128 closure allocations. After GC the selected graphs
+have the same object counts. Existing span reuse, sparse state and projection
+caching remain in place.
+
+Uninstrumented memory workers measured these used-byte deltas from the prepared
+grammar/source baseline, consistently across five workers and 21 observations:
+
+| Phase | Before | After |
+|---|---:|---:|
+| Recognition return, before explicit GC | 245,104 | 2,632 |
+| Recognition return, after explicit GC | 3,296 | 2,632 |
+| Recognition peak | 291,400 | 50,832 |
+| After value read and result release, before GC | 1,904 | 0 |
+| After final GC | 0 | 0 |
+
+Elapsed time was measured separately without tracing or memory-phase GC. The
+first five-worker run was noisy and appeared slower. A follow-up with 11 fresh
+workers per variant, alternating order, three warmups and 101 observations gave
+median recognition times of 0.955 / 0.946 ms. Worker-median ranges overlap
+(0.855–1.191 / 0.866–1.530 ms). The no-effect control took 0.876 / 0.866 ms,
+also overlapping. These results establish no throughput improvement. Commit
+throughput was not measured; dispatch adds an instanceof check per callback.
+Preparation retains the same grammar registrations, with one new class to autoload;
+cold preparation-time differences were not established. Asymptotic recognition,
+tree retention and commit complexity are unchanged. Destruction work moves from
+cycle collection to reference release during recognition.
+
+CST/diagnostic fingerprints matched across variants and measurement modes.
+Regression tests disable cycle collection and check immediate source/record
+release, losing alternatives, registration snapshots, assignment order, shared
+effect wrapper identity, zero-argument callbacks and independent commits. Existing
+tests cover cached exceptions, partial commit failure, validation and recovery.
+User callbacks, cached values and exception traces may still form cycles. Reject
+this change if selected state is released early, speculative effects execute,
+snapshots/order/errors change, or stable representative workloads show an
+unacceptable recognition or commit regression.
+
+The saved source baseline, driver and raw reports are under ignored
+`build/effect-cycles-20261022/`. While those artifacts remain, reproduce each
+phase separately (use `--source-root=build/effect-cycles-20261022/baseline` for
+the original version), alternating variants in fresh processes:
+
+```powershell
+php -d pcov.enabled=0 build/effect-cycles-20261022/experiment.php --case=ranked-effects --size=128 --mode=trace --iterations=1
+php -d pcov.enabled=0 build/effect-cycles-20261022/experiment.php --case=ranked-effects --size=128 --mode=memory --iterations=21
+php -d pcov.enabled=0 build/effect-cycles-20261022/experiment.php --case=ranked-effects --size=128 --mode=time --iterations=101
+```
+
 ### Single-unit terminal allocations (2026-10-22)
 
 Exact built-in Char, Range, Set and Any terminals now reuse a successful
