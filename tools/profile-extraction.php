@@ -20,7 +20,8 @@ use function ComprehendComparison\nodeCount;
 use function ComprehendComparison\verify;
 
 $options = getopt('', [
-    'case:', 'size:', 'iterations:', 'trace', 'failure-details', 'scan-spacing', 'source-dir:', 'output:',
+    'case:', 'size:', 'iterations:', 'trace', 'failure-details',
+    'scan-spacing', 'scan-tokens', 'source-dir:', 'output:',
 ]);
 $size = filter_var($options['size'] ?? 128, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 $iterations = filter_var($options['iterations'] ?? 9, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -37,6 +38,7 @@ if ($failureDetails && !$trace) {
     throw new InvalidArgumentException('Failure details require --trace');
 }
 $scanSpacing = isset($options['scan-spacing']);
+$scanTokens = isset($options['scan-tokens']);
 $loadDirectory = $sourceDirectory;
 $sourceHashes = [];
 if ($trace) {
@@ -89,8 +91,8 @@ if (!isset($corpus[$caseName]) || $corpus[$caseName]['expected'] === null) {
     throw new InvalidArgumentException('Choose an accepted extraction case');
 }
 $case = $corpus[$caseName];
-$grammar = comprehendJob(scanSpacing: $scanSpacing)->freeze();
-$parser = comprehendJob(scanSpacing: $scanSpacing)->parser();
+$grammar = comprehendJob(scanSpacing: $scanSpacing, scanTokens: $scanTokens)->freeze();
+$parser = comprehendJob(scanSpacing: $scanSpacing, scanTokens: $scanTokens)->parser();
 // Warm the prepared graph; preparation and correctness checks are not timed.
 for ($i = 0; $i < 2; ++$i) {
     $result = $grammar->parse($case['input']);
@@ -177,7 +179,7 @@ $report = [
     'generated_utc' => gmdate('c'), 'profiler_sha256' => hash_file('sha256', __FILE__),
     'instrumenter_sha256' => hash_file('sha256', __DIR__ . '/profiling/InstrumentMethods.php'),
     'case' => $caseName, 'size' => $size, 'input_bytes' => strlen($case['input']), 'trace' => $trace,
-    'failure_details' => $failureDetails, 'scan_spacing' => $scanSpacing,
+    'failure_details' => $failureDetails, 'scan_spacing' => $scanSpacing, 'scan_tokens' => $scanTokens,
     'source_sha256' => hash('sha256', json_encode($sourceHashes, JSON_THROW_ON_ERROR)),
     'metrics' => $metrics->snapshot(), 'work_units' => $session->workUsed(),
     'boundary_probe' => [

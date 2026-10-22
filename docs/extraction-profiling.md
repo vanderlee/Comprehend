@@ -26,6 +26,18 @@ serialized tree hashes are checked outside the timed phases.
 
 `--scan-spacing` selects `readWhileSet()` whitespace, matching the faster
 comparison variant. Without it, the original `set()->many()` policy is used.
+`--scan-tokens` independently selects the composed set/range scanner token grammar
+instead of regex tokens. For example:
+
+```sh
+php -d pcov.enabled=0 tools/profile-extraction.php --case=nested --size=128 --iterations=31 --scan-spacing --scan-tokens
+```
+
+Compare the same token grammar across revisions: scanner and regex variants have
+different CST shapes. Parser-entry metrics in this tool use an unfrozen graph;
+they do not count the prepared sequence's dispatch reduction. Core-only traces
+also omit allocations and methods inside extension implementations.
+
 `--trace --failure-details` adds grouped recognition allocation origins for
 Failure and Diagnostic: method call stacks, diagnostic byte offsets, expectations
 and rule paths, and failure progress. It stores copied scalar/array details, not

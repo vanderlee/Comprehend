@@ -41,23 +41,11 @@ Return:
 
 Distinguish measured findings from hypotheses. Do not change production code.
 
-### 3. Make speculative failures cheaper
-
-[x] Delay snapshots inside provably unobserved built-in attempts.
-[x] Delay and share deferred-list unions
-[ ] Reuse SeparatedList’s identical separator checkpoint
-
 ### 4. Optimize spacing and list loops
 
-Profile automatic spacing, Trivia wrappers, Repeat and SeparatedList on
-nested application-value grammars.
-
-Compare existing scanner spacing with combinator spacing. Investigate
-opportunities to reduce dispatch or fuse eligible loops while preserving
-trivia nodes, separator rules, rollback, values and effect ordering.
-
-Explain when scanner composition adds enough CST nodes or parser calls
-to outweigh its scanning benefit.
+[ ] Fuse eligible composed scanners while retaining their existing CST.
+[ ] Reduce automatic-spacing dispatch inside prepared loops.
+[ ] Reduce SeparatedList staging-array traffic.
 
 ### 5. Reduce repeated recognition and dispatch
 

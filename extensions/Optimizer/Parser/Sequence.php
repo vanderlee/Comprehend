@@ -7,6 +7,7 @@ namespace Vanderlee\Comprehend\Extensions\Optimizer\Parser;
 use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Extensions\Optimizer\LiteralSequence;
+use Vanderlee\Comprehend\Extensions\Optimizer\ScannerSequence;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
@@ -14,13 +15,13 @@ use Vanderlee\Comprehend\Parser\Structure\Sequence as OrdinarySequence;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 
-/** @internal Batched literal recognition retaining every original child node. */
+/** @internal Batched literal and scanner recognition retaining every original child node. */
 class Sequence extends OrdinarySequence
 {
     use ExactClassSnapshotReuseTrait;
     use SyntaxSpacingTrait;
 
-    /** @var list<Parser|LiteralSequence> */
+    /** @var list<Parser|LiteralSequence|ScannerSequence> */
     private array $steps = [];
 
     public static function from(OrdinarySequence $original): self
@@ -33,7 +34,15 @@ class Sequence extends OrdinarySequence
 
     public function prepareRecognition(): void
     {
-        $this->steps = LiteralSequence::prepare($this);
+        $literalSteps = LiteralSequence::prepare($this);
+        $steps = ScannerSequence::prepare($literalSteps !== [] ? $literalSteps : iterator_to_array($this, false));
+        $this->steps = [];
+        foreach ($steps as $step) {
+            if ($step instanceof LiteralSequence || $step instanceof ScannerSequence) {
+                $this->steps = $steps;
+                break;
+            }
+        }
     }
 
     protected function copyDependencies(GraphSnapshot $context): void
@@ -56,7 +65,7 @@ class Sequence extends OrdinarySequence
         $children = [];
         $length = 0;
         foreach ($this->steps as $step) {
-            if ($step instanceof LiteralSequence) {
+            if ($step instanceof LiteralSequence || $step instanceof ScannerSequence) {
                 $batch = $step->attempt($source, $byteOffset + $length, $session);
                 if ($batch !== null) {
                     foreach ($batch as $child) {
@@ -66,7 +75,9 @@ class Sequence extends OrdinarySequence
                     continue;
                 }
             }
-            foreach ($step instanceof LiteralSequence ? $step->parsers() : [$step] as $parser) {
+            $operands = $step instanceof LiteralSequence || $step instanceof ScannerSequence
+                ? $step->parsers() : [$step];
+            foreach ($operands as $parser) {
                 $child = $parser->recognizeInSession($source, $byteOffset + $length, $session);
                 $length += $child->length;
                 if (!$child instanceof Success) {

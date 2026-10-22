@@ -41,6 +41,44 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Composed scanner dispatch (2026-10-22)
+
+Prepared sequences batch adjacent metadata-free `ReadWhileSet` and
+`ReadWhileRange` operands using their existing `scanLength()` implementation.
+Every scanner still constructs its original CST leaf, including empty leaves.
+This fuses dispatch, not the scanning patterns. Metadata separates runs; active
+spacing, enclosing case-insensitivity and finite work/depth limits retain the
+ordinary path. Failed runs retry only their original callback-free operands for
+diagnostics, so unlimited failed parses can charge additional speculative work.
+Finite budgets never enter this path. Earlier executable operands are not retried.
+
+A fresh Windows/PHP 8.2.10 comparison used five workers per variant, alternating
+order, three warmups and 31 observations per worker, with PCOV disabled. The
+128-ID nested application grammar used scanner spacing and composed scanner
+tokens. Recognition includes CST construction; preparation, source construction,
+value checks, serialization, result release and cycle collection are outside
+timing. Medians of worker medians were 12.488 ms before and 11.205 ms after
+(10.3% lower). Worker medians ranged 12.191–12.828 and 10.778–11.341 ms. Host
+activity was uncontrolled; this is not a universal speed guarantee.
+
+Frozen parser entries fell from 816 to 558. The 1,336-node CST hash and retained
+recognition memory of 723,552 used bytes were unchanged. Preparation includes
+autoload/discovery and varied; no preparation-time improvement is established.
+Plans add one small grammar object and operand-reference array per eligible run;
+they retain no source or per-session results. Recognition remains proportional
+to scanned input and constructed syntax, with unchanged retained-tree complexity.
+Short scanner compositions still retain more nodes than the regex-token grammar;
+this optimization does not establish that replacing regex tokens is beneficial.
+
+The saved pre-change Sequence, driver and raw observations are under ignored
+`build/scanner-fusion/`, using the research driver in `build/spacing-research/`.
+The maintained profiler now accepts `--scan-tokens`; compare matching revisions
+in fresh workers with `--scan-spacing --scan-tokens --case=nested --size=128
+--iterations=31`. Its parser-entry metrics use an unfrozen graph and must not be
+used to infer prepared dispatch counts. Correctness tests compare same-graph CST,
+AST, ordered diagnostics, byte offsets, rollback, cached values, effects, file
+snapshots, scope restoration and exhausted execution limits.
+
 ### Separated-list checkpoint reuse (2026-10-22)
 
 `SeparatedList::recognize()` reuses its loop-entry diagnostic checkpoint for an

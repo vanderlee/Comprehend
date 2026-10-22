@@ -377,6 +377,17 @@ remain ordinary operands between runs. Freezing classifies only
 proven callback-free children and retains their source-free templates; recognition
 always creates fresh nodes bound to the current source.
 
+Prepared sequences also batch adjacent plain `ReadWhileSet` and `ReadWhileRange`
+operands through their shared scan primitive. This reduces checked child dispatch;
+it does not combine patterns, change greedy bounds or collapse scanner nodes.
+Each original child, including zero-width matches, keeps its own byte span and
+default value. Metadata-bearing operands separate runs. Active intervening
+spacing, case-insensitive enclosing scopes and finite work/depth limits retain
+ordinary sequence recognition; lexemes can batch with inherited spacing suppressed.
+A failed run retries only its own callback-free scanners for the original progress
+and diagnostics, without repeating earlier executable operands. Prepared plans
+retain grammar references only and are cleared when copying back to authoring graphs.
+
 Historical measurements of literal preparation and warm recognition with CST are
 recorded in [Performance measurements](performance.md).
 
