@@ -11,6 +11,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 use Vanderlee\Comprehend\Tree\ConcreteTemplate;
 
 /** @internal One literal recognizer with source-free recipes for the original child trees. */
@@ -110,7 +111,7 @@ final class LiteralSequence
         return $this->parsers;
     }
 
-    /** @return list<Success>|int|null Failure progress, or null for ordinary recognition and diagnostics. */
+    /** @return list<ConcreteNode>|int|null Failure progress, or null for ordinary recognition and diagnostics. */
     public function attempt(Source $source, int $offset, ParseSession $session): array|int|null
     {
         if ($session->hasRecognitionLimits() || $session->hasActiveSpacing() || !$session->isCaseSensitive()) {
@@ -140,16 +141,14 @@ final class LiteralSequence
 
             return null;
         }
-        $diagnostic = $session->diagnostic();
         $children = [];
         $childOffset = $offset;
         foreach ($this->children as $template) {
             $node = $template->instantiate($source, $childOffset);
             $childOffset = $node->span->end;
-            $child = new Success($node->span->byteLength());
-            $child->setSourceMetadata($node->span, $diagnostic?->byteOffset, $diagnostic);
-            $child->setConcreteNode($node);
-            $children[] = $child;
+            // Eligibility excludes deferred operations: retain syntax directly, without
+            // manufacturing execution records that the parent immediately releases.
+            $children[] = $node;
         }
 
         return $children;

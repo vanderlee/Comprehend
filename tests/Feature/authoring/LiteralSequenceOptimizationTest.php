@@ -7,12 +7,15 @@ use Vanderlee\Comprehend\Builder\FrozenGrammar;
 use Vanderlee\Comprehend\Builder\Ruleset;
 use Vanderlee\Comprehend\Comprehend as C;
 use Vanderlee\Comprehend\Directive\CaseSensitive;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileRange;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileSet;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Parser\Terminal\Regex;
+use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
@@ -296,3 +299,65 @@ test('literal run limits split oversized sequences without changing their origin
             ->and($actual->diagnostic)->toEqual($expected->diagnostic);
     }
 });
+
+test('literal nodes preserve lifecycle order around scanner and executable operands', function (int $flags): void {
+    $events = [];
+    $marker = (new Regex('/Z/A'))->setResult('marker', static function (string $text) use (&$events): string {
+        $events[] = 'collection';
+        return $text;
+    })->mapValue(static function (ParseResult $result) use (&$events): string {
+        $events[] = 'child-value';
+        return $result->rawText();
+    })->validateSemantic(static function (ParseResult $result) use (&$events): bool {
+        $events[] = 'validate';
+        return $result->value() === 'Z';
+    })->onCommit(static function () use (&$events): void {
+        $events[] = 'child-effect';
+    });
+    $parser = (new Sequence(
+        (new Nothing())->guard(static function () use (&$events): bool {
+            $events[] = 'guard';
+            return true;
+        }),
+        (new Text('a'))->name('letter'),
+        new Text('b'),
+        new ReadWhileSet('x', 0, 1),
+        new ReadWhileRange('0', '9', 1, 3),
+        $marker,
+        new Text('c'),
+        new Text('d'),
+    ))->mapValue(static function (ParseResult $result) use (&$events): array {
+        $events[] = 'root-value';
+        return [$result->rawText(), $result->result('marker')];
+    })->onCommit(static function () use (&$events): void {
+        $events[] = 'root-effect';
+    });
+    $grammar = $parser->freeze($flags);
+    expect($events)->toBe([])->and($grammar->parse('abx12Zc?')->success)->toBeFalse()
+        ->and($events)->toBe(['guard']);
+    foreach (['abx12Zcd', 'ab12Zcd'] as $text) {
+        $events = [];
+        $result = $grammar->parseAll(new Utf8Source('>' . $text), 1);
+        expect($result->success)->toBeTrue()->and($events)->toBe(['guard'])
+            ->and($result->node->children)->toHaveCount(8)
+            ->and($result->node->children[1]->name)->toBe('letter')
+            ->and($result->node->children[3]->rawText())->toBe(str_contains($text, 'x') ? 'x' : '');
+        expect($result->value())->toBe([$text, 'Z'])->and($result->value())->toBe([$text, 'Z']);
+        $result->commit();
+        $result->commit();
+        expect($events)->toBe(['guard', 'root-value', 'collection', 'validate',
+            'child-value', 'child-effect', 'root-effect']);
+    }
+})->with([FreezeFlags::NONE, FreezeFlags::OPTIMIZE]);
+
+test('full width literal syntax retains its shared immutable parent span', function (bool $emptySuffix): void {
+    $operands = [Repeat::exact((new Text('ab'))->name('pair'), 2)->name('block')];
+    if ($emptySuffix) {
+        $operands[] = Repeat::exact(new Text('z'), 0)->name('empty');
+    }
+    $parser = new Sequence(...$operands);
+    $result = $parser->freeze()->parseAll(new Utf8Source('>abab'), 1);
+    expect($result->success)->toBeTrue()->and($result->node->span)->toBe($result->node->children[0]->span)
+        ->and($result->node->children[0]->name)->toBe('block')
+        ->and($result->node->children[0]->children)->toHaveCount(2);
+})->with([false, true]);

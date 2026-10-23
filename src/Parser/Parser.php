@@ -544,7 +544,7 @@ abstract class Parser implements SnapshotParticipant
         return $this->bindSuccess($success, $span);
     }
 
-    /** @internal Exact built-in terminals can retain their already-read immutable unit span. */
+    /** @internal Built-in recognizers can retain an already-verified immutable span. */
     protected function successFromSpan(Span $span): Success
     {
         return $this->bindSuccess(new Success($span->byteLength()), $span);

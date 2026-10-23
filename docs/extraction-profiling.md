@@ -160,3 +160,79 @@ timing differences do not establish a universal speedup. Retained memory fell
 retaining effectful ones, empty and nonempty selected trivia, abandoned extension
 trivia, deferred execution and repeated commits. This does not remove execution
 state required by values, validation, recovery or effects.
+
+## Direct syntax from proven literal batches
+
+`Optimizer\LiteralSequence::attempt()` now returns fresh immutable ConcreteNode
+operands after its compiled terminal succeeds. It no longer wraps each operand in
+a temporary Success execution record. The optimized Sequence keeps these nodes in
+concrete order alongside scanner and ordinary matches, retaining the latter's
+semantic, validation, collection and commit dependencies. A full-width first
+literal node can still share its span with the parent, including when subsequent
+literal operands are empty. The compiled terminal and enclosing sequence retain
+their own execution records and use the same recognition runtime.
+
+Eligibility, preparation recipes, failed-run fallback, scopes and finite-budget
+paths are unchanged. Scanner batches still create their existing operand records.
+No CST nodes are removed, and nothing evaluates values or commits effects during
+recognition. The change reduces temporary objects; it does not promise smaller
+retained trees or better asymptotic complexity.
+
+Use the focused harness with the two pre-change classes saved as
+`LiteralSequence.php` and `Sequence.php` in a baseline directory. The baseline for
+this run is `c8b47ae:extensions/Optimizer/LiteralSequence.php` and
+`c8b47ae:extensions/Optimizer/Parser/Sequence.php`, retained locally under ignored
+`build/literal-batch-records/before/`:
+
+```sh
+php -d pcov.enabled=0 tools/benchmark-literal-batches.php --baseline=build/literal-batch-records/before --case=flat --workers=3 --iterations=31
+php -d pcov.enabled=0 tools/benchmark-literal-batches.php --baseline=build/literal-batch-records/before --case=single --workers=3 --iterations=31
+php -d pcov.enabled=0 tools/benchmark-literal-batches.php --baseline=build/literal-batch-records/before --case=mixed --workers=3 --iterations=31
+php -d pcov.enabled=0 tools/benchmark-literal-batches.php --baseline=build/literal-batch-records/before --case=flat --workers=1 --iterations=3 --trace
+```
+
+Without `--baseline`, only the current implementation runs. Each worker freezes
+and warms the grammar outside recognition timers. Every observation checks full
+consumption at a nonzero byte offset, an independently expected semantic value,
+the complete serialized CST hash and diagnostics against ordinary freezing,
+repeated value reads, and deferred/idempotent commit. Source construction, value
+access, serialization, correctness checks and release are outside recognition
+timers. Preparation is reported separately. `--trace` instruments a copy of the
+Success class; constructor counts include calls originating in extensions, but
+traced times and memory are distorted and must not be used for speed conclusions.
+
+Windows/PHP 8.2.10/PCRE 10.40, PCOV disabled, three fresh workers per variant with
+alternating before/after order, three warmups and 31 observations. No test suite
+overlapped timing; host load was uncontrolled. Recognition/CST values are medians
+of worker medians; memory is incremental used PHP bytes in an untraced worker,
+not RSS or cumulative allocation volume:
+
+| Fixture | Recognition before / after | Peak bytes before / after | Success constructors before / after |
+|---|---:|---:|---:|
+| 128 flat Text operands | 207.6 / 153.5 us | 69,816 / 47,216 | 130 / 2 |
+| One operand containing 64 repeated pairs | 79.8 / 79.3 us | 24,488 / 24,488 | 3 / 2 |
+| Mixed literal, scanner and executable operands | 83.8 / 81.5 us | 11,440 / 11,000 | 11 / 7 |
+
+Prepared/retained-result memory was unchanged: 12,552/40,664 bytes for flat,
+16,904/21,360 for single and 8,224/7,304 for mixed. Preparation medians were
+291.8/307.3, 549.0/531.2 and 156.7/162.0 us respectively. Preparation still uses
+ordinary recognition to classify source-free recipes; no preparation improvement
+is claimed. Raw reports, saved classes and control bootstraps are locally retained
+under ignored `build/literal-batch-records/`.
+
+The flat fixture measured about 26% less recognition time and 32% lower peak used
+PHP memory in this run. Single/mixed timing differences are small, and these
+synthetic results do not establish an application-throughput improvement.
+Three alternating workers with 15 observations on the existing extraction profiler
+measured nested recognition at 4.0550/3.9331 ms and record at 0.6619/0.6526 ms;
+retained memory and tree hashes were unchanged. The nested constructor trace was
+164 before and after: warmed extraction paths did not exercise this removal, so
+those control timing differences do not demonstrate a benefit from this change.
+
+Focused regressions cover direct operand syntax, metadata, source ownership,
+inherited diagnostics, limited fallback, mixed zero-width/scanner/literal ordering,
+discarded attempts, cached values and collections, validation, explicit effect
+order and span reuse. Existing literal/scanner suites compare byte/UTF-8 memory and
+file trees, failures and exhausted limits. Reject this change if any of those
+contracts diverges or mixed-child bookkeeping outweighs the targeted allocation
+reduction on representative workloads.

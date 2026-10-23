@@ -15,6 +15,7 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Sequence as OrdinarySequence;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 /** @internal Batched literal and scanner recognition retaining every original child node. */
 class Sequence extends OrdinarySequence
@@ -64,6 +65,7 @@ class Sequence extends OrdinarySequence
         // Without automatic spacing, adjacent plain operands can be recognized in batches.
         // Failed runs recover diagnostics locally: earlier executable operands must never run twice.
         $children = [];
+        $concreteChildren = null;
         $length = 0;
         foreach ($this->steps as $step) {
             if ($step instanceof LiteralSequence || $step instanceof ScannerSequence) {
@@ -73,8 +75,17 @@ class Sequence extends OrdinarySequence
                 }
                 if ($batch !== null) {
                     foreach ($batch as $child) {
-                        $length += $child->length;
-                        $children[] = $child;
+                        if ($child instanceof ConcreteNode) {
+                            $length += $child->span->byteLength();
+                            $concreteChildren ??= $children;
+                            $concreteChildren[] = $child;
+                        } else {
+                            $length += $child->length;
+                            $children[] = $child;
+                            if ($concreteChildren !== null) {
+                                $concreteChildren[] = $child;
+                            }
+                        }
                     }
                     continue;
                 }
@@ -88,9 +99,23 @@ class Sequence extends OrdinarySequence
                     return $this->failure($source, $byteOffset, $length);
                 }
                 $children[] = $child;
+                if ($concreteChildren !== null) {
+                    $concreteChildren[] = $child;
+                }
             }
         }
 
-        return $this->success($source, $byteOffset, $length, $children);
+        // A full-width literal operand can share its immutable interval with the parent,
+        // just as Parser::success() does when a child execution record is present.
+        $firstConcrete = $concreteChildren[0] ?? null;
+        $success = $children === [] && $firstConcrete instanceof ConcreteNode
+            && $firstConcrete->span->start === $byteOffset && $firstConcrete->span->end === $byteOffset + $length
+            ? $this->successFromSpan($firstConcrete->span)
+            : $this->success($source, $byteOffset, $length, $children);
+        if ($concreteChildren !== null) {
+            $success->setConcreteChildren($concreteChildren);
+        }
+
+        return $success;
     }
 }
