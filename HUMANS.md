@@ -18,9 +18,3 @@ AI AGENTS MUST NOT USE THIS FILE!
 
 - Benchmark and improve performance
 - Maintain Library
-
-### 8. Research techniques from other implementations
-
-[x] Lazy compressed-prefix planning
-[ ] Remove temporary Success records from proven literal batches
-[ ] Implement Bounded relative-context memoization

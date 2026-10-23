@@ -2029,6 +2029,46 @@ or memory and preparation outweigh reuse. Current URI/ABNF/JSON samples supply n
 strict repeated-work evidence for a general cache; that is not a proof that all
 relative-context memoization is unhelpful. No cache is enabled by this instrumentation.
 
+## Batched literal repetition
+
+Frozen optimized grammars batch repetitions of plain, case-sensitive ASCII
+`Text` operands between 2 and 8192 bytes. For example,
+`Repeat::exact(new Text('ab'), 32768)->freeze()` compares bounded blocks instead
+of entering the terminal for every pair. Each block contains complete operands
+and occupies at most 8192 bytes. Preparation retains one block per eligible
+repetition; recognition does not materialize a complete file subject.
+
+The original per-operand CST children and byte spans remain intact. Tree memory
+therefore still grows with the number of matches. Operand metadata and callbacks,
+active trivia, case-insensitive sessions, custom sources and finite work/depth
+limits retain ordinary recognition. Minimum failures also use that path for exact
+progress and diagnostics. Successful batches account for original terminal entry
+and byte work; a terminating failed operand runs normally with its diagnostics
+restored after the minimum has been met. Single-unit repetitions retain their
+existing scanner optimization.
+
+Reproduce with coverage disabled in fresh workers:
+
+```sh
+php tools/benchmark-repeat-batching.php --iterations=9
+php tools/benchmark-repeat-batching.php --iterations=9 --source=file
+```
+
+The harness alternates three fresh workers per variant when given
+`--baseline=path/to/Repeat.before.php`, a saved copy of the previous
+`extensions/Optimizer/Parser/Repeat.php`. It excludes source setup, grammar
+preparation, two warmups, correctness checks and release from parse timing.
+Every observation checks acceptance, value and a CST hash against unoptimized
+recognition. Used-PHP retained bytes are measured before value projection.
+
+On Windows/PHP 8.2.10, PCOV disabled, nine observations per worker, medians of
+worker medians for 64 KiB of repeated `ab` were 139.811 to 19.146 ms in UTF-8
+memory and 160.822 to 19.175 ms from a UTF-8 file. Both variants retained
+9,966,360 used-PHP bytes after recognition. These are approximately 7.3x and
+8.4x throughput improvements on this fixture, not reductions in CST memory or
+general application guarantees. Host load was uncontrolled. The saved baseline
+and raw reports are locally retained under ignored `build/repeat-batching/`.
+
 ## Lifetime and memory guarantees
 
 - File source copying and validation use bounded chunks; random reads retain one
