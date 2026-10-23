@@ -6,6 +6,7 @@ namespace Vanderlee\Comprehend\Extensions\Optimizer\Parser;
 
 use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
+use Vanderlee\Comprehend\Extensions\Optimizer\ChoiceDispatch;
 use Vanderlee\Comprehend\Extensions\Optimizer\GraphOptimizer;
 use Vanderlee\Comprehend\Extensions\Optimizer\LexicalTable;
 use Vanderlee\Comprehend\Match\AbstractMatch;
@@ -22,6 +23,9 @@ class Choice extends OrdinaryChoice
     /** @var array<array-key, LexicalTable> */
     private array $lexical = [];
 
+    /** @var array<array-key, ChoiceDispatch> */
+    private array $dispatch = [];
+
     public static function from(OrdinaryChoice $original): self
     {
         $copy = new self(...iterator_to_array($original));
@@ -33,12 +37,14 @@ class Choice extends OrdinaryChoice
     public function prepareRecognition(): void
     {
         $this->lexical = GraphOptimizer::choiceTables($this);
+        $this->dispatch = ChoiceDispatch::alternatives($this, $this->lexical);
     }
 
     protected function copyDependencies(GraphSnapshot $context): void
     {
         parent::copyDependencies($context);
         $this->lexical = [];
+        $this->dispatch = [];
     }
 
     protected function attemptAlternative(
@@ -48,6 +54,13 @@ class Choice extends OrdinaryChoice
         int $offset,
         ParseSession $session,
     ): AbstractMatch {
+        if (isset($this->dispatch[$index]) && static::class === self::class) {
+            $failure = $this->dispatch[$index]->reject($source, $offset, $session);
+            if ($failure !== null) {
+                return $failure;
+            }
+        }
+
         return GraphOptimizer::attempt(
             $this->lexical[$index] ?? null,
             $parser,

@@ -43,7 +43,7 @@ Distinguish measured findings from hypotheses. Do not change production code.
 
 ### 5. Reduce repeated recognition and dispatch
 
-[ ] Specialize compiled-literal failure handling
+[x] Specialize compiled-literal failure handling
 [ ] Add conservative choice dispatch, then compare a literal trie with prefix factoring
 [ ] Instrument selective memoization
 

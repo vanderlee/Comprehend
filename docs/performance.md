@@ -41,6 +41,111 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Choice dispatch and prefix-plan comparison (2026-10-23)
+
+`Optimizer\ChoiceDispatch` provides conservative first-byte rejection for exact
+built-in ASCII Text alternatives outside existing bounded lexical tables. Plans
+require at least two distinct eligible first bytes and leave the first alternative
+on its ordinary path. Unknown, nullable and executable operands are never inferred
+through. Rejected operands still merge their original diagnostics in alternative
+order and charge their original entry/mismatch work. Matching candidates retain
+checked recognition. Finite budgets, active spacing, case-insensitive scopes and
+custom choice subclasses retain their prior paths. This is not general first-set
+analysis or a way to remove the ordered alternative loop.
+
+The maintained `tools/compare-choice-plans.php` compares the previous optimized
+Choice, production dispatch, and two research-only plans: a byte trie and a
+compressed prefix tree (internal prefix factoring). Both prototypes classify flat
+literal alternatives, replay failure observations in original order through the
+ordinary Choice selector, and recognize successful operands normally. They retain
+the original CST; rewriting `P a | P b` as a new authored `P (a | b)` would change
+tree boundaries and can change guards, scopes and ranked selection. That grammar
+rewrite is not an equivalent benchmark or a production optimization here.
+
+Fresh PHP 8.2.10/Windows workers used PCOV disabled, three warmups and 31 timed
+recognition/CST observations. Three workers per variant alternated forward/reverse
+variant order. Timings exclude source setup, correctness checks, result release
+and preparation. The test suite ran afterward. Host activity was uncontrolled.
+The fixture has 128 alternatives, a 512-byte prefix plus three decimal suffix
+bytes; `distinct` prepends one of 90 initial bytes. These are medians of worker
+medians in milliseconds, not application throughput guarantees:
+
+| FIRST-policy fixture | Previous lexical | Dispatch | Byte trie | Factored prefix |
+|---|---:|---:|---:|---:|
+| Diverse initial bytes, last alternative | 0.641 | 0.325 | 0.459 | 0.270 |
+| Shared prefix, last alternative | 0.836 | 0.845 | 0.540 | 0.387 |
+| Shared prefix, late malformed input | 0.863 | 0.842 | 0.531 | 0.355 |
+| First alternative succeeds | 0.0110 | 0.0109 | 0.1990 | 0.0314 |
+| Eight-byte prefix, warm lexical tables | 0.488 | 0.473 | 0.285 | 0.282 |
+| Same short literals, saturated tables | 0.893 | 0.904 | 0.282 | 0.284 |
+
+Diverse-input worker medians ranged 0.624–0.646 ms before and 0.322–0.329 ms
+with dispatch. Checked parser entries fell from 129 to 4; work remained 1,285
+units. Shared-prefix entries/work remained 129/65,829. Its small apparent dispatch
+slowdown is an overhead to watch, not evidence that first-byte filtering helps
+shared prefixes. The LONGEST shared-prefix control measured 0.841/0.862/0.560/0.385
+ms respectively. Short warmed tables already reduce checked entries to one;
+prototypes instead charge ordinary Text work, so their unlimited counters differ.
+The saturated fixture fills each table with 160 distinct failing lookaheads before
+the measured input. Production dispatch does not replace these tables or their
+capacity/saturation behavior.
+
+For diverse literals, preparation retained 64,568 used bytes before and 160,656
+with dispatch, including static expectations. A dispatch-disabled Choice gains
+one empty array property; the shared fixture retained the same measured 64,568
+bytes in this run. The byte trie retained 28,657,784 bytes across 46,545 nodes;
+factoring retained 184,280 bytes across 167 nodes. Shared-prefix plans retained
+455,592/141,432 bytes across 656/145 nodes respectively. These are PHP used bytes,
+not RSS or allocator peaks. The report also records preparation and parse peaks,
+first-parse time, and retained result memory. All four diverse-input variants
+retained the same 2,592-byte selected result in this probe. Preparation timings for
+production include freezing, while prototypes omit snapshot/safety analysis;
+their absolute preparation times must not be treated as equivalent cold parsing.
+Diverse-fixture preparation medians were 0.618 ms before and 0.805 ms with
+dispatch, versus 38.907 ms for trie construction and 0.342 ms for factored-plan
+construction. First-parse results and reuse counts are needed to assess amortization
+for an application; warm recognition alone does not establish a cold-parse gain.
+
+Dispatch adds preparation proportional to inspected literal bytes and retains
+source-free failure recipes. Recognition still visits O(alternatives) entries to
+preserve ordered diagnostics; it replaces full-literal attempts with one-byte
+probes where rejection is proven. Prototypes classify the matched prefix plus
+candidate outcomes, but still replay O(alternatives) failure observations. Trie
+storage grows with distinct byte prefixes; factoring compresses unary paths into
+string comparisons. Their eager whole-choice classification explains the severe
+early-success regressions. Neither prototype is enabled in production. Factoring
+is the better further experiment for long late-failing chains, but requires lazy
+classification and broader eligibility/lifecycle proofs before promotion.
+
+Each worker performs 216 cold/warm differential checks against ordinary freezing:
+all policies, byte/UTF-8 sources, nonzero offsets, EOF, malformed input, prefix
+overlap and ties, prefix/all-input entry points, diagnostics, CST/AST and values.
+The new unit/feature regressions additionally check guards, cached collections,
+explicit effects, string keys, file pages, inherited scopes, authoring copies,
+partial failure progress and exact exhausted budgets. No memoization is added;
+none of this demonstrates context-equivalent repeated recognition for a cache.
+
+Reproduce the current comparison (the lexical control disables dispatch through
+reflection after preparing the current graph):
+
+```sh
+php -d pcov.enabled=0 tools/compare-choice-plans.php --case=distinct --workers=3
+php -d pcov.enabled=0 tools/compare-choice-plans.php --case=shared --workers=3
+php -d pcov.enabled=0 tools/compare-choice-plans.php --case=first --workers=3
+php -d pcov.enabled=0 tools/compare-choice-plans.php --case=shared --policy=longest --workers=3
+```
+
+Other cases are `short`, `saturated`, `malformed`, `prefixes` and `empty`. To
+reproduce the original implementation control used above, save
+`b30235b:extensions/Optimizer/Parser/Choice.php` as
+`build/choice-dispatch/original-choice.php` and add
+`--baseline-choice=build/choice-dispatch/original-choice.php`; the control worker
+loads that class before discovery. Raw observations are retained under ignored
+`build/choice-dispatch/` while available. Reject dispatch if diagnostic ordering,
+selection, work or lifecycle comparisons diverge, or representative regressions
+outweigh the targeted benefit. Reject either eager prefix plan as a general
+replacement based on the measured early-success and preparation-memory costs.
+
 ### Flat compiled-literal failures (2026-10-23)
 
 When a compiled literal run contains only exact built-in ASCII Text operands,

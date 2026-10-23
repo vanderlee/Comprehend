@@ -442,6 +442,20 @@ use ordinary recognition. A narrow regex subset is eligible: a single character
 class, optionally with a finite quantifier. There is no general regex conversion
 or parse-position memoization. `FreezeFlags::NONE` disables these tables too.
 
+Choices with at least two distinguishable first bytes among eligible long ASCII
+Text alternatives can also prepare first-byte rejection recipes. This deliberately
+small first set covers exact built-in Text operands outside lexical-table coverage;
+it does not infer through nullable, guarded or unknown graphs. The first alternative
+keeps its existing path, avoiding extra lookahead for early ordered success.
+Later impossible alternatives record their original expectation and rule path in
+order, with zero failure progress and the original two work units. Possible matches
+still use the original recognizer. Ranked policies, ties and the alternative loop
+are unchanged. Active spacing, case-insensitive scopes, finite limits and custom
+combinator subclasses retain their existing paths. Recipes retain no source,
+semantic state or results, and authoring copies clear them. Byte tries and internal
+prefix factoring remain research tools; see the
+[choice-plan comparison](performance.md#choice-dispatch-and-prefix-plan-comparison-2026-10-23).
+
 See [Library optimizer measurements](performance.md#library-lexical-tables-2026-10-17)
 for performance and retained-memory tradeoffs.
 
