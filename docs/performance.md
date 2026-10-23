@@ -504,8 +504,9 @@ candidate outcomes, but still replay O(alternatives) failure observations. Trie
 storage grows with distinct byte prefixes; factoring compresses unary paths into
 string comparisons. Their eager whole-choice classification explains the severe
 early-success regressions. Neither prototype is enabled in production. Factoring
-is the better further experiment for long late-failing chains, but requires lazy
-classification and broader eligibility/lifecycle proofs before promotion.
+is the better further experiment for long late-failing chains. The lazy research
+variant below investigates classification cost; broader eligibility/lifecycle
+proofs remain necessary before promotion.
 
 Each worker performs 216 cold/warm differential checks against ordinary freezing:
 all policies, byte/UTF-8 sources, nonzero offsets, EOF, malformed input, prefix
@@ -525,7 +526,7 @@ php -d pcov.enabled=0 tools/compare-choice-plans.php --case=first --workers=3
 php -d pcov.enabled=0 tools/compare-choice-plans.php --case=shared --policy=longest --workers=3
 ```
 
-Other cases are `short`, `saturated`, `malformed`, `prefixes` and `empty`. To
+Other cases are `short`, `saturated`, `malformed`, `prefixes`, `second` and `empty`. To
 reproduce the original implementation control used above, save
 `b30235b:extensions/Optimizer/Parser/Choice.php` as
 `build/choice-dispatch/original-choice.php` and add
@@ -535,6 +536,168 @@ loads that class before discovery. Raw observations are retained under ignored
 selection, work or lifecycle comparisons diverge, or representative regressions
 outweigh the targeted benefit. Reject either eager prefix plan as a general
 replacement based on the measured early-success and preparation-memory costs.
+
+### Lazy compressed-prefix research plan (2026-10-23)
+
+`tools/choice-plans/ChoicePlanProbe.php` now also supports `lazy-factored` in
+the comparison harness. It prepares the same compressed tree eagerly, with
+parent/byte-offset and literal-to-terminal indexes. Recognition attempts the
+first alternative normally. A later alternative examines only its ancestry,
+caching each examined edge's mismatch offset or complete match within that parse.
+It never classifies unrelated sibling subtrees. The subject window is copied on
+the first planned attempt, bounded by the longest literal and remaining input.
+Per-parse comparisons and the window are restored in `finally`, including on
+exceptions; neither is retained between parses. This is comparison reuse within
+one choice, not parser-position memoization.
+
+The ordinary Choice loop still selects alternatives and merges failure observations
+in their original order. Successful alternatives use their original checked Text
+recognizers and construct fresh CSTs. Finite work/depth limits, active spacing and
+case-insensitive scopes use ordinary recognition. The research harness supplies
+flat ASCII Text alternatives; this does not establish support
+for arbitrary grammar graphs or subsequent mutation of those alternatives.
+This research variant itself does not change production parsing; the restricted
+production implementation is described below.
+
+Fresh Windows/PHP 8.2.10/PCRE 10.40 workers, PCOV disabled, three workers per
+variant with forward/reverse variant order, three warmups and 31 observations.
+No test-suite run overlapped these timings. Host load was uncontrolled. Each
+fixture has 128 alternatives; long prefixes contain 512 bytes. Medians of worker
+medians for recognition including CST construction, milliseconds:
+
+| Fixture / policy | Production dispatch | Eager factored | Lazy factored |
+|---|---:|---:|---:|
+| Shared prefix, last success / FIRST | 0.8600 | 0.3802 | 0.4262 |
+| Shared prefix, late mismatch / FIRST | 0.8313 | 0.3701 | 0.4063 |
+| First alternative succeeds / FIRST | 0.0112 | 0.0301 | 0.0116 |
+| Second alternative succeeds / FIRST | 0.0239 | 0.0326 | 0.0335 |
+| Diverse initial bytes, last success / FIRST | 0.3298 | 0.2791 | 0.3807 |
+| Short literals, warm lexical tables / FIRST | 0.5057 | 0.2936 | 0.3311 |
+| Short literals, saturated tables / FIRST | 0.8671 | 0.2880 | 0.3303 |
+| Overlapping prefix, first success / FIRST | 0.0127 | 0.0273 | 0.0139 |
+| Empty input / FIRST | 0.4172 | 0.3652 | 0.4266 |
+| Shared prefix, last success / LONGEST | 0.8602 | 0.3803 | 0.4301 |
+| Shared prefix, last success / SHORTEST | 0.8430 | 0.3903 | 0.4420 |
+
+The lazy plan retains the long-prefix benefit and avoids most of the eager
+first-success penalty. It is slower than eager factoring on these late-success
+fixtures, and slower than production for second success and diverse initial
+bytes. These results reject it as a general production replacement. They do not
+demonstrate an application-throughput improvement or justify automatic selection.
+
+For the shared-prefix fixture, production/eager/lazy preparation retained
+76,536/141,624/183,808 used PHP bytes. Eager/lazy construction medians were
+0.4137/0.4535 ms; production complete freezing was 0.7529 ms. Prototype construction
+omits snapshot and safety analysis, so these are not comparable cold-parse costs.
+Recognition incremental peaks were 172,480/145,680/145,928 used PHP bytes; retained
+results were identical across variants. These are not RSS measurements. The
+extra ancestry indexes cost O(plan nodes + alternatives) storage; per-parse edge
+results cost O(visited nodes), and the subject window costs O(longest literal).
+The ordered alternative loop and diagnostic replay remain; matching candidates
+also pay ordinary Text recognition. Preparing the plan is still eager, and there
+is no general linear-time guarantee.
+
+Reproduce each table row with the corresponding case/policy:
+
+```sh
+php -d pcov.enabled=0 tools/compare-choice-plans.php --case=shared --workers=3 --iterations=31
+php -d pcov.enabled=0 tools/compare-choice-plans.php --case=first --workers=3 --iterations=31
+php -d pcov.enabled=0 tools/compare-choice-plans.php --case=second --workers=3 --iterations=31
+php -d pcov.enabled=0 tools/compare-choice-plans.php --case=shared --policy=longest --workers=3 --iterations=31
+```
+
+Raw reports are locally retained under ignored `build/lazy-choice-CASE.json`;
+ranked shared-prefix reports use `longest` and `shortest` filenames. Each worker
+runs 216 differential checks against ordinary freezing before timing. The focused
+`tests/Feature/authoring/LazyChoicePlanTest.php` additionally compares overlapping
+literals, ties, empty/multibyte input, byte offsets, inherited diagnostics and work;
+it checks scoped fallbacks, exact exhausted budgets, file-window avoidance on first
+success, exception restoration, source release, fresh cached values and explicit
+idempotent effects. These research measurements alone do not establish bounded
+preparation, safe graph-copy behavior or comparable complete-freeze costs.
+
+### Restricted production prefix plans (2026-10-23)
+
+`Optimizer\ChoicePrefix::prepare()` builds a source-free compressed plan only for
+4–256 exact built-in ASCII Text alternatives, each longer than the 32-byte lexical
+table limit and sharing at least 32 prefix bytes. Executable operand metadata,
+case-insensitive literals and custom parser subclasses exclude the entire plan.
+Preparation caps each literal at 65,536 bytes, total literal bytes at 262,144,
+compressed depth at 32 levels and nodes at 4,096. A rejected graph keeps its
+existing lexical/dispatch paths. These are conservative eligibility bounds rather
+than claims of optimal thresholds for every workload.
+
+The optimized Choice leaves its first two alternatives on ordinary recognition,
+avoiding the research variant's second-success classification penalty. Later
+attempts examine only needed ancestor edges, caching outcomes until that choice
+returns. Each edge reads its own bounded source interval rather than copying a
+longest-literal subject. Successful candidates still use checked recognition and
+fresh CST construction. Negative recipes preserve partial progress, alternative
+order, original expectations/rule paths and ordinary Text work charges. No semantic
+projection or effect execution is shared. Finite work/depth budgets, active spacing,
+case-insensitive scopes, custom sources and custom optimized Choice subclasses
+retain existing recognition. Only exact built-in memory/file byte/UTF-8 sources
+use the plan. `finally` restores recognition-local comparisons; graph copies clear
+the prepared plan and prepare their own replacement.
+
+Three fresh workers per variant, alternating forward/reverse order, three warmups
+and 31 observations, Windows/PHP 8.2.10/PCRE 10.40, PCOV disabled. No test suite
+overlapped timing; host load was uncontrolled. Recognition/CST medians of worker
+medians in milliseconds:
+
+| Fixture / policy | Prefix disabled | Production prefix |
+|---|---:|---:|
+| Shared prefix, last success / FIRST | 0.8540 | 0.4361 |
+| Shared prefix, late mismatch / FIRST | 0.8395 | 0.4329 |
+| Shared prefix, first success / FIRST | 0.0112 | 0.0119 |
+| Shared prefix, second success / FIRST | 0.0242 | 0.0263 |
+| Diverse initial bytes, last success / FIRST | 0.3377 | 0.3301 |
+| Short literals, warm tables / FIRST | 0.4849 | 0.4939 |
+| Short literals, saturated tables / FIRST | 0.8557 | 0.8878 |
+| Shared prefix, last success / LONGEST | 0.8639 | 0.4668 |
+
+The shared fixture has 128 alternatives with a 512-byte prefix and a three-byte
+suffix. Checked entries fell from 129 to 4 with work unchanged at 65,829 units.
+Diverse and short fixtures are ineligible; their entry/work counters remain
+unchanged. Early shared successes still pay scope/plan checks even though they do
+not compare planned edges. The small control timing differences are overhead and
+noise to monitor, not proof of a general throughput improvement.
+
+Shared-fixture retained prepared memory increased from 76,600 to 231,488 used PHP
+bytes. Incremental recognition peaks fell from 172,480 to 83,104 bytes. Retained
+result deltas fell from 6,432 to 1,952 bytes because diagnostic strings can reference
+the prepared recipes; their storage has moved into the larger prepared graph.
+These are PHP used-memory deltas, not RSS or a general total-memory reduction.
+Ordered selection/diagnostic replay remains O(alternatives); edge comparisons and
+their temporary outcomes scale with the visited compressed paths. The complete
+tree still requires storage proportional to selected CST nodes.
+
+The `dispatch` control discards the prefix plan after freezing, so its reported
+preparation time includes prefix construction. A separate saved pre-change Choice
+control measured complete freeze at 0.7686 ms versus 1.2681 ms for production prefix,
+with peaks of 199,256/296,584 used bytes. First parses measured 0.8763/0.4746 ms.
+Those separate control workers did not alternate with production workers; treat
+these preparation figures as exploratory. Reuse frequency and early-success rates
+determine whether preparation amortizes. No cold-parse speedup is established.
+
+`tools/compare-choice-plans.php` now includes `prefix` (production), `dispatch`
+(prefix disabled) and `lexical` (both prefix and dispatch disabled). Explicit
+`--variant` selects one variant; otherwise each worker alternates the full set.
+Reproduce with `--case=shared`, `shared-first`, `second`, `distinct`, `short`,
+`saturated` or `malformed`, and `--workers=3 --iterations=31`. Raw reports are
+locally retained under ignored `build/production-prefix-CASE.json`. Use
+`--variant=lexical --baseline-choice=path/to/saved-original-choice.php` for a
+pre-change Choice control. The saved control in this run is
+`67d1cc4:extensions/Optimizer/Parser/Choice.php`, retained locally as
+`build/choice-prefix-before.php`.
+
+Focused ChoicePrefix unit and feature tests cover eligibility bounds, exact
+negative work/diagnostics, string keys, ties, overlapping literals, immutable
+trees, byte and UTF-8 memory/file sources, scoped/custom-source fallbacks, exact
+exhausted budgets, source errors, copy isolation, cached values and explicit
+idempotent effects. Reject or narrow the plan if those contracts diverge, bounded
+preparation is exceeded, or representative preparation/memory and early-success
+costs outweigh late shared-prefix gains.
 
 ### Flat compiled-literal failures (2026-10-23)
 

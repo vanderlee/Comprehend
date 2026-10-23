@@ -18,10 +18,11 @@ require __DIR__ . '/choice-plans/ChoicePlanProbe.php';
 
 $options = getopt('', ['worker', 'variant:', 'case:', 'count:', 'prefix:', 'iterations:', 'workers:', 'policy:',
     'baseline-choice:']);
-$variants = ['lexical', 'dispatch', 'trie', 'factored'];
-$cases = ['distinct', 'shared', 'malformed', 'short', 'saturated', 'prefixes', 'first', 'empty'];
+$variants = ['lexical', 'dispatch', 'prefix', 'trie', 'factored', 'lazy-factored'];
+$cases = ['distinct', 'shared', 'malformed', 'short', 'saturated', 'prefixes',
+    'first', 'shared-first', 'second', 'empty'];
 $policy = ChoicePolicy::from($options['policy'] ?? 'first');
-$variant = $options['variant'] ?? 'dispatch';
+$variant = $options['variant'] ?? 'prefix';
 $baselineChoice = $options['baseline-choice'] ?? null;
 $case = $options['case'] ?? 'shared';
 $count = max(2, min(512, (int) ($options['count'] ?? 128)));
@@ -33,9 +34,10 @@ if (!in_array($variant, $variants, true) || !in_array($case, $cases, true)) {
 
 if (!isset($options['worker'])) {
     $workers = max(1, (int) ($options['workers'] ?? 3));
+    $selectedVariants = isset($options['variant']) ? [$variant] : $variants;
     $reports = [];
     for ($worker = 0; $worker < $workers; ++$worker) {
-        $order = $worker % 2 === 0 ? $variants : array_reverse($variants);
+        $order = $worker % 2 === 0 ? $selectedVariants : array_reverse($selectedVariants);
         foreach ($order as $selected) {
             $command = [PHP_BINARY, '-d', 'pcov.enabled=0', __FILE__, '--worker', '--variant=' . $selected,
                 '--case=' . $case, '--count=' . $count, '--prefix=' . $prefixBytes,
@@ -79,8 +81,10 @@ if ($case === 'prefixes') {
 $text = $literals[$count - 1];
 if ($case === 'malformed') {
     $text = substr($text, 0, -1) . '!';
-} elseif ($case === 'first') {
+} elseif (in_array($case, ['first', 'shared-first'], true)) {
     $text = $literals[0];
+} elseif ($case === 'second') {
+    $text = $literals[1];
 } elseif ($case === 'empty') {
     $text = '';
 }
@@ -92,29 +96,36 @@ gc_collect_cycles();
 $before = memory_get_usage(false);
 memory_reset_peak_usage();
 $start = hrtime(true);
-if ($variant === 'trie' || $variant === 'factored') {
-    $grammar = new ChoicePlanProbe($literals, $variant === 'factored');
+if (in_array($variant, ['trie', 'factored', 'lazy-factored'], true)) {
+    $grammar = new ChoicePlanProbe($literals, $variant !== 'trie', lazy: $variant === 'lazy-factored');
     $root = $grammar;
     $preparationKind = 'prototype construction, without graph snapshot/safety analysis';
 } else {
     $grammar = $parser->freeze();
     $root = (new ReflectionProperty(FrozenGrammar::class, 'root'))->getValue($grammar);
+    if ($variant !== 'prefix' && property_exists($root, 'prefix')) {
+        (new ReflectionProperty(OptimizedChoice::class, 'prefix'))->setValue($root, null);
+    }
     if ($variant === 'lexical' && $baselineChoice === null) {
         (new ReflectionProperty(OptimizedChoice::class, 'dispatch'))->setValue($root, []);
     }
-    $preparationKind = 'complete freeze';
+    $preparationKind = $variant === 'prefix' || $baselineChoice !== null
+        ? 'complete freeze' : 'complete freeze then prefix plan discarded';
 }
 $prepareMs = (hrtime(true) - $start) / 1e6;
 $prepareBytes = memory_get_usage(false) - $before;
 $preparePeakBytes = memory_get_peak_usage(false) - $before;
 
 // Correctness runs use separate grammars below; do not populate measured lexical entries.
-$check = $variant === 'trie' || $variant === 'factored'
-    ? new ChoicePlanProbe($literals, $variant === 'factored') : $parser->freeze();
+$check = in_array($variant, ['trie', 'factored', 'lazy-factored'], true)
+    ? new ChoicePlanProbe($literals, $variant !== 'trie', lazy: $variant === 'lazy-factored') : $parser->freeze();
 $checkRoot = $check instanceof FrozenGrammar
     ? (new ReflectionProperty(FrozenGrammar::class, 'root'))->getValue($check) : $check;
 if ($variant === 'lexical' && $baselineChoice === null) {
     (new ReflectionProperty(OptimizedChoice::class, 'dispatch'))->setValue($checkRoot, []);
+}
+if ($check instanceof FrozenGrammar && $variant !== 'prefix' && property_exists($checkRoot, 'prefix')) {
+    (new ReflectionProperty(OptimizedChoice::class, 'prefix'))->setValue($checkRoot, null);
 }
 $checks = 0;
 foreach (ChoicePolicy::cases() as $checkPolicy) {
