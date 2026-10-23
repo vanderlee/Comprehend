@@ -135,8 +135,8 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
                 }
 
                 $afterSeparator = $cursor;
-                $separatorSelected = $pairSelected;
-                $separatorConcrete = $pairConcrete;
+                // attempt() appends only on success, so a failed item leaves the
+                // separator buffers intact without copy-on-write snapshots.
                 $item = $this->attempt(
                     $this->item,
                     $source,
@@ -151,8 +151,8 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
                         $session->deferListDiagnostics($diagnostics);
                         // A leading separator alone never constitutes a list.
                         if ($items !== [] && $this->allowTrailing) {
-                            array_push($selected, ...$separatorSelected);
-                            array_push($concrete, ...$separatorConcrete);
+                            array_push($selected, ...$pairSelected);
+                            array_push($concrete, ...$pairConcrete);
                             $end = $afterSeparator;
                         }
                     }
@@ -171,21 +171,17 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
             if ($items !== [] && $this->max !== null && count($items) === $this->max && $this->allowTrailing) {
                 $diagnostics = $session->diagnosticState();
                 $cursor = $end;
-                $tailSelected = [];
-                $tailConcrete = [];
                 $tail = $this->attempt(
                     $this->separator,
                     $source,
                     $cursor,
                     $session,
                     true,
-                    $tailSelected,
-                    $tailConcrete,
+                    $selected,
+                    $concrete,
                     true,
                 );
                 if ($tail !== null) {
-                    array_push($selected, ...$tailSelected);
-                    array_push($concrete, ...$tailConcrete);
                     $end = $cursor;
                 } else {
                     $session->restoreDiagnostics($diagnostics);
@@ -217,7 +213,8 @@ class SeparatedList extends Parser implements AnalyzableParser, ReusableSnapshot
     }
 
     /**
-     * Stage syntax and trivia until the enclosing pair is accepted.
+     * Append syntax and trivia only after this operand succeeds. A failed
+     * operand leaves both buffers unchanged, including its preceding spacing.
      * @param list<Success> $selected
      * @param list<Success|ConcreteNode> $concrete
      */

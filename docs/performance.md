@@ -41,6 +41,60 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Separated-list staging buffers (2026-10-22)
+
+`SeparatedList::attempt()` appends selected matches and concrete syntax only
+after its operand succeeds. A failed item therefore leaves the staged separator
+and its preceding trivia unchanged. The list now retains that existing pair
+buffer for optional trailing acceptance, removing the separate separator-array
+snapshots that forced copy-on-write when a successful item was appended. At a
+finite item bound, the final separator attempt appends directly to the selected
+and concrete arrays; failure leaves those arrays unchanged. Pair staging remains
+in place where a separator may need to roll back with its following item.
+
+A source counter on the saved original 128-ID nested scanner-spacing fixture
+recorded 266 removed snapshot assignments. Successful item appends followed
+nonempty shared prefixes containing 258 array slots in total. These count source
+operations and logical array slots, not PHP heap allocations or allocated bytes.
+The change introduces no new preparation, cache or persistent state. Retained
+tree complexity and parsing complexity are unchanged.
+
+Fresh Windows/PHP 8.2.10 timing workers disabled PCOV, warmed three times and
+measured 31 recognition/CST observations each, alternating original/current
+order. Preparation, source setup, correctness, values, serialization, release and
+collection were outside timing. Five workers per variant initially measured
+scanner-spacing medians of 5.398 versus 5.387 ms and repeated-character medians
+of 6.046 versus 6.756 ms. A seven-worker follow-up reversed the apparent
+repeated-character slowdown: medians were 8.353 versus 7.984 ms, with scanner
+spacing at 6.623 versus 6.001 ms. Worker ranges overlap substantially; uncontrolled
+host variation establishes no consistent throughput improvement or regression.
+
+Retained recognition memory and incremental parse peaks were unchanged:
+388,600 / 400,512 used bytes for scanner spacing and 389,608 / 403,320 for
+repeated-character spacing. CST hashes, parser entries and successful work
+counts agreed. Removing short-lived array copies does not establish lower
+retained memory or a different asymptotic bound.
+
+A 52,992-case original/current comparison matched acceptance, byte consumption,
+ordered diagnostics, CST/AST, cached values, effects and execution-limit outcomes.
+New regressions check bounded and unbounded trailing acceptance, partial separator
+failure, discarded item spacing, zero-width trivia, separator collections and
+exact commit ordering in both freeze modes. Original sources, counters, workers
+and raw reports are under ignored `build/list-staging/`. While retained, reproduce:
+
+```sh
+php -d pcov.enabled=0 build/list-staging/count.php
+php -d pcov.enabled=0 build/list-staging/before.php --spacing=scan
+php -d pcov.enabled=0 build/spacing-research/experiment.php --spacing=scan
+php -d pcov.enabled=0 build/list-staging/differential.php --original-list
+php -d pcov.enabled=0 build/list-staging/differential.php
+```
+
+Use fresh alternating workers and `--spacing=set` for the repeated-character
+control. Reject the optimization if staged data leaks after failure, separator
+permissions or rollback differ, effects reorder, limits change, or stable
+common-workload regressions outweigh the removed array traffic.
+
 ### Automatic-spacing dispatch (2026-10-22)
 
 `ParseSession::skipSpacingSyntax()` now owns its syntax-returning path rather
