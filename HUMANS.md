@@ -43,7 +43,7 @@ Distinguish measured findings from hypotheses. Do not change production code.
 
 ### 6. Improve cold parsing and grammar preparation
 
-[ ] Reduce repeated optimizer classification and template construction
+[x] Reduce repeated optimizer classification and template construction
 [ ] Replace copied analysis paths with compact ancestry
 [ ] Avoid redundant detached exports before freezing
 

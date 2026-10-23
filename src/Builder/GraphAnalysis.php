@@ -12,8 +12,10 @@ final class GraphAnalysis
 {
     /** @var array<int, Parser> */
     private array $nodes = [];
-    /** @var array<int, list<string>> */
-    private array $paths = [];
+    /** @var array<int, int|null> First-discovery parents preserve diagnostic paths through shared graphs. */
+    private array $parents = [];
+    /** @var array<int, string> Labels captured during collection, before custom analysis runs. */
+    private array $labels = [];
     /** @var array<int, bool|null> */
     private array $nullable = [];
 
@@ -21,24 +23,25 @@ final class GraphAnalysis
     public function validate(Parser $root): array
     {
         $this->nodes = [];
-        $this->paths = [];
+        $this->parents = [];
+        $this->labels = [];
         $this->nullable = [];
-        $this->collect($root, []);
+        $this->collect($root);
         $warnings = $this->initializeNullability();
         $this->resolveNullability();
         $lookup = new NullabilityLookup($this->nullable);
         $this->rejectNullableProgress($lookup);
 
         $completed = [];
+        $active = [];
         foreach ($this->nodes as $node) {
-            $this->checkLeadingCycles($node, $lookup, [], $completed);
+            $this->checkLeadingCycles($node, $lookup, $active, $completed);
         }
 
         return $warnings;
     }
 
-    /** @param list<string> $path */
-    private function collect(Parser $node, array $path): void
+    private function collect(Parser $node, ?int $parent = null): void
     {
         $id = spl_object_id($node);
         if (isset($this->nodes[$id])) {
@@ -46,16 +49,29 @@ final class GraphAnalysis
         }
 
         $this->nodes[$id] = $node;
-        $this->paths[$id] = [...$path, $node->graphLabel()];
+        $this->parents[$id] = $parent;
+        $this->labels[$id] = $node->graphLabel();
         if ($node instanceof AnalyzableParser) {
             $error = $node->analysisError();
             if ($error !== null) {
-                throw new LogicException($error . ': ' . implode(' -> ', $this->paths[$id]));
+                throw new LogicException($error . ': ' . $this->path($id));
             }
         }
         foreach ($node->children() as $child) {
-            $this->collect($child, $this->paths[$id]);
+            $this->collect($child, $id);
         }
+    }
+
+    /** Materialize a first-discovery path only when a warning or error needs it. */
+    private function path(int $id): string
+    {
+        $labels = [];
+        do {
+            $labels[] = $this->labels[$id];
+            $id = $this->parents[$id];
+        } while ($id !== null);
+
+        return implode(' -> ', array_reverse($labels));
     }
 
     /** @return list<string> */
@@ -66,7 +82,7 @@ final class GraphAnalysis
             $known = $node instanceof AnalyzableParser;
             $this->nullable[$id] = $known ? false : null;
             if (!$known) {
-                $warnings[] = 'Opaque parser: ' . implode(' -> ', $this->paths[$id]);
+                $warnings[] = 'Opaque parser: ' . $this->path($id);
             }
         }
 
@@ -123,7 +139,7 @@ final class GraphAnalysis
                     && $nullable === false
                 )
             ) {
-                throw new LogicException('Non-monotone nullability: ' . implode(' -> ', $this->paths[$id]));
+                throw new LogicException('Non-monotone nullability: ' . $this->path($id));
             }
             $changes[$id] = $nullable;
         }
@@ -140,7 +156,7 @@ final class GraphAnalysis
             foreach ($node->analysisProgressParsers() as $child) {
                 if ($lookup->get($child) === true) {
                     throw new LogicException(
-                        'Nullable repetition: ' . implode(' -> ', $this->paths[$id]) . ' -> ' . $child->graphLabel(),
+                        'Nullable repetition: ' . $this->path($id) . ' -> ' . $child->graphLabel(),
                     );
                 }
             }
@@ -154,7 +170,7 @@ final class GraphAnalysis
     private function checkLeadingCycles(
         Parser $node,
         NullabilityLookup $lookup,
-        array $active,
+        array &$active,
         array &$completed,
     ): void {
         $id = spl_object_id($node);
@@ -168,13 +184,17 @@ final class GraphAnalysis
         }
 
         $active[$id] = $node->graphLabel();
-        if ($node instanceof AnalyzableParser) {
-            foreach ($node->analysisLeadingParsers($lookup) as $child) {
-                $lookup->get($child);
-                $this->checkLeadingCycles($child, $lookup, $active, $completed);
+        try {
+            if ($node instanceof AnalyzableParser) {
+                foreach ($node->analysisLeadingParsers($lookup) as $child) {
+                    $lookup->get($child);
+                    $this->checkLeadingCycles($child, $lookup, $active, $completed);
+                }
             }
-        }
 
-        $completed[$id] = true;
+            $completed[$id] = true;
+        } finally {
+            unset($active[$id]);
+        }
     }
 }

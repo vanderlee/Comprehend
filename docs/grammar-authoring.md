@@ -589,8 +589,11 @@ Nullability preparation tracks which estimates each calculation reads and
 revisits affected parsers when those estimates change. This avoids repeated
 whole-graph passes on deep nullable chains while preserving stable fixed-point
 rounds and custom analysis contracts. Dependency tables add temporary memory
-during preparation; paths and leading-cycle checks can still dominate very deep
-graphs. See the [measured preparation comparison](performance.md#nullability-preparation-2026-10-21).
+during preparation. Analysis stores first-discovery parent links and captured labels,
+materializing full paths only for warnings and errors. Leading-cycle checks share
+one active ancestry map and restore it on exceptions. See the
+[nullability comparison](performance.md#nullability-preparation-2026-10-21) and
+[compact ancestry measurements](performance.md#compact-analysis-ancestry-2026-10-23).
 
 ## Checked authoring examples
 

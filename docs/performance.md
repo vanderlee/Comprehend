@@ -41,6 +41,58 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Compact analysis ancestry (2026-10-23)
+
+`GraphAnalysis` stores one first-discovery parent ID and the original collection
+label per node instead of a full path array for each node. It reconstructs paths
+only for warnings and errors. Leading-cycle detection also uses one active map,
+restored in `finally`, instead of copying the ancestry map at each recursive call.
+Warning order, exact error text, first-discovery paths through shared graphs and
+custom analysis call order remain unchanged. Nullability scheduling is unchanged.
+
+Three fresh Windows/PHP 8.2.10 workers per variant used alternating before/after
+order, PCOV disabled, one warmup and 21 timed validations per fixture. Graph
+construction, resolution, correctness checks and object release are outside the
+analysis timer. Medians of worker medians, in microseconds:
+
+| Graph | Analysis before / after | Retained analysis bytes before / after | Incremental peak bytes before / after |
+|---|---:|---:|---:|
+| 64 consuming wrappers | 140.0 / 116.3 | 86,080 / 33,104 | 224,488 / 60,464 |
+| 256 consuming wrappers | 771.2 / 468.9 | 1,355,840 / 82,256 | 3,665,640 / 191,376 |
+| 1,024 consuming wrappers | 15,285.1 / 1,884.9 | 15,239,232 / 328,016 | 44,324,584 / 934,424 |
+| 512 nullable wrappers | 3,061.7 / 1,455.2 | 4,585,536 / 164,176 | 12,236,520 / 405,784 |
+| 128 branches sharing 256 wrappers | 1,176.1 / 782.1 | 1,407,960 / 82,256 | 3,747,136 / 259,144 |
+| 512 flat Text operands | 458.6 / 445.1 | 233,952 / 164,176 | 295,936 / 226,192 |
+| Resolved RFC URI | 521.7 / 480.5 | 153,368 / 49,488 | 228,480 / 124,600 |
+
+Consuming chains end in one Text; nullable chains end in Nothing. Memory uses a
+separate warmed validation and keeps the analysis object alive. These are PHP
+used bytes above the constructed-graph baseline, not RSS or frozen-grammar
+retention. The 1,024-wrapper case measured about 8.1x faster analysis with about
+98% less retained analysis memory and incremental peak memory. Host activity was
+uncontrolled. These measurements do not establish a complete-freeze or recognition
+speedup; optimizer preparation and CST construction are separate costs.
+
+Ancestry storage is O(nodes), with an O(depth) active map. Reconstructing a
+diagnostic costs O(path length). Many deep opaque warnings still require output
+proportional to their full paths. Recursive PHP call stacks, nullability dependency
+tables and optimizer plans retain their separate costs and bounds.
+
+The baseline class, worker and raw reports are under ignored
+`build/analysis-ancestry/`. While retained, reproduce in fresh alternating workers:
+
+```sh
+php -d pcov.enabled=0 -d memory_limit=512M build/analysis-ancestry/measure.php before
+php -d pcov.enabled=0 -d memory_limit=512M build/analysis-ancestry/measure.php after
+```
+
+The focused GraphAnalysis and AnalysisContract tests pass against both the saved
+baseline and current class. New checks pin exact shared-graph warning paths and
+order, captured labels, complete structural/progress error ancestry, cycle paths
+after completed siblings, and retries after failed analysis. Reject the change if
+diagnostic ordering/text, custom analysis behavior or graph safety checks diverge,
+or representative overhead outweighs the deep-graph memory improvement.
+
 ### Shared optimizer preparation (2026-10-23)
 
 Optimizer preparation now shares successful literal and lexical-lookahead

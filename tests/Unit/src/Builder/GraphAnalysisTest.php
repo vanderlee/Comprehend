@@ -9,7 +9,10 @@ use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\GraphAnalysis;
 use Vanderlee\Comprehend\Builder\NullabilityLookup;
 use Vanderlee\Comprehend\Directive;
+use Vanderlee\Comprehend\Match\AbstractMatch;
+use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\All;
+use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Except;
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
@@ -17,6 +20,8 @@ use Vanderlee\Comprehend\Parser\Stub;
 use Vanderlee\Comprehend\Parser\Terminal\Nothing;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ChoicePolicy;
+use Vanderlee\Comprehend\Runtime\ParseSession;
+use Vanderlee\Comprehend\Source\Source;
 
 uses(TestCase::class);
 
@@ -105,4 +110,91 @@ test('except excluded operand participates in leading cycle checks', function ()
     $this->expectExceptionMessage('Left-recursive grammar:');
 
     (new GraphAnalysis())->validate($parser);
+});
+
+test('shared opaque nodes retain first discovery paths and warning order', function (): void {
+    $opaque = new class extends Parser {
+        public function __toString(): string
+        {
+            return 'opaque';
+        }
+
+        protected function recognize(Source $source, int $byteOffset, ParseSession $session): AbstractMatch
+        {
+            return $this->success($source, $byteOffset);
+        }
+    };
+    $first = (clone $opaque)->diagnosticRule('first');
+    $second = (clone $opaque)->diagnosticRule('second');
+    $left = (new Sequence($first, $second))->diagnosticRule('left');
+    $right = (new Sequence($second, $first))->diagnosticRule('right');
+    $root = (new Choice($left, $right))->diagnosticRule('root');
+
+    $this->assertSame([
+        'Opaque parser: root -> left -> first',
+        'Opaque parser: root -> left -> second',
+    ], (new GraphAnalysis())->validate($root));
+});
+
+test('deferred error paths use collection labels without calling parsers again', function (): void {
+    $parser = new class ('a') extends Text {
+        public function analysisNullability(NullabilityLookup $lookup): ?bool
+        {
+            $this->diagnosticRule('changed during analysis');
+
+            return !$lookup->get($this);
+        }
+    };
+    $parser->diagnosticRule('original');
+    $branch = (new Sequence($parser))->diagnosticRule('branch');
+    $root = (new Sequence($branch))->diagnosticRule('root');
+
+    $this->expectException(LogicException::class);
+    $this->expectExceptionMessage('Non-monotone nullability: root -> branch -> original');
+    (new GraphAnalysis())->validate($root);
+});
+
+test('structural and progress errors retain complete ancestry', function (): void {
+    $analysis = new GraphAnalysis();
+    $missing = (new Stub())->diagnosticRule('missing');
+    $branch = (new Sequence($missing))->diagnosticRule('branch');
+    $root = (new Sequence($branch))->diagnosticRule('root');
+    try {
+        $analysis->validate($root);
+        $this->fail('Expected an unresolved stub');
+    } catch (LogicException $exception) {
+        $this->assertSame('Unresolved stub: root -> branch -> missing', $exception->getMessage());
+    }
+
+    $repeat = Repeat::plus((new Nothing())->diagnosticRule('empty'))->diagnosticRule('repeat');
+    $root = (new Sequence((new Sequence($repeat))->diagnosticRule('branch')))->diagnosticRule('root');
+    try {
+        $analysis->validate($root);
+        $this->fail('Expected nullable repetition');
+    } catch (LogicException $exception) {
+        $this->assertSame('Nullable repetition: root -> branch -> repeat -> empty', $exception->getMessage());
+    }
+});
+
+test('completed siblings leave no cycle ancestry and failed analysis can be retried', function (): void {
+    $empty = (new Nothing())->diagnosticRule('shared empty');
+    $loop = (new Stub())->diagnosticRule('loop');
+    $production = (new Sequence($empty, $loop))->diagnosticRule('production');
+    $loop->setParser($production);
+    $root = (new Choice($empty, $loop))->diagnosticRule('root');
+    $analysis = new GraphAnalysis();
+    for ($attempt = 0; $attempt < 2; ++$attempt) {
+        try {
+            $analysis->validate($root);
+            $this->fail('Expected a leading cycle');
+        } catch (LogicException $exception) {
+            $this->assertSame(
+                'Left-recursive grammar: root -> loop -> production -> loop',
+                $exception->getMessage(),
+            );
+        }
+    }
+
+    $loop->setParser(new Text('a'));
+    $this->assertSame([], $analysis->validate($root));
 });
