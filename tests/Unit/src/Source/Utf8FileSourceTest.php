@@ -115,3 +115,89 @@ test('utf8 file access preserves range errors and prioritizes closure even at eo
         $source->close();
     }
 })->with(['readUnit', 'readCodePoint', 'isUnitBoundary', 'isCodePointBoundary']);
+
+test('bounded utf8 validation counts complete chunks and preserves byte conversions', function (): void {
+    $units = ["\0", "\u{7f}", "\u{80}", "\u{7ff}", "\u{800}", "\u{d7ff}",
+        "\u{e000}", "\u{ffff}", "\u{10000}", "\u{10ffff}"];
+    foreach ([4, 8192] as $pageSize) {
+        foreach ([0, 1, 8189, 8190, 8191, 8192, 8193, 16383, 16384] as $padding) {
+            $bytes = str_repeat('a', $padding) . implode('', $units) . str_repeat("\u{1f642}", 2100);
+            $memory = new Utf8Source($bytes);
+            $stream = tmpfile();
+            fwrite($stream, $bytes);
+            fseek($stream, 1);
+            try {
+                $source = new Utf8FileSource($stream, $pageSize);
+                $this->assertSame(1, ftell($stream));
+                $this->assertSame($memory->codePointLength(), $source->codePointLength());
+                $this->assertSame($bytes, $source->sliceBytes(0, strlen($bytes)));
+                $position = $padding;
+                $offset = $padding;
+                foreach ($units as $unit) {
+                    $this->assertSame($unit, $source->readUnit($offset)->rawText());
+                    ++$position;
+                    $offset += strlen($unit);
+                }
+                $this->assertSame($offset, $source->byteOffsetForCodePointPosition($position));
+                $this->assertSame($position, $source->codePointPositionForByteOffset($offset));
+                $source->close();
+            } finally {
+                fclose($stream);
+            }
+        }
+    }
+});
+
+test('rejected validation chunks retain exact invalid byte diagnostics across boundaries', function (): void {
+    $cases = [
+        ["\x80", 0], ["\xc0\xaf", 0], ["\xc1\xbf", 0], ["\xc2!", 1], ["\xc2", 1],
+        ["\xe0\x80\x80", 1], ["\xed\xa0\x80", 1], ["\xf0\x80\x80\x80", 1],
+        ["\xf4\x90\x80\x80", 1], ["\xf5\x80\x80\x80", 0], ["\xef\xbf", 2],
+        ["\xf4\x8f\xbf", 3], ["\xe2\x82!", 2], [str_repeat("\x80", 20), 0],
+    ];
+    foreach ([4, 8192] as $pageSize) {
+        foreach ([0, 1, 8189, 8190, 8191, 8192, 8193, 16383, 16384] as $padding) {
+            foreach ($cases as [$invalid, $badByte]) {
+                $stream = tmpfile();
+                $prefix = $padding === 16384
+                    ? str_repeat("\u{e9}\u{1f642}", 2730) . 'aaaa' : str_repeat('a', $padding);
+                fwrite($stream, $prefix . $invalid);
+                fseek($stream, 1);
+                try {
+                    new Utf8FileSource($stream, $pageSize);
+                    $this->fail('Expected malformed UTF-8 rejection');
+                } catch (InvalidArgumentException $error) {
+                    $this->assertSame(
+                        'File source must contain valid UTF-8; invalid sequence at byte ' . ($padding + $badByte),
+                        $error->getMessage(),
+                    );
+                    $this->assertSame(1, ftell($stream));
+                    $this->assertIsResource($stream);
+                } finally {
+                    fclose($stream);
+                }
+            }
+        }
+    }
+});
+
+test('utf8 validation keeps temporary memory bounded as files grow', function (): void {
+    foreach ([1024 * 1024, 9 * 1024 * 1024] as $size) {
+        $stream = tmpfile();
+        $block = str_repeat("a\u{e9}\u{20ac}\u{1f642}", 800);
+        for ($offset = 0; $offset < $size; $offset += strlen($block)) {
+            fwrite($stream, $block);
+        }
+        $blocks = intdiv($size + strlen($block) - 1, strlen($block));
+        try {
+            memory_reset_peak_usage();
+            $before = memory_get_usage();
+            $source = new Utf8FileSource($stream);
+            $this->assertLessThan(256 * 1024, memory_get_peak_usage() - $before);
+            $this->assertSame($blocks * 3200, $source->codePointLength());
+            $source->close();
+        } finally {
+            fclose($stream);
+        }
+    }
+});

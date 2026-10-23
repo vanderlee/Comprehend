@@ -35,9 +35,11 @@ effects that read source text. Temporary disk use is proportional to input size.
 Random byte slicing uses one read page (8192 bytes by default; minimum 4).
 `sliceBytes()` returns exactly the requested interval and can allocate a large
 string if explicitly asked. Bytes are never normalized or stripped. Byte sources
-accept arbitrary octets; UTF-8 sources validate incrementally using bounded
-chunks and continuation state, rejecting overlong sequences, surrogates,
-out-of-range code points and truncation. Reads crossing page/validation boundaries
+accept arbitrary octets; UTF-8 files validate and count bounded complete-code-point
+chunks with native mbstring. A one-byte peek and at most three retreats keep valid
+code points together. Rejected chunks use scalar validation to preserve exact
+invalid-byte diagnostics for overlong sequences, surrogates, out-of-range code
+points and truncation. Reads crossing page/validation boundaries
 preserve complete code points. UTF-8 position conversion scans units without a
 full code-point index, trading bounded auxiliary storage for linear scan time.
 

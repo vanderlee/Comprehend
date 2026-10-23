@@ -39,6 +39,84 @@ before accepting a measurement. Small cases and three samples are noisy; these
 results are engineering baselines, not platform-independent guarantees. Byte
 and UTF-8 source results should only be compared under the same encoding mode.
 
+## Bounded UTF-8 validation and counting
+
+`Utf8FileSource::validateContent()` validates and counts complete-code-point
+chunks with `mb_check_encoding()` and `mb_strlen()`. Each proposed chunk is at
+most 8192 bytes, with one extra peek byte. Inspecting continuation bits retreats
+its endpoint by at most three bytes; native validation remains authoritative
+before counting. Rejected chunks use the original scalar state machine to retain
+the exact first-invalid-byte or truncated-EOF diagnostic. This rescan is bounded
+to the rejected chunk rather than the complete file.
+
+Construction still copies the original into a stable private snapshot before
+validation. It still restores borrowed stream positions on success and failure.
+Preparation remains O(input bytes), temporary validation storage is bounded by
+the chunk plus the configured source page, and snapshot disk use remains O(input
+bytes). The native valid path makes two passes over each chunk, with bounded
+overlap/copying at its endpoint. It trades a small fixed memory increase for
+removing per-byte PHP dispatch. In-memory `Utf8Source` preparation and all
+recognition, CST, diagnostics, semantics, effects and execution limits are unchanged.
+
+Reproduce with fixtures generated directly into a temporary stream in bounded
+blocks; fixture generation and correctness checks are outside the setup timer:
+
+```sh
+php -d pcov.enabled=0 tools/benchmark-utf8-validation.php --case=ascii --size=9437184 --iterations=3
+php -d pcov.enabled=0 tools/benchmark-utf8-validation.php --case=unicode --size=9437184 --iterations=3
+php -d pcov.enabled=0 tools/benchmark-utf8-validation.php --case=malformed-start --size=9437184 --iterations=3
+php -d pcov.enabled=0 tools/benchmark-utf8-validation.php --case=malformed-end --size=9437184 --iterations=3
+```
+
+`--source=file-byte` selects the unchanged snapshot-copy control. `--size=0`
+selects empty input, and `--page=4` exercises minimum-size pages. The timer covers
+complete source construction, including snapshot copying and validation/counting;
+it excludes release. Expected counts, exact malformed-input errors and borrowed
+stream restoration are checked on every observation. No full fixture string or
+code-point index is retained by the harness.
+
+For baseline comparisons, save the previous `Utf8FileSource.php` as
+`Utf8FileSource.before.php` in a directory and add `--baseline=that-directory`.
+The saved class, alternating-worker reports and a generated differential driver
+are locally retained under ignored `build/utf8-validation/`; while retained,
+use `--baseline=build/utf8-validation`. The differential driver compares 3,000
+deterministic inputs across both variants, including random malformed octets,
+Unicode suffixes and chunk/page edges. Acceptance, counts and error messages
+matched exactly in this run.
+
+Windows/PHP 8.2.10/PCRE 10.40, native mbstring loaded, PCOV disabled, three fresh
+workers per variant with alternating before/after order, one warmup and three
+observations per worker. Medians of worker medians, milliseconds:
+
+| Complete source setup | Before | After |
+|---|---:|---:|
+| 1 MiB ASCII | 66.451 | 7.461 |
+| Approximately 1 MiB mixed Unicode | 98.209 | 5.689 |
+| 9 MiB ASCII | 604.319 | 68.791 |
+| Approximately 9 MiB mixed Unicode | 873.596 | 53.102 |
+| 9 MiB plus an invalid surrogate sequence at the start | 16.189 | 16.230 |
+| 9 MiB plus a truncated four-byte sequence at EOF | 596.496 | 69.245 |
+| 8,190 Unicode bytes, 4-byte pages | 14.710 | 13.658 |
+| 9 MiB byte-source copy control | 14.779 | 13.661 |
+
+Unicode repeats ASCII and two-, three- and four-byte code points, rounded down
+to complete repetitions. Early errors still pay snapshot-copy cost, and tiny
+pages remain I/O-heavy. A one-byte fixture measured 0.587/0.579 ms, with noisy
+worker medians; no small-file benefit is established. Host load was uncontrolled,
+and native/platform implementations can change these results. These measurements
+do not establish a recognition-throughput improvement.
+
+Incremental used-PHP setup peaks for valid default-page fixtures increased from
+34,648 bytes to 46,936 bytes for ASCII and 59,224 bytes for Unicode. Those values
+were the same at approximately 1 MiB and 9 MiB; they are not RSS measurements.
+There is no new retained source-size cache or full-input materialization.
+
+`Utf8FileSourceTest` covers complete counts and conversions, all UTF-8 widths,
+minimum/default page sizes, chunk-edge alignments, exact invalid-byte diagnostics,
+overlongs, surrogates, out-of-range values, truncation, stream restoration and
+bounded memory on growing files. Reject the optimization if any of those
+contracts diverges or temporary validation memory grows with file size.
+
 ## Checked file-byte access and cached subject readability
 
 `Utf8FileSource::readUnit()` now checks and decodes a single lead byte through

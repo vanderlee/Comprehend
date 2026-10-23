@@ -44,7 +44,7 @@ Distinguish measured findings from hypotheses. Do not change production code.
 ### 7. Improve source, Unicode and regex access
 
 [x] Chunk file-backed bounded scans
-[ ] Consolidate checked file-byte access and avoid readability-induced cache pollution
+[x] Consolidate checked file-byte access and avoid readability-induced cache pollution
 [ ] Accelerate bounded UTF-8 validation/counting
 
 ### 8. Research techniques from other implementations
