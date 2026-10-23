@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Extensions\Optimizer;
 
 use LogicException;
-use SplObjectStorage;
+use WeakMap;
 use Vanderlee\Comprehend\Builder\GraphOptimization;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Choice as OptimizedChoice;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Not as OptimizedNot;
@@ -79,39 +79,47 @@ final class GraphOptimizer implements GraphOptimization, SyntaxExtension
 
     public function prepare(Parser $root): void
     {
-        $seen = new SplObjectStorage();
+        /** @var WeakMap<Parser, int> $uses */
+        $uses = new WeakMap();
+        $parsers = [];
         $pending = [$root];
         while ($pending !== []) {
             $parser = array_pop($pending);
-            if ($seen->contains($parser)) {
+            if (isset($uses[$parser])) {
+                $uses[$parser] = $uses[$parser] + 1;
                 continue;
             }
-            $seen->attach($parser);
+            $uses[$parser] = 1;
+            $parsers[] = $parser;
+            array_push($pending, ...$parser->children());
+        }
+        $preparation = new Preparation($uses);
+        foreach ($parsers as $parser) {
             if (
                 in_array($parser::class, [OptimizedRepeat::class, OptimizedChoice::class,
-                    OptimizedNot::class, OptimizedSequence::class, OptimizedTrivia::class,
-                    OptimizedSeparatedList::class], true)
+                    OptimizedNot::class, OptimizedSequence::class], true)
             ) {
+                $parser->prepareRecognition($preparation);
+            } elseif (in_array($parser::class, [OptimizedTrivia::class, OptimizedSeparatedList::class], true)) {
                 $parser->prepareRecognition();
             }
             if (in_array($parser::class, [OptimizedRepeat::class, ReadWhileSet::class, ReadWhileRange::class], true)) {
                 $parser->prepareTriviaRecognition();
             }
-            array_push($pending, ...$parser->children());
         }
     }
 
-    public static function table(Parser $parser): ?LexicalTable
+    public static function table(Parser $parser, ?Preparation $preparation = null): ?LexicalTable
     {
-        return LexicalTable::prepare($parser);
+        return LexicalTable::prepare($parser, $preparation);
     }
 
     /** @return array<array-key, LexicalTable> */
-    public static function choiceTables(Choice $choice): array
+    public static function choiceTables(Choice $choice, ?Preparation $preparation = null): array
     {
         $tables = [];
         foreach ($choice as $index => $parser) {
-            $table = self::table($parser);
+            $table = self::table($parser, $preparation);
             if ($table !== null) {
                 $tables[$index] = $table;
             }

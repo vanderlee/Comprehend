@@ -364,6 +364,13 @@ are case-sensitive ASCII `Text` terminals. For example, a sequence containing
 literal in one terminal call. Source-free templates reconstruct every original
 child node, name, tag and span; the CST is not collapsed to one text node.
 
+Optimizer preparation reuses successful composite classifications within that one
+resolved graph. Cached structural heights preserve the original depth bounds at
+each caller. Shared literal operands also reuse immutable, operand-relative syntax
+templates; each occurrence still creates fresh source-bound CST nodes. The temporary
+preparation context is released after freezing. It does not cache mutable definitions,
+recognition sessions, results, semantic values or effects across freezes.
+
 Each literal run is bounded to 64 KiB, 4,096 expanded child nodes and 32 levels of
 descent. Child guards, dynamic names, mappings, validators, effects, labels,
 custom parser classes and local spacing separate runs and retain ordinary

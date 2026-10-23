@@ -7,6 +7,7 @@ namespace Vanderlee\Comprehend\Extensions\Optimizer\Parser;
 use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Extensions\Optimizer\LiteralSequence;
+use Vanderlee\Comprehend\Extensions\Optimizer\Preparation;
 use Vanderlee\Comprehend\Extensions\Optimizer\ScannerSequence;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
@@ -32,9 +33,9 @@ class Sequence extends OrdinarySequence
         return $copy;
     }
 
-    public function prepareRecognition(): void
+    public function prepareRecognition(?Preparation $preparation = null): void
     {
-        $literalSteps = LiteralSequence::prepare($this);
+        $literalSteps = LiteralSequence::prepare($this, $preparation);
         $steps = ScannerSequence::prepare($literalSteps !== [] ? $literalSteps : iterator_to_array($this, false));
         $this->steps = [];
         foreach ($steps as $step) {

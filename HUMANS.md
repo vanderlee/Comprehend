@@ -41,21 +41,11 @@ Return:
 
 Distinguish measured findings from hypotheses. Do not change production code.
 
-### 5. Reduce repeated recognition and dispatch
-
-[x] Specialize compiled-literal failure handling
-[x] Add conservative choice dispatch, then compare a literal trie with prefix factoring
-[ ] Instrument selective memoization
-
 ### 6. Improve cold parsing and grammar preparation
 
-Investigate graph copying, reference resolution, safety analysis, optimizer
-preparation and reusable frozen snapshots.
-
-Compare one-shot facade parsing with repeated facade and explicit frozen
-parsing. Determine the parse count needed to amortize optimization costs.
-Identify preparation work that could be avoided, shared or delayed without
-making mutable definitions stale or sharing recognition state.
+[ ] Reduce repeated optimizer classification and template construction
+[ ] Replace copied analysis paths with compact ancestry
+[ ] Avoid redundant detached exports before freezing
 
 ### 7. Improve source, Unicode and regex access
 

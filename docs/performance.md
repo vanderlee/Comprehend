@@ -41,6 +41,69 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Shared optimizer preparation (2026-10-23)
+
+Optimizer preparation now shares successful literal and lexical-lookahead
+classifications within one resolved, safety-checked graph. Descriptors include
+structural height, so reuse under a deeper caller still obeys the original
+classification depth limits. Failed classifications are not cached. Terminal
+classification remains direct; bounded lexical tables remain independently owned
+by their combinators.
+
+Literal compilation also reuses source-free, operand-relative syntax templates
+when the same parser occurs on multiple graph edges. Recognition still constructs
+fresh CST nodes and execution records for every occurrence. A temporary weak-keyed
+context owns the descriptors and template index; it is released after preparation,
+including when preparation throws. There is no cross-freeze definition cache or
+shared recognition session, semantic projection or effect execution.
+
+Three fresh Windows/PHP 8.2.10 workers per variant alternated before/after order,
+with PCOV disabled, one warmup and 31 observations per fixture. Preparation includes
+snapshot copying, resolution, safety analysis and optimization; source construction,
+correctness comparisons and release are outside preparation timers. Recognition
+includes the CST. Medians of worker medians, in microseconds:
+
+| Fixture | Preparation before / after | Reused recognition before / after |
+|---|---:|---:|
+| One Text | 4.9 / 5.4 | 5.7 / 5.5 |
+| 128 distinct flat Text operands | 1066.9 / 1120.3 | 193.4 / 196.2 |
+| 128 nested Sequences | 6670.4 / 6396.6 | 475.5 / 477.3 |
+| 128 occurrences of one literal subgraph | 5378.7 / 329.6 | 1359.2 / 1349.1 |
+| RFC URI | 2671.3 / 2308.2 | 852.8 / 840.7 |
+
+The shared subgraph is `Sequence(Text('ab'), Repeat::exact(Text('c'), 8))`.
+Its retained prepared graph fell from 343,352 to 20,264 used PHP bytes, with
+incremental preparation peaks falling from 354,376 to 39,752 bytes. The flat
+control retained the same 97,896 bytes but its peak rose from 183,240 to 206,616
+bytes. Other retained graph measurements were unchanged. These are PHP used bytes,
+not RSS. The flat control also shows approximately five percent preparation
+overhead; this is a tradeoff for overlapping graphs, not a universal cold-parse win.
+Host activity was uncontrolled, and no general recognition speedup is established.
+
+Successful descriptor classification can reuse a shared subtree rather than
+traverse it for each parent. Graph occurrence counting and temporary maps add
+O(nodes + edges) traversal work and O(nodes) indexing space. Descriptor strings
+and expanded syntax remain subject to their existing byte/node/depth bounds.
+Template sharing reduces duplicate retained recipes, but each input occurrence
+still requires its full CST. Deep unshared templates can still dominate preparation.
+
+The local baseline sources, worker and raw reports are retained under ignored
+`build/preparation-reuse/`. While retained, run these in fresh alternating workers:
+
+```sh
+php -d pcov.enabled=0 -d memory_limit=512M build/preparation-reuse/measure.php before
+php -d pcov.enabled=0 -d memory_limit=512M build/preparation-reuse/measure.php after
+```
+
+Workers compare valid, truncated and trailing-input acceptance, byte-offset CSTs,
+diagnostics and values with ordinary freezing. `PreparationTest` adds depth-bound,
+expanded-size, cycle and source/session-release checks. `PreparationReuseTest`
+compares cold/warm trees, named ASTs, diagnostics and every tested exhausted
+work/depth budget on byte and UTF-8 sources at a nonzero offset. Existing lifecycle
+tests cover definition refresh, pure recognition, cached values and explicit effects.
+Reject this reuse if any of those contracts diverge, sources or execution state are
+retained, or representative preparation overhead outweighs the overlapping-graph gains.
+
 ### Choice dispatch and prefix-plan comparison (2026-10-23)
 
 `Optimizer\ChoiceDispatch` provides conservative first-byte rejection for exact

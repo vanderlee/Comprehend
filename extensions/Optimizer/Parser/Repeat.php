@@ -8,6 +8,7 @@ use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Extensions\Optimizer\GraphOptimizer;
 use Vanderlee\Comprehend\Extensions\Optimizer\LexicalTable;
+use Vanderlee\Comprehend\Extensions\Optimizer\Preparation;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Structure\Repeat as OrdinaryRepeat;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadRun;
@@ -32,10 +33,10 @@ class Repeat extends OrdinaryRepeat
         return $copy;
     }
 
-    public function prepareRecognition(): void
+    public function prepareRecognition(?Preparation $preparation = null): void
     {
         $this->lexical = $this->scanner === null && $this->getMaximum() !== 0
-            ? GraphOptimizer::table($this->getParser()) : null;
+            ? GraphOptimizer::table($this->getParser(), $preparation) : null;
     }
 
     protected function copyDependencies(GraphSnapshot $context): void

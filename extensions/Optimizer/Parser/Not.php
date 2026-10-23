@@ -8,6 +8,7 @@ use Vanderlee\Comprehend\Builder\ExactClassSnapshotReuseTrait;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Extensions\Optimizer\GraphOptimizer;
 use Vanderlee\Comprehend\Extensions\Optimizer\LexicalTable;
+use Vanderlee\Comprehend\Extensions\Optimizer\Preparation;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Structure\Not as OrdinaryNot;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -28,9 +29,9 @@ class Not extends OrdinaryNot
         return $copy;
     }
 
-    public function prepareRecognition(): void
+    public function prepareRecognition(?Preparation $preparation = null): void
     {
-        $this->lexical = GraphOptimizer::table($this->getParser());
+        $this->lexical = GraphOptimizer::table($this->getParser(), $preparation);
     }
 
     protected function copyDependencies(GraphSnapshot $context): void

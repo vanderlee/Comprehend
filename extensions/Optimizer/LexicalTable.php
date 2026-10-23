@@ -5,26 +5,10 @@ declare(strict_types=1);
 namespace Vanderlee\Comprehend\Extensions\Optimizer;
 
 use Vanderlee\Comprehend\Runtime\ParseSession;
-use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Choice as OptimizedChoice;
-use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Not as OptimizedNot;
-use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Repeat as OptimizedRepeat;
-use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Sequence as OptimizedSequence;
-use Vanderlee\Comprehend\Builder\RuleReference;
-use Vanderlee\Comprehend\Directive\CaseSensitive;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Failure;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
-use Vanderlee\Comprehend\Parser\Structure\Choice;
-use Vanderlee\Comprehend\Parser\Structure\Not;
-use Vanderlee\Comprehend\Parser\Structure\Repeat;
-use Vanderlee\Comprehend\Parser\Structure\Sequence;
-use Vanderlee\Comprehend\Parser\Terminal\Any;
-use Vanderlee\Comprehend\Parser\Terminal\Char;
-use Vanderlee\Comprehend\Parser\Terminal\Range;
-use Vanderlee\Comprehend\Parser\Terminal\Regex;
-use Vanderlee\Comprehend\Parser\Terminal\Set;
-use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Tree\ConcreteTemplate;
 
@@ -35,7 +19,6 @@ use Vanderlee\Comprehend\Tree\ConcreteTemplate;
  */
 final class LexicalTable
 {
-    private const MAX_LOOKAHEAD = 32;
     private const MAX_ENTRIES = 128;
 
     /** @var array<string, array{int, ConcreteTemplate|null, ?int, list<string>, list<list<string>>}> */
@@ -46,57 +29,12 @@ final class LexicalTable
         // Misses continue through the original typed recognition graph.
     }
 
-    public static function prepare(Parser $parser): ?self
+    public static function prepare(Parser $parser, ?Preparation $preparation = null): ?self
     {
-        $lookahead = self::lookahead($parser);
+        $lookahead = ($preparation ?? new Preparation())->lookahead($parser)[0] ?? null;
 
-        return $lookahead !== null && $lookahead > 0 && $lookahead <= self::MAX_LOOKAHEAD
+        return $lookahead !== null && $lookahead > 0 && $lookahead <= Preparation::MAX_LOOKAHEAD
             ? new self($parser, $lookahead) : null;
-    }
-
-    /** @param array<int, true> $active */
-    private static function lookahead(Parser $parser, array $active = []): ?int
-    {
-        if (isset($active[spl_object_id($parser)]) || count($active) > 16) {
-            return null;
-        }
-        $class = match ($parser::class) {
-            OptimizedRepeat::class => Repeat::class,
-            OptimizedChoice::class => Choice::class,
-            OptimizedNot::class => Not::class,
-            OptimizedSequence::class => Sequence::class,
-            default => $parser::class,
-        };
-        $supported = [Set::class, Char::class, Range::class, Text::class, Regex::class, Any::class,
-            RuleReference::class, CaseSensitive::class, Sequence::class, Choice::class, Not::class, Repeat::class];
-        if (!in_array($class, $supported, true) || $parser->hasExecutableMetadata()) {
-            return null;
-        }
-        if (in_array($class, [Set::class, Char::class, Range::class, Text::class, Regex::class], true)) {
-            $bound = $parser->lexicalLookahead();
-            return $bound !== null && $bound <= self::MAX_LOOKAHEAD ? $bound : null;
-        }
-        if ($class === Any::class) {
-            return 1;
-        }
-        if (($parser instanceof Sequence || $parser instanceof Repeat) && $parser->hasExplicitSpacing()) {
-            return null;
-        }
-        $active[spl_object_id($parser)] = true;
-        $bounds = [];
-        foreach ($parser->children() as $child) {
-            $bound = self::lookahead($child, $active);
-            if ($bound === null) {
-                return null;
-            }
-            $bounds[] = $bound;
-        }
-        if ($parser instanceof Repeat) {
-            $max = $parser->getMaximum();
-            return $max === null || $max > self::MAX_LOOKAHEAD ? null : ($bounds[0] ?? 0) * $max;
-        }
-
-        return $parser instanceof Sequence ? array_sum($bounds) : max($bounds ?: [0]);
     }
 
     /** @internal The owning combinator establishes its spacing and budget scopes first. */

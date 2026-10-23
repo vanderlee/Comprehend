@@ -9,6 +9,7 @@ use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Extensions\Optimizer\ChoiceDispatch;
 use Vanderlee\Comprehend\Extensions\Optimizer\GraphOptimizer;
 use Vanderlee\Comprehend\Extensions\Optimizer\LexicalTable;
+use Vanderlee\Comprehend\Extensions\Optimizer\Preparation;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice as OrdinaryChoice;
@@ -34,9 +35,9 @@ class Choice extends OrdinaryChoice
         return $copy;
     }
 
-    public function prepareRecognition(): void
+    public function prepareRecognition(?Preparation $preparation = null): void
     {
-        $this->lexical = GraphOptimizer::choiceTables($this);
+        $this->lexical = GraphOptimizer::choiceTables($this, $preparation);
         $this->dispatch = ChoiceDispatch::alternatives($this, $this->lexical);
     }
 

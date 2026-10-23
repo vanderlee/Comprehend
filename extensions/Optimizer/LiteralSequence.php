@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Extensions\Optimizer;
 
-use Vanderlee\Comprehend\Builder\RuleReference;
-use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Repeat as OptimizedRepeat;
-use Vanderlee\Comprehend\Extensions\Optimizer\Parser\Sequence as OptimizedSequence;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
-use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ParseSession;
@@ -20,12 +16,9 @@ use Vanderlee\Comprehend\Tree\ConcreteTemplate;
 /** @internal One literal recognizer with source-free recipes for the original child trees. */
 final class LiteralSequence
 {
-    private const MAX_BYTES = 65536;
-    private const MAX_NODES = 4096;
-
     /**
      * @param list<Parser> $parsers Original operands for local failure fallback.
-     * @param list<ConcreteTemplate> $children
+     * @param list<ConcreteTemplate> $children Operand-relative syntax, shared within preparation.
      * @param list<Text>|null $failureParsers Flat operands whose successful prefixes can be skipped.
      */
     private function __construct(
@@ -38,20 +31,21 @@ final class LiteralSequence
     }
 
     /** @return list<Parser|self> Empty when there is no useful literal run. */
-    public static function prepare(Sequence $sequence): array
+    public static function prepare(Sequence $sequence, ?Preparation $preparation = null): array
     {
+        $preparation ??= new Preparation();
         $steps = [];
         $run = [];
         $literal = '';
         $nodes = 0;
         foreach ($sequence as $child) {
-            $compiled = self::compile($child);
+            $compiled = $preparation->literal($child);
             if (
                 $compiled === null
-                || strlen($literal) + strlen($compiled[0]) > self::MAX_BYTES
-                || $nodes + $compiled[1] > self::MAX_NODES
+                || strlen($literal) + strlen($compiled[0]) > Preparation::MAX_LITERAL_BYTES
+                || $nodes + $compiled[1] > Preparation::MAX_LITERAL_NODES
             ) {
-                self::appendRun($steps, $run, $literal);
+                self::appendRun($steps, $run, $literal, $preparation);
                 $run = [];
                 $literal = '';
                 $nodes = 0;
@@ -64,7 +58,7 @@ final class LiteralSequence
             $literal .= $compiled[0];
             $nodes += $compiled[1];
         }
-        self::appendRun($steps, $run, $literal);
+        self::appendRun($steps, $run, $literal, $preparation);
         foreach ($steps as $step) {
             if ($step instanceof self) {
                 return $steps;
@@ -78,7 +72,7 @@ final class LiteralSequence
      * @param list<Parser|self> $steps
      * @param list<Parser> $parsers
      */
-    private static function appendRun(array &$steps, array $parsers, string $literal): void
+    private static function appendRun(array &$steps, array $parsers, string $literal, Preparation $preparation): void
     {
         if ($literal === '' || (count($parsers) === 1 && $parsers[0]::class === Text::class)) {
             array_push($steps, ...$parsers);
@@ -98,13 +92,13 @@ final class LiteralSequence
             } elseif ($failureParsers !== null) {
                 $failureParsers[] = $child;
             }
-            $match = $child->recognizeInSession($source, $offset, $session);
-            if (!$match instanceof Success || $match->node === null) {
+            $prepared = $preparation->literalTemplate($child, $source, $offset, $session);
+            if ($prepared === null) {
                 array_push($steps, ...$parsers);
                 return;
             }
-            $children[] = ConcreteTemplate::from($match->node, 0);
-            $offset += $match->length;
+            $children[] = $prepared[1];
+            $offset += $prepared[0];
         }
 
         $steps[] = new self((new Text($literal))->caseSensitive(), $parsers, $children, $failureParsers);
@@ -114,61 +108,6 @@ final class LiteralSequence
     public function parsers(): array
     {
         return $this->parsers;
-    }
-
-    /**
-     * @param array<int, true> $active
-     * @return array{string, int}|null Literal and expanded node count.
-     */
-    private static function compile(Parser $parser, array $active = []): ?array
-    {
-        $id = spl_object_id($parser);
-        if (isset($active[$id]) || count($active) >= 32 || $parser->hasExecutableMetadata()) {
-            return null;
-        }
-        if ($parser::class === Text::class) {
-            $text = $parser->getText();
-
-            return $parser->getCaseSensitivity() !== false && strlen($text) <= self::MAX_BYTES
-                && preg_match('/[\x80-\xff]/', $text) === 0 ? [$text, 1] : null;
-        }
-        if (
-            !in_array($parser::class, [Sequence::class, OptimizedSequence::class,
-                Repeat::class, OptimizedRepeat::class, RuleReference::class], true)
-        ) {
-            return null;
-        }
-        if (($parser instanceof Sequence || $parser instanceof Repeat) && $parser->hasExplicitSpacing()) {
-            return null;
-        }
-        $active[$id] = true;
-        $literal = '';
-        $nodes = 1;
-        foreach ($parser->children() as $child) {
-            $compiled = self::compile($child, $active);
-            if ($compiled === null) {
-                return null;
-            }
-            $literal .= $compiled[0];
-            $nodes += $compiled[1];
-            if (strlen($literal) > self::MAX_BYTES || $nodes > self::MAX_NODES) {
-                return null;
-            }
-        }
-        if ($parser instanceof Repeat) {
-            $count = $parser->getMaximum();
-            if (
-                $count === null || $count !== $parser->getMinimum()
-                || $count > self::MAX_NODES || ($nodes - 1) * $count + 1 > self::MAX_NODES
-                || strlen($literal) * $count > self::MAX_BYTES
-            ) {
-                return null;
-            }
-            $literal = str_repeat($literal, $count);
-            $nodes = ($nodes - 1) * $count + 1;
-        }
-
-        return [$literal, $nodes];
     }
 
     /** @return list<Success>|int|null Failure progress, or null for ordinary recognition and diagnostics. */
@@ -203,8 +142,10 @@ final class LiteralSequence
         }
         $diagnostic = $session->diagnostic();
         $children = [];
+        $childOffset = $offset;
         foreach ($this->children as $template) {
-            $node = $template->instantiate($source, $offset);
+            $node = $template->instantiate($source, $childOffset);
+            $childOffset = $node->span->end;
             $child = new Success($node->span->byteLength());
             $child->setSourceMetadata($node->span, $diagnostic?->byteOffset, $diagnostic);
             $child->setConcreteNode($node);
