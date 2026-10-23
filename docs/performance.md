@@ -39,6 +39,77 @@ before accepting a measurement. Small cases and three samples are noisy; these
 results are engineering baselines, not platform-independent guarantees. Byte
 and UTF-8 source results should only be compared under the same encoding mode.
 
+## Checked file-byte access and cached subject readability
+
+`Utf8FileSource::readUnit()` now checks and decodes a single lead byte through
+`ByteFileSource::readByteValue()`. Boundary queries use the same checked page
+access. This removes duplicate one-byte slicing, repeated offset/readability
+checks and temporary strings without changing byte spans, range errors or
+closed-source behavior.
+The page loader still publishes only complete reads and retains one bounded page.
+
+`ParseSession::regexSubject()` checks exact built-in file readability using an
+empty slice. It no longer loads page zero merely to test whether a cached subject
+can be read. Custom sources, including file subclasses, retain the original
+boundary probe; immutable built-in memory sources still skip it. The cache cap,
+full-subject regex context, logical work and session ownership are unchanged.
+
+Reproduce current behavior with the maintained harness:
+
+```sh
+php -d pcov.enabled=0 tools/benchmark-file-access.php --case=units --iterations=3
+php -d pcov.enabled=0 tools/benchmark-file-access.php --case=units --unicode --page=4 --iterations=3
+php -d pcov.enabled=0 tools/benchmark-file-access.php --case=subject --size=1048576 --iterations=3
+php -d pcov.enabled=0 tools/benchmark-file-access.php --case=regex --size=1048576 --iterations=3
+```
+
+`--source=file-byte` selects the byte-mode control. For fresh-process before/after
+comparisons, save the baseline `ByteFileSource.php`, `Utf8FileSource.php` and
+`ParseSession.php` as `ByteFileSource.before.php`, `Utf8FileSource.before.php` and
+`ParseSession.before.php` in one directory, then add `--baseline=that-directory`.
+Saved baseline classes and raw observations from this change are locally retained
+under ignored `build/file-byte-access/`; while retained, use
+`--baseline=build/file-byte-access`. Alternate variant order across workers.
+
+Windows/PHP 8.2.10/PCRE 10.40, PCOV disabled, three fresh workers per variant,
+one warmup and three timed observations per worker. Medians of worker medians,
+milliseconds:
+
+| Fixture | Before | After |
+|---|---:|---:|
+| 64 KiB ASCII, UTF-8 file units + raw text | 140.032 | 75.001 |
+| 65,530 bytes mixed Unicode, UTF-8 file units + raw text | 60.451 | 31.269 |
+| Same Unicode fixture, 4-byte pages | 118.457 | 86.985 |
+| 64 KiB ASCII, byte-file control units + raw text | 62.913 | 62.613 |
+| 1 MiB UTF-8 file, 1,000 cached subject / distant-boundary cycles | 7.933 | 0.762 |
+| 1 MiB UTF-8 file, 1,000 regex recognitions near EOF | 14.312 | 6.321 |
+| 9 MiB UTF-8 file, 256 cached subject / distant-boundary cycles | 1.931 | 0.199 |
+
+Unicode repeats ASCII and two-, three- and four-byte code points. Unit timings
+include raw-span reads and checksums, not parser/CST construction. Subject cycles
+include a distant boundary query before requesting the cached subject. Regex
+timings include checked terminal recognition/CST construction at a nonzero offset
+in one session, with success checks and result release. Logical work deltas must
+remain identical across observations. Setup and first subject materialization
+are reported separately, outside warm timings. The harness sets the subject cap
+to the fixture size, including 9 MiB; this does not measure the default uncached
+path above 8 MiB. Fixture storage and the full warmed subject are retained by the
+harness and excluded from incremental access peaks.
+
+Used-PHP unit-access peaks stayed at 12,384 bytes for ASCII and 12,416 bytes for
+Unicode on default pages, before and after. Warm cached-subject cycles stopped
+allocating replacement pages (12,288 to zero incremental bytes in this probe).
+These are not RSS measurements or reductions in the retained full-subject cache.
+Preparation complexity, one-page storage bounds and snapshot disk use are
+unchanged. Host load was uncontrolled; the unchanged byte control illustrates
+timing variation. No general application-throughput or setup improvement is claimed.
+
+Regressions compare all byte boundaries near page edges with memory sources,
+including UTF-8 width extremes, interior offsets, EOF, extreme invalid offsets,
+closure precedence, arbitrary octets, cached-page retention and custom-source
+hooks. Reject these optimizations if byte spans, exceptions, source lifetime,
+diagnostics, work limits or semantic/effect behavior differs.
+
 ## Chunked file scanning
 
 `ReadRun` accelerates exact built-in file sources for case-sensitive literal

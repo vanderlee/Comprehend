@@ -6,6 +6,7 @@ namespace Tests\Feature\sources;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 use Vanderlee\Comprehend\Parser\Structure\Sequence;
 use Vanderlee\Comprehend\Extensions\Numbers\Parser\IntegerNumber;
 use Vanderlee\Comprehend\Parser\Terminal\Regex;
@@ -14,6 +15,7 @@ use Vanderlee\Comprehend\Runtime\ParseLimitException;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteFileSource;
+use Vanderlee\Comprehend\Source\Utf8FileSource;
 use Vanderlee\Comprehend\Source\InMemorySource;
 use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Span;
@@ -119,4 +121,63 @@ test('custom memory sources retain readability checks even with a cached subject
     $this->expectExceptionMessage('Custom source is closed');
 
     $session->regexSubject();
+});
+
+test('cached file subjects preserve the active page and reject closure', function (string $class): void {
+    $bytes = str_repeat('a', 16383) . "\u{1f642}end";
+    $stream = tmpfile();
+    fwrite($stream, $bytes);
+    $source = new $class($stream, 4);
+    fclose($stream);
+    try {
+        $session = new ParseSession($source);
+        $this->assertSame($bytes, $session->regexSubject());
+        $source->sliceBytes(16383, 16387);
+        // Observe cache retention directly: no timing threshold or public test hook is needed.
+        $cacheStart = new ReflectionProperty(ByteFileSource::class, 'cacheStart');
+        $activePage = $cacheStart->getValue($source);
+        $this->assertGreaterThan(0, $activePage);
+        $this->assertSame($bytes, $session->regexSubject());
+        $this->assertSame($activePage, $cacheStart->getValue($source));
+        $this->assertSame($bytes, $session->regexSubject());
+        $this->assertSame($activePage, $cacheStart->getValue($source));
+        $source->close();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('File source is closed');
+        $session->regexSubject();
+    } finally {
+        $source->close();
+    }
+})->with([ByteFileSource::class, Utf8FileSource::class]);
+
+test('custom file sources retain their boundary probe on every subject request', function (): void {
+    $stream = tmpfile();
+    fwrite($stream, 'abc');
+    $source = new class ($stream) extends ByteFileSource {
+        public int $probes = 0;
+        public bool $readable = true;
+
+        public function isUnitBoundary(int $byteOffset): bool
+        {
+            ++$this->probes;
+            if (!$this->readable) {
+                throw new LogicException('Custom file source is closed');
+            }
+
+            return parent::isUnitBoundary($byteOffset);
+        }
+    };
+    fclose($stream);
+    try {
+        $session = new ParseSession($source);
+        $this->assertSame('abc', $session->regexSubject());
+        $this->assertSame('abc', $session->regexSubject());
+        $this->assertSame(2, $source->probes);
+        $source->readable = false;
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Custom file source is closed');
+        $session->regexSubject();
+    } finally {
+        $source->close();
+    }
 });

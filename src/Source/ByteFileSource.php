@@ -157,6 +157,21 @@ class ByteFileSource implements Source
         }
     }
 
+    /** Read a checked octet without constructing a slice; null denotes EOF. */
+    protected function readByteValue(int $byteOffset): ?int
+    {
+        $this->assertReadableOffset($byteOffset);
+        if ($byteOffset === $this->length) {
+            return null;
+        }
+        $page = intdiv($byteOffset, $this->pageSize) * $this->pageSize;
+        if ($page !== $this->cacheStart) {
+            $this->loadPage($page);
+        }
+
+        return ord($this->cache[$byteOffset - $page]);
+    }
+
     public function isClosed(): bool
     {
         return !is_resource($this->handle);

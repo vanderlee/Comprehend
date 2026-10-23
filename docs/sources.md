@@ -14,6 +14,11 @@ Source: `mode()`, `byteLength()`, `sliceBytes(start, end)`, `span(start, end)`,
 reading it returns null. Out-of-range positions throw. Source contents must stay
 stable for the lifetime of referencing results and spans.
 
+UTF-8 file boundary and unit reads use checked access to the cached page without
+allocating one-byte slices. A unit read checks and decodes its lead byte once;
+raw text still comes from its source-bound span. File closure is checked before
+offset validity and EOF, so cached pages never make a closed source readable.
+
 Seekable [ByteFileSource and Utf8FileSource](file-input.md) provide owned disk
 snapshots, bounded read pages and incremental UTF-8 validation. They share the
 same byte/span contract, with explicit close and retained-result lifetime.

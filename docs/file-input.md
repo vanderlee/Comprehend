@@ -97,7 +97,9 @@ released with the session; ordinary results retain the source snapshot, not the
 session's cached string. Explicit source closure still invalidates reads.
 Only the final built-in `ByteSource` and `Utf8Source` classes skip the repeated
 readability probe, because their immutable memory buffers cannot be closed.
-File sources and custom sources retain that probe even when the subject is cached.
+Exact built-in file sources check readability with an empty byte slice, which
+does not load page zero or evict the active read page. Custom sources, including
+`ByteFileSource` subclasses, retain their boundary probe on every subject request.
 
 Set `new ParseLimits(maxRegexSubjectBytes: 0)` to disable caching, or set a
 nonnegative byte cap appropriate to the application. Sources above the cap use

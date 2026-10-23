@@ -11,8 +11,8 @@ AI AGENTS MUST NOT USE THIS FILE!
     - Make things optional.
     - Look at inner loops.
     - Move some parsers to regex.
+    - Go lazy
 - Feature comparisons.
-- Add solid test coverage.
 
 ## Ongoing concerns
 
@@ -43,7 +43,7 @@ Distinguish measured findings from hypotheses. Do not change production code.
 
 ### 7. Improve source, Unicode and regex access
 
-[ ] Chunk file-backed bounded scans
+[x] Chunk file-backed bounded scans
 [ ] Consolidate checked file-byte access and avoid readability-induced cache pollution
 [ ] Accelerate bounded UTF-8 validation/counting
 

@@ -14,6 +14,8 @@ use Vanderlee\Comprehend\Source\Span;
 use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\ByteSource;
 use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Source\ByteFileSource;
+use Vanderlee\Comprehend\Source\Utf8FileSource;
 use InvalidArgumentException;
 use LogicException;
 
@@ -102,7 +104,10 @@ final class ParseSession
     public function regexSubject(): string
     {
         // A cached string must not make a closed file snapshot readable again.
-        if (!$this->source instanceof ByteSource && !$this->source instanceof Utf8Source) {
+        if (in_array($this->source::class, [ByteFileSource::class, Utf8FileSource::class], true)) {
+            // Empty built-in slices check closure without evicting the current read page.
+            $this->source->sliceBytes(0, 0);
+        } elseif (!$this->source instanceof ByteSource && !$this->source instanceof Utf8Source) {
             $this->source->isUnitBoundary(0);
         }
         if (

@@ -160,3 +160,38 @@ test('closed sources reject even cached reads', function (): void {
 
     $source->sliceBytes(0, 1);
 });
+
+test('checked byte access returns arbitrary octets and eof without poisoning later pages', function (): void {
+    $bytes = implode('', array_map(chr(...), range(0, 255)));
+    $stream = tmpfile();
+    fwrite($stream, $bytes);
+    $source = new class ($stream, 4) extends ByteFileSource {
+        public function byteValue(int $offset): ?int
+        {
+            return $this->readByteValue($offset);
+        }
+    };
+    fclose($stream);
+    try {
+        for ($offset = 255; $offset >= 0; --$offset) {
+            $this->assertSame($offset, $source->byteValue($offset));
+        }
+        $this->assertNull($source->byteValue(256));
+        foreach ([-1, 257, PHP_INT_MIN, PHP_INT_MAX] as $offset) {
+            try {
+                $source->byteValue($offset);
+                $this->fail('Expected invalid offset rejection');
+            } catch (InvalidArgumentException $error) {
+                $this->assertSame('Byte offset is outside the source', $error->getMessage());
+            }
+        }
+        $this->assertSame(255, $source->byteValue(255));
+        $this->assertSame("\xfe\xff", $source->sliceBytes(254, 256));
+        $source->close();
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('File source is closed');
+        $source->byteValue(256);
+    } finally {
+        $source->close();
+    }
+});

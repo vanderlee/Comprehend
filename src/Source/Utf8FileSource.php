@@ -33,13 +33,9 @@ final class Utf8FileSource extends ByteFileSource implements CodePointSource
 
     public function isUnitBoundary(int $byteOffset): bool
     {
-        $this->assertReadableOffset($byteOffset);
-        if ($byteOffset === $this->byteLength()) {
-            return true;
-        }
-        $byte = ord($this->sliceBytes($byteOffset, $byteOffset + 1));
+        $byte = $this->readByteValue($byteOffset);
 
-        return ($byte & 0xc0) !== 0x80;
+        return $byte === null || ($byte & 0xc0) !== 0x80;
     }
 
     public function readCodePoint(int $byteOffset): ?Span
@@ -49,13 +45,13 @@ final class Utf8FileSource extends ByteFileSource implements CodePointSource
 
     public function readUnit(int $byteOffset): ?Span
     {
-        if (!$this->isUnitBoundary($byteOffset)) {
-            throw new InvalidArgumentException('Byte offset is inside a UTF-8 code point');
-        }
-        if ($byteOffset === $this->byteLength()) {
+        $lead = $this->readByteValue($byteOffset);
+        if ($lead === null) {
             return null;
         }
-        $lead = ord($this->sliceBytes($byteOffset, $byteOffset + 1));
+        if (($lead & 0xc0) === 0x80) {
+            throw new InvalidArgumentException('Byte offset is inside a UTF-8 code point');
+        }
         $length = match (true) {
             $lead < 0x80 => 1,
             $lead < 0xe0 => 2,
