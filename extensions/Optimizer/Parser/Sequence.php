@@ -61,12 +61,15 @@ class Sequence extends OrdinarySequence
         }
 
         // Without automatic spacing, adjacent plain operands can be recognized in batches.
-        // Failed runs fall back locally: earlier executable operands must never run twice.
+        // Failed runs recover diagnostics locally: earlier executable operands must never run twice.
         $children = [];
         $length = 0;
         foreach ($this->steps as $step) {
             if ($step instanceof LiteralSequence || $step instanceof ScannerSequence) {
                 $batch = $step->attempt($source, $byteOffset + $length, $session);
+                if (is_int($batch)) {
+                    return $this->failure($source, $byteOffset, $length + $batch);
+                }
                 if ($batch !== null) {
                     foreach ($batch as $child) {
                         $length += $child->length;

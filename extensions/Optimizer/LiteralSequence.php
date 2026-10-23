@@ -26,9 +26,14 @@ final class LiteralSequence
     /**
      * @param list<Parser> $parsers Original operands for local failure fallback.
      * @param list<ConcreteTemplate> $children
+     * @param list<Text>|null $failureParsers Flat operands whose successful prefixes can be skipped.
      */
-    private function __construct(private Text $terminal, private array $parsers, private array $children)
-    {
+    private function __construct(
+        private Text $terminal,
+        private array $parsers,
+        private array $children,
+        private ?array $failureParsers,
+    ) {
         // Prepared once for a frozen graph; parsing instantiates fresh source-bound nodes.
     }
 
@@ -86,7 +91,13 @@ final class LiteralSequence
         $session = new ParseSession($source);
         $offset = 0;
         $children = [];
+        $failureParsers = [];
         foreach ($parsers as $child) {
+            if ($child::class !== Text::class) {
+                $failureParsers = null;
+            } elseif ($failureParsers !== null) {
+                $failureParsers[] = $child;
+            }
             $match = $child->recognizeInSession($source, $offset, $session);
             if (!$match instanceof Success || $match->node === null) {
                 array_push($steps, ...$parsers);
@@ -96,7 +107,7 @@ final class LiteralSequence
             $offset += $match->length;
         }
 
-        $steps[] = new self((new Text($literal))->caseSensitive(), $parsers, $children);
+        $steps[] = new self((new Text($literal))->caseSensitive(), $parsers, $children, $failureParsers);
     }
 
     /** @return list<Parser> */
@@ -160,8 +171,8 @@ final class LiteralSequence
         return [$literal, $nodes];
     }
 
-    /** @return list<Success>|null Null requests the original recognition and diagnostics. */
-    public function attempt(Source $source, int $offset, ParseSession $session): ?array
+    /** @return list<Success>|int|null Failure progress, or null for ordinary recognition and diagnostics. */
+    public function attempt(Source $source, int $offset, ParseSession $session): array|int|null
     {
         if ($session->hasRecognitionLimits() || $session->hasActiveSpacing() || !$session->isCaseSensitive()) {
             return null;
@@ -173,6 +184,21 @@ final class LiteralSequence
             $session->restoreDiagnostics($diagnostics);
         }
         if (!$match instanceof Success) {
+            $progress = 0;
+            foreach ($this->failureParsers ?? [] as $index => $parser) {
+                $end = $progress + strlen($parser->getText());
+                if ($match->length < $end) {
+                    // The compiled comparison proved the preceding plain ASCII operands succeeded.
+                    // Preserve their entry/unit work, but only execute the failing operand for its
+                    // original expectation and rule path. Finite budgets never enter this path.
+                    $session->consumeWork($progress + $index, $offset);
+                    $failure = $parser->recognizeInSession($source, $offset + $progress, $session);
+
+                    return $progress + $failure->length;
+                }
+                $progress = $end;
+            }
+
             return null;
         }
         $diagnostic = $session->diagnostic();

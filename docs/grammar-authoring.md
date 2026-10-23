@@ -369,11 +369,13 @@ descent. Child guards, dynamic names, mappings, validators, effects, labels,
 custom parser classes and local spacing separate runs and retain ordinary
 recognition. For example, `Text('a'), Text('b'), Regex(...), Text('c'), Text('d')`
 can batch `ab` and `cd` while recognizing the regex normally. Root metadata still
-executes normally. A mismatch uses the original operands of that run for its
-diagnostic and partial-progress behavior; preceding executable operands are not
-repeated. Active spacing, case-insensitive scopes and work/depth limits use the
-original sequence. Non-ASCII text, variable repetitions and general regexes
-remain ordinary operands between runs. Freezing classifies only
+executes normally. On mismatch, a flat run of Text operands skips the already
+proven successful operands and recognizes the original failing Text for its
+diagnostic and partial-progress behavior. Skipped parser entries and literal units
+still charge their original work. Nested runs retain the original operand fallback;
+preceding executable operands are not repeated. Active spacing, case-insensitive
+scopes and work/depth limits use the original sequence. Non-ASCII text, variable
+repetitions and general regexes remain ordinary operands between runs. Freezing classifies only
 proven callback-free children and retains their source-free templates; recognition
 always creates fresh nodes bound to the current source.
 

@@ -41,23 +41,11 @@ Return:
 
 Distinguish measured findings from hypotheses. Do not change production code.
 
-### 4. Optimize spacing and list loops
-
-[x] Fuse eligible composed scanners while retaining their existing CST.
-[x] Reduce automatic-spacing dispatch inside prepared loops.
-[ ] Reduce SeparatedList staging-array traffic.
-
 ### 5. Reduce repeated recognition and dispatch
 
-Investigate shared-prefix alternatives and expensive choice chains.
-Compare conservative first-set dispatch, literal tries, prefix factoring,
-further graph specialization and selective memoization.
-
-Account for existing literal compilation and lexical tables. Quantify
-repeated work before recommending caching; parser/offset repetition alone
-does not establish an equivalent recognition context.
-
-Preserve ordered/ranked choice, diagnostics, guards and work accounting.
+[ ] Specialize compiled-literal failure handling
+[ ] Add conservative choice dispatch, then compare a literal trie with prefix factoring
+[ ] Instrument selective memoization
 
 ### 6. Improve cold parsing and grammar preparation
 

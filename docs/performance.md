@@ -41,6 +41,52 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Flat compiled-literal failures (2026-10-23)
+
+When a compiled literal run contains only exact built-in ASCII Text operands,
+its mismatch progress identifies the failing operand. Recognition now skips
+successful preceding operands and invokes the original failing Text for its
+expectation, rule path and partial progress. Their parser-entry and literal-unit
+work charges remain, including the existing speculative compiled comparison.
+Finite work/depth limits, active spacing and case-insensitive scopes still use
+ordinary recognition. Nested runs retain their existing failure fallback.
+
+The 128-alternative research fixture shares a 2,048-byte Text prefix, followed by
+a distinct three-byte Text suffix, and accepts the final alternative. Warmed
+optimized parser entries fell from 511 to 384, while work remained 523,076 units.
+The selected CST matched the ordinary graph. Three fresh workers per variant
+used alternating before/after order, three warmups and 31 observations, with
+PCOV disabled on Windows/PHP 8.2.10. These initial timing workers overlapped
+test-suite execution. A follow-up after the suite completed used the same protocol:
+long-prefix worker medians ranged 10.657–10.875 ms before and 7.501–9.443 ms after;
+medians of worker medians were 10.814 and 7.635 ms. Host activity remained
+uncontrolled; these synthetic observations do not establish application throughput
+or a universal speedup. Short-prefix lexical-table and distinct-literal controls
+retained one checked parser entry in both versions.
+
+Preparation retains an additional list of Text references for each eligible run;
+other runs retain null. Eligibility is determined during existing classification.
+There is no source/result cache. Failure recovery walks operand boundaries and
+still scans the failing operand, but avoids rescanning and building discarded
+successes for preceding operands. Successful recognition and retained CST
+complexity are unchanged. No retained-memory improvement is established.
+
+The ignored research driver and reports are under `build/choice-research/`.
+While retained, reproduce the current probe with:
+
+```sh
+php -d pcov.enabled=0 build/choice-research/probe.php
+php -d pcov.enabled=0 -d auto_prepend_file=build/choice-research/original-literal.php build/choice-research/probe.php
+```
+
+`CompiledLiteralFailureTest` checks all choice policies, cold/warm observations,
+ordered diagnostics, byte/UTF-8 sources, nonzero offsets, operand boundaries,
+EOF, file pages, exact failure progress, preserved work and exhausted limits.
+Existing mixed-run tests check preceding guards, lazy values and explicit effects.
+Reject this specialization if diagnostic ordering, scope restoration, execution
+limits or lifecycle behavior differs, or isolated representative workloads show
+regressions that outweigh the removed successful-prefix recognition.
+
 ### Separated-list staging buffers (2026-10-22)
 
 `SeparatedList::attempt()` appends selected matches and concrete syntax only
