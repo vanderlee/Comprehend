@@ -41,6 +41,69 @@ and UTF-8 source results should only be compared under the same encoding mode.
 
 ## Recorded comparisons
 
+### Direct facade snapshots (2026-10-23)
+
+`FrozenGrammar::from($facade, $flags)` now copies the facade's owned parser directly
+into the resolving destination snapshot. Previously it first created a detached
+authoring export and then copied that export again. `Comprehend::parser()` keeps
+its normal detached, non-resolving behavior; an optional internal destination
+context lets the freeze factory avoid the intermediate graph. The factory still
+validates flags, resolves the optimizer when requested, isolates the graph, checks
+safety and prepares recognition. It creates fresh snapshots without consulting
+facade caches or dispatching a custom root `freeze()` override, as before.
+
+This removes one O(nodes + edges) authoring-copy pass over the exported graph,
+including its temporary graph storage and snapshot indexes. It does not eliminate
+the final detached snapshot or cache mutable definitions. Factory-returned facades
+still export separately: sharing their internal roots across named productions
+could merge diagnostic metadata or parser identities. Ordinary facade `freeze()`
+already avoided this intermediate export and is unchanged.
+
+Three fresh Windows/PHP 8.2.10 workers per variant alternated before/after order,
+with PCOV disabled, one warmup and 31 observations per fixture/flag pair. Timers
+cover complete `FrozenGrammar::from($facade, $flags)` preparation, excluding facade
+construction, source setup, correctness checks, recognition and release. Medians
+of worker medians, in microseconds; memory is incremental used PHP bytes from a
+separate warmed preparation, not RSS:
+
+| Fixture / flags | Preparation before / after | Peak bytes before / after |
+|---|---:|---:|
+| Text / NONE | 5.2 / 3.7 | 4,584 / 4,136 |
+| Text / OPTIMIZE | 6.8 / 5.5 | 4,584 / 4,136 |
+| 512 flat Text operands / NONE | 1,323.9 / 948.1 | 834,136 / 592,032 |
+| 512 flat Text operands / OPTIMIZE | 5,036.0 / 4,525.1 | 1,033,432 / 791,288 |
+| 128 nested Sequences / NONE | 558.2 / 397.5 | 306,080 / 228,832 |
+| 128 nested Sequences / OPTIMIZE | 6,483.1 / 6,158.2 | 489,664 / 407,296 |
+| 128 references / NONE | 722.1 / 645.8 | 203,840 / 151,688 |
+| 128 references / OPTIMIZE | 2,599.4 / 2,454.1 | 391,624 / 339,432 |
+| RFC URI / NONE | 1,015.0 / 989.7 | 293,368 / 292,984 |
+| RFC URI / OPTIMIZE | 2,315.2 / 2,237.9 | 293,424 / 293,040 |
+
+The reference fixture uses one Text production 128 times. The URI facade's
+unresolved export is small, so the removed pass saves little compared with
+resolution and preparation. The flat graph measured about 28% faster preparation
+without optimization and 10% with it, with about 29% and 23% lower peaks. Retained
+graph memory was effectively unchanged in most fixtures; a nested optimized
+fixture retained 328,264 bytes before and 323,144 after. No general retained-memory,
+cold-process or recognition-throughput improvement is claimed. Host activity was
+uncontrolled, and class loading was warmed before observations.
+
+Baseline source, worker and raw reports are under ignored `build/direct-snapshot/`.
+While retained, reproduce in fresh alternating workers:
+
+```sh
+php -d pcov.enabled=0 -d memory_limit=512M build/direct-snapshot/measure.php before
+php -d pcov.enabled=0 -d memory_limit=512M build/direct-snapshot/measure.php after
+```
+
+Workers compare valid, truncated and trailing-input acceptance, nonzero-offset
+CSTs, diagnostics and values against ordinary exported-parser freezing. New
+`FrozenGrammarTest` cases verify one resolving copy per shared participant, public
+export isolation, custom freeze dispatch, fresh factory resolution, old snapshots
+after redefinition, failed-copy retries, byte spans, cached values and explicit
+effects under both flag sets. Reject the optimization if ownership, freshness,
+custom dispatch, diagnostics or execution lifecycle differs.
+
 ### Compact analysis ancestry (2026-10-23)
 
 `GraphAnalysis` stores one first-discovery parent ID and the original collection

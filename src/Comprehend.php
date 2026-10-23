@@ -343,10 +343,13 @@ final class Comprehend
         return new self((new GraphSnapshot(false))->copy($parser), $syntax);
     }
 
-    /** Export a detached object graph for Ruleset factories and object constructors. */
-    public function parser(): Parser
+    /**
+     * Export a detached object graph for Ruleset factories and object constructors.
+     * @param GraphSnapshot|null $context Internal destination when freezing directly from this facade.
+     */
+    public function parser(?GraphSnapshot $context = null): Parser
     {
-        return (new GraphSnapshot(false))->copy($this->parser);
+        return ($context ?? new GraphSnapshot(false))->copy($this->parser);
     }
 
     /** @return self<T> */

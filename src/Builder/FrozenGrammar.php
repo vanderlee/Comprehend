@@ -35,13 +35,10 @@ final readonly class FrozenGrammar
     public static function from(Comprehend|Parser $parser, int $flags = FreezeFlags::DEFAULT): self
     {
         FreezeFlags::validate($flags);
-        if ($parser instanceof Comprehend) {
-            $parser = $parser->parser();
-        }
         $optimizer = ($flags & FreezeFlags::OPTIMIZE) !== 0
             ? ExtensionLoader::defaults()->requireOne(GraphOptimization::class) : null;
         $snapshot = new GraphSnapshot(optimize: $optimizer !== null, optimizer: $optimizer);
-        $root = $snapshot->copy($parser);
+        $root = $parser instanceof Comprehend ? $parser->parser($snapshot) : $snapshot->copy($parser);
         $warnings = (new GraphAnalysis())->validate($root);
         $optimizer?->prepare($root);
 

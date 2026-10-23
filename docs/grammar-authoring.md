@@ -167,6 +167,11 @@ Reference-bearing facade expressions deliberately resolve names at freeze,
 after definitions are complete. Each fluent composition protects reused parser
 containers; forward references still consult their builder until freezing.
 Exporting via `parser()` does not expose the facade's internal containers.
+`FrozenGrammar::from($facade, $flags)` copies directly into its destination snapshot
+without first creating a standalone export. It still creates a fresh snapshot;
+unlike `$facade->freeze($flags)`, it does not consult facade preparation caches or
+dispatch a custom root `freeze()` override. Factory-returned facades retain their
+separate export boundary so named productions keep independent ownership and metadata.
 Mutable object builders remain available: migrate shared `add()`/array edits to
 facade `then()`/`or()`, or freeze a graph before changing its builders. Composition
 flattens anonymous sequence prefixes while retaining named and decorated groups.
