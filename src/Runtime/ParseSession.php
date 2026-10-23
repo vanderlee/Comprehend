@@ -72,6 +72,7 @@ final class ParseSession
         ChoicePolicy $preference = ChoicePolicy::FIRST,
         ?ParseLimits $limits = null,
         private readonly ?ParseMetrics $metrics = null,
+        public readonly ?MemoizationProfile $memoizationProfile = null,
     ) {
         $this->source = $source;
         $this->limits = $limits ?? (self::$defaultLimits ??= new ParseLimits());
@@ -156,6 +157,41 @@ final class ParseSession
     {
         unset($this->activeParsers[spl_object_id($parser)][$offset]);
         --$this->depth;
+    }
+
+    /**
+     * @internal Profiling only. Capture scalar state without materializing pending diagnostics.
+     * @return array{array<mixed>, array<mixed>}|null Null avoids expanding oversized policy stacks.
+     */
+    public function memoizationContext(
+        MemoizationProfile $profile,
+        bool $retainFailureDiagnostic,
+        int $maxItems,
+    ): ?array {
+        if (count($this->spacers) + count($this->preferenceStack) > $maxItems) {
+            return null;
+        }
+        $trivia = end($this->spacers);
+        // Source identity already distinguishes source mode; profiling performs no extra source reads.
+        $policies = [$this->isCaseSensitive(), $this->getPreference()->value,
+            $trivia instanceof Parser ? $profile->identity($trivia) : null,
+            $this->lexemeDepth, $retainFailureDiagnostic];
+        $active = array_filter($this->activeParsers, static fn(array $offsets): bool => $offsets !== []);
+        ksort($active);
+        $details = [$this->path, $active, $this->depth,
+            $this->caseSensitivityStack,
+            array_map(static fn(ChoicePolicy $choice): string => $choice->value, $this->preferenceStack),
+            array_map(
+                static fn(?Parser $spacer): ?int => $spacer === null ? null : $profile->identity($spacer),
+                $this->spacers,
+            ),
+            [$this->farthestFailure, $this->expectations, $this->rulePaths, $this->failureRevision,
+                $this->deferredListFailure === null ? null : $profile->identity($this->deferredListFailure)],
+            [$this->limits->maxWork, $this->limits->maxDepth, $this->limits->maxRegexSubjectBytes,
+                $this->limits->maxWork === null ? null : $this->limits->maxWork - $this->work],
+            $this->regexSubject !== null];
+
+        return [$policies, $details];
     }
 
     /** @internal Charge validated literal units, retaining partial work and precise limit positions. */

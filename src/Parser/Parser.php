@@ -26,6 +26,7 @@ use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Result\Diagnostic;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
+use Vanderlee\Comprehend\Runtime\MemoizationProfile;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Span;
@@ -298,9 +299,14 @@ abstract class Parser implements SnapshotParticipant
         Source $source,
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
+        ?MemoizationProfile $memoizationProfile = null,
     ): ParseResult {
         return new ParseResult(
-            $this->recognizeInSession($source, $byteOffset, new ParseSession($source, limits: $limits)),
+            $this->recognizeInSession($source, $byteOffset, new ParseSession(
+                $source,
+                limits: $limits,
+                memoizationProfile: $memoizationProfile,
+            )),
         );
     }
 
@@ -316,9 +322,22 @@ abstract class Parser implements SnapshotParticipant
         bool $retainFailureDiagnostic = true,
     ): AbstractMatch {
         $session->enterParser($this, $offset);
-
+        // Keep ordinary recognition free of outcome bookkeeping and profiler calls.
+        if ($session->memoizationProfile === null) {
+            try {
+                return $this->recognizeChecked($source, $offset, $session, $retainFailureDiagnostic);
+            } finally {
+                $session->leaveParser($this, $offset);
+            }
+        }
         try {
-            return $this->recognizeChecked($source, $offset, $session, $retainFailureDiagnostic);
+            $session->memoizationProfile->enter($this, $offset, $session, $retainFailureDiagnostic);
+            $match = null;
+            try {
+                return $match = $this->recognizeChecked($source, $offset, $session, $retainFailureDiagnostic);
+            } finally {
+                $session->memoizationProfile->leave($session, $match);
+            }
         } finally {
             $session->leaveParser($this, $offset);
         }
@@ -653,8 +672,9 @@ abstract class Parser implements SnapshotParticipant
         Source $source,
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
+        ?MemoizationProfile $memoizationProfile = null,
     ): ParseResult {
-        $session = new ParseSession($source, limits: $limits);
+        $session = new ParseSession($source, limits: $limits, memoizationProfile: $memoizationProfile);
         $match = $this->recognizeInSession($source, $byteOffset, $session);
         if (!$match->accepted || $byteOffset + $match->length === $source->byteLength()) {
             return new ParseResult($match);

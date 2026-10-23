@@ -1317,12 +1317,13 @@ megabyte memory.
 
 ## Memoization decision
 
-Memoization is **deferred**. The shared-prefix profile
+Memoization is **deferred**. The historical shared-prefix profile
 recorded seven parser entries, one repeated parser/byte position and 4105 work
-units. It identifies a synthetic optimization candidate, not a demonstrated
-cache benefit. Scope context is omitted from this bounded profile; repeated
-positions are not proven interchangeable. No memoized/uncached equivalence or
-measured cache benefit has been established, so a result cache is not enabled.
+units. The lightweight `ParseMetrics` still omits scope context. That count is a
+lead, not a cache benefit. The opt-in instrumentation below now separates weaker
+policy repetitions from stricter context repetitions and measures their actual
+logical work. No result cache, semantic-state replay or speculative effects are
+introduced.
 
 If pursued, keys must include frozen parser identity, source/session identity,
 byte position, case/choice/trivia/lexeme policy and relevant guard dependencies.
@@ -1330,6 +1331,150 @@ Only pure guards and frozen graphs qualify, and selected execution records/value
 caches/effects cannot be replayed as shared mutable cache entries. A bounded
 cache with explicit file/history eviction and cached/uncached tests would be a
 separate increment. Parser/byte-position counts alone do not justify those risks.
+
+### Selective memoization instrumentation (2026-10-23)
+
+`Runtime\MemoizationProfile` can observe existing frozen entry points:
+
+```php
+use Vanderlee\Comprehend\Runtime\MemoizationProfile;
+
+$frozen = $grammar->freeze();
+$profile = new MemoizationProfile(capacity: 4096, maxDepth: 128, maxContextBytes: 16384);
+$result = $frozen->parseAll($source, memoizationProfile: $profile);
+$counts = $profile->snapshot();
+```
+
+`FrozenGrammar::parse()` and `matchPrefix()` accept the same optional argument.
+They register the already isolated, resolved and safety-checked graph, then use the
+ordinary Parser/ParseSession recognition path. Object Parser entry points and
+`ParseSession` can receive the observer too, but do not automatically qualify a
+mutable graph: unregistered nodes supply entry/position counts, not reuse
+candidates. Facades can freeze first. `ParseMetrics` remains the cheaper observer
+with its existing snapshot schema. The default recognition path creates no
+profile, context key or outcome summary.
+
+Eligibility uses an exact-class allowlist of inspected built-ins and optimizer
+implementations. Executable metadata, guards, callbacks, unknown/custom classes,
+recursive dependency cycles and unsupported descendants disqualify a subtree.
+Inspected children can still be eligible when their parent carries metadata.
+Finite work/depth limits and active automatic spacing exclude reuse candidates;
+they continue to be observed for total work and exceptions. Guard dependencies
+are deliberately not guessed. Optimizer-internal recognizers outside the frozen
+graph are unregistered, while bypassed lexical-table attempts generate no checked
+entries. Neither absence nor repeated parser offsets establish cache usefulness.
+
+Every position key includes monotonic weak identities for session, source and
+parser, plus byte offset. Source identity also distinguishes its mode and stable
+snapshot. Policy keys add effective case/choice, trivia identity, lexeme depth and
+failure-diagnostic retention requirements. Strict keys additionally capture caller
+rule paths, active ancestry identities/offsets, recursion membership, depth, full
+policy stacks, active diagnostics and failure revision, pending diagnostic identity,
+regex subject-cache presence and resource policy. Pending diagnostics are not
+materialized. Actual caller identities prevent recycled PHP object IDs from
+aliasing observations. Comparisons never cross sessions, even with the same Source.
+
+`policy_repeats` and `strict_repeats` count completed visits to existing keys.
+`*_summary_matches` further requires the same acceptance, byte progress, farthest
+failure, root kind and immediate child count. These bounded summaries do not
+compare complete trees or prove diagnostic-recipe equivalence. Policy summary
+conflicts can be expected when caller diagnostics differ; strict conflicts would
+invalidate that partition. Matching summaries still are not cache hits.
+`*_repeated_work_inclusive` measures matching-summary repeated calls including
+descendants. `*_repeated_work_nonoverlap` removes nested overlap; per-class
+inclusive totals must not be added to estimate savings. Work units are cooperative
+runtime charges, not CPU time, allocated bytes or guaranteed removable work.
+
+Profiles retain bounded scalar keys, summaries and class totals, never a match,
+tree, Source, effect or semantic projection. Weak identities and registered-node
+records do not keep their objects alive. Each position/context table and graph
+classification is capped by `capacity`; identity bookkeeping is capped at three
+times that capacity. Frames are bounded per active session by `maxDepth` and are
+removed on completion or exception. Context serialization is size-checked before
+allocation; oversized policy stacks are not expanded. Bounds and all dropped
+observation counters appear in the report. Saturation, conservative eligibility
+and context-size truncation can hide candidates, so zero is not proof of absence.
+
+The maintained harness uses fresh workers, 256-byte synthetic prefixes, eight
+lookahead probes, ASCII application fixtures, byte Sources and separate cold/warm
+observations. Three workers per case/flag confirmed these warm counts on Windows,
+PHP 8.2.10, with PCOV disabled. All counts below are plain / optimized frozen graphs:
+
+| Fixture | Entries | Repeated positions | Policy repeats | Strict repeats | Nonoverlapping strict repeated work |
+|---|---:|---:|---:|---:|---:|
+| Shared prefix, two alternatives | 7 / 6 | 1 / 0 | 1 / 0 | 0 / 0 | 0 / 0 |
+| Eight repeated long lookaheads | 34 / 34 | 28 / 28 | 28 / 21 | 28 / 21 | 1,827 / 3,633 |
+| Short lexical alternatives | 7 / 1 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| Different case scopes | 9 / 9 | 1 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| Guarded lookahead prefix | 34 / 34 | 28 / 28 | 7 / 7 | 7 / 7 | 14 / 14 |
+| URI with repeated escapes | 1,179 / 49 | 15 / 0 | 15 / 0 | 0 / 0 | 0 / 0 |
+| JSON array of objects | 651 / 603 | 18 / 18 | 18 / 18 | 0 / 0 | 0 / 0 |
+| ABNF quoted text | 650 / 7 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+
+The plain lookahead's inclusive repeated work is 5,460, but its nonoverlapping
+total is 1,827 of 2,347 observed work units. Optimized nested literal failure
+fallback adds speculative comparisons: total work is 4,411 and nonoverlapping
+repeated work is 3,633. Some internal compiled terminals are unregistered, so their
+position repetitions are not eligible candidates themselves. The guarded variant
+excludes the expensive guarded prefix and its parents; only seven cheap suffix
+failures, two units each, qualify. This demonstrates why raw repetition counts
+overstate selective opportunities.
+
+Shared-prefix and ordinary URI policy keys also expose inherited-diagnostic summary
+conflicts; their matching parser positions are not interchangeable execution
+records. JSON's default 16 KiB context cap drops some observations. A separate
+128 KiB run eliminates those context-size drops and still finds zero strict
+repetitions in this sample. UTF-8 file workers exercise the same fixtures against
+64-byte pages, and validate outputs against an independent unprofiled graph.
+These are small samples with conservative keys: relative diagnostic/CST recipes
+might allow broader reuse, but this profile does not prove that equivalence.
+
+Instrumentation traverses graph eligibility, hashes scoped arrays and observes
+outcomes; it is intentionally expensive. Its elapsed time is profiler overhead,
+not evidence of a parsing optimization. The harness records collector/grammar-cache
+used-memory deltas, recognition peaks before correctness projection, cold/warm
+counts, and separate unprofiled recognition timings. Warm used-memory deltas in
+the byte-source sample ranged from 6,232 bytes for optimized short lexical choice
+to 1,567,000 bytes for ordinary URI recognition. These retain the collector and
+any new grammar caches, not a hypothetical result cache. Registration adds graph
+inspection only when a profile is supplied; context hashing is per observed
+eligible visit. Bounded records avoid unbounded input-position history, but do not
+make instrumentation free or establish a suitable production cache size.
+A five-worker alternating
+original/current comparison with profiling disabled measured ABNF worker medians
+of 4.439–4.774 ms before and 4.305–5.010 ms after; medians of worker medians were
+4.488 and 4.409 ms. Ranges overlap: no consistent default throughput improvement
+or regression is established. The control loads Parser and ParseSession from
+revision `4e8502f`; host activity was uncontrolled.
+
+Reproduce:
+
+```sh
+php docs/examples/memoization-profile.php
+php -d pcov.enabled=0 tools/profile-memoization.php --size=256 --workers=3
+php -d pcov.enabled=0 tools/profile-memoization.php --source=file-utf8 --size=256
+php -d pcov.enabled=0 tools/profile-memoization.php --case=json --context-bytes=131072
+php -d pcov.enabled=0 tools/profile-memoization.php --no-profile --case=abnf --flags=0
+```
+
+Optional `--capacity`, `--case`, `--flags=0|1`, `--iterations` and
+`--source=memory-byte|memory-utf8|file-utf8` control the experiment. To compare the
+previous disabled path, save that revision's `src/Parser/Parser.php` and
+`src/Runtime/ParseSession.php` under `build/memoization-profile/` and add
+`--baseline-runtime=build/memoization-profile` to the `--no-profile` command.
+Raw local reports are retained under that ignored directory while available.
+Regressions compare profiled/plain CST/AST, values, ordered diagnostics, work,
+guard/effect lifecycle, source release, deferred diagnostics and exact exhausted
+limits. The runnable example checks a repeated lookahead at a nonzero byte offset.
+
+The next justified cache experiment would target a bounded, expensive pure
+lookahead with frequent context matches, comparing uninstrumented cached/uncached
+workers. It must prove full relative diagnostics and tree reconstruction, fresh
+semantic/effect ownership and exact work/limit behavior. Reject it if broader
+context checks erase the hits, bounded recipes/lookup cost exceed recognition,
+or memory and preparation outweigh reuse. Current URI/ABNF/JSON samples supply no
+strict repeated-work evidence for a general cache; that is not a proof that all
+relative-context memoization is unhelpful. No cache is enabled by this instrumentation.
 
 ## Lifetime and memory guarantees
 

@@ -8,6 +8,7 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Comprehend;
 use Vanderlee\Comprehend\Result\ParseResult;
 use Vanderlee\Comprehend\Runtime\ParseLimits;
+use Vanderlee\Comprehend\Runtime\MemoizationProfile;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\Utf8Source;
 use Vanderlee\Comprehend\Syntax\ExtensionLoader;
@@ -58,11 +59,14 @@ final readonly class FrozenGrammar
         Source|string $source,
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
+        ?MemoizationProfile $memoizationProfile = null,
     ): ParseResult {
+        $memoizationProfile?->registerFrozenGraph($this->root);
         return $this->root->matchPrefix(
             is_string($source) ? new Utf8Source($source) : $source,
             $byteOffset,
             $limits,
+            $memoizationProfile,
         );
     }
 
@@ -71,17 +75,24 @@ final readonly class FrozenGrammar
         Source|string $source,
         int $byteOffset = 0,
         ?ParseLimits $limits = null,
+        ?MemoizationProfile $memoizationProfile = null,
     ): ParseResult {
+        $memoizationProfile?->registerFrozenGraph($this->root);
         return $this->root->parseAll(
             is_string($source) ? new Utf8Source($source) : $source,
             $byteOffset,
             $limits,
+            $memoizationProfile,
         );
     }
 
     /** @return ParseResult<T> */
-    public function parse(Source|string $source, int $byteOffset = 0, ?ParseLimits $limits = null): ParseResult
-    {
-        return $this->parseAll($source, $byteOffset, $limits);
+    public function parse(
+        Source|string $source,
+        int $byteOffset = 0,
+        ?ParseLimits $limits = null,
+        ?MemoizationProfile $memoizationProfile = null,
+    ): ParseResult {
+        return $this->parseAll($source, $byteOffset, $limits, $memoizationProfile);
     }
 }
