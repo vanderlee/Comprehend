@@ -39,6 +39,69 @@ before accepting a measurement. Small cases and three samples are noisy; these
 results are engineering baselines, not platform-independent guarantees. Byte
 and UTF-8 source results should only be compared under the same encoding mode.
 
+## Chunked file scanning
+
+`ReadRun` accelerates exact built-in file sources for case-sensitive literal
+`ReadUntil`, `ReadWhileSet` and `ReadWhileRange` scans without finite work budgets.
+It uses 8192-byte chunks, complete UTF-8 endpoints and bounded delimiter overlap.
+Generated atoms retain the existing 8192-byte cap; temporary subjects are bounded
+by the chunk plus delimiter lookahead and three UTF-8 boundary bytes. No complete
+subject cache, source-size index or alternative recognition runtime is introduced.
+Finite work budgets and unsupported cases retain the scalar loop. A failed PCRE
+attempt resumes that loop at the first uncharged chunk.
+
+Reproduce with the maintained harness, running each command in a fresh process:
+
+```sh
+php -d pcov.enabled=0 tools/benchmark-file-scanning.php --mode=scalar --iterations=3
+php -d pcov.enabled=0 tools/benchmark-file-scanning.php --mode=chunked --iterations=3
+php -d pcov.enabled=0 tools/benchmark-file-scanning.php --mode=chunked --unicode --iterations=3
+php -d pcov.enabled=0 tools/benchmark-file-scanning.php --source=file-byte --size=8192 --page=4 --delimiter-bytes=128 --mode=chunked --iterations=3
+```
+
+Use both modes for every fixture. `--case=until|set|range`,
+`--source=file-byte|file-utf8`, `--size`, `--page` and `--delimiter-bytes`
+select additional cases. Scalar mode forces the authoritative unit loop with a
+generous finite budget; it is not a historical checkout. Each process checks
+acceptance, byte length, CST arrays and logical work against an in-memory scalar
+reference. Timers include a fresh session and recognition/CST construction;
+verification, source setup, serialization and result release are outside them.
+One warmup precedes measured observations. Setup includes snapshot copying and
+UTF-8 validation, excluding fixture creation. The harness retains its input and
+reference tree, so its total process memory does not model bounded file ingestion.
+
+Local Windows/PHP 8.2.10/PCRE 10.40 measurements, PCOV disabled, one worker and
+three observations per fixture/mode; medians in milliseconds:
+
+| Fixture, absent delimiter | Scalar | Chunked | Chunked incremental PHP peak |
+|---|---:|---:|---:|
+| 256 KiB ASCII, byte file | 394.191 | 0.626 | 51,248 bytes |
+| 256 KiB ASCII, UTF-8 file | 705.663 | 2.750 | 51,248 bytes |
+| 262,140 bytes mixed Unicode, byte file | 393.277 | 0.762 | 51,248 bytes |
+| 262,140 bytes mixed Unicode, UTF-8 file | 297.661 | 2.153 | 63,504 bytes |
+| 8 KiB ASCII, byte file, 4-byte pages, 128-byte delimiter | 805.213 | 11.708 | 34,864 bytes |
+
+Mixed Unicode repeats ASCII plus two-, three- and four-byte code points; byte mode
+inspects octets, while UTF-8 mode inspects code points. Peaks are incremental used
+PHP memory during recognition, not RSS. Scalar peaks were about 14 KiB on default
+pages. Raw local observations are retained under ignored
+`build/source-research/chunk-comparison.json`. Host load was uncontrolled and mode
+order was not alternated; these are engineering observations, not general speed
+guarantees. Repeat in alternating fresh workers before making application claims.
+
+Chunking removes PHP per-unit calls and repeated source-page lookahead. It adds
+bounded string copies and PCRE preparation; short scans may not benefit. Tempered
+literal matching can still perform work proportional to input times delimiter
+length; this is not a linear-time search algorithm. Patterns that exceed PCRE
+limits retain scalar performance. Source construction and validation are unchanged.
+
+`FileScanningTest` compares Unicode/page/chunk crossings, overlapping and partial
+delimiters, min/max failures, CSTs, diagnostics and work with scalar recognition.
+It also checks finite-budget offsets, temporary-memory bounds, source closure,
+custom-source and callback fallbacks, separate file/memory plans, cached values
+and explicit effects. Reject acceleration if those contracts diverge or temporary
+subject memory grows with file size.
+
 ## Recorded comparisons
 
 ### Direct facade snapshots (2026-10-23)

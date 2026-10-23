@@ -16,6 +16,8 @@ use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
 use Vanderlee\Comprehend\Source\InMemorySource;
+use Vanderlee\Comprehend\Source\ByteFileSource;
+use Vanderlee\Comprehend\Source\Utf8FileSource;
 use Vanderlee\Comprehend\Source\SourceMode;
 use Vanderlee\Comprehend\Source\Span;
 
@@ -29,6 +31,7 @@ abstract class ReadRun extends Parser implements AnalyzableParser
 
     /** Keep generated classes and tempered literals comfortably below PCRE compilation limits. */
     private const MAX_REGEX_ATOM_BYTES = 8192;
+    private const FILE_CHUNK_BYTES = 8192;
 
     /** @var array<string, string|null> */
     private array $regexPatterns = [];
@@ -85,30 +88,42 @@ abstract class ReadRun extends Parser implements AnalyzableParser
     private function scanInContext(Source $source, int $byteOffset, ParseSession $session): array
     {
         $this->prepareScan($source, $session);
+        // Custom sources and scanners retain their observable unit-access hooks.
+        $file = in_array($source::class, [ByteFileSource::class, Utf8FileSource::class], true)
+            && in_array(static::class, [ReadUntil::class, ReadWhileSet::class, ReadWhileRange::class], true);
         if (
             $session->isCaseSensitive()
             && !$session->hasWorkLimit()
-            && $source instanceof InMemorySource
+            && ($source instanceof InMemorySource || $file)
             && ($this->max === null || $this->max <= 65535)
         ) {
-            $mode = $source->mode()->value;
+            $mode = $source->mode()->value . ($file ? ':file' : '');
             if (!array_key_exists($mode, $this->regexPatterns)) {
                 $atom = $this->regexUnitPattern($source);
-                $quantifier = $this->max === null ? '*+' : '{0,' . $this->max . '}+';
+                // File chunks enforce the remaining maximum after matching. Avoid
+                // expanding a finite quantifier into a potentially oversized PCRE program.
+                $quantifier = $file || $this->max === null ? '*+' : '{0,' . $this->max . '}+';
                 $this->regexPatterns[$mode] = $atom === null || strlen($atom) > self::MAX_REGEX_ATOM_BYTES ? null
                     : '~\\G(?:' . $atom . ')' . $quantifier . '~s'
                         . ($source->mode() === SourceMode::UTF8 ? 'u' : '');
             }
             $pattern = $this->regexPatterns[$mode];
             if ($pattern !== null) {
-                $scan = $this->scanRegex($pattern, $source, $byteOffset, $session);
+                $scan = $file
+                    ? $this->scanFileRegex($pattern, $source, $byteOffset, $session)
+                    : $this->scanRegex($pattern, $source, $byteOffset, $session);
                 if ($scan !== null) {
                     return $scan;
                 }
             }
         }
-        $end = $byteOffset;
-        $count = 0;
+
+        return $this->scanUnits($source, $byteOffset, $session, $byteOffset, 0);
+    }
+
+    /** @return array{bool, int} */
+    private function scanUnits(Source $source, int $start, ParseSession $session, int $end, int $count): array
+    {
         while ($this->max === null || $count < $this->max) {
             $unit = $session->readSourceUnit($end);
             if ($unit === null || !$this->acceptsUnit($unit, $session)) {
@@ -118,7 +133,7 @@ abstract class ReadRun extends Parser implements AnalyzableParser
             ++$count;
         }
 
-        return [$count >= $this->min, $end - $byteOffset];
+        return [$count >= $this->min, $end - $start];
     }
 
     protected function prepareScan(Source $source, ParseSession $session): void
@@ -130,6 +145,61 @@ abstract class ReadRun extends Parser implements AnalyzableParser
     protected function regexUnitPattern(Source $source): ?string
     {
         return null;
+    }
+
+    /** Extra subject bytes needed to decide a unit at the end of a file chunk. */
+    protected function regexLookaheadBytes(): int
+    {
+        return 0;
+    }
+
+    /** @return array{bool, int} */
+    private function scanFileRegex(string $pattern, Source $source, int $offset, ParseSession $session): array
+    {
+        $end = $offset;
+        $count = 0;
+        $utf8 = $source->mode() === SourceMode::UTF8;
+        while ($this->max === null || $count < $this->max) {
+            $chunkEnd = min($source->byteLength(), $end + self::FILE_CHUNK_BYTES);
+            while (!$source->isUnitBoundary($chunkEnd)) {
+                --$chunkEnd;
+            }
+            // Lookahead is bounded by the generated atom limit. Include up to three
+            // more bytes so retreating the subject end cannot truncate a delimiter.
+            $subjectEnd = min($source->byteLength(), $chunkEnd + $this->regexLookaheadBytes() + 3);
+            while (!$source->isUnitBoundary($subjectEnd)) {
+                --$subjectEnd;
+            }
+            $subject = $source->sliceBytes($end, $subjectEnd);
+            if (@preg_match($pattern, $subject, $matches) !== 1) {
+                $this->regexPatterns[$source->mode()->value . ':file'] = null;
+
+                // Earlier chunks have already charged their work; resume, do not replay them.
+                return $this->scanUnits($source, $offset, $session, $end, $count);
+            }
+            $text = substr($matches[0], 0, $chunkEnd - $end);
+            $units = $utf8 ? mb_strlen($text, 'UTF-8') : strlen($text);
+            if ($this->max !== null && $units > $this->max - $count) {
+                $units = $this->max - $count;
+                $text = $utf8 ? mb_substr($text, 0, $units, 'UTF-8') : substr($text, 0, $units);
+            }
+            $next = $end + strlen($text);
+            $count += $units;
+            $limited = $this->max !== null && $count === $this->max;
+            $stopped = $next < $chunkEnd || $next === $source->byteLength();
+            $probe = !$limited && $stopped;
+            $session->consumeLiteralWork($text, $units, $end);
+            if ($probe) {
+                $session->consumeWork(1, $next);
+            }
+            $this->chargeRegexLookahead($source, $end, $next, $probe, $session);
+            $end = $next;
+            if ($limited || $stopped) {
+                break;
+            }
+        }
+
+        return [$count >= $this->min, $end - $offset];
     }
 
     /** @internal Literal-delimiter scanners also account for inspected lookahead bytes. */

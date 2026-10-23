@@ -43,15 +43,9 @@ Distinguish measured findings from hypotheses. Do not change production code.
 
 ### 7. Improve source, Unicode and regex access
 
-Investigate ByteSource, Utf8Source, file paging, readUnit, boundary checks,
-regex subjects and bounded scanning.
-
-Measure costs across ASCII, multibyte UTF-8 and large files. Look for repeated
-validation, copying, materialization or page-boundary work beyond existing
-subject caching and bulk literal matching.
-
-Preserve byte spans, Unicode behavior, stable file snapshots and bounded
-memory guarantees. Include adversarial and boundary inputs.
+[ ] Chunk file-backed bounded scans
+[ ] Consolidate checked file-byte access and avoid readability-induced cache pollution
+[ ] Accelerate bounded UTF-8 validation/counting
 
 ### 8. Research techniques from other implementations
 

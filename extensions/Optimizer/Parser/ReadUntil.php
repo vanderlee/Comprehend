@@ -85,6 +85,11 @@ final class ReadUntil extends ReadRun
         return is_string($this->delimiter) ? '(?!' . preg_quote($this->delimiter, '~') . ').' : null;
     }
 
+    protected function regexLookaheadBytes(): int
+    {
+        return is_string($this->delimiter) ? strlen($this->delimiter) : 0;
+    }
+
     protected function chargeRegexLookahead(
         Source $source,
         int $start,

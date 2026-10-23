@@ -41,6 +41,22 @@ out-of-range code points and truncation. Reads crossing page/validation boundari
 preserve complete code points. UTF-8 position conversion scans units without a
 full code-point index, trading bounded auxiliary storage for linear scan time.
 
+## Bounded scanners
+
+Case-sensitive `readUntil()` with a literal delimiter, `readWhileSet()` and
+`readWhileRange()` accelerate exact built-in byte/UTF-8 file sources using
+8192-byte scan chunks. Subjects include bounded delimiter lookahead and complete
+UTF-8 endpoints; they never materialize the complete file or use the regex subject
+cache. Temporary subject storage stays bounded independently of file size.
+The scanners retain the same byte spans, CST, diagnostics and logical work.
+
+Finite work budgets, predicates, case-insensitive scans, custom sources/scanners,
+maximum counts above 65535 and oversized generated patterns retain unit scanning.
+PCRE failures resume unit scanning at the current chunk without replaying work
+already charged. Snapshot ownership and explicit close behavior are unchanged.
+This acceleration applies to these scanners, not to arbitrary regex patterns.
+See [performance measurements](performance.md#chunked-file-scanning) for reproduction.
+
 ## Other character encodings
 
 `EncodedFileSource(pathOrStream, encoding, pageSize = 8192)` validates an explicit
