@@ -12,6 +12,10 @@ AI AGENTS MUST NOT USE THIS FILE!
     - Look at inner loops.
     - Move some parsers to regex.
     - Go lazy
+    - Concrete
+      - Decode general UTF-8 boundaries in bounded chunks
+      - Reduce intermediate allocations where ownership allows it.
+      - List and spacing overhead
 - Feature comparisons.
 
 ## Ongoing concerns

@@ -34,6 +34,10 @@ use Vanderlee\Comprehend\Parser\Terminal\Set;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
+use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Source\Utf8Source;
+use Vanderlee\Comprehend\Source\ByteFileSource;
+use Vanderlee\Comprehend\Source\Utf8FileSource;
 use Vanderlee\Comprehend\Syntax\SyntaxExtension;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 
@@ -175,6 +179,15 @@ final class GraphOptimizer implements GraphOptimization, SyntaxExtension
         }
         $children = [];
         $end = $offset + $length;
+        if (self::hasSingleByteUnits($operand, $source, $session)) {
+            // Recognition already proved the run: retain each original child without decoding it again.
+            $kind = $operand->concreteKind();
+            for ($position = $offset; $position < $end; ++$position) {
+                $children[] = new ConcreteNode($kind, $source->span($position, $position + 1));
+            }
+
+            return [$length, $children];
+        }
         while ($offset < $end) {
             $unit = $source->readUnit($offset);
             if ($unit === null) {
@@ -185,6 +198,37 @@ final class GraphOptimizer implements GraphOptimization, SyntaxExtension
         }
 
         return [$length, $children];
+    }
+
+    private static function hasSingleByteUnits(Parser $operand, Source $source, ParseSession $session): bool
+    {
+        if (in_array($source::class, [ByteSource::class, ByteFileSource::class], true)) {
+            return true;
+        }
+        if (!in_array($source::class, [Utf8Source::class, Utf8FileSource::class], true)) {
+            return false;
+        }
+        if (
+            !$operand instanceof Text && !$operand instanceof Char
+            && !$operand instanceof Set && !$operand instanceof Range
+        ) {
+            return false;
+        }
+        // Unicode case folding can match multibyte input against ASCII (for example Kelvin sign).
+        if (!($operand->getCaseSensitivity() ?? $session->isCaseSensitive())) {
+            return false;
+        }
+
+        return match ($operand::class) {
+            Text::class => strlen($operand->getText()) === 1 && ord($operand->getText()) < 128,
+            Char::class => $operand->includesCharacter() && strlen($operand->getCharacter()) === 1
+                && ord($operand->getCharacter()) < 128,
+            Set::class => $operand->includesCharacters()
+                && preg_match('/[\x80-\xff]/', $operand->getCharacters()) === 0,
+            Range::class => $operand->includesRange() && $operand->getLast() !== null
+                && strlen($operand->getLast()) === 1 && ord($operand->getLast()) < 128,
+            default => false,
+        };
     }
 
     private static function textScanner(Text $parser, int $min, ?int $max): ?ReadRun

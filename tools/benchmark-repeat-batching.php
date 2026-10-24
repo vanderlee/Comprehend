@@ -9,9 +9,13 @@ use Vanderlee\Comprehend\Source\Utf8FileSource;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-$options = getopt('', ['worker', 'baseline:', 'iterations:', 'count:', 'source:']);
+$options = getopt('', ['worker', 'baseline:', 'iterations:', 'count:', 'source:', 'literal:']);
 $iterations = max(3, (int) ($options['iterations'] ?? 15));
 $count = max(1, (int) ($options['count'] ?? 32768));
+$literal = $options['literal'] ?? 'ab';
+if ($literal === '') {
+    throw new InvalidArgumentException('Literal must not be empty');
+}
 $sourceKind = $options['source'] ?? 'memory';
 if (!in_array($sourceKind, ['memory', 'file'], true)) {
     throw new InvalidArgumentException('Source must be memory or file');
@@ -22,7 +26,8 @@ if (!isset($options['worker'])) {
         $variants = isset($options['baseline']) ? [$options['baseline'], null] : [null];
         foreach ($worker % 2 === 0 ? $variants : array_reverse($variants) as $baseline) {
             $command = [PHP_BINARY, '-d', 'pcov.enabled=0', __FILE__, '--worker',
-                '--iterations=' . $iterations, '--count=' . $count, '--source=' . $sourceKind];
+                '--iterations=' . $iterations, '--count=' . $count, '--source=' . $sourceKind,
+                '--literal=' . $literal];
             if ($baseline !== null) {
                 $command[] = '--baseline=' . $baseline;
             }
@@ -43,7 +48,7 @@ if (!isset($options['worker'])) {
 if (isset($options['baseline'])) {
     require $options['baseline'];
 }
-$text = str_repeat('ab', $count);
+$text = str_repeat($literal, $count);
 $stream = null;
 if ($sourceKind === 'file') {
     $stream = tmpfile();
@@ -52,7 +57,7 @@ if ($sourceKind === 'file') {
 } else {
     $source = new Utf8Source($text);
 }
-$parser = Repeat::exact(new Text('ab'), $count);
+$parser = Repeat::exact(new Text($literal), $count);
 $grammar = $parser->freeze();
 $oracle = $parser->freeze(0)->parse($source);
 $expected = hash('sha256', json_encode($oracle->node->toArray(), JSON_THROW_ON_ERROR));
@@ -81,6 +86,7 @@ for ($iteration = -2; $iteration < $iterations; ++$iteration) {
 sort($samples);
 sort($retained);
 echo json_encode(['php' => PHP_VERSION, 'source' => $sourceKind, 'baseline' => $options['baseline'] ?? null,
+    'literal_hex' => bin2hex($literal),
     'input_bytes' => strlen($text), 'iterations' => $iterations, 'median_ms' => $samples[intdiv($iterations, 2)],
     'min_ms' => min($samples), 'max_ms' => max($samples),
     'retained_used_bytes' => $retained[intdiv($iterations, 2)]], JSON_THROW_ON_ERROR), PHP_EOL;

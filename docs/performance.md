@@ -2069,6 +2069,58 @@ memory and 160.822 to 19.175 ms from a UTF-8 file. Both variants retained
 general application guarantees. Host load was uncontrolled. The saved baseline
 and raw reports are locally retained under ignored `build/repeat-batching/`.
 
+## Direct spans for one-byte repetitions
+
+After a prepared repetition scans a run successfully, `GraphOptimizer::scanRepeat()`
+builds its original per-unit CST children directly for exact built-in byte sources.
+For exact built-in UTF-8 sources, it also does so for case-sensitive ASCII literals,
+included characters, included ASCII sets and included ranges with an ASCII upper
+bound. These runs have known one-byte intervals, so constructing each retained span
+does not need another `readUnit()` call to rediscover its end.
+
+Custom sources and file-source subclasses retain their unit-access hooks. General
+Unicode, excluded characters and open upper ranges retain unit decoding. UTF-8
+case-insensitive runs also retain decoding: Unicode case folding can match a
+multibyte character against an ASCII operand. An explicit local case-sensitive
+policy can still qualify inside a case-insensitive scope. Finite work/depth limits,
+active spacing and operand metadata keep their existing eligibility and fallbacks.
+Recognition work accounting is unchanged; tree memory still grows with matched units.
+
+The repetition benchmark accepts `--literal` (default `ab`) to measure this path:
+
+```sh
+php tools/benchmark-repeat-batching.php --literal=a --iterations=9
+php tools/benchmark-repeat-batching.php --literal=a --iterations=9 --source=file
+```
+
+For before/after comparisons, save the previous `extensions/Optimizer/GraphOptimizer.php`
+and pass `--baseline=path/to/GraphOptimizer.before.php`. The harness alternates three
+fresh workers per variant, with two warmups and nine observations per worker. Source
+setup, graph preparation, release and correctness projection are outside parse timing;
+every observation checks acceptance, value and a CST hash against unoptimized parsing.
+
+On Windows/PHP 8.2.10 with PCOV disabled and Xdebug unloaded, medians of worker
+medians for 32 KiB of repeated `a` were:
+
+| UTF-8 source | Before (ms) | After (ms) |
+|---|---:|---:|
+| Memory | 70.649 | 56.785 |
+| File | 32.294 | 17.798 |
+
+These are approximately 20% and 45% lower parse times on this fixture. Both variants
+retained 9,966,360 used-PHP bytes. Host load was uncontrolled; these figures do not
+establish general application speedups. Separate Xdebug 3.5.3 captures of five
+optimized parses of 2,048 ASCII literals showed 10,240 `readCodePoint()` calls before
+and none after. Instrumented elapsed times are not used for the throughput comparison.
+The saved baseline and raw reports are locally retained under ignored
+`build/one-byte-spans/` while available.
+
+Regression tests compare original and optimized trees, ASTs, values and diagnostics
+across memory/file byte and UTF-8 sources, nonzero offsets, small pages, empty and
+bounded repetitions, minimum failures and Unicode case policies. They also check
+custom file-source hooks, arbitrary octet children and unchanged work during child
+construction. Existing limit and lifecycle tests cover the retained ordinary paths.
+
 ## Lifetime and memory guarantees
 
 - File source copying and validation use bounded chunks; random reads retain one
