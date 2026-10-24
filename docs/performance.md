@@ -2167,6 +2167,46 @@ bounded repetitions, minimum failures and Unicode case policies. They also check
 custom file-source hooks, arbitrary octet children and unchanged work during child
 construction. Existing limit and lifecycle tests cover the retained ordinary paths.
 
+## List spacing scope bookkeeping
+
+`ParseSession` now checks and updates its private lexeme-depth counter directly
+inside automatic spacing recognition, including the prepared syntax-only path
+used by lists. This removes forwarding through `isLexeme()`, `pushLexeme()` and
+`popLexeme()` for each trivia attempt. The final session still owns the counter;
+the increment is paired with a decrement in `finally`, including exceptions from
+custom wrapper creation and recognition. Public scope operations, nested lexemes,
+spacing policies, wrapper caching and list rollback behavior are unchanged.
+
+A source-method trace of the nested 128-ID application fixture with scanner
+spacing counted 272 calls each to those three methods before, and none after:
+816 fewer method entries. Both variants consumed 57,188 work units and retained
+the same 820-node CST hash. This count covers instrumented core methods; extension
+methods are not instrumented by `profile-extraction.php`.
+
+Three fresh Windows/PHP 8.2.10 workers per variant alternated before/after order,
+with two warmups and 15 observations, PCOV disabled and Xdebug unloaded. Medians
+of worker medians for recognition/CST were 3.798 versus 3.735 ms with scanner
+spacing and 4.517 versus 4.442 ms with repeated-character spacing. Worker ranges
+overlap, and uncontrolled host load establishes no consistent throughput gain.
+Retained used-PHP memory was unchanged at 388,696 and 389,704 bytes respectively.
+Preparation, source setup, correctness checks, values and result release are
+outside recognition timing. Traced elapsed times are not throughput measurements.
+
+Reproduce current measurements and method counts with:
+
+```sh
+php -d pcov.enabled=0 tools/profile-extraction.php --case=nested --size=128 --iterations=15 --scan-spacing
+php -d pcov.enabled=0 tools/profile-extraction.php --case=nested --size=128 --iterations=1 --scan-spacing --trace
+```
+
+Omit `--scan-spacing` for repeated-character spacing. To compare a saved baseline,
+place its `SpacingContextTrait.php` under `Runtime/Scope/` in a source directory
+and add `--source-dir=that-directory`. The saved baseline and raw reports are
+locally retained under ignored `build/list-overhead/`. Regression tests exercise
+nested suppression, explicit null policies, custom wrappers, exception restoration,
+file sources, rejected list pairs, effects and exact exhausted budgets. No spacing
+result cache or probe elimination is introduced.
+
 ## Lifetime and memory guarantees
 
 - File source copying and validation use bounded chunks; random reads retain one

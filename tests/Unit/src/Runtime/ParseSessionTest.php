@@ -28,6 +28,39 @@ use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 uses(TestCase::class);
 
+test('spacing preserves nested lexemes and disabled policies without running trivia', function (string $method): void {
+    $source = new ByteSource('  ');
+    $observed = [];
+    $session = null;
+    $trivia = (new Text(' '))->guard(static function () use (&$session, &$observed): bool {
+        $observed[] = [$session->isLexeme(), $session->hasActiveSpacing()];
+
+        return true;
+    });
+    $session = new ParseSession($source, $trivia);
+    $session->pushLexeme();
+    $session->pushLexeme();
+    $this->assertSame(0, $session->$method($source, 0, $syntax));
+    $session->popLexeme();
+    $this->assertTrue($session->isLexeme());
+    $this->assertSame(0, $session->$method($source, 0, $syntax));
+    $this->assertSame([], $observed);
+    $session->popLexeme();
+    $this->assertTrue($session->hasActiveSpacing());
+    $this->assertSame(1, $session->$method($source, 0, $syntax));
+    $this->assertSame(' ', $syntax->span->rawText());
+    $this->assertSame([[true, false]], $observed);
+    $this->assertFalse($session->isLexeme());
+    $session->pushSpacer(null);
+    $this->assertSame(0, $session->$method($source, 1, $syntax));
+    $this->assertNull($syntax);
+    $session->popSpacer();
+    $this->assertTrue($session->hasActiveSpacing());
+    $this->assertSame(1, $session->$method($source, 1, $syntax));
+    $this->assertSame([[true, false], [true, false]], $observed);
+    $this->assertFalse($session->isLexeme());
+})->with(['skipSpacing', 'skipSpacingSyntax']);
+
 test('syntax spacing shares custom wrappers with ordinary spacing and restores throwing hooks', function (): void {
     $trivia = new class (' ') extends Text {
         public int $wrappers = 0;

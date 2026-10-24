@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Vanderlee\Comprehend\Runtime\Scope;
 
+use Vanderlee\Comprehend\Directive\Trivia;
 use Vanderlee\Comprehend\Match\AbstractMatch;
 use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Source\Source;
-use Vanderlee\Comprehend\Directive\Trivia;
 use Vanderlee\Comprehend\Tree\ConcreteNode;
 use WeakMap;
 
@@ -37,15 +37,21 @@ trait SpacingContextTrait
     /** @internal Whether repetition must recognize intervening trivia. */
     public function hasActiveSpacing(): bool
     {
-        return !$this->isLexeme() && end($this->spacers) instanceof Parser;
+        return $this->lexemeDepth <= 0
+            && end($this->spacers) instanceof Parser;
     }
 
     /** Zero means no spacing was consumed; false means the active trivia parser rejected input. */
     public function skipSpacing(Source $source, int $offset, ?Success &$match = null): int|false
     {
         $match = null;
+
         $trivia = end($this->spacers);
-        if ($this->isLexeme() || !$trivia instanceof Parser) {
+
+        if (
+            $this->lexemeDepth > 0
+            || !$trivia instanceof Parser
+        ) {
             return 0;
         }
 
@@ -53,6 +59,7 @@ trait SpacingContextTrait
         if (!$attempt instanceof Success) {
             return false;
         }
+
         $match = $attempt;
 
         return $match->length;
@@ -62,14 +69,20 @@ trait SpacingContextTrait
     public function skipSpacingSyntax(Source $source, int $offset, Success|ConcreteNode|null &$syntax = null): int|false
     {
         $syntax = null;
+
         $trivia = end($this->spacers);
-        if ($this->isLexeme() || !$trivia instanceof Parser) {
+
+        if (
+            $this->lexemeDepth > 0
+            || !$trivia instanceof Parser
+        ) {
             return 0;
         }
 
         // Keep the prepared loop's hot path here rather than forwarding through
         // the match-returning path. Both paths share the same cached wrapper.
-        $this->pushLexeme();
+        // Scope bookkeeping stays local: this final session owns the private depth counter.
+        ++$this->lexemeDepth;
         try {
             $wrappers = $this->triviaParsers ??= new WeakMap();
             $parser = $wrappers[$trivia] ??= $trivia->trivia();
@@ -79,7 +92,7 @@ trait SpacingContextTrait
             }
             $attempt = $parser->recognizeInSession($source, $offset, $this);
         } finally {
-            $this->popLexeme();
+            --$this->lexemeDepth;
         }
         if (!$attempt instanceof Success) {
             return false;
@@ -96,14 +109,14 @@ trait SpacingContextTrait
     ): AbstractMatch {
         // Trivia shares case, choice and diagnostics with the owning session,
         // but cannot recursively insert itself inside its own grammar.
-        $this->pushLexeme();
+        ++$this->lexemeDepth;
         try {
             $wrappers = $this->triviaParsers ??= new WeakMap();
             $parser = $wrappers[$trivia] ??= $trivia->trivia();
 
             return $parser->recognizeInSession($source, $byteOffset, $this);
         } finally {
-            $this->popLexeme();
+            --$this->lexemeDepth;
         }
     }
 }
