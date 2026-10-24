@@ -44,6 +44,8 @@ use Vanderlee\Comprehend\Tree\ConcreteNode;
 /** Owns all optimized recognition decisions; ordinary parsers use the standard runtime. */
 final class GraphOptimizer implements GraphOptimization, SyntaxExtension
 {
+    private const UTF8_CHUNK_BYTES = 8192;
+
     public function rules(): iterable
     {
         yield 'readWhile' => static fn(callable $predicate, int $min = 0, ?int $max = null): Parser
@@ -188,6 +190,9 @@ final class GraphOptimizer implements GraphOptimization, SyntaxExtension
 
             return [$length, $children];
         }
+        if (in_array($source::class, [Utf8Source::class, Utf8FileSource::class], true)) {
+            return [$length, self::utf8ChildNodes($source, $offset, $end, $operand->concreteKind())];
+        }
         while ($offset < $end) {
             $unit = $source->readUnit($offset);
             if ($unit === null) {
@@ -198,6 +203,37 @@ final class GraphOptimizer implements GraphOptimization, SyntaxExtension
         }
 
         return [$length, $children];
+    }
+
+    /** @return list<ConcreteNode> */
+    private static function utf8ChildNodes(Source $source, int $offset, int $end, string $kind): array
+    {
+        $children = [];
+        while ($offset < $end) {
+            $chunkEnd = min($end, $offset + self::UTF8_CHUNK_BYTES);
+            while (!$source->isUnitBoundary($chunkEnd)) {
+                --$chunkEnd;
+            }
+            $bytes = $source->sliceBytes($offset, $chunkEnd);
+            $length = strlen($bytes);
+            for ($position = 0; $position < $length;) {
+                // Exact built-in UTF-8 sources are validated and the accepted run ends at a boundary.
+                $lead = ord($bytes[$position]);
+                $width = match (true) {
+                    $lead < 0x80 => 1,
+                    $lead < 0xe0 => 2,
+                    $lead < 0xf0 => 3,
+                    default => 4,
+                };
+                $start = $offset + $position;
+                $children[] = new ConcreteNode($kind, $source->span($start, $start + $width));
+                $position += $width;
+            }
+            unset($bytes);
+            $offset = $chunkEnd;
+        }
+
+        return $children;
     }
 
     private static function hasSingleByteUnits(Parser $operand, Source $source, ParseSession $session): bool

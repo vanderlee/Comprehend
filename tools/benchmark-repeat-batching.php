@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 use Vanderlee\Comprehend\Parser\Structure\Repeat;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
+use Vanderlee\Comprehend\Parser\Terminal\Any;
 use Vanderlee\Comprehend\Source\Utf8Source;
 use Vanderlee\Comprehend\Source\Utf8FileSource;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-$options = getopt('', ['worker', 'baseline:', 'iterations:', 'count:', 'source:', 'literal:']);
+$options = getopt('', ['worker', 'baseline:', 'iterations:', 'count:', 'source:', 'literal:', 'any']);
 $iterations = max(3, (int) ($options['iterations'] ?? 15));
 $count = max(1, (int) ($options['count'] ?? 32768));
 $literal = $options['literal'] ?? 'ab';
@@ -28,6 +29,9 @@ if (!isset($options['worker'])) {
             $command = [PHP_BINARY, '-d', 'pcov.enabled=0', __FILE__, '--worker',
                 '--iterations=' . $iterations, '--count=' . $count, '--source=' . $sourceKind,
                 '--literal=' . $literal];
+            if (isset($options['any'])) {
+                $command[] = '--any';
+            }
             if ($baseline !== null) {
                 $command[] = '--baseline=' . $baseline;
             }
@@ -57,7 +61,9 @@ if ($sourceKind === 'file') {
 } else {
     $source = new Utf8Source($text);
 }
-$parser = Repeat::exact(new Text($literal), $count);
+$parser = isset($options['any'])
+    ? Repeat::plus(new Any())
+    : Repeat::exact(new Text($literal), $count);
 $grammar = $parser->freeze();
 $oracle = $parser->freeze(0)->parse($source);
 $expected = hash('sha256', json_encode($oracle->node->toArray(), JSON_THROW_ON_ERROR));
@@ -87,6 +93,7 @@ sort($samples);
 sort($retained);
 echo json_encode(['php' => PHP_VERSION, 'source' => $sourceKind, 'baseline' => $options['baseline'] ?? null,
     'literal_hex' => bin2hex($literal),
+    'operand' => isset($options['any']) ? 'any' : 'text',
     'input_bytes' => strlen($text), 'iterations' => $iterations, 'median_ms' => $samples[intdiv($iterations, 2)],
     'min_ms' => min($samples), 'max_ms' => max($samples),
     'retained_used_bytes' => $retained[intdiv($iterations, 2)]], JSON_THROW_ON_ERROR), PHP_EOL;

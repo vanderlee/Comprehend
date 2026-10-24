@@ -8,6 +8,8 @@ use PHPUnit\Framework\TestCase;
 use Vanderlee\Comprehend\Builder\GraphSnapshot;
 use Vanderlee\Comprehend\Extensions\Optimizer\GraphOptimizer;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileSet;
+use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileRange;
+use Tests\Fixtures\SingleUnitSource;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Parser\Structure\Choice;
 use Vanderlee\Comprehend\Parser\Structure\Not;
@@ -206,5 +208,80 @@ test('byte repetitions retain arbitrary octets as separate concrete children', f
     } finally {
         $file->close();
         fclose($stream);
+    }
+});
+
+test('UTF8 repetition chunks preserve each code point across chunk and page boundaries', function (
+    string $input,
+    ?int $maximum,
+): void {
+    $stream = tmpfile();
+    fwrite($stream, '>' . $input);
+    $files = [new Utf8FileSource($stream, pageSize: 4), new Utf8FileSource($stream)];
+    try {
+        foreach ([new Utf8Source('>' . $input), ...$files] as $source) {
+            $parser = (new Repeat(new Any(), max: $maximum))->name('run');
+            $ordinary = $parser->freeze(0)->matchPrefix($source, 1);
+            $scanned = $parser->freeze()->matchPrefix($source, 1);
+            $this->assertTrue($scanned->success);
+            $this->assertSame(
+                hash('sha256', $ordinary->node->toJson()),
+                hash('sha256', $scanned->node->toJson()),
+            );
+            $this->assertSame($ordinary->ast()->toArray(), $scanned->ast()->toArray());
+            $this->assertEquals($ordinary->diagnostic, $scanned->diagnostic);
+            $units = mb_str_split($input, 1, 'UTF-8');
+            if ($maximum !== null) {
+                $units = array_slice($units, 0, $maximum);
+            }
+            $expected = [];
+            $offset = 1;
+            foreach ($units as $unit) {
+                $expected[] = [$offset, $offset + strlen($unit), $unit];
+                $offset += strlen($unit);
+            }
+            $this->assertSame($offset, $scanned->end);
+            $this->assertSame($expected, array_map(
+                static fn($node): array => [$node->span->start, $node->span->end, $node->rawText()],
+                $scanned->node->children,
+            ));
+            $this->assertSame(implode('', $units), $scanned->value());
+        }
+    } finally {
+        foreach ($files as $file) {
+            $file->close();
+        }
+        fclose($stream);
+    }
+})->with([
+    'empty' => ['', null],
+    'all widths' => ["a\u{e9}\u{20ac}\u{1f642}", null],
+    'two byte split' => [str_repeat('a', 8191) . "\u{e9}" . str_repeat("\u{20ac}\u{1f642}", 2000), null],
+    'three byte split' => [str_repeat('a', 8190) . "\u{20ac}" . str_repeat("\u{e9}\u{1f642}", 2000), null],
+    'four byte split' => [str_repeat('a', 8189) . "\u{1f642}" . str_repeat("\u{e9}\u{20ac}", 2000), null],
+    'exact chunk boundary' => [str_repeat('a', 8188) . "\u{1f642}", null],
+    'bounded before suffix' => [str_repeat("a\u{e9}\u{20ac}\u{1f642}", 3000), 129],
+]);
+
+test('UTF8 chunk construction adds no work and preserves custom source unit hooks', function (): void {
+    $input = "a\u{e9}\u{20ac}\u{1f642}";
+    foreach ([new Utf8Source($input), new SingleUnitSource(new Utf8Source($input))] as $source) {
+        $scanner = new ReadWhileRange("\0", null);
+        $reference = new ParseSession($source);
+        $scanner->scanLength($source, 0, $reference);
+        if ($source instanceof SingleUnitSource) {
+            $source->unitReads = 0;
+        }
+        $session = new ParseSession($source);
+        $scan = GraphOptimizer::scanRepeat($scanner, new Any(), $source, 0, $session);
+        $this->assertSame(strlen($input), $scan[0]);
+        $this->assertSame($reference->workUsed(), $session->workUsed());
+        $this->assertSame(mb_str_split($input, 1, 'UTF-8'), array_map(
+            static fn($node): string => $node->rawText(),
+            $scan[1],
+        ));
+        if ($source instanceof SingleUnitSource) {
+            $this->assertSame(9, $source->unitReads); // Four scan reads, EOF, four retained child units.
+        }
     }
 });

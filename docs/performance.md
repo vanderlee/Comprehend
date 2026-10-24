@@ -2124,10 +2124,10 @@ included characters, included ASCII sets and included ranges with an ASCII upper
 bound. These runs have known one-byte intervals, so constructing each retained span
 does not need another `readUnit()` call to rediscover its end.
 
-Custom sources and file-source subclasses retain their unit-access hooks. General
-Unicode, excluded characters and open upper ranges retain unit decoding. UTF-8
-case-insensitive runs also retain decoding: Unicode case folding can match a
-multibyte character against an ASCII operand. An explicit local case-sensitive
+Custom sources and file-source subclasses retain their unit-access hooks. Other
+eligible UTF-8 runs use the bounded boundary decoding described below, including
+case-insensitive runs: Unicode case folding can match a multibyte character
+against an ASCII operand. An explicit local case-sensitive
 policy can still qualify inside a case-insensitive scope. Finite work/depth limits,
 active spacing and operand metadata keep their existing eligibility and fallbacks.
 Recognition work accounting is unchanged; tree memory still grows with matched units.
@@ -2166,6 +2166,57 @@ across memory/file byte and UTF-8 sources, nonzero offsets, small pages, empty a
 bounded repetitions, minimum failures and Unicode case policies. They also check
 custom file-source hooks, arbitrary octet children and unchanged work during child
 construction. Existing limit and lifecycle tests cover the retained ordinary paths.
+
+## Bounded UTF-8 repetition boundaries
+
+After an eligible repetition has recognized its byte extent, exact built-in
+`Utf8Source` and `Utf8FileSource` inputs decode remaining unit boundaries in
+chunks of at most 8192 bytes. Each chunk end retreats by at most three bytes to
+a code-point boundary. The sources already guarantee valid UTF-8, so the loop
+can determine widths from lead bytes and construct every original CST leaf and
+span directly. It releases each chunk before reading the next; there is no
+input-sized boundary index or additional full-file subject for reconstruction.
+The scanner's existing source/regex-subject retention rules still apply.
+
+Known one-byte runs keep their direct-span path. Custom sources keep `readUnit()`
+hooks. Scanner eligibility, minimum-failure fallback, finite work/depth limits,
+spacing, metadata, diagnostics and lazy semantics are unchanged. Boundary
+reconstruction adds no recognition work. Retained tree memory remains proportional
+to the number of matches; bounded decoding does not make the parser tree-free.
+
+The repetition benchmark's `--any` option repeats `Any` over the generated UTF-8
+fixture instead of matching each complete literal as a unit:
+
+```sh
+php tools/benchmark-repeat-batching.php --any --literal='aé€🙂' --count=8192 --iterations=9
+php tools/benchmark-repeat-batching.php --any --literal='aé€🙂' --count=8192 --iterations=9 --source=file
+```
+
+For before/after comparisons, save the previous `GraphOptimizer.php` and pass
+`--baseline=path/to/GraphOptimizer.before.php`. On Windows/PHP 8.2.10, with PCOV
+disabled and Xdebug unloaded, three fresh workers per variant alternated order,
+with two warmups and nine observations each. Medians of worker medians for 80 KiB
+of mixed-width input (32,768 retained units) were:
+
+| UTF-8 source | Before (ms) | After (ms) |
+|---|---:|---:|
+| Memory | 32.312 | 22.866 |
+| File | 33.269 | 22.869 |
+
+These are approximately 29% and 31% lower parse times on this fixture. Both
+variants retained 9,966,360 used-PHP bytes. Source setup, preparation, release and
+correctness projection are outside timing. Every observation checks acceptance,
+value and a CST hash against unoptimized recognition. Host load was uncontrolled;
+these measurements do not establish general application speedups. A separate
+Xdebug 3.5.3 capture of three parses, each containing 4,000 mixed-width units,
+counted 12,000 `Utf8Source::readUnit()` calls before and none after. Instrumented
+elapsed times are not used for throughput comparisons. Saved baselines and raw
+reports are locally retained under ignored `build/utf8-repeat-chunks/`.
+
+Regressions compare full CST fingerprints, ASTs, diagnostics and independent
+code-point intervals for memory and file sources, nonzero offsets, four-byte file
+pages, two-/three-/four-byte chunk splits, exact chunk ends, empty input and bounded
+matches. They also verify custom UTF-8 source hooks and unchanged work accounting.
 
 ## List spacing scope bookkeeping
 
