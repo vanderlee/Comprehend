@@ -7,7 +7,6 @@ namespace Vanderlee\Comprehend\Extensions\Optimizer;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadRun;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileRange;
 use Vanderlee\Comprehend\Extensions\Optimizer\Parser\ReadWhileSet;
-use Vanderlee\Comprehend\Match\Success;
 use Vanderlee\Comprehend\Parser\Parser;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\Source;
@@ -67,14 +66,13 @@ final class ScannerSequence
         return $this->parsers;
     }
 
-    /** @return list<Success>|null Failed runs retain ordinary recognition and diagnostics. */
+    /** @return list<ConcreteNode>|null Failed runs retain ordinary recognition and diagnostics. */
     public function attempt(Source $source, int $offset, ParseSession $session): ?array
     {
         if ($session->hasRecognitionLimits() || $session->hasActiveSpacing() || !$session->isCaseSensitive()) {
             return null;
         }
         $children = [];
-        $diagnostic = $session->diagnostic();
         foreach ($this->parsers as $parser) {
             // Keep logical parser-entry work even though no checked child dispatch is needed.
             $session->consumeWork(1, $offset);
@@ -84,10 +82,8 @@ final class ScannerSequence
                 return null;
             }
             $span = $source->span($offset, $offset + $length);
-            $child = new Success($length);
-            $child->setSourceMetadata($span, $diagnostic?->byteOffset, $diagnostic);
-            $child->setConcreteNode(new ConcreteNode($parser->concreteKind(), $span));
-            $children[] = $child;
+            // Eligibility excludes deferred operations; the parent retains only immutable syntax.
+            $children[] = new ConcreteNode($parser->concreteKind(), $span);
             $offset += $length;
         }
 

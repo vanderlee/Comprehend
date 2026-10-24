@@ -8,6 +8,7 @@ use Vanderlee\Comprehend\Extensions\Optimizer\ScannerSequence;
 use Vanderlee\Comprehend\Parser\Terminal\Text;
 use Vanderlee\Comprehend\Runtime\ParseSession;
 use Vanderlee\Comprehend\Source\ByteSource;
+use Vanderlee\Comprehend\Tree\ConcreteNode;
 
 test('scanner runs stop at metadata and retain isolated operands', function (): void {
     $first = new ReadWhileSet('a', 1, 1);
@@ -30,9 +31,11 @@ test('scanner batches retain independent zero width and consuming child syntax',
     $children = $steps[0]->attempt($source, 0, $session);
 
     expect($children)->toHaveCount(2)
+        ->and($children[0])->toBeInstanceOf(ConcreteNode::class)
+        ->and($children[1])->toBeInstanceOf(ConcreteNode::class)
         ->and($children[0]->span->start)->toBe(0)
         ->and($children[0]->span->end)->toBe(0)
         ->and($children[1]->span->end)->toBe(2)
-        ->and($children[0]->node)->not->toBe($children[1]->node)
-        ->and($children[1]->getValue())->toBe('12');
+        ->and($children[0])->not->toBe($children[1])
+        ->and($children[1]->rawText())->toBe('12');
 });

@@ -20,7 +20,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 $options = getopt('', ['worker', 'baseline:', 'case:', 'iterations:', 'workers:', 'trace']);
 $case = $options['case'] ?? 'flat';
-if (!in_array($case, ['flat', 'single', 'mixed'], true)) {
+if (!in_array($case, ['flat', 'single', 'mixed', 'scanners'], true)) {
     throw new InvalidArgumentException('Unknown literal-batch case');
 }
 $iterations = max(3, (int) ($options['iterations'] ?? 31));
@@ -60,6 +60,9 @@ $sequenceFile = $baseline === null ? dirname(__DIR__) . '/extensions/Optimizer/P
     : $baseline . '/Sequence.php';
 require $literalFile;
 require $sequenceFile;
+$scannerFile = $baseline !== null && is_file($baseline . '/ScannerSequence.php')
+    ? $baseline . '/ScannerSequence.php' : dirname(__DIR__) . '/extensions/Optimizer/ScannerSequence.php';
+require $scannerFile;
 if ($trace) {
     require __DIR__ . '/profiling/MethodTrace.php';
     require __DIR__ . '/profiling/InstrumentMethods.php';
@@ -76,6 +79,7 @@ $commits = 0;
 $parser = match ($case) {
     'flat' => new Sequence(...array_fill(0, 128, (new Text('a'))->name('letter'))),
     'single' => new Sequence(Repeat::exact((new Text('ab'))->name('pair'), 64)->name('block')),
+    'scanners' => new Sequence(...array_fill(0, 128, new ReadWhileSet('a', 1, 1))),
     default => new Sequence(
         (new Text('!'))->onCommit(static function () use (&$commits): void {
             ++$commits;
@@ -90,7 +94,7 @@ $parser = match ($case) {
     ),
 };
 $text = match ($case) {
-    'flat' => str_repeat('a', 128),
+    'flat', 'scanners' => str_repeat('a', 128),
     'single' => str_repeat('ab', 64),
     default => '!abx12cdZ',
 };
@@ -148,6 +152,7 @@ echo json_encode(
     ['php' => PHP_VERSION, 'os' => PHP_OS_FAMILY, 'pcre' => PCRE_VERSION, 'case' => $case,
         'baseline' => $baseline, 'trace' => $trace, 'prepare_ns' => $prepareNs, 'prepared_bytes' => $preparedBytes,
         'literal_sha256' => hash_file('sha256', $literalFile), 'sequence_sha256' => hash_file('sha256', $sequenceFile),
+        'scanner_sha256' => hash_file('sha256', $scannerFile),
         'tree_sha256' => $treeHash, 'observations' => $observations,
         'trace_warning' => 'Counts cover Success across core and extensions; traced times/memory are distorted.'],
     JSON_PRETTY_PRINT,

@@ -197,3 +197,38 @@ test('scanner exceptions restore lexeme and case scopes before session reuse', f
     expect($session->isLexeme())->toBeFalse()->and($session->isCaseSensitive())->toBeTrue();
     expect((new Text('ab'))->recognizeInSession($source, 0, $session)->accepted)->toBeTrue();
 });
+
+test('plain scanner syntax preserves sibling collections and cached outer lifecycle', function (): void {
+    $observations = [];
+    foreach ([FreezeFlags::NONE, FreezeFlags::OPTIMIZE] as $flags) {
+        $events = [];
+        $parser = new Sequence(
+            new ReadWhileSet('a'),
+            new ReadWhileRange('0', '9', 1, 2),
+            (new Text('!'))->setResult('marker'),
+            new ReadWhileSet('b'),
+            new ReadWhileRange('0', '9', 1, 2),
+        );
+        $parser->mapValue(static function (ParseResult $result) use (&$events): array {
+            $events[] = 'value';
+
+            return [$result->rawText(), $result->results()];
+        })->validateSemantic(static function (ParseResult $result) use (&$events): bool {
+            $events[] = 'validate';
+
+            return $result->value() === ['12!b34', ['marker' => '!']];
+        })->onCommit(static function () use (&$events): void {
+            $events[] = 'commit';
+        });
+        $result = $parser->freeze($flags)->parse('12!b34');
+        expect($result->success)->toBeTrue()->and($events)->toBe([]);
+        expect($result->value())->toBe(['12!b34', ['marker' => '!']])
+            ->and($result->value())->toBe(['12!b34', ['marker' => '!']])
+            ->and($events)->toBe(['value']);
+        $result->commit();
+        $result->commit();
+        expect($events)->toBe(['value', 'validate', 'commit']);
+        $observations[] = [$result->node->toArray(), $result->ast()->toArray(), $result->results()];
+    }
+    expect($observations[1])->toBe($observations[0]);
+});

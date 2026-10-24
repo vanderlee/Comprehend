@@ -75,17 +75,9 @@ class Sequence extends OrdinarySequence
                 }
                 if ($batch !== null) {
                     foreach ($batch as $child) {
-                        if ($child instanceof ConcreteNode) {
-                            $length += $child->span->byteLength();
-                            $concreteChildren ??= $children;
-                            $concreteChildren[] = $child;
-                        } else {
-                            $length += $child->length;
-                            $children[] = $child;
-                            if ($concreteChildren !== null) {
-                                $concreteChildren[] = $child;
-                            }
-                        }
+                        $length += $child->span->byteLength();
+                        $concreteChildren ??= $children;
+                        $concreteChildren[] = $child;
                     }
                     continue;
                 }

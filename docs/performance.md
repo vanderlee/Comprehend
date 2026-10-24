@@ -886,6 +886,52 @@ used to infer prepared dispatch counts. Correctness tests compare same-graph CST
 AST, ordered diagnostics, byte offsets, rollback, cached values, effects, file
 snapshots, scope restoration and exhausted execution limits.
 
+### Scanner sequence execution-record allocations (2026-10-24)
+
+Prepared metadata-free scanner batches now return their original immutable CST
+leaves directly. They no longer create a temporary `Success` execution record,
+bind diagnostic metadata to it and discard it when the parent builds its CST.
+Literal batches already return nodes, so both batch paths use the same parent
+assembly loop. Child metadata, custom scanner subclasses, active spacing,
+enclosing case-insensitivity and finite budgets retain their existing eligibility
+and ordinary recognition paths. Failed scanner runs still retry only their
+callback-free operands for diagnostics.
+
+Reproduce with the maintained benchmark's `scanners` case, which composes 128
+single-unit scanners:
+
+```sh
+php tools/benchmark-literal-batches.php --case=scanners --iterations=31
+php tools/benchmark-literal-batches.php --case=scanners --iterations=9 --trace
+```
+
+For a baseline comparison, save the previous `ScannerSequence.php`,
+`LiteralSequence.php` and `Parser/Sequence.php` in one directory as
+`ScannerSequence.php`, `LiteralSequence.php` and `Sequence.php`, then pass
+`--baseline=that-directory`. Existing literal-only baseline directories remain
+supported: if they omit `ScannerSequence.php`, the current scanner batch is used.
+
+A Windows/PHP 8.2.10 comparison alternated three fresh workers per variant, with
+three warmups and 31 observations per worker, PCOV disabled and Xdebug unloaded.
+Each observation verifies the complete CST hash, diagnostics and cached value
+against unoptimized recognition; explicit effects are checked separately.
+Preparation, source setup, correctness projection, release and collection are
+outside parse timing. Separate method tracing counted 129 `Success` constructors
+before and one after per parse: only the parent execution record remains.
+
+Untraced incremental used-PHP parse peaks fell from 69,600 to 46,968 bytes, about
+33% lower on this fixture. Retained result memory stayed at 40,664 bytes. These are
+PHP allocator measurements, not RSS, and they do not change the retained CST's
+size or asymptotic memory bound. Host load was uncontrolled; traced timing and
+memory are distorted and are not used for allocation-byte comparisons. The saved
+baseline and raw reports are locally retained under ignored
+`build/scanner-allocations/` while available.
+
+Regressions cover independent empty and consuming CST leaves, named-result
+operations between batches, lazy cached outer values, validation and explicit
+commit. Existing scanner-sequence tests also compare trees, ASTs, diagnostics,
+work, rollback, scope restoration, file spans and exhausted budgets.
+
 ### Separated-list checkpoint reuse (2026-10-22)
 
 `SeparatedList::recognize()` reuses its loop-entry diagnostic checkpoint for an
